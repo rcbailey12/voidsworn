@@ -140,7 +140,7 @@ headless|fx/test/graphics_correctness_check.gd|-|-|issue 1955: missing damage an
 headless|fx/test/death_leap_check.gd|-|-|death sections, tiers, lifetime, cleanup and drift (issue 137)
 headless|fx/test/acid_thorn_check.gd|-|-|issue 1877: the Acid Thorn has its built body, a missed thorn flies on past, a stuck thorn rides the ship it hit when that ship moves and turns, and goes when it dies
 headless|fx/test/death_plane_check.gd|-|-|ShipView and effects together as battle.gd marks a ship dead; box ships
-headless|fx/test/death_retirement_check.gd|-|-|issue 2198: settled wrecks skip motion and lights but retain their smoke child, death keeps existing fires until the split and drains trails, and deferred effects pop only what is due
+headless|fx/test/death_retirement_check.gd|-|-|issue 2198: settled wrecks skip motion and lights while hulk smoke reaches its exact floor at 60s and still emits at 120s, death keeps existing fires until the split and drains trails, and deferred effects pop only what is due
 headless|fx/test/destruction_staging_check.gd|-|-|staged deaths, class gating, flash limits and the hurry key
 headless|fx/test/kill_slowmo_check.gd|-|-|issue 521: the kill slow-motion beat starts at the core flash of cruiser and capital kills, never for small hulls or under reduce motion, and a key or click ends it
 headless|fx/test/effect_clock_1970_check.gd|-|-|issue 1970: hit pause and kill slow-mo keep the volley wait, late wreck check and camera shake on the effect clock

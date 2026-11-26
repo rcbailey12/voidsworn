@@ -33,6 +33,7 @@ const WRECK_PHYS_S := 4.0
 const DEBRIS_WOKEN_S := 1.5   # a plate a wreck section knocks awake is at rest again this long after
 const DEBRIS_VARIANTS := 4
 const WRECK_COOL := 14.0
+const HULK_VENT_TICK := 0.1
 const SEAM_COOL := 3.0        # effect-clock seconds from each section's release, not from the killing blow
 const CAP_METAL := 0
 const CAP_GLASS := 1
@@ -3924,17 +3925,27 @@ static func _hulk(fx, s) -> void:
 	_cache_leash_geometry(node)
 	var wreck := {"id": s.id, "t0": fx.now, "nodes": [node], "mats": [], "lights": [], "settled": false,
 		"fires": [{"node": node, "vel": drift, "ang": Vector3(0.05, 0.035, 0.04) if dead_drift else Vector3(0.01, 0.035, 0.015)}], "speed": 1.0, "hulk": true}
-	# The single hulk vent is clocked by its shader, not by fires. A settled hulk keeps that child (R458, issue 2044).
+	# The vent keeps looping on the shader clock. Its density ticks separately from the wreck's motion (R458).
 	var hit: Dictionary = s.hull.ray(s.hull.c + Vector3.UP * maxf(s.hull.L, 1.0), Vector3.DOWN)
 	var p: Vector3 = hit.get("p", s.hull.core)   # issue 370: a missed ray falls back to the core, never a box point
 	var n: Vector3 = hit.get("n", Vector3.UP)
 	var vent := DAMAGE_PLUME.build(fx, node, p, (n + Vector3.UP * 0.3).normalized(), maxf(s.hull.L * 0.20, 0.12),
 		DAMAGE_PLUME.Form.HULK, s.fac, 0.12, "fx_hulk_vent")
-	wreck["vent_material"] = vent.material_override
-	wreck["vent_next"] = fx.now
+	fx.later(fx.now + HULK_VENT_TICK, _thin_hulk_vent.bind(fx, weakref(vent), fx.now))
 	fx.dstate["wrecks"].append(wreck)
 	_cap_wrecks(fx)
 	BEATS.on_hulk(fx, s, node, str(s.get_meta("death_cause", "dark")))
+
+
+static func _thin_hulk_vent(fx, ref: WeakRef, born: float) -> void:
+	var vent := ref.get_ref() as MeshInstance3D
+	if not is_instance_valid(vent) or not vent.is_inside_tree() or vent.get_parent().is_queued_for_deletion():
+		return
+	var end := born + DAMAGE_PLUME.HULK_SETTLE_S
+	var age: float = DAMAGE_PLUME.HULK_SETTLE_S if fx.now >= end else fx.now - born
+	# Keep only one pending tick. A long frame updates once, and the final tick lands at the exact floor.
+	if not DAMAGE_PLUME.thin_hulk(vent.material_override, age):
+		fx.later(minf(fx.now + HULK_VENT_TICK, end), _thin_hulk_vent.bind(fx, ref, born))
 
 
 static func _break_up(fx, s, cause: String, tint: Color, job := {}) -> void:
@@ -4857,12 +4868,6 @@ static func update(fx, dt: float) -> void:
 			if fa != 1.0: nd.angular_velocity *= fa
 		w["speed"] = speed
 		var age: float = fx.now - float(w["t0"])
-		if w.has("vent_material") and fx.now >= float(w["vent_next"]):
-			if DAMAGE_PLUME.thin_hulk(w["vent_material"], age):
-				w.erase("vent_material")
-				w.erase("vent_next")
-			else:
-				w["vent_next"] = fx.now + 0.1
 		# Heat fades over a few seconds. The cold opaque cap remains.
 		# Issue 484 profiling: a wreck now has up to a dozen glowing faces and its scorched plating. Heat falls by about a
 		# tenth a second, so faces are set 15 times a second, not every frame, and a wreck that has gone cold is never

@@ -138,10 +138,11 @@ func _check_wounds(faction: String) -> void:
 	fx.reduce_flashing = true
 	fx.step(0.1)
 	_check(fx.flash_log.is_empty() and fx.flash_area_log.is_empty(), "persistent plumes never spend a counted flash")
-	s.dead = true
-	s._update_damage_emitters(fx)
+	fx.death("T", "board")
 	fx.step(0.1)
-	_check(not lamp.visible, "dead ship has no continuing wound light")
+	_check(not s.has_meta("death_hidden") and lamp.visible, "the wound still lights the hull during the death tell")
+	fx.step(0.8)
+	_check(s.has_meta("death_hidden") and not lamp.visible, "the wound light goes out at the break")
 	await _end()
 
 
@@ -202,8 +203,8 @@ func _check_hulk(faction: String) -> void:
 	await process_frame
 	_check(is_instance_valid(vent) and vent.is_visible_in_tree() and vent.get_parent() == hulk
 		and fx.now - float(wreck.t0) >= 120.0, "hulk still emits after 120 seconds")
-	_check(settled > 0.0 and settled < middle and is_equal_approx(settled, m.get_shader_parameter("density"))
-		and m.get_shader_parameter("life_s") == 0.0 and not wreck.has("vent_material"),
+	_check(settled == PLUME.HULK_WISP_DENSITY and m.get_shader_parameter("density") == settled
+		and m.get_shader_parameter("life_s") == 0.0,
 		"the thin lasting wisp settles after a minute without an expiry or further density updates")
 	fx.clear_wreck("T")
 	await process_frame

@@ -102,8 +102,10 @@ static func build(fx, parent: Node3D, p: Vector3, axis: Vector3, length: float, 
 
 # R458: retire the density updates after a minute, but leave a thin vent attached until the wreck is cleared.
 static func thin_hulk(m: ShaderMaterial, age: float) -> bool:
-	m.set_shader_parameter("density", lerpf(HULK_DENSITY, HULK_WISP_DENSITY, smoothstep(0.0, HULK_SETTLE_S, age)))
-	return age >= HULK_SETTLE_S
+	var done := age >= HULK_SETTLE_S
+	var density := HULK_WISP_DENSITY if done else lerpf(HULK_DENSITY, HULK_WISP_DENSITY, smoothstep(0.0, HULK_SETTLE_S, age))
+	m.set_shader_parameter("density", density)
+	return done
 
 
 static func _expire(ref: WeakRef) -> void:

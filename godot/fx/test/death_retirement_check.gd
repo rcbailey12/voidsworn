@@ -4,6 +4,7 @@ const GUARD := preload("res://tools/ci/check_guard.gd")
 const FX := preload("res://fx/fx.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const SHIP := preload("res://fx/fx_ship.gd")
+const PLUME := preload("res://fx/fx_damage_plume.gd")
 var failures := 0
 
 
@@ -76,6 +77,7 @@ func _check_hulk_and_tell(fx: FX) -> void:
 	fx.add_ship("burning", hull, {"cls": "Cruiser", "size": 0.8, "shielded": false, "cut_on_arrival": false})
 	var ship: SHIP = fx.ship("burning")
 	ship.stage[1] = 3
+	ship.stage[2] = 2  # A hot wound supplies its own smoke, so put the separate smoke canary in another section.
 	ship._refresh_damage_emitters(fx)
 	var attached: Array = ship._damage_emitters.map(func(e): return e.node)
 	_check(attached.size() >= 2, "W1: fixture needs real fire and smoke nodes")
@@ -149,6 +151,25 @@ func _check_hulk_and_tell(fx: FX) -> void:
 		"F1: settled wreck skips motion, leash marking, clamping and light writes")
 	_check(not plate.has_meta("leash_born") and is_instance_valid(smoke) and smoke.visible,
 		"F1: frozen debris is skipped and the shader-clocked smoke child is not shut off")
+	var vent_mat := smoke.material_override as ShaderMaterial
+	var born: float = wreck.t0
+	_check(fx.now < born + 30.0, "R458: fixture settles before the vent is done thinning")
+	fx.now = born + 30.0
+	fx.step(0.0)
+	var middle: float = vent_mat.get_shader_parameter("density")
+	_check(middle < PLUME.HULK_DENSITY and middle > PLUME.HULK_WISP_DENSITY,
+		"R458: the settled hulk is still thinning at 30 seconds")
+	fx.now = born + 59.95
+	fx.step(0.0)
+	_check(vent_mat.get_shader_parameter("density") > PLUME.HULK_WISP_DENSITY, "R458: the final vent tick is not yet due")
+	for age in [60, 120]:
+		fx.now = born + age
+		fx.step(0.0)
+		_check(vent_mat.get_shader_parameter("density") == PLUME.HULK_WISP_DENSITY,
+			"R458: settled hulk is at the exact thin density floor at %d seconds" % age)
+		_check(is_instance_valid(smoke) and smoke.is_visible_in_tree() and smoke.get_parent() == hulk
+			and vent_mat.get_shader_parameter("life_s") == 0.0 and vent_mat.get_shader_parameter("period") > 0.0,
+			"R458: settled hulk still emits at %d seconds" % age)
 	fx.dstate["physics_on"] = true
 	DEATH.spawn_debris(fx, hulk.global_position, Vector3.ZERO, 1, 0.2)
 	var thrown: RigidBody3D = fx.dstate.debris.back()

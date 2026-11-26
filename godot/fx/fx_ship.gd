@@ -55,6 +55,8 @@ var _eng_gate_written := -1.0
 var _sick_gate_written := -1.0
 var _eng_length_written := -1.0
 var _sick_length_written := -1.0
+var _eng_throttle_written := -1.0
+var _sick_throttle_written := -1.0
 # Issue 1587: with the engine section at stage 3+, one nozzle (sick_nozzle) is built into its own batches so it can gutter
 # on its own: a shorter plume with gaps, and a cough of smoke as the ship starts to move.
 var sick_nozzle := -1
@@ -536,10 +538,13 @@ func _build_engines(fx) -> void:
 					Vector4(ec.r, ec.g, ec.b, 2.2), Vector4(r * 0.2, r * 0.1, 19, fx.rng.randf()), Vector4(3.9, 0, 0.5, 0)))
 	_eng_mat = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
 	_eng_rib_mat = fx.mat(SH.RIBBON, 1)
+	_apply_plume_palette(_eng_rib_mat, faction, fac)
 	_eng_gate_written = -1.0
 	_sick_gate_written = -1.0
 	_eng_length_written = -1.0
 	_sick_length_written = -1.0
+	_eng_throttle_written = -1.0
+	_sick_throttle_written = -1.0
 	var holder = MeshInstance3D.new()
 	holder.name = "fx_engines"
 	_attach(holder)
@@ -641,16 +646,25 @@ func _write_engine_gate(fx, gate: float) -> void:
 	if length != _eng_length_written:
 		_eng_length_written = length
 		_eng_rib_mat.set_shader_parameter("lenk", length)
+	var throttle := clampf(_eng_cur / 1.4, 0.15, 1.4)
+	if throttle != _eng_throttle_written:
+		_eng_throttle_written = throttle
+		_eng_rib_mat.set_shader_parameter("throttle_k", throttle)
 	if _sick_mat != null:
-		var sg := gate * sick_gate(fx.now, fx.reduce_flashing) if gate != 0.0 else 0.0
-		if sg != _sick_gate_written:
-			_sick_gate_written = sg
-			_sick_mat.set_shader_parameter("gate", sg)
-			_sick_rib_mat.set_shader_parameter("gate", sg)
+		var sick_factor := sick_gate(fx.now, fx.reduce_flashing)
+		var sick_drive_gate := gate * sick_factor
+		if sick_drive_gate != _sick_gate_written:
+			_sick_gate_written = sick_drive_gate
+			_sick_mat.set_shader_parameter("gate", sick_drive_gate)
+			_sick_rib_mat.set_shader_parameter("gate", sick_drive_gate)
 		var sick_length := length * _sick_len
 		if sick_length != _sick_length_written:
 			_sick_length_written = sick_length
 			_sick_rib_mat.set_shader_parameter("lenk", sick_length)
+		var sick_throttle := throttle * sick_factor
+		if sick_throttle != _sick_throttle_written:
+			_sick_throttle_written = sick_throttle
+			_sick_rib_mat.set_shader_parameter("throttle_k", sick_throttle)
 
 
 func _update_hidden_death(fx) -> void:
@@ -2777,6 +2791,7 @@ func _update_damage_emitters(fx) -> void:
 					e.node.hide()
 					e.node.queue_free()
 			emitters.clear()
+		_clear_wing_smoke()
 		return
 	# R459: attached fire and smoke stay on the hull through the tell. Already fading emitters finish normally.
 	for j in range(_fading_emitters.size() - 1, -1, -1):
@@ -2791,12 +2806,38 @@ func _update_damage_emitters(fx) -> void:
 		if gate <= 0.0:
 			e.node.queue_free()
 			_fading_emitters.remove_at(j)
-	if not dead and squadron and _squad_smoke and not fx.compat and fx.now >= _smoke_next:
-		_smoke_next = fx.now + 0.12
-		# World-space pooled samples form a short ribbon that stays behind a wing.
-		fx.spr(to_world(hull.c - Vector3.RIGHT * hull.L * 0.2), fx.now, 1.2,
-			Color(0.12, 0.12, 0.13), 0.32, hull.L * 0.015, hull.L * 0.10, 3,
-			dir_world(Vector3.LEFT) * hull.L * 0.20)
+	if not dead and squadron:
+		if not _squad_smoke or fx.compat:
+			_clear_wing_smoke()
+		elif not is_instance_valid(_wing_smoke):
+			_build_wing_smoke(fx)
+
+
+func _build_wing_smoke(fx) -> void:
+	var visual = root.get("hull")
+	var exhaust: Dictionary = visual.damage_exhaust() if is_instance_valid(visual) and visual.has_method("damage_exhaust") else {}
+	var parent: Node3D = exhaust.get("parent", _dmg_root)
+	var length: float = 1.65
+	var p: Vector3
+	if exhaust.is_empty():
+		# Minimal or legacy wings use their analysed stern, rather than a point between the craft.
+		var aft: Dictionary = hull.surface(hull.c, Vector3.LEFT)
+		if aft.is_empty():
+			return
+		p = aft.p
+		length = hull.L * 0.55
+	else:
+		p = exhaust.p
+	var phase := float(posmod(_seed, 127)) / 127.0
+	_wing_smoke = DAMAGE_PLUME.build(fx, parent, p, Vector3.LEFT, length, DAMAGE_PLUME.Form.WING,
+		fac, phase, "fx_wing_damage_smoke")
+
+
+func _clear_wing_smoke() -> void:
+	if is_instance_valid(_wing_smoke):
+		_wing_smoke.hide()
+		_wing_smoke.queue_free()
+	_wing_smoke = null
 
 
 # ---------------------------------------------------------------- live wounds (issue 1587)
