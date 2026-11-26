@@ -4,13 +4,19 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 const FX := preload("res://fx/fx.gd")
 const SV := preload("res://render/ship_view.gd")
 const DEATH := preload("res://fx/fx_death.gd")
+const BREACH := preload("res://fx/fx_breach.gd")
 const API := preload("res://rules/battle_api.gd")
 var rules_api := API.new()
 var failures := 0
 
 class LogFixture extends CanvasLayer:
+	var removed_plates: Array[String] = []
+
 	func add_log(_text: String, _kind: String) -> void:
 		pass
+
+	func remove_plate(id: String) -> void:
+		removed_plates.append(id)
 
 class BattleFixture extends "res://scenes/battle/battle.gd":
 	var trace_id := ""
@@ -219,24 +225,98 @@ func _rise_then_tidal_tick() -> void:
 	battle.free()
 	_verdict(before, "rise and tidal damage play in order")
 
-func _jump_drops_collider() -> void:
+func _play_fled(battle: BattleFixture, id: String, played: Array) -> void:
+	await battle._play_event({"t": "fled", "unit": id})
+	played[0] = true
+
+func _jump_retires_ship() -> void:
 	var before := failures
 	var battle := _lifetime_battle()
+	var hud := LogFixture.new()
+	battle.hud = hud
+	battle.add_child(hud)
 	var mesh := _lifetime_ship(battle, "jump")
 	var fx = battle.gfx
 	var s = fx.ship("jump")
+	var sv: SV = battle.views["jump"]
+	sv.set_process(true)
 	var body: Node = s.get_meta("collider")
 	_check(is_instance_valid(body) and body.collision_layer == DEATH.HULL_LAYER, "setup: the live ship has a debris collider")
-	await battle._play_event({"t": "fled", "unit": "jump"})
+	_check(sv._thrust_spark_sink.is_valid(), "setup: the live view has a shared thrust spark sink")
+	var damage_mesh := ArrayMesh.new()
+	damage_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, mesh.mesh.surface_get_arrays(0))
+	mesh.mesh = damage_mesh
+	fx.hull_mark("jump", "torp", 4)
+	_check(s._dmg_task >= 0, "setup: a real hit submits a damage rebuild")
+	if s._dmg_task < 0:
+		battle.free()
+		return
+	# Replay the real job behind a gate, retaining the ship's normal damage poll.
+	WorkerThreadPool.wait_for_task_completion(s._dmg_task)
+	var job: Dictionary = s._dmg_job
+	var gate := Semaphore.new()
+	var rebuilt := [{}]
+	var tid := WorkerThreadPool.add_task(func() -> void:
+		gate.wait()
+		rebuilt[0] = BREACH.compute(job))
+	s._dmg_task = tid
+	# If the game joins early, rescue the test so it reports a failure instead of hanging the frame.
+	var stop_rescue := Semaphore.new()
+	var rescued := Semaphore.new()
+	var rescue := Thread.new()
+	rescue.start(func() -> void:
+		for i in 250:
+			if stop_rescue.try_wait():
+				return
+			OS.delay_msec(10)
+		rescued.post()
+		gate.post())
+	var retired_before := FX.retired_count()
+	var played := [false]
+	_play_fled(battle, "jump", played)
 	fx.step(0.39)
 	_check(mesh.visible and is_instance_valid(body), "jump keeps the collider while the hull is still there")
+	_check(fx.ship("jump") == s and sv.is_processing() and not played[0], "jump keeps the ship and view active until departure")
 	fx.step(0.02)
 	await process_frame
 	await process_frame
 	_check(s.gone and not mesh.visible and is_instance_valid(s.root), "jump hides the hull but keeps its view root")
 	_check(not is_instance_valid(body), "jump leaves no hull collider for debris to hit")
+	_check(not fx.ships.has("jump"), "jump removes the fled ship from fx.ships")
+	_check(not sv._thrust_spark_sink.is_valid(), "jump clears the shared thrust spark sink")
+	_check(played[0] and not sv.is_processing() and hud.removed_plates == ["jump"], "the fled event parks the view and retires its plate")
+	var blocked := rescued.try_wait()
+	_check(not blocked and not WorkerThreadPool.is_task_completed(tid), "the frame and fled event finish with the rebuild still held")
+	_check(s._dmg_task == -1 and FX.retired_count() == retired_before + 1, "the running rebuild moves to the retirement queue")
+	stop_rescue.post()
+	gate.post()
+	rescue.wait_to_finish()
+	var deadline := Time.get_ticks_msec() + 3000
+	while (FX.retired_count() > retired_before or s._dmg_task >= 0) and Time.get_ticks_msec() < deadline:
+		fx.step(0.1)
+		await process_frame
+	var collected: bool = FX.retired_count() <= retired_before and s._dmg_task < 0
+	_check(collected and not rebuilt[0].is_empty() and s.mark_ms.is_empty(), "the rebuild is collected without painting the departed hull")
 	battle.free()
-	_verdict(before, "jump removes the collider as the hull leaves")
+	_verdict(before, "jump retires the ship and its view without waiting on the damage worker")
+
+func _fallback_retires_view() -> void:
+	var before := failures
+	var battle := _lifetime_battle()
+	_lifetime_ship(battle, "fallback")
+	battle.gfx.remove_ship("fallback")
+	var sv: SV = battle.views["fallback"]
+	sv.set_process(true)
+	var played := [false]
+	_play_fled(battle, "fallback", played)
+	sv._step_motion(1.4)
+	_check(sv.visible and sv.is_processing(), "fallback flight keeps processing until it hides")
+	sv._step_motion(0.2)
+	_check(not sv.visible and not sv.is_processing(), "fallback flight parks the view when it hides")
+	while not played[0]:
+		await process_frame
+	battle.free()
+	_verdict(before, "fallback flight retires the view after the animation")
 
 func _run() -> void:
 	var error := rules_api.load_rules()
@@ -247,7 +327,8 @@ func _run() -> void:
 	_exit_with_cut()
 	await _risen_takes_wreck()
 	await _rise_then_tidal_tick()
-	await _jump_drops_collider()
+	await _jump_retires_ship()
+	await _fallback_retires_view()
 	for quality in ["high", "low"]:
 		for spec in [["voidsworn", "Cruiser", 0.8, "blast"], ["voidsworn", "Frigate", 0.55, "big"],
 			["voidsworn", "Squadron", 0.1, "big"], ["chorus", "Bio-titan", 1.25, "big"],

@@ -1933,12 +1933,18 @@ func attach_report(say := false, only := "") -> Dictionary:
 	return out
 
 
-func remove_ship(id: String) -> void:
+func remove_ship(id: String, wait_for_damage := true) -> void:
 	if not ships.has(id):
 		return
 	attach_report(true, id)
-	_clear_thrust_spark_sink(ships[id].root)
-	(ships[id] as SHIP).teardown(self)
+	var s: SHIP = ships[id]
+	_clear_thrust_spark_sink(s.root)
+	if not wait_for_damage and s._dmg_task >= 0:
+		# The reaper holds the inputs and result holder until the worker ends. The old damage poll becomes a no-op.
+		_retire([s._dmg_task], [s._dmg_job])
+		s._dmg_task = -1
+		s._dmg_job = {}
+	s.teardown(self, wait_for_damage)
 	ships.erase(id)
 
 
