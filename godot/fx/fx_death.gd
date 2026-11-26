@@ -33,6 +33,7 @@ const WRECK_PHYS_S := 4.0
 const DEBRIS_WOKEN_S := 1.5   # a plate a wreck section knocks awake is at rest again this long after
 const DEBRIS_VARIANTS := 4
 const WRECK_COOL := 14.0
+const HULK_VENT_TICK := 0.1
 const SEAM_COOL := 3.0        # effect-clock seconds from each section's release, not from the killing blow
 const CAP_METAL := 0
 const CAP_GLASS := 1
@@ -624,6 +625,7 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 			b.add_child(mi)
 			b.set_meta("debris_sc", sc)
 			fx.phys_root.add_child(b)
+			b.sleeping_state_changed.connect(_remember_woken_plate.bind(fx, b))
 			pool.append(b)
 		else:
 			var slot := int(st["debris_next"])
@@ -637,6 +639,9 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 				(b.get_node("mesh") as MeshInstance3D).mesh = st["debris_meshes"][sc][vi]
 				b.mass = 0.3 + 0.4 * sc
 				b.set_meta("debris_sc", sc)
+		if not b.has_meta("leash_offset") or int(b.get_meta("leash_mesh_size", -1)) != sc:
+			_cache_leash_geometry(b)
+			b.set_meta("leash_mesh_size", sc)
 		var d: Vector3 = fx.rdir()
 		d.y = 0.0
 		d = d.normalized()
@@ -653,6 +658,8 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 		# A reused plate takes this throw's leash and rim, even after the live hull is gone.
 		b.set_meta("debris_piece", piece)
 		b.remove_meta("leash_born")
+		var anchor = st.get("anchors", {}).get(piece.get("leash", ""))
+		if anchor != null: _born(b, anchor)
 		b.sleeping = false
 		b.visible = true
 		awake[b] = fx.now
@@ -663,23 +670,29 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 			mesh.set_instance_shader_parameter("rim_col", _debris_rim(piece))
 
 
+static func _remember_woken_plate(fx, b) -> void:
+	if not _moving_plate(b) or not fx.dstate.has("debris_awake"): return
+	var awake: Dictionary = fx.dstate["debris_awake"]
+	if awake.has(b): return
+	awake[b] = fx.now - (DEBRIS_REST_S - DEBRIS_WOKEN_S)
+	b.set_meta("debris_spd", maxf(fx.anim_speed(), 0.01))   # knocked at today's clock (_debris_speed)
+
+
 # Issue 1237: the plates still flying. Past DEBRIS_FREE_S a plate takes the settle damping (or keeps a stronger one it was
 # thrown with); once Jolt has put it to sleep it leaves the list, and at DEBRIS_REST_S it is stopped and put to sleep. A
 # hull or wreck section that knocks a sleeping plate wakes it in Jolt; it is back at rest DEBRIS_WOKEN_S later.
 static func _settle_debris(fx) -> void:
 	var awake: Dictionary = fx.dstate.get("debris_awake", {})
-	# A sleeping plate a wreck section knocks wakes in Jolt: four times a second the pool is looked over for those.
+	# A Jolt wake is signalled. A slower scan also catches state changes set directly, which do not emit that signal.
 	if fx.now >= float(fx.dstate.get("debris_scan", -INF)):
 		fx.dstate["debris_scan"] = fx.now + 0.25
-		for b in fx.dstate.get("debris", []):
-			if is_instance_valid(b) and not awake.has(b) and not (b as RigidBody3D).sleeping:
-				awake[b] = fx.now - (DEBRIS_REST_S - DEBRIS_WOKEN_S)
-				(b as Node).set_meta("debris_spd", maxf(fx.anim_speed(), 0.01))   # knocked at today's clock (_debris_speed)
 		fx.dstate["debris_awake"] = awake
+		for b in fx.dstate.get("debris", []):
+			_remember_woken_plate(fx, b)
 	if awake.is_empty(): return
 	var done: Array = []
 	for b in awake:
-		if not is_instance_valid(b):
+		if not is_instance_valid(b) or b.freeze or not b.visible:
 			done.append(b)
 			continue
 		var age: float = fx.now - float(awake[b])
@@ -710,11 +723,11 @@ static func _debris_speed(fx) -> void:
 	fx.dstate["debris_speed"] = speed
 	if absf(speed - last) < 1e-6: return
 	for b in fx.dstate.get("debris_awake", {}):
-		if not is_instance_valid(b): continue
+		if not _moving_plate(b): continue
 		var rb := b as RigidBody3D
 		var was: float = float(rb.get_meta("debris_spd", speed))
 		rb.set_meta("debris_spd", speed)
-		if rb.sleeping or absf(speed - was) < 1e-6: continue
+		if absf(speed - was) < 1e-6: continue
 		rb.linear_velocity *= speed / was
 		rb.angular_velocity *= speed / was
 
@@ -3909,18 +3922,30 @@ static func _hulk(fx, s) -> void:
 	drift.y = 0.0
 	# issue 1586: a burnout drifts dead with a gentle pitch and roll
 	var dead_drift: bool = str(s.get_meta("death_cause", "dark")) == "dark"
-	var wreck := {"id": s.id, "t0": fx.now, "nodes": [node], "mats": [], "lights": [],
+	_cache_leash_geometry(node)
+	var wreck := {"id": s.id, "t0": fx.now, "nodes": [node], "mats": [], "lights": [], "settled": false,
 		"fires": [{"node": node, "vel": drift, "ang": Vector3(0.05, 0.035, 0.04) if dead_drift else Vector3(0.01, 0.035, 0.015)}], "speed": 1.0, "hulk": true}
+	# The vent keeps looping on the shader clock. Its density ticks separately from the wreck's motion (R458).
 	var hit: Dictionary = s.hull.ray(s.hull.c + Vector3.UP * maxf(s.hull.L, 1.0), Vector3.DOWN)
 	var p: Vector3 = hit.get("p", s.hull.core)   # issue 370: a missed ray falls back to the core, never a box point
 	var n: Vector3 = hit.get("n", Vector3.UP)
 	var vent := DAMAGE_PLUME.build(fx, node, p, (n + Vector3.UP * 0.3).normalized(), maxf(s.hull.L * 0.20, 0.12),
 		DAMAGE_PLUME.Form.HULK, s.fac, 0.12, "fx_hulk_vent")
-	wreck["vent_material"] = vent.material_override
-	wreck["vent_next"] = fx.now
+	fx.later(fx.now + HULK_VENT_TICK, _thin_hulk_vent.bind(fx, weakref(vent), fx.now))
 	fx.dstate["wrecks"].append(wreck)
 	_cap_wrecks(fx)
 	BEATS.on_hulk(fx, s, node, str(s.get_meta("death_cause", "dark")))
+
+
+static func _thin_hulk_vent(fx, ref: WeakRef, born: float) -> void:
+	var vent := ref.get_ref() as MeshInstance3D
+	if not is_instance_valid(vent) or not vent.is_inside_tree() or vent.get_parent().is_queued_for_deletion():
+		return
+	var end := born + DAMAGE_PLUME.HULK_SETTLE_S
+	var age: float = DAMAGE_PLUME.HULK_SETTLE_S if fx.now >= end else fx.now - born
+	# Keep only one pending tick. A long frame updates once, and the final tick lands at the exact floor.
+	if not DAMAGE_PLUME.thin_hulk(vent.material_override, age):
+		fx.later(minf(fx.now + HULK_VENT_TICK, end), _thin_hulk_vent.bind(fx, ref, born))
 
 
 static func _break_up(fx, s, cause: String, tint: Color, job := {}) -> void:
@@ -3967,7 +3992,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 	fx.punch(T, 0.018 if s.death_big else 0.006, center)
 	fx.shake(T, 0.45 if s.death_big else 0.18, center)
 	# the pieces: real parts of the hull, as rigid bodies that drift and burn
-	var wreck = {"id": s.id, "t0": T, "nodes": [], "mats": [], "lights": [], "fires": [], "speed": 1.0, "organic": organic, "heat_births": {}, "cut_events": []}
+	var wreck = {"id": s.id, "t0": T, "nodes": [], "mats": [], "lights": [], "fires": [], "speed": 1.0, "organic": organic, "heat_births": {}, "cut_events": [], "settled": false}
 	var main_i = -1
 	var main_n = -1
 	for i in n_main:
@@ -4055,6 +4080,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 		mi.mesh = am
 		mi.position = -cen
 		node.add_child(mi)
+		_cache_leash_geometry(node)
 		var piece_mats: Array = []
 		if pc.has("cap_mat"):
 			(pc["cap_mat"] as ShaderMaterial).set_shader_parameter("heat", 0.0)
@@ -4223,6 +4249,7 @@ static func _make_frags(fx, s, wreck: Dictionary, job: Dictionary, pieces: Array
 		mi.position = -cen
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		node.add_child(mi)
+		_cache_leash_geometry(node)
 		if pc.has("cap_mat"):
 			var cm := pc["cap_mat"] as ShaderMaterial
 			cm.set_shader_parameter("heat", 0.0)
@@ -4818,31 +4845,29 @@ static func update(fx, dt: float) -> void:
 		return
 	# issue 1236: a blocking wreck's new pieces are measured where they were made, before anything below moves them
 	_leash_mark(fx)
-	for ship in fx.ships.values(): _update_dying(fx, ship)
+	for id in fx.ships:
+		var ship = fx.ships[id]
+		if ship.dead and not ship.death_fx_done: _update_dying(fx, ship)
 	_settle_debris(fx)
 	_debris_speed(fx)
+	var speed: float = maxf(fx.anim_speed(), 0.01)
 	for w in fx.dstate["wrecks"]:
-		var speed: float = maxf(fx.anim_speed(), 0.01)
+		if w.get("settled", false): continue
 		var prev: float = float(w.get("speed", 1.0))
+		var ratio := speed / prev
 		for nd in w["nodes"]:
-			if is_instance_valid(nd) and nd is RigidBody3D:
-				var f := speed / prev
-				var fa := f
-				if nd.has_meta("story_damp") and not (nd as RigidBody3D).freeze:
-					# issue 1077 (prototype): a strained wreck's physics pieces slow and settle where it broke
-					var dmp: float = nd.get_meta("story_damp")
-					f *= exp(-dmp * dt)
-					fa *= exp(-dmp * 0.5 * dt)
-				(nd as RigidBody3D).linear_velocity *= f
-				(nd as RigidBody3D).angular_velocity *= fa
+			if not is_instance_valid(nd) or not nd is RigidBody3D or nd.freeze or nd.sleeping: continue
+			var f := ratio
+			var fa := ratio
+			if nd.has_meta("story_damp"):
+				# issue 1077 (prototype): a strained wreck's physics pieces slow and settle where it broke
+				var dmp: float = nd.get_meta("story_damp")
+				f *= exp(-dmp * dt)
+				fa *= exp(-dmp * 0.5 * dt)
+			if f != 1.0: nd.linear_velocity *= f
+			if fa != 1.0: nd.angular_velocity *= fa
 		w["speed"] = speed
 		var age: float = fx.now - float(w["t0"])
-		if w.has("vent_material") and fx.now >= float(w["vent_next"]):
-			if DAMAGE_PLUME.thin_hulk(w["vent_material"], age):
-				w.erase("vent_material")
-				w.erase("vent_next")
-			else:
-				w["vent_next"] = fx.now + 0.1
 		# Heat fades over a few seconds. The cold opaque cap remains.
 		# Issue 484 profiling: a wreck now has up to a dozen glowing faces and its scorched plating. Heat falls by about a
 		# tenth a second, so faces are set 15 times a second, not every frame, and a wreck that has gone cold is never
@@ -4863,26 +4888,47 @@ static func update(fx, dt: float) -> void:
 				(m as ShaderMaterial).set_shader_parameter("fx_scorch_heat", scorch_heat)
 			# cold for good once every face has cooled and nothing is still waiting for its release
 			if not any_warm and scorch_heat == 0.0 and age > 1.0: w["cold"] = true
-		var gate = exp(-maxf(age, 0.0) / 3.5)
-		for f in w["fires"]:
-			if f.has("mat"):
-				(f["mat"] as ShaderMaterial).set_shader_parameter("gate", exp(-maxf(age, 0.0) / maxf(float(f.get("cool", 3.5)), 0.01)))
-			elif f.has("node") and is_instance_valid(f["node"]) and fx.now < float(f.get("until", INF)):
-				# Kinematic tiers retain the same constant momentum as physics tiers.
-				var n: Node3D = f["node"]
-				if f.has("damp"):
-					# issue 1077 (prototype): a strained wreck's pieces slow and settle where it broke
-					f["vel"] = (f["vel"] as Vector3) * exp(-float(f["damp"]) * dt)
-					f["ang"] = (f["ang"] as Vector3) * exp(-float(f["adamp"]) * dt)
-				var v: Vector3 = f["vel"]
-				n.global_position += v * dt
-				var a: Vector3 = f["ang"]
-				if a.length() > 1e-5:
-					n.global_rotate(a.normalized(), a.length() * dt)
-		for l in w["lights"]:
-			l["base"] = 0.7 * gate
+		_step_wreck_fires(w["fires"], fx.now, age, dt)
+		if not w["lights"].is_empty():
+			var gate := exp(-maxf(age, 0.0) / 3.5) * (1.0 - smoothstep(WRECK_SETTLE_AGE - 1.5, WRECK_SETTLE_AGE, age))
+			for l in w["lights"]:
+				l["base"] = 0.7 * gate
+				if gate == 0.0: l["on"] = false
+			if gate == 0.0: w["lights"].clear()
 	# issue 1236: a wreck that blocks its hex stays in it
 	_leash(fx, dt)
+
+
+static func _step_wreck_fires(fires: Array, now: float, age: float, dt: float) -> void:
+	# Compact in place, retaining the order of the remaining movement entries.
+	var keep := 0
+	for f in fires:
+		var until: float = f.get("until", INF)
+		if f.has("mat"):
+			var gate := exp(-maxf(age, 0.0) / maxf(float(f.get("cool", 3.5)), 0.01))
+			if now >= until or gate < 0.001:
+				(f["mat"] as ShaderMaterial).set_shader_parameter("gate", 0.0)
+				continue
+			(f["mat"] as ShaderMaterial).set_shader_parameter("gate", gate)
+		else:
+			var n = f.get("node")
+			if now >= until or not is_instance_valid(n): continue
+			var v: Vector3 = f["vel"]
+			var a: Vector3 = f["ang"]
+			if until == INF and age > WRECK_SETTLE_AGE and v.length_squared() < WRECK_REST_SPEED_SQ and a.length_squared() < WRECK_REST_SPIN_SQ:
+				continue
+			if f.has("damp"):
+				# issue 1077 (prototype): a strained wreck's pieces slow and settle where it broke
+				v *= exp(-float(f["damp"]) * dt)
+				a *= exp(-float(f["adamp"]) * dt)
+				f["vel"] = v
+				f["ang"] = a
+			n.global_position += v * dt
+			if a.length_squared() > 1e-10:
+				n.global_rotate(a.normalized(), a.length() * dt)
+		fires[keep] = f
+		keep += 1
+	if keep < fires.size(): fires.resize(keep)
 
 
 # ---------------------------------------------------------------- wrecks that block their hex (issue 1236)
@@ -4903,6 +4949,9 @@ const LEASH_PULL := 1.5        # per second: a piece past its rest limit comes b
 const LEASH_SHRINK_FROM := 1.5 # seconds after the break: the fragments start to draw in
 const MAIN_BRAKE := 1.2        # per second: the hull's main pieces slow to rest where they parted (a part speed of v stops in about v / 1.2)
 const LEASH_SETTLED := 5.5     # seconds after the break: each fragment is held hard inside the rest radius
+const WRECK_SETTLE_AGE := LEASH_SETTLED + 8.0
+const WRECK_REST_SPEED_SQ := 0.01 * 0.01     # world units per effect second
+const WRECK_REST_SPIN_SQ := 0.005 * 0.005    # radians per effect second
 
 
 # The battle calls this on the rules "wreck" event, before the death plays. radius: the hex's rest radius in world units.
@@ -4938,16 +4987,24 @@ static func _debris_leash(body: RigidBody3D) -> String:
 	return body.get_meta("debris_piece", {}).get("leash", "")
 
 
+static func _moving_plate(b) -> bool:
+	return is_instance_valid(b) and b.visible and not b.freeze and not b.sleeping
+
+
 static func _leash_mark(fx) -> void:
 	var anchors: Dictionary = fx.dstate.get("anchors", {})
 	if anchors.is_empty(): return
 	for w in fx.dstate["wrecks"]:
+		if w.get("settled", false): continue
 		var an = anchors.get(w["id"])
 		if an == null: continue
-		for nd in w["nodes"] + w.get("frags", []):
+		for nd in w["nodes"]:
 			if is_instance_valid(nd): _born(nd, an)
-	for b in fx.dstate.get("debris", []):
-		if not is_instance_valid(b) or not b.visible: continue
+		for nd in w.get("frags", []):
+			if is_instance_valid(nd): _born(nd, an)
+	# New plates are marked at birth. The awake list also picks up plates knocked back into motion by Jolt.
+	for b in fx.dstate.get("debris_awake", {}):
+		if not _moving_plate(b) or b.has_meta("leash_born"): continue
 		var an = anchors.get(_debris_leash(b))
 		if an != null: _born(b, an)
 
@@ -4958,14 +5015,17 @@ static func _leash(fx, dt: float) -> void:
 	# Ryan, Nov 22 (third look): the hull's main pieces are never pulled, shrunk or removed. They part as they broke and a
 	# brake brings them to rest close together where they are (MAIN_BRAKE), so nothing slides into anything. Issue 1236
 	# round 4: a planned breakup's pieces are steered to their rest spots (_steer) anchored or not; any other main piece
-	# brakes only on an anchored wreck, so an unanchored small hull's approved calm parting is unchanged.
+	# brakes early only on an anchored wreck. Unanchored pieces and hulks keep their parting or drift before braking.
 	var brake := exp(-MAIN_BRAKE * dt)
 	var abrake := exp(-MAIN_BRAKE * 0.5 * dt)   # Artoo on PR 1737: the halves stop turning too, a little slower
 	for w in fx.dstate["wrecks"]:
+		if w.get("settled", false): continue
 		var an = anchors.get(w["id"])
-		var drawing: bool = fx.now >= float(w["t0"]) + LEASH_SHRINK_FROM
+		var age: float = fx.now - float(w["t0"])
+		var drawing := age >= LEASH_SHRINK_FROM
+		var braking := an != null or age >= LEASH_SETTLED
 		for f in w["fires"]:
-			if not (f.has("vel") and f.has("node") and is_instance_valid(f["node"]) and fx.now < float(f.get("until", INF))): continue
+			if not f.has("vel"): continue
 			if (f["node"] as Node).has_meta("rest_at"):
 				var st := _steer(f["node"])
 				f["vel"] = st[0]
@@ -4973,34 +5033,39 @@ static func _leash(fx, dt: float) -> void:
 				f["ang"] = Vector3(fa.x * abrake, st[1], fa.z * abrake)
 				continue
 			if w["nodes"].has(f["node"]):
-				if an == null: continue   # an unanchored wreck without a planned breakup drifts as before (audit)
+				if not braking: continue
 				f["vel"] = (f["vel"] as Vector3) * brake
 				if f.has("ang"): f["ang"] = (f["ang"] as Vector3) * abrake
 			elif an != null:
 				f["vel"] = _leash_vel(f["node"], f["vel"], an, dt, drawing)
+		var bodies_at_rest := true
 		for nd in w["nodes"]:
-			if is_instance_valid(nd) and nd is RigidBody3D and not (nd as RigidBody3D).freeze:
+			if is_instance_valid(nd) and nd is RigidBody3D and not nd.freeze and not nd.sleeping:
+				bodies_at_rest = false
 				var rb := nd as RigidBody3D
 				if rb.has_meta("rest_at"):
 					var st := _steer(rb)
 					var spd: float = fx.anim_speed()
 					rb.linear_velocity = (st[0] as Vector3) * spd
 					rb.angular_velocity = Vector3(rb.angular_velocity.x * abrake, float(st[1]) * spd, rb.angular_velocity.z * abrake)
-				elif an != null:
+				elif braking:
 					rb.linear_velocity *= brake
 					rb.angular_velocity *= abrake
-		if an == null: continue
-		# the small fragments still settle inside the hex, as the thrown plates do
-		var settled: bool = fx.now >= float(w["t0"]) + LEASH_SETTLED
 		for nd in w.get("frags", []):
 			if not is_instance_valid(nd): continue
-			if nd is RigidBody3D and not (nd as RigidBody3D).freeze:
-				var body := nd as RigidBody3D
-				if body.sleeping: continue
-				body.linear_velocity = _leash_vel(body, body.linear_velocity, an, dt, drawing)
-			_leash_clamp(nd, an, _rest_limit(nd, an, true) if settled else -1.0)
-	for b in fx.dstate.get("debris", []):
-		if not is_instance_valid(b) or not b.visible or b.sleeping: continue
+			if nd is RigidBody3D and not nd.freeze:
+				if nd.sleeping: continue
+				bodies_at_rest = false
+				if an != null: nd.linear_velocity = _leash_vel(nd, nd.linear_velocity, an, dt, drawing)
+			# The small fragments still settle inside the hex, as the thrown plates do.
+			if an != null:
+				_leash_clamp(nd, an, _rest_limit(nd, an, true) if age >= LEASH_SETTLED else -1.0)
+		if age > WRECK_SETTLE_AGE and bodies_at_rest and w["fires"].is_empty() and w.get("cold", false):
+			w["settled"] = true
+	# Pooled plates have their own lifetime. A hull can knock one awake long after its wreck has settled.
+	if anchors.is_empty(): return
+	for b in fx.dstate.get("debris_awake", {}):
+		if not _moving_plate(b): continue
 		var an = anchors.get(_debris_leash(b))
 		if an == null: continue
 		b.linear_velocity = _leash_vel(b, b.linear_velocity, an, dt)
@@ -5017,23 +5082,29 @@ static func _steer(nd: Node3D) -> Array:
 # where a piece is, for the leash: the middle of its mesh's box (a piece's origin is the mean of its points, which on a
 # lopsided chunk of hull can sit far from what the eye reads as the piece), else its origin
 static func leash_centre(nd: Node3D) -> Vector3:
-	for ch in nd.get_children():
-		if ch is MeshInstance3D and (ch as MeshInstance3D).mesh != null:
-			return nd.global_transform * ((ch as MeshInstance3D).transform * (ch as MeshInstance3D).mesh.get_aabb().get_center())
-	return nd.global_position
+	if not nd.has_meta("leash_offset"): _cache_leash_geometry(nd)
+	return nd.global_transform * (nd.get_meta("leash_offset") as Vector3)
 
 
 # how far the piece reaches from its middle as drawn now, as it turns about the vertical: the farthest point of its real
 # mesh from its box middle on the board plane (measured once, unscaled, and kept on the piece; the drift brake uses half the box's longest side until then)
 static func leash_half(nd: Node3D) -> float:
+	if not nd.has_meta("leash_offset"): _cache_leash_geometry(nd)
+	var extent: Vector2 = nd.get_meta("leash_extent")   # half the box's longest side, and the mesh scale
+	return float(nd.get_meta("leash_rad", extent.x)) * extent.y
+
+
+static func _cache_leash_geometry(nd: Node3D) -> void:
 	for ch in nd.get_children():
 		if ch is MeshInstance3D and (ch as MeshInstance3D).mesh != null:
 			var mi := ch as MeshInstance3D
-			var k: float = mi.transform.basis.get_scale().x
-			if nd.has_meta("leash_rad"): return float(nd.get_meta("leash_rad")) * k
-			var sz: Vector3 = mi.mesh.get_aabb().size
-			return 0.5 * maxf(sz.x, maxf(sz.y, sz.z)) * k
-	return 0.0
+			var box := mi.mesh.get_aabb()
+			var sz := box.size
+			nd.set_meta("leash_offset", mi.transform * box.get_center())
+			nd.set_meta("leash_extent", Vector2(0.5 * maxf(sz.x, maxf(sz.y, sz.z)), mi.transform.basis.get_scale().x))
+			return
+	nd.set_meta("leash_offset", Vector3.ZERO)
+	nd.set_meta("leash_extent", Vector2.ZERO)
 
 
 # measure a piece's real reach once (leash_half); a big piece's faces are read only when its wreck starts to draw in

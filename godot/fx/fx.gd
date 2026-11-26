@@ -152,7 +152,7 @@ var _refused: PackedFloat64Array = []    # flashes the budget turned down (their
 # that refused a flash in a field already holding FLASH_CAP flashes in the last second; the caller then draws no peak at all.
 var _soft_mem: Array = []
 var flash_lift := false
-var _later: Array = []      # [t, callable, insertion order]
+var _later: Array = []      # min-heap of [t, callable, insertion order]
 var _later_serial := 0
 var _shake_off = Vector2.ZERO
 var _punches: Array = []    # [t, amount] (F3 zoom punch)
@@ -704,8 +704,41 @@ func later(t: float, f: Callable) -> void:
 	if t <= now:
 		f.call()
 		return
-	_later.append([t, f, _later_serial])
+	var entry := [t, f, _later_serial]
 	_later_serial += 1
+	var i := _later.size()
+	_later.append(entry)
+	while i > 0:
+		var parent := (i - 1) >> 1
+		if not _later_before(entry, _later[parent]):
+			break
+		_later[i] = _later[parent]
+		i = parent
+	_later[i] = entry
+
+
+static func _later_before(a: Array, b: Array) -> bool:
+	return int(a[2]) < int(b[2]) if a[0] == b[0] else float(a[0]) < float(b[0])
+
+
+func _pop_later() -> Array:
+	var first: Array = _later[0]
+	var last: Array = _later.pop_back()
+	var size := _later.size()
+	if size == 0:
+		return first
+	var i := 0
+	var child := 1
+	while child < size:
+		if child + 1 < size and _later_before(_later[child + 1], _later[child]):
+			child += 1
+		if not _later_before(_later[child], last):
+			break
+		_later[i] = _later[child]
+		i = child
+		child = 2 * i + 1
+	_later[i] = last
+	return first
 
 
 func free_effect(ref: WeakRef) -> void:
@@ -735,21 +768,9 @@ func free_picture(ref: WeakRef, gen: int) -> void:
 
 
 func _run_later() -> void:
-	if _later.is_empty():
-		return
-	var keep: Array = []
-	var due: Array = []
-	for e in _later:
-		if float(e[0]) <= now:
-			due.append(e)
-		else:
-			keep.append(e)
-	_later = keep
-	due.sort_custom(func(a: Array, b: Array) -> bool:
-		if a[0] == b[0]:
-			return int(a[2]) < int(b[2])
-		return float(a[0]) < float(b[0]))
-	for e in due:
+	var cutoff: float = now
+	while not _later.is_empty() and float(_later[0][0]) <= cutoff:
+		var e := _pop_later()
 		var t0 := Time.get_ticks_usec()
 		(e[1] as Callable).call()
 		# issue 220: which deferred step a long frame spent its time in (named lambdas and bound functions)
