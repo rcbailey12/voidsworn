@@ -174,7 +174,7 @@ func _run() -> void:
 	await _shield_torp_check()
 	await _lance_kill()
 	# issue 2161: the ember shader mixes its warm yellow-white start in only when the sprite does not keep its tint
-	var at19: int = SH.SPRITE.find("} else if (k == 19) {")
+	var at19: int = SH.SPRITE.find("} else if (k == 19 || k == 38) {")
 	var body19: String = SH.SPRITE.substr(at19, SH.SPRITE.find("} else if (k == 21) {") - at19) if at19 >= 0 else ""
 	_check(body19.contains("vKeep > 0.5 ? keep : vec3(1.0, 0.85, 0.5)") and not body19.contains("mix(vec3(1.0, 0.85, 0.5), vCol.rgb, t)"),
 		"the ember shader keeps the warm start for metal only; a keep-tint ember starts violet-white")
