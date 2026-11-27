@@ -253,7 +253,7 @@ func _state(api: API) -> Dictionary:
 	return {
 		"B/RUN/queue graph": packed.get("bytes"),
 		"queue": var_to_bytes([api.phase, _ids(api._queue), _ids(api._c_order), api._c_i, api._c_g, _ids(api._c_done)]),
-		"RNG word": API.JSM.rng_s,
+		"RNG word": api.R.rng.rng_s,
 		"events": var_to_bytes(rules.events),
 		"score caches": var_to_bytes([rules._evc, rules._ang, rules._mr, rules._runfx, rules._ev, rules._guard]),
 	}

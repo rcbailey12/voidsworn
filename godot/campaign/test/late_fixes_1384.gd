@@ -20,7 +20,7 @@ func check(ok: bool, what: String) -> void:
 		fails += 1; printerr("FAIL  " + what)
 
 func _start(admiral: String, fac: String, seed_: int) -> void:
-	JSM.rnd_seed(seed_)
+	C.rng.rnd_seed(seed_)
 	C.META["admirals"][admiral] = true
 	C.newRun(admiral, fac)
 	C.RUN["map"]["cond"] = null

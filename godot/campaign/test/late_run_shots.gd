@@ -17,7 +17,7 @@ var headless := false
 func _initialize() -> void: _run.call_deferred()
 
 func _start(admiral: String, fac: String, seed_: int) -> void:
-	JSM.rnd_seed(seed_)
+	campaign.rng.rnd_seed(seed_)
 	campaign.META["admirals"][admiral] = true
 	campaign.newRun(admiral, fac)
 

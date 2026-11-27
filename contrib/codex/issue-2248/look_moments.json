@@ -1,0 +1,10 @@
+{
+  "about": "Issue 2248. Compare the cold torn faces after split at the battle camera first, then at the closest game camera.",
+  "cameras": [170, 26],
+  "cell": [384, 120],
+  "crop": {"170": [384, 120], "26": [1152, 360]},
+  "rows": [
+    {"strict": true, "id": "eclipse_cap", "label": "D22_23 Eclipse cooling wreck cap", "group": "Cold wreck caps", "tgt": ["deathless", "Tomb-ark"], "expect_code": "D22_23", "do": "death", "cause": "blast", "windows": [["split", 3.5, 1], ["split", 6.0, 1], ["split", 8.0, 1]], "key": 1},
+    {"strict": true, "id": "hullbreaker_cap", "label": "C19_51 Hullbreaker cooling wreck cap", "group": "Cold wreck caps", "tgt": ["corsair", "Battle-barge"], "expect_code": "C19_51", "do": "death", "cause": "blast", "windows": [["split", 3.5, 1], ["split", 6.0, 1], ["split", 8.0, 1]], "key": 1}
+  ]
+}

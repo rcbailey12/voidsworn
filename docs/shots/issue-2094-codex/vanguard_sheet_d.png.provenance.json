@@ -1,0 +1,118 @@
+{
+  "source_commit": "8871f98900aaee91796b4896cd4b4a9f23f24f17",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "source_dirty_files": {},
+  "stage": "cloud direction check",
+  "schema": 1,
+  "picture_name": "vanguard_sheet_d.png",
+  "date": "2026-11-25T13:39:42Z",
+  "sources": [
+    {
+      "source_commit": "8871f98900aaee91796b4896cd4b4a9f23f24f17",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "source_dirty_files": {},
+      "stage": "cloud direction check"
+    },
+    {
+      "source_commit": "8f347164e19508295dcd0c6d52bdad27213577de",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "source_dirty_files": {},
+      "stage": "cloud direction check"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "carrier_views.png",
+      "source_commit": "8871f98900aaee91796b4896cd4b4a9f23f24f17",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "cloud direction check",
+      "date": "2026-11-25T13:39:40Z",
+      "image_sha256": "58eced39433e4d42093d1d1e8c3477a7698c2b9cacaf874e8ffa5d106b055680",
+      "sources": [
+        {
+          "source_commit": "8871f98900aaee91796b4896cd4b4a9f23f24f17",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "source_dirty_files": {},
+          "stage": "cloud direction check"
+        }
+      ]
+    },
+    {
+      "picture_name": "carrier_stern.png",
+      "source_commit": "8871f98900aaee91796b4896cd4b4a9f23f24f17",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "cloud direction check",
+      "date": "2026-11-25T13:39:40Z",
+      "image_sha256": "e21d170f561aba10e7c98888be0f07be8afff87fa9c87847c9a4ac591d92c4bd",
+      "sources": [
+        {
+          "source_commit": "8871f98900aaee91796b4896cd4b4a9f23f24f17",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "source_dirty_files": {},
+          "stage": "cloud direction check"
+        }
+      ]
+    },
+    {
+      "picture_name": "vanguard_sheet_b.png",
+      "source_commit": "8f347164e19508295dcd0c6d52bdad27213577de",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "cloud direction check",
+      "date": "2026-11-25T06:43:48Z",
+      "image_sha256": "88d11cc48f657bf5462cf748806f2493ccaae126836053241bdd057cb9f33818",
+      "sources": [
+        {
+          "source_commit": "8f347164e19508295dcd0c6d52bdad27213577de",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "source_dirty_files": {},
+          "stage": "cloud direction check"
+        }
+      ]
+    },
+    {
+      "picture_name": "vanguard_beauty_b.png",
+      "source_commit": "8f347164e19508295dcd0c6d52bdad27213577de",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "cloud direction check",
+      "date": "2026-11-25T06:43:48Z",
+      "image_sha256": "6fd3a3599fb6084ce359df470ffe94d4db862f0cc09935d58435281587102184",
+      "sources": [
+        {
+          "source_commit": "8f347164e19508295dcd0c6d52bdad27213577de",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "source_dirty_files": {},
+          "stage": "cloud direction check"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    596,
+    552,
+    720
+  ],
+  "strip_size": [
+    552,
+    124
+  ],
+  "strip_sha256": [
+    "102d341315e42dd363c1bbf271acafc296bb7238f805bd70c18ee7dc208f91b0"
+  ],
+  "stamp_template_sha256": "102d341315e42dd363c1bbf271acafc296bb7238f805bd70c18ee7dc208f91b0",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAigAAAB8CAIAAADM79waAAAB4klEQVR4nO3XMREAIBADwQcbtNT4l4eLq3YNpLzJOvcNAFR2tgQAwgNAzeMBICU8AKSEB4CU8ACQEh4AUsIDQEp4AEgJDwAp4QEgJTwApIQHgJTwAJASHgBSwgNASngASAkPACnhASAlPACkhAeAlPAAkBIeAFLCA0BKeABICQ8AKeEBICU8AKSEB4CU8ACQEh4AUsIDQEp4AEgJDwAp4QEgJTwApIQHgJTwAJASHgBSwgNASngASAkPACnhASAlPACkhAeAlPAAkBIeAFLCA0BKeABICQ8AKeEBICU8AKSEB4CU8ACQEh4AUsIDQEp4AEgJDwAp4QEgJTwApIQHgJTwAJASHgBSwgNASngASAkPACnhASAlPACkhAeAlPAAkBIeAFLCA0BKeABICQ8AKeEBICU8AKSEB4CU8ACQEh4AUsIDQEp4AEgJDwAp4QEgJTwApIQHgJTwAJASHgBSwgNASngASAkPACnhASAlPACkhAeAlPAAkBIeAFLCA0BKeABICQ8AKeEBICU8AKSEB4CU8ACQEh4AUsIDQEp4AEgJDwAp4QEgJTwApIQHgJTwAJASHgBSwgNASngASAkPACnhASAlPACkhAeAlPAAkBIeAFLCA0BKeABICQ8AKeEBYEofzJ4BZfVaMR0AAAAASUVORK5CYII="
+  ],
+  "image_sha256": "2968fcc55d95030f944432f474f1b6ec823a52e935cb80e88c88956e29ef428f"
+}

@@ -504,14 +504,14 @@ void fragment() {
 		add = vCol.rgb * min(exp(-r * r * 4.0) * 0.7 + exp(-r * r * 24.0) * 0.6, 1.0) * I;
 	} else if (k == 24) {
 		float f = (1.0 - smoothstep(0.18, 1.0, t)) * I;
-		add = (vCol.rgb * exp(-r * r * 5.0) + vec3(1.0, 0.88, 0.65) * exp(-r * r * 22.0) * 0.7) * f;
+		add = (vCol.rgb * exp(-r * r * 5.0) + vec3(1.0) * exp(-r * r * 22.0) * 0.7) * f;
 	} else if (k == 1 || k == 25 || k == 26) {
 		float n = fbm(p * 1.7 + vec2(seed * 13.1, seed * 7.7) + vec2(0.0, -t * 1.2));
 		float dens = (1.0 - r) * 1.4 + (n - 0.5) * 1.15;
 		float thr = t * 1.1;
 		float m = smoothstep(thr, thr + 0.35, dens);
 		float heat = clamp(dens - thr, 0.0, 1.0) * (1.0 - t * 0.6);
-		vec3 flame = k == 26 ? vCol.rgb * (0.5 + 1.8 * heat) + vec3(0.8, 0.7, 1.0) * pow(heat, 4.0) * 0.3 : heatRamp(heat) * mix(vec3(1.0), vCol.rgb * 1.6, 0.25);
+		vec3 flame = k == 26 ? vCol.rgb * (0.5 + 1.8 * heat) + mix(vCol.rgb, vec3(1.0), 0.5) * pow(heat, 4.0) * 0.3 : heatRamp(heat) * mix(vec3(1.0), vCol.rgb * 1.6, 0.25);
 		add = flame * I * (0.5 + 2.6 * heat * heat) * m * smoothstep(0.0, 0.05, t);
 	} else if (k == 2) {
 		float f = spow(1.0 - t, 1.5) * I;
@@ -561,7 +561,7 @@ void fragment() {
 		// the white centre can never add up to a general flash at the close cameras (60 and 26) with many engines on screen
 		float fl = flick(0.95 + 0.05 * vnoise(vec2(scene_t * 31.0, seed * 9.0)), scene_t, seed);
 		if (k == 11) { fl *= mix(cough(scene_t, seed), 0.7, fx_calm); }
-		add = (vCol.rgb * exp(-r * r * 4.0) + vec3(1.0, 0.95, 0.8) * exp(-r * r * 14.0) * 1.6) * I * fl;
+		add = (vCol.rgb * exp(-r * r * 4.0) + mix(vec3(1.0), vCol.rgb, 0.12) * exp(-r * r * 14.0) * 1.6) * I * fl;
 	} else if (k == 5) {
 		float f = (1.0 - t) * (1.0 - t) * I;
 		add = vec3(1.0, 0.6, 0.25) * exp(-r * r * 6.0) * f + vec3(exp(-r * r * 30.0)) * f + vec3(1.0, 0.7, 0.4) * star * f * 0.6;
@@ -1662,6 +1662,7 @@ uniform float anchor_head = 0.0;
 uniform vec3 head_world = vec3(0.0);
 uniform vec3 head_dir = vec3(-1.0, 0.0, 0.0);
 uniform float use_strip_taper = 0.0;
+uniform vec3 trail_ember = vec3(0.0);
 varying vec4 vCol;
 varying vec4 vInfo;
 varying float vAlong;
@@ -1711,7 +1712,8 @@ void fragment() {
 		float lum = dot(vCol.rgb, vec3(0.2126, 0.7152, 0.0722));
 		col = mix(vCol.rgb, vCol.rgb * 0.55 + vec3(lum * 0.25), smoothstep(0.0, 0.65, s));
 		root = anchor_head > 0.5 ? smoothstep(0.0, 0.05, along) : smoothstep(0.0, 0.18, along);
-		hot = mix(vCol.rgb, vec3(1.0, 0.97, 0.92), 0.55) * core_across * (0.65 * (1.0 - 0.55 * s));
+		vec3 core_col = st == 3 ? vec3(1.0) : vec3(1.0, 0.97, 0.92);
+		hot = mix(vCol.rgb, core_col, 0.55) * core_across * (0.65 * (1.0 - 0.55 * s));
 		col_gain = 1.45;
 	}
 	if (st == 1) {
@@ -1720,7 +1722,11 @@ void fragment() {
 		m *= 0.6 + 0.8 * smoothstep(0.55, 0.8, fbm(vec2(s * 22.0 - scene_t * 0.4, seed)));
 	} else if (st == 3) {
 		col *= 0.55 + 0.45 * vnoise(vec2(s * 9.0 - scene_t * 2.0, seed));
-		col += vec3(1.0, 0.5, 0.15) * spow(vnoise(vec2(s * 60.0 - scene_t, seed * 3.0)), 12.0) * 2.0;
+		if (use_strip_taper > 0.5) {
+			col += trail_ember * spow(vnoise(vec2(s * 60.0 - scene_t, seed * 3.0)), 12.0) * 2.0;
+		} else {
+			col += vec3(1.0, 0.5, 0.15) * spow(vnoise(vec2(s * 60.0 - scene_t, seed * 3.0)), 12.0) * 2.0;
+		}
 	}
 	if (use_strip_taper <= 0.5) {
 		hot = mix(col, vec3(1.0, 0.94, 0.82), 0.6) * exp(-x*x*16.0) * 0.5;
