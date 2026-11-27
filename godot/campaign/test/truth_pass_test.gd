@@ -185,7 +185,7 @@ func _battle_tips(c: Campaign) -> void:
 		"issue 1651: the Command hover carries Anuket's rider line")
 	for w in torps: w["fired"] = true; w["cdLeft"] = 2
 	_check(api.command() and torps.all(func(w): return not w["fired"] and w["cdLeft"] == 0), "Ostrel reloads the captured ship's torpedoes")
-	_check("Slip the Net" in h.ledger.keyword_tip("Fired") and "Glasswright" in h.ledger.keyword_tip("Fired"), "Fired tooltip names the two movement exceptions")
+	_check("Glasswright ships alone" in h.ledger.keyword_tip("Fired"), "Fired tooltip names the only movement exception")
 	h.free()
 	var b := Battle.new(); b.TBL = api.R.TB
 	_check("most damaged adjacent ally facing the same way" in b._brace_tip({"fac": "voidsworn"})
@@ -197,7 +197,7 @@ func _battle_tips(c: Campaign) -> void:
 
 
 func _new_run(c: Campaign, fac: String) -> void:
-	API.JSM.rnd_seed(1144)
+	c.rng.rnd_seed(1144)
 	c.META = c.defaultMeta()
 	for id in c.ADMIRALS:
 		if c.ADMIRALS[id]["fac"] == fac:

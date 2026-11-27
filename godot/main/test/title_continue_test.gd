@@ -27,7 +27,7 @@ func _run() -> void:
 		return
 	c.persist_on = false
 	c.fixed_clock = true
-	preload("res://rules/jsm.gd").rnd_seed(1124)
+	c.seed_rng(1124)
 	c.META["renown"] = 22
 	var profile := c.save_text()
 	root.size = Vector2i(1920, 1080)

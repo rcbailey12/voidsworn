@@ -1,5 +1,5 @@
 {
- "about": "R416 (issue 1741) Wounds V2 sign-off rows: the six reference ships at one heavy hit, 50% hull, 50% hull with lost capabilities (w2e_: weapon slot 0 off beside a healthy slot 1, engine hit, shield generator out; Milestone 3 on the combined head), 20% hull and death, at camera 170 and camera 26. Run once with VS_WOUNDS_V2=0 (before) and once with VS_WOUNDS_V2=1 (after) on the same commit. Target 30 units toward -z so the hits face the camera. The w2a to w2e pairs keep one fixed camera in both runs. w2w_ rows are wound details only: focus \"wound\" turns camera 26 to face the biggest open cutout (camera 170 keeps the battle angle), so their pose differs between runs and the log records it; judge them on the after run alone. w2d adds a 6 s window: the wreck interiors settle into their wreck look over 4 s.",
+ "about": "R416 (issue 1741) Wounds V2 sign-off rows: the six reference ships at one heavy hit, 50% hull, 50% hull with lost capabilities (w2e_: weapon slot 0 off beside a healthy slot 1, engine hit, shield generator out; Milestone 3 on the combined head), 20% hull and death, at camera 170 and camera 26. Run once with VS_WOUNDS_V2=0 (before) and once with VS_WOUNDS_V2=1 (after) on the same commit. Target 30 units toward -z so the hits face the camera. The w2a to w2e pairs keep one fixed camera in both runs. w2w_ rows are wound details only: focus \"wound\" turns camera 26 to face the biggest open cutout (camera 170 keeps the battle angle), so their pose differs between runs and the log records it; judge them on the after run alone. w2d adds a 6 s window: the wreck interiors settle into their wreck look over 4 s. Issue 2175 uses these same six hulls with V2 on in both runs. At camera 26, check the pearl wall steps in w2w and w2c I15_11 and the obsidian and violet lip in w2b and w2c D21_23.",
  "cameras": [
   170,
   26
@@ -35,6 +35,7 @@
     -30
    ],
    "id": "w2a_V16_37",
+   "expect_code": "V16_37",
    "label": "V16_37 Sunward Vigil: one heavy hit on a healthy hull",
    "do": "hold",
    "pre": [
@@ -68,6 +69,7 @@
     -30
    ],
    "id": "w2b_V16_37",
+   "expect_code": "V16_37",
    "label": "V16_37 Sunward Vigil: three hits, hull at 50%",
    "do": "hold",
    "pre": [
@@ -136,6 +138,7 @@
     -30
    ],
    "id": "w2w_V16_37",
+   "expect_code": "V16_37",
    "label": "V16_37 Sunward Vigil: three hits, hull at 50% (wound detail: camera 26 aimed at the biggest open cutout; not a before/after pair, the pose differs between runs)",
    "do": "hold",
    "pre": [
@@ -204,6 +207,7 @@
     -30
    ],
    "id": "w2e_V16_37",
+   "expect_code": "V16_37",
    "label": "V16_37 Sunward Vigil: 50% hull with lost capabilities: weapon slot 0 off (slot 1 healthy beside it), engine hit, shield generator out",
    "do": "hold",
    "pre": [
@@ -288,6 +292,7 @@
     -30
    ],
    "id": "w2c_V16_37",
+   "expect_code": "V16_37",
    "label": "V16_37 Sunward Vigil: three hits, hull at 20%",
    "do": "hold",
    "pre": [
@@ -356,6 +361,7 @@
     -30
    ],
    "id": "w2d_V16_37",
+   "expect_code": "V16_37",
    "label": "V16_37 Sunward Vigil: dies from 20%, the wreck's inside",
    "do": "death",
    "cause": "blast",
@@ -435,6 +441,7 @@
     -30
    ],
    "id": "w2a_H10_23",
+   "expect_code": "H10_23",
    "label": "H10_23 Directorate Dominion: one heavy hit on a healthy hull",
    "do": "hold",
    "pre": [
@@ -468,6 +475,7 @@
     -30
    ],
    "id": "w2b_H10_23",
+   "expect_code": "H10_23",
    "label": "H10_23 Directorate Dominion: three hits, hull at 50%",
    "do": "hold",
    "pre": [
@@ -536,6 +544,7 @@
     -30
    ],
    "id": "w2w_H10_23",
+   "expect_code": "H10_23",
    "label": "H10_23 Directorate Dominion: three hits, hull at 50% (wound detail: camera 26 aimed at the biggest open cutout; not a before/after pair, the pose differs between runs)",
    "do": "hold",
    "pre": [
@@ -604,6 +613,7 @@
     -30
    ],
    "id": "w2e_H10_23",
+   "expect_code": "H10_23",
    "label": "H10_23 Directorate Dominion: 50% hull with lost capabilities: weapon slot 0 off (slot 1 healthy beside it), engine hit, shield generator out",
    "do": "hold",
    "pre": [
@@ -688,6 +698,7 @@
     -30
    ],
    "id": "w2c_H10_23",
+   "expect_code": "H10_23",
    "label": "H10_23 Directorate Dominion: three hits, hull at 20%",
    "do": "hold",
    "pre": [
@@ -756,6 +767,7 @@
     -30
    ],
    "id": "w2d_H10_23",
+   "expect_code": "H10_23",
    "label": "H10_23 Directorate Dominion: dies from 20%, the wreck's inside",
    "do": "death",
    "cause": "blast",
@@ -835,6 +847,7 @@
     -30
    ],
    "id": "w2a_C15s_23",
+   "expect_code": "C15s_23",
    "label": "C15s_23 Hullbreaker Wrecker: one heavy hit on a healthy hull",
    "do": "hold",
    "pre": [
@@ -868,6 +881,7 @@
     -30
    ],
    "id": "w2b_C15s_23",
+   "expect_code": "C15s_23",
    "label": "C15s_23 Hullbreaker Wrecker: three hits, hull at 50%",
    "do": "hold",
    "pre": [
@@ -936,6 +950,7 @@
     -30
    ],
    "id": "w2w_C15s_23",
+   "expect_code": "C15s_23",
    "label": "C15s_23 Hullbreaker Wrecker: three hits, hull at 50% (wound detail: camera 26 aimed at the biggest open cutout; not a before/after pair, the pose differs between runs)",
    "do": "hold",
    "pre": [
@@ -1004,6 +1019,7 @@
     -30
    ],
    "id": "w2e_C15s_23",
+   "expect_code": "C15s_23",
    "label": "C15s_23 Hullbreaker Wrecker: 50% hull with lost capabilities: weapon slot 0 off (slot 1 healthy beside it), engine hit, shield generator out",
    "do": "hold",
    "pre": [
@@ -1088,6 +1104,7 @@
     -30
    ],
    "id": "w2c_C15s_23",
+   "expect_code": "C15s_23",
    "label": "C15s_23 Hullbreaker Wrecker: three hits, hull at 20%",
    "do": "hold",
    "pre": [
@@ -1156,6 +1173,7 @@
     -30
    ],
    "id": "w2d_C15s_23",
+   "expect_code": "C15s_23",
    "label": "C15s_23 Hullbreaker Wrecker: dies from 20%, the wreck's inside",
    "do": "death",
    "cause": "blast",
@@ -1235,6 +1253,7 @@
     -30
    ],
    "id": "w2a_B21_11",
+   "expect_code": "B21_11",
    "label": "B21_11 Chorus Bladeback: one heavy hit on a healthy hull",
    "do": "hold",
    "pre": [
@@ -1268,6 +1287,7 @@
     -30
    ],
    "id": "w2b_B21_11",
+   "expect_code": "B21_11",
    "label": "B21_11 Chorus Bladeback: three hits, hull at 50%",
    "do": "hold",
    "pre": [
@@ -1336,6 +1356,7 @@
     -30
    ],
    "id": "w2w_B21_11",
+   "expect_code": "B21_11",
    "label": "B21_11 Chorus Bladeback: three hits, hull at 50% (wound detail: camera 26 aimed at the biggest open cutout; not a before/after pair, the pose differs between runs)",
    "do": "hold",
    "pre": [
@@ -1404,6 +1425,7 @@
     -30
    ],
    "id": "w2e_B21_11",
+   "expect_code": "B21_11",
    "label": "B21_11 Chorus Bladeback: 50% hull with lost capabilities: weapon slot 0 off (slot 1 healthy beside it), engine hit, shield generator out",
    "do": "hold",
    "pre": [
@@ -1488,6 +1510,7 @@
     -30
    ],
    "id": "w2c_B21_11",
+   "expect_code": "B21_11",
    "label": "B21_11 Chorus Bladeback: three hits, hull at 20%",
    "do": "hold",
    "pre": [
@@ -1556,6 +1579,7 @@
     -30
    ],
    "id": "w2d_B21_11",
+   "expect_code": "B21_11",
    "label": "B21_11 Chorus Bladeback: dies from 20%, the wreck's inside",
    "do": "death",
    "cause": "blast",
@@ -1635,6 +1659,7 @@
     -30
    ],
    "id": "w2a_I15_11",
+   "expect_code": "I15_11",
    "label": "I15_11 Glasswright Prism: one heavy hit on a healthy hull",
    "do": "hold",
    "pre": [
@@ -1668,6 +1693,7 @@
     -30
    ],
    "id": "w2b_I15_11",
+   "expect_code": "I15_11",
    "label": "I15_11 Glasswright Prism: three hits, hull at 50%",
    "do": "hold",
    "pre": [
@@ -1736,6 +1762,7 @@
     -30
    ],
    "id": "w2w_I15_11",
+   "expect_code": "I15_11",
    "label": "I15_11 Glasswright Prism: three hits, hull at 50% (wound detail: camera 26 aimed at the biggest open cutout; not a before/after pair, the pose differs between runs)",
    "do": "hold",
    "pre": [
@@ -1804,6 +1831,7 @@
     -30
    ],
    "id": "w2e_I15_11",
+   "expect_code": "I15_11",
    "label": "I15_11 Glasswright Prism: 50% hull with lost capabilities: weapon slot 0 off (slot 1 healthy beside it), engine hit, shield generator out",
    "do": "hold",
    "pre": [
@@ -1888,6 +1916,7 @@
     -30
    ],
    "id": "w2c_I15_11",
+   "expect_code": "I15_11",
    "label": "I15_11 Glasswright Prism: three hits, hull at 20%",
    "do": "hold",
    "pre": [
@@ -1956,6 +1985,7 @@
     -30
    ],
    "id": "w2d_I15_11",
+   "expect_code": "I15_11",
    "label": "I15_11 Glasswright Prism: dies from 20%, the wreck's inside",
    "do": "death",
    "cause": "blast",
@@ -2035,6 +2065,7 @@
     -30
    ],
    "id": "w2a_D21_23",
+   "expect_code": "D21_23",
    "label": "D21_23 Eclipse Zenith: one heavy hit on a healthy hull",
    "do": "hold",
    "pre": [
@@ -2068,6 +2099,7 @@
     -30
    ],
    "id": "w2b_D21_23",
+   "expect_code": "D21_23",
    "label": "D21_23 Eclipse Zenith: three hits, hull at 50%",
    "do": "hold",
    "pre": [
@@ -2136,6 +2168,7 @@
     -30
    ],
    "id": "w2w_D21_23",
+   "expect_code": "D21_23",
    "label": "D21_23 Eclipse Zenith: three hits, hull at 50% (wound detail: camera 26 aimed at the biggest open cutout; not a before/after pair, the pose differs between runs)",
    "do": "hold",
    "pre": [
@@ -2204,6 +2237,7 @@
     -30
    ],
    "id": "w2e_D21_23",
+   "expect_code": "D21_23",
    "label": "D21_23 Eclipse Zenith: 50% hull with lost capabilities: weapon slot 0 off (slot 1 healthy beside it), engine hit, shield generator out",
    "do": "hold",
    "pre": [
@@ -2288,6 +2322,7 @@
     -30
    ],
    "id": "w2c_D21_23",
+   "expect_code": "D21_23",
    "label": "D21_23 Eclipse Zenith: three hits, hull at 20%",
    "do": "hold",
    "pre": [
@@ -2356,6 +2391,7 @@
     -30
    ],
    "id": "w2d_D21_23",
+   "expect_code": "D21_23",
    "label": "D21_23 Eclipse Zenith: dies from 20%, the wreck's inside",
    "do": "death",
    "cause": "blast",

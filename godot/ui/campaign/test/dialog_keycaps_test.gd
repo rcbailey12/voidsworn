@@ -102,7 +102,7 @@ func _run() -> void:
 	c.fixed_clock = true
 	c.playtest_default = true
 	c.persist_on = false
-	JSM.rnd_seed(1075)
+	c.rng.rnd_seed(1075)
 	c.newRun("vex", "voidsworn")
 	c.RUN["fleet"] = []
 	for row in [["penitent", "Oath"], ["harrow", "Spark"], ["reliquary", "Hearth"]]:

@@ -340,18 +340,41 @@ function Update-RunTree($Tree) {
     }
   } while ($added)
 }
-function Test-TreeCpuProgress($Tree, $CpuTicks) {
-  $advanced = $false
+function Test-TreeCpuProgress($Tree, $CpuTicks, [long]$MinDeltaTicks = 0) {
+  $delta = [long]0
   foreach ($child in $Tree.Values) {
     try {
       # Keep per-process totals. A child exiting must not hide another child's work by lowering a tree-wide sum.
       $ticks = $child.TotalProcessorTime.Ticks
-      if ($ticks -gt [long]$CpuTicks[$child.Id]) { $advanced = $true }
+      $prev = if ($CpuTicks.ContainsKey($child.Id)) { [long]$CpuTicks[$child.Id] } else { [long]0 }
+      if ($ticks -gt $prev) { $delta += ($ticks - $prev) }
       $CpuTicks[$child.Id] = $ticks
     } catch [InvalidOperationException] { }
       catch [ComponentModel.Win32Exception] { }
   }
-  return $advanced
+  if ($MinDeltaTicks -gt 0) { return $delta -ge $MinDeltaTicks }
+  return $delta -gt 0
+}
+function Test-AgentCompleted($CompleteFile, $Logs, [DateTime]$LaunchUtc) {
+  if (-not $CompleteFile -or -not (Test-Path -LiteralPath $CompleteFile -PathType Leaf)) { return $false }
+  $cf = Get-Item -LiteralPath $CompleteFile -ErrorAction SilentlyContinue
+  if (-not $cf -or $cf.Length -le 0 -or $cf.LastWriteTimeUtc -lt $LaunchUtc.AddSeconds(-1)) { return $false }
+  $primary = @($Logs | Where-Object { $_ } | Select-Object -First 1)
+  if (-not $primary.Count -or -not (Test-Path -LiteralPath $primary[0] -PathType Leaf)) { return $false }
+  $tail = @(Get-Content -LiteralPath $primary[0] -Tail 40 -ErrorAction SilentlyContinue)
+  if (-not $tail.Count) { return $false }
+  $tokenLine = -1
+  for ($i = $tail.Count - 1; $i -ge 0; $i--) {
+    if ($tail[$i].Trim() -ceq 'tokens used' -and ($i + 1) -lt $tail.Count -and $tail[$i + 1].Trim() -cmatch '^[0-9][0-9,]*$') {
+      $tokenLine = $i
+      break
+    }
+  }
+  if ($tokenLine -lt 0) { return $false }
+  for ($j = $tokenLine + 1; $j -lt $tail.Count; $j++) {
+    if ($tail[$j].Trim() -ceq 'exec') { return $false }
+  }
+  return $true
 }
 function Write-KillLog($Log, $Line) {
   Write-Output "run_timeout: $Line"
@@ -631,6 +654,9 @@ $stall = 30.0
 if ($watch -and $env:STALL_MIN) { $stall = [double]::Parse($env:STALL_MIN, [Globalization.CultureInfo]::InvariantCulture) }
 if ($Seconds -le 0 -or $stall -le 0 -or [double]::IsNaN($stall) -or [double]::IsInfinity($stall)) { throw 'ceiling and STALL_MIN must be positive' }
 $logs = @($env:TMO_LOG, $env:TMO_ERR_LOG) | Where-Object { $_ }
+$completeFile = if ($watch) { [string]$env:TMO_COMPLETE_FILE } else { '' }
+$exitGrace = 30.0
+if ($watch -and $env:TMO_EXIT_GRACE_S) { $exitGrace = [double]::Parse($env:TMO_EXIT_GRACE_S, [Globalization.CultureInfo]::InvariantCulture) }
 if ($watch) {
   $before = Get-RunProgress $watchRepo $logs
   $base = $before.Head
@@ -744,6 +770,7 @@ $env:TMO_IDLE_S = ''; $env:TMO_STEP = ''; $env:TMO_STEP_OUT = ''
 $env:TMO_FATAL_PATTERN = ''
 # Child commands may use tmo.bat too. Their own timeout must never overwrite this agent's resume note.
 $env:TMO_REPO = ''; $env:TMO_OUT = ''; $env:TMO_LOG = ''; $env:TMO_ERR_LOG = ''
+$env:TMO_COMPLETE_FILE = ''; $env:TMO_EXIT_GRACE_S = ''
 if (-not $watch) {
   $spool = Join-Path (Get-ScratchParent) ("runner-step-" + [Guid]::NewGuid().ToString('N'))
   $outPath = Join-Path $spool 'stdout.log'
@@ -870,6 +897,7 @@ if (-not $watch) {
 }
 # Outer agents keep their original separate logs and repo/commit progress checks.
 Initialize-RunTree
+$launchUtc = [DateTime]::UtcNow
 $timer = [Diagnostics.Stopwatch]::StartNew()
 $lastProgress = 0.0
 $scanEvery = 60.0
@@ -894,17 +922,47 @@ $completed = $false
 try {
 $poll = 5000
 if ($env:PC_RUNNER_TEST -eq '1' -and $env:PC_TEST_POLL_MS) { $poll = [int]$env:PC_TEST_POLL_MS }
+# Require active CPU work (10% of one core over a poll) so idle helper timers cannot mask a stalled agent.
+$cpuMinTicks = [long]([Math]::Max(1, $poll) * 1000)
+if ($env:PC_RUNNER_TEST -eq '1' -and $env:PC_TEST_CPU_MIN_TICKS) { $cpuMinTicks = [long]$env:PC_TEST_CPU_MIN_TICKS }
+$completedQuietSince = $null
+$completedSnapshot = ''
 while ($true) {
   Update-RunTree $tree
   $remaining = [Math]::Max(1, [Math]::Min($poll, ($Seconds - $timer.Elapsed.TotalSeconds) * 1000))
   if ($p.WaitForExit([int]$remaining)) { $p.WaitForExit(); $completed = $true; exit $p.ExitCode }
-  if (Test-TreeCpuProgress $tree $cpuTicks) { $lastProgress = $timer.Elapsed.TotalSeconds }
+  if (Test-TreeCpuProgress $tree $cpuTicks $cpuMinTicks) { $lastProgress = $timer.Elapsed.TotalSeconds }
   # Scan the checkout once a minute to avoid walking a large repo on every poll.
   if ($timer.Elapsed.TotalSeconds -ge $nextScan) {
     $after = Get-RunProgress $watchRepo $logs
     if (Test-RunProgress $before $after) { $lastProgress = $timer.Elapsed.TotalSeconds }
     $before = $after
     $nextScan = $timer.Elapsed.TotalSeconds + $scanEvery
+  }
+  if ($completeFile -and (Test-AgentCompleted $completeFile $logs $launchUtc)) {
+    $cfItem = Get-Item -LiteralPath $completeFile -ErrorAction SilentlyContinue
+    $lgItem = Get-Item -LiteralPath $logs[0] -ErrorAction SilentlyContinue
+    $snap = "$($cfItem.Length):$($cfItem.LastWriteTimeUtc.Ticks):$($lgItem.Length):$($lgItem.LastWriteTimeUtc.Ticks)"
+    if ($snap -ne $completedSnapshot) {
+      $completedSnapshot = $snap
+      $completedQuietSince = $timer.Elapsed.TotalSeconds
+    } elseif (($timer.Elapsed.TotalSeconds - $completedQuietSince) -ge $exitGrace) {
+      $after = Get-RunProgress $watchRepo $logs
+      if (Test-RunProgress $before $after) {
+        $before = $after
+        $lastProgress = $timer.Elapsed.TotalSeconds
+        $completedQuietSince = $timer.Elapsed.TotalSeconds
+      } else {
+        $quietSec = [Math]::Round($timer.Elapsed.TotalSeconds - $completedQuietSince, 1)
+        Stop-RunTree $p $tree $log
+        Write-KillLog $log "COMPLETED_REAPED after $quietSec s quiet linger ($completeFile + tokens used): verified dead tree of PID $($p.Id)"
+        $completed = $true
+        exit 0
+      }
+    }
+  } else {
+    $completedQuietSince = $null
+    $completedSnapshot = ''
   }
   $reason = Get-StopReason $timer.Elapsed.TotalSeconds ($timer.Elapsed.TotalSeconds - $lastProgress) $Seconds $stall
   if ($p.HasExited) { $p.WaitForExit(); $completed = $true; exit $p.ExitCode }

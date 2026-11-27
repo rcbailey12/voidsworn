@@ -73,7 +73,7 @@ func _run() -> void:
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED); DisplayServer.window_set_size(Vector2i(int(wh[0]), int(wh[1])))
 			await _frames(2)
 	print("window ", DisplayServer.window_get_size(), " viewport ", root.get_visible_rect().size, " k ", ui.k)
-	BattleAPI.JSM.rnd_seed(4242)
+	C.rng.rnd_seed(4242)
 	C.playtest_default = false
 	C.META = C.migrateMeta(C.defaultMeta())
 	C.META["opts"]["playtestAll"] = false   # the real game after the playtest phase: renown buys things
