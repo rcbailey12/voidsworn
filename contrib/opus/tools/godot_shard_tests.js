@@ -89,5 +89,17 @@ est.forEach((t, i) => assert.ok(t <= 1.25 * total / wfCount, 'shard ' + (i + 1) 
   }
 });
 
+// Issue 2174: a Codex sandbox set RUNNER_TEMP to a doubled-backslash USERPROFILE style path and Git's mkdir was denied,
+// so plan.txt was never written and the shard skipped its Godot checks. The step now folds the slashes with the Windows
+// path APIs, so the plan must still be written under the same temp folder. Windows only: on Linux the path is unchanged.
+if (windows) {
+  const mangled = tmp.replace(/\\/g, '\\\\').replace(/\\\\/, '/');
+  const mr = plan('1/' + wfCount, { RUNNER_TEMP: mangled });
+  assert.equal(mr.status, 0, 'a USERPROFILE style RUNNER_TEMP must still plan:\n' + mr.out);
+  assert.equal(mr.out.split(/\r?\n/).filter(l => /^[0-9]+\|headless\|/.test(l)).length, headless.length,
+    'a USERPROFILE style RUNNER_TEMP printed a plan that is not the whole list');
+  assert.ok(fs.existsSync(path.join(tmp, 'godot_checks', 'plan.txt')), 'plan.txt was not written under the normalised temp folder');
+}
+
 fs.rmSync(tmp, { recursive: true, force: true });
 console.log('PASS godot_shard_tests: ' + headless.length + ' headless checks, each in exactly one of 1, 2, ' + wfCount + ' and 5 shards; ' + wfCount + ' shards planned at ' + est.join(', ') + ' s');
