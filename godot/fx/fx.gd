@@ -30,7 +30,7 @@ enum SpriteKind {
 	SMOKE = 3,
 	ENGINE_CORE = 4,
 	SQUIB = 5,
-	# Keep legacy gaps 6, 9 and 10 free.
+	# No shipped sprite kind uses 6, 9 or 10.
 	VENT_GAS = 7,
 	SOOT = 8,
 	SPUTTER_CORE = 11,
@@ -50,7 +50,7 @@ enum SpriteKind {
 	DEATH_FIRE = 25,
 	PLASMA_FIRE = 26, # Existing faction-coloured fire, including Eclipse damage.
 	HIT_GAS = 27,
-	# 28 is unused on main.
+	# 28 is unused on main. The old palette ember reservation did not ship.
 	BIO_CONTACT_GLOB = 29, # Reserved for PR 2021 (#1693).
 	BOLT_PLASMA = 30, # PR 2133
 	BOLT_BIO = 31,
@@ -64,17 +64,18 @@ enum SpriteKind {
 	TICK_DROPLET = 39,
 	VENT_JET = 40, # Directional hull rupture (PR 2084).
 	NOVA_LEGACY = 41, # Legacy Nova Cannon shell (PR 2069).
+	# No shipped sprite kind or reservation uses 42 through 44.
 }
 
 enum StreakKind {
 	SHELL = 0,
-	SPARK = 1,
+	SPARK = 1, # Legacy emitter ID, routed to SPARK_KIND.
 	# Keep legacy gap 2 free.
 	FLAME_TONGUE = 3,
 	LAS_DART = 4,
 	NULL_SLUG = 5, # Own pool and shader.
 	BIO_DROPLET = 6,
-	MOLTEN_DRIP = 7,
+	MOLTEN_DRIP = 7, # Legacy emitter ID, routed to SPARK_KIND.
 	SPARK_KIND = 8, # Shared spark pool (PR 2049), also used by hull hits.
 	BOLT_SHELL = 9, # PR 2133
 	BOLT_ENERGY = 10,

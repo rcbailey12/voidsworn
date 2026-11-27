@@ -27,6 +27,7 @@ const EMITTERS := {
 	"stk": ["STREAK", 7], "flight_streak": ["STREAK", 7], "ring": ["RING", 8],
 	"rib": ["RIBBON", 9], "dst": ["DISTORT", 5],
 }
+const BREACH_EMITTERS := {"hole": 7, "crater": 5, "dent": 5, "cluster": 7, "surface": 4, "place_hole": 6}
 const OPERAND := "(-?\\d+|[A-Za-z_]\\w*)"
 const OPERATOR := "\\s*(==|!=|<=|>=|<|>)\\s*"
 
@@ -45,8 +46,10 @@ func _initialize() -> void:
 	problems.append_array(_named_kind_problems(_read_fx_scripts()))
 	_check_mirrors()
 	var k := "\\b(?:k|kind)\\b"
-	_check_shader("SPRITE", SH.SPRITE, k)
-	_check_shader("STREAK", SH.STREAK, k)
+	# The bolt and muzzle helpers receive the same kind as a parameter named profile.
+	var weapon_kind := "\\b(?:k|kind|profile)\\b"
+	_check_shader("SPRITE", SH.SPRITE, weapon_kind)
+	_check_shader("STREAK", SH.STREAK, weapon_kind)
 	_check_shader("RING", SH.RING, "\\b(?:k|rk|kind)\\b")
 	_check_shader("RIBBON", SH.RIBBON, k)
 	_check_shader("DISTORT", SH.DISTORT, k)
@@ -94,11 +97,21 @@ func _named_kind_problems(scripts: Dictionary) -> Array[String]:
 				continue
 			var location := "%s:%s" % [file, name]
 			var alias: Array = aliases.get(name, LEGACY_ALIASES.get(location, []))
-			var meaning: Array = alias if not alias.is_empty() else _named_meaning(name, uses.get(location, ""))
+			var used_families: Array = uses.get(location, [])
+			var meaning: Array = alias if not alias.is_empty() else _named_meaning(name, "")
+			if meaning.is_empty() and not used_families.is_empty():
+				meaning = _named_meaning(name, used_families[0])
+			# Unprefixed integers in the shared shader source are sprite allocations unless
+			# a registry name, family prefix or emitter identifies another family.
+			if meaning.is_empty() and file == "fx_shaders.gd":
+				meaning = ["SPRITE", name]
 			if meaning.is_empty():
 				continue
 			var family: String = meaning[0]
 			var kind: String = meaning[1]
+			for used_family: String in used_families:
+				if used_family != family:
+					errors.append("%s is a %s kind used in a %s emitter" % [location, family, used_family])
 			var id: int = value
 			var expected: Variant = FAMILIES[family].get(kind)
 			if id != expected:
@@ -119,14 +132,12 @@ func _named_meaning(name: String, used_family: String) -> Array:
 	if name.begins_with("BOLT_"):
 		var bolt_family := "STREAK" if FX.StreakKind.has(name) else "SPRITE"
 		return [used_family if not used_family.is_empty() else bolt_family, name]
+	if name.begins_with("MUZZLE_") or name.begins_with("TICK_"):
+		return ["SPRITE", name]
 	for prefix: String in PREFIXES:
 		if name.begins_with(prefix):
 			var family: String = PREFIXES[prefix]
-			if not used_family.is_empty() or FAMILIES[family].has(name.trim_prefix(prefix)):
-				return [used_family if not used_family.is_empty() else family, name.trim_prefix(prefix)]
-			# RING_* radii and other non-kind settings are not allocations.
-			if family in ["SPRITE", "STREAK", "RIBBON", "BREACH"]:
-				return [family, name.trim_prefix(prefix)]
+			return [family, name.trim_prefix(prefix)]
 	if not used_family.is_empty():
 		return [used_family, name]
 	var matching: Array[String] = []
@@ -138,28 +149,46 @@ func _named_meaning(name: String, used_family: String) -> Array:
 
 func _emitter_uses(scripts: Dictionary) -> Dictionary:
 	# Also find a plain name like VENT_JET or NEW_GLOB passed in the kind slot.
-	var call := RegEx.create_from_string("\\b(" + "|".join(EMITTERS.keys()) + ")\\s*\\(")
+	var call := RegEx.create_from_string("\\b(?:(\\w+)\\.)?(" + "|".join(EMITTERS.keys())
+		+ "|" + "|".join(BREACH_EMITTERS.keys()) + ")\\s*\\(")
 	var symbol := RegEx.create_from_string("^\\s*(?:(\\w+)\\.)?([A-Z][A-Z0-9_]*)\\s*$")
+	var choice := RegEx.create_from_string("(?s)^(.+?)\\s+if\\s+.+\\s+else\\s+(.+)$")
+	var ignored := RegEx.create_from_string("(?s:\"\"\".*?\"\"\")|\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*'|#[^\\n]*")
 	var uses := {}
 	for file: String in scripts:
 		var code: String = scripts[file]["source"]
-		code = RegEx.create_from_string("(?s:\"\"\".*?\"\"\")|(?m:#[^\\n]*)").sub(code, "", true)
+		code = ignored.sub(code, "\"\"", true)
 		for hit in call.search_all(code):
-			var emitter: Array = EMITTERS[hit.get_string(1)]
-			var name := symbol.search(_call_arg(code, hit.get_end(), emitter[1]))
-			if not name:
-				continue
-			var target := file
-			if not name.get_string(1).is_empty():
-				var receiver: Variant = scripts[file]["constants"].get(name.get_string(1))
-				if receiver is Script and receiver.resource_path.get_base_dir() == "res://fx":
-					target = receiver.resource_path.get_file()
-				elif name.get_string(1) in ["fx", "self"]:
-					target = "fx.gd" if name.get_string(1) == "fx" else file
-				else:
+			var method := hit.get_string(2)
+			var emitter: Array = EMITTERS.get(method, [])
+			if emitter.is_empty():
+				if _constant_file(file, hit.get_string(1), scripts) != "fx_breach.gd":
 					continue
-			uses["%s:%s" % [target, name.get_string(2)]] = emitter[0]
+				emitter = ["BREACH", BREACH_EMITTERS[method]]
+			var argument := _call_arg(code, hit.get_end(), emitter[1])
+			var branches := choice.search(argument)
+			for expression: String in [branches.get_string(1), branches.get_string(2)] if branches else [argument]:
+				var name := symbol.search(expression)
+				if not name:
+					continue
+				var target := _constant_file(file, name.get_string(1), scripts)
+				if not target.is_empty():
+					var location := "%s:%s" % [target, name.get_string(2)]
+					var families: Array = uses.get_or_add(location, [])
+					if emitter[0] not in families:
+						families.append(emitter[0])
 	return uses
+
+
+func _constant_file(file: String, qualifier: String, scripts: Dictionary) -> String:
+	if qualifier in ["", "self"]:
+		return file
+	if qualifier == "fx":
+		return "fx.gd"
+	var receiver: Variant = scripts[file]["constants"].get(qualifier)
+	if receiver is Script and receiver.resource_path.get_base_dir() == "res://fx":
+		return receiver.resource_path.get_file()
+	return ""
 
 
 func _call_arg(code: String, start: int, slot: int) -> String:
@@ -203,16 +232,19 @@ func _check_shader(label: String, source: String, selector: String, family := ""
 	problems.append_array(_shader_problems(label, source, selector, family if not family.is_empty() else label))
 
 
-func _shader_problems(label: String, source: String, selector: String, family: String) -> Array[String]:
+func _shader_problems(label: String, source: String, selector: String, family: String, kinds: Dictionary = {}) -> Array[String]:
 	# Skip the common math helpers, which have their own unrelated loop index k.
 	var comments := RegEx.create_from_string("(?s:/\\*.*?\\*/)|//[^\\n]*")
 	var code := comments.sub(source.replace(SH.COMMON, ""), "", true)
-	var kinds: Dictionary = FAMILIES[family]
+	if kinds.is_empty():
+		kinds = FAMILIES[family]
 	var constants := {}
 	var errors: Array[String] = []
 	var declaration := RegEx.create_from_string("(?:\\bconst\\s+int\\s+(\\w+)\\s*=\\s*|#define\\s+(\\w+)\\s+)(-?\\d+)\\b(?!\\.)")
 	for entry in declaration.search_all(code):
 		var name := entry.get_string(1) if entry.get_string(1) != "" else entry.get_string(2)
+		if constants.has(name):
+			errors.append("%s shader declares %s more than once" % [label, name])
 		constants[name] = entry.get_string(3).to_int()
 
 	var right := RegEx.create_from_string(selector + OPERATOR + OPERAND + "(?![\\w.])")
@@ -265,8 +297,13 @@ func _dispatch_problems(label: String, code: String, kinds: Dictionary, constant
 				scope["chain"] = {}
 			var predicate := condition
 			if rift:
-				predicate = predicate.replace("is_rift_ring(k)", "(" + rift.get_string(1) + ")")
+				for selector: String in ["k", "rk"]:
+					predicate = predicate.replace("is_rift_ring(%s)" % selector,
+						"(" + rift.get_string(1).replace("k ", selector + " ") + ")")
 			for id: int in _arm_ids(predicate, kinds, constants, right, left):
+				if id not in kinds.values():
+					errors.append("%s shader dispatch arm (%s) selects unregistered ID %d" % [label, condition.strip_edges(), id])
+					continue
 				var previous: String = scope["chain"].get(id, "")
 				# Sibling top-level fragment arms compete even in separate if statements.
 				# Vertex and nested passes can adjust separate properties of one kind (e.g. MARK).
@@ -284,6 +321,7 @@ func _arm_ids(condition: String, kinds: Dictionary, constants: Dictionary, right
 	# A dispatch arm uses only the kind, with equality, alternatives, or a bounded range.
 	# Mixed guards, nested refinements and other passes are not competing owners.
 	var ids: Array[int] = []
+	var boundaries: Array[int] = []
 	var reverse := {"==": "==", "!=": "!=", "<": ">", "<=": ">=", ">": "<", ">=": "<="}
 	var replacements := {}
 	var lower := false
@@ -293,8 +331,10 @@ func _arm_ids(condition: String, kinds: Dictionary, constants: Dictionary, right
 		for hit: RegExMatch in direction[0].search_all(condition):
 			var id: Variant = _resolve_id(hit.get_string(direction[1]), constants)
 			var op := hit.get_string(direction[2])
-			if id == null or op == "!=":
+			# The comparison pass reports missing bounds. Only enumerate ranges with known bounds.
+			if id not in kinds.values() or op == "!=":
 				return ids
+			boundaries.append(id)
 			if direction[1] == 1:
 				op = reverse[op]
 			lower = lower or op.begins_with(">")
@@ -316,8 +356,12 @@ func _arm_ids(condition: String, kinds: Dictionary, constants: Dictionary, right
 	var expression := Expression.new()
 	if expression.parse(normalized, PackedStringArray(["selected"])) != OK:
 		return ids
-	for id: int in kinds.values():
-		if expression.execute([id], null, false, true) == true and id not in ids:
+	var lo: int = boundaries.min()
+	var hi: int = boundaries.max()
+	if expression.execute([lo - 1], null, false, true) == true or expression.execute([hi + 1], null, false, true) == true:
+		return ids
+	for id in range(lo, hi + 1):
+		if expression.execute([id], null, false, true) == true:
 			ids.append(id)
 	return ids
 
@@ -336,14 +380,20 @@ func _check_fixtures() -> void:
 		problems.append("Fixture allowed legacy VENT_JET and SPR_NOVA_LEGACY to claim one ID")
 	named.erase("fx_fixture.gd")
 	named["fx_fixture.gd"] = {
-		"source": "const NEW_GLOB := 40\nfunc emit(fx):\n\tfx.spr(p, t, life, col, i, s0, s1, NEW_GLOB)",
+		"source": "const NEW_GLOB := 40\nfunc emit(fx):\n\tfx.spr(p, t, life, col, i, s0, s1, NEW_GLOB if wet else 15)",
 		"constants": {"NEW_GLOB": FX.SpriteKind.VENT_JET},
 	}
 	errors = _named_kind_problems(named)
-	if errors.is_empty() or not errors[0].contains("NEW_GLOB"):
+	if not errors.any(func(error: String) -> bool: return error.contains("claimed by both") and error.contains("NEW_GLOB")):
 		problems.append("Fixture missed an unprefixed constant in the emitter's kind slot")
+	named["fx_fixture.gd"] = {
+		"source": "const JET := FX.SpriteKind.VENT_JET\nfunc emit(fx):\n\tfx.spr(p, t, life, col, i, s0, s1, JET)",
+		"constants": {"JET": FX.SpriteKind.VENT_JET},
+	}
+	if not _named_kind_problems(named).is_empty():
+		problems.append("Fixture rejected a direct alias of the registered kind")
 
-	var k := "\\b(?:k|kind)\\b"
+	var k := "\\b(?:k|kind|profile)\\b"
 	var kind := FX.SpriteKind.BOLT_PLASMA
 	var bomb := FX.SpriteKind.BOLT_BOMB
 	var legal := "void vertex() { if (k == %d) { shape(); } }\nvoid fragment() { if (%d == k) { plasma(); } }" % [kind, kind]
@@ -357,3 +407,16 @@ func _check_fixtures() -> void:
 		errors = _shader_problems("fixture", "void fragment() { " + pair + " }", k, "SPRITE")
 		if errors.size() != 1 or not errors[0].contains("competing dispatch arms"):
 			problems.append("Fixture did not reject competing shader arms: " + pair)
+	errors = _shader_problems("fixture", "void vertex() { " + arms[0] + " }", k, "SPRITE")
+	if errors.size() != 1 or not errors[0].contains("competing dispatch arms"):
+		problems.append("Fixture did not reject competing arms within a vertex dispatch")
+
+	# The #2148 overlap check also covered a wrong symbolic owner and a gap inside a range.
+	var wrong_owner := "const int SPR_NOVA_LEGACY = %d; void fragment() { if (k == SPR_NOVA_LEGACY) {} }" % FX.SpriteKind.VENT_JET
+	errors = _shader_problems("fixture", wrong_owner, k, "SPRITE")
+	if errors.size() != 1 or not errors[0].contains("not its registered kind"):
+		problems.append("Fixture allowed a shader symbol to take another kind's ID")
+	var gap := "void bolt_mask(int profile) { if (profile >= 0 && profile <= 2) {} }"
+	errors = _shader_problems("fixture", gap, k, "SPRITE", {"LOW": 0, "HIGH": 2})
+	if errors.size() != 1 or not errors[0].contains("selects unregistered ID 1"):
+		problems.append("Fixture missed an unregistered ID inside a dispatch range")

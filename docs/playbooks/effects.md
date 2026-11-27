@@ -83,8 +83,9 @@ intact. Use the registry name at new call sites or alias that entry directly. Ke
 step. A reservation alone does not turn on an effect.
 
 The legacy GDScript constants, rift shape lookup and BREACH `S_*` constants still serve their existing callers. The
-registry check compares them with `fx.gd` and rejects competing named emitters and shader dispatch arms. Using the same
-ID in both vertex and fragment code is fine. Run `godot --headless --path godot --script res://fx/test/fx_kind_registry_check.gd`
+registry check compares named kind constants across `godot/fx/*.gd` with `fx.gd`, including unprefixed names in emitter
+kind slots. It also rejects overlapping shader dispatch arms and unregistered IDs inside dispatch ranges. Using the
+same kind in vertex and fragment code is fine. Run `godot --headless --path godot --script res://fx/test/fx_kind_registry_check.gd`
 from the repo root. The check also runs from `godot/tools/ci/godot_checks.txt`.
 
 ## 4. The checks that prove it
