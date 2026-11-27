@@ -14,7 +14,7 @@ of this is the playable exe (that is a separate snapshot).
 
 | Ship | Class | Hull code | Stage | Approved look in game | Approved concept | Ruling | Build sheet | Job | Note |
 |---|---|---|---|---|---|---|---|---|---|
-| Warden | Frigate | `V14_23` | New-format build on main | Accepted: Ryan, Nov 20 (round 3, PR 1164; brighter ember R360) | [concept_beauty.jpg](../../docs/ship_pipeline/build_sheets/voidsworn_S9/concept_beauty.jpg) | R331 | voidsworn_S9 |  |  |
+| Warden | Frigate | `V14_23` | New-format build on main | Accepted: Ryan, Nov 20 (round 3, PR 1164; brighter ember R360) | [concept_beauty.jpg](../../docs/ship_pipeline/build_sheets/voidsworn_S9/concept_beauty.jpg) | R331 | voidsworn_S9, voidsworn_S9O |  |  |
 | Harrow | Destroyer | `V15_37` | New-format build on main | Accepted: Ryan, Nov 21 03:00 UTC (in-game look sheet of PC run 1414d, decision card; published glb e18f3f0c) | [concept_beauty.jpg](../../docs/ship_pipeline/build_sheets/voidsworn_S11/concept_beauty.jpg) | R369 | voidsworn_S11 |  | Round 2 picked Nov 20 (four small spires at 0.85); the sheet's concept_beauty.jpg is that round 2 picture (PR 1163), the same file the recipe reads. |
 | Vigil | Cruiser | `V16_37` | New-format build on main | Accepted: Ryan, Nov 20 (PR 1166) | [vigil_beauty.webp](../../contrib/muse/design/class_family_sunward_2026_11/vigil_beauty.webp) | R331 | voidsworn_S10 |  |  |
 | Bastion | Battleship | `V17_37` | Old hull, no pick yet |  | none |  |  | #1145 | Never drawn. Concept is issue 1145 run 3. |
