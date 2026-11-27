@@ -91,26 +91,25 @@ func _run() -> void:
 	# Cache really survives clearing the in-memory cache, and invalidates settings/code.
 	var image := Image.create_empty(8, 4, false, Image.FORMAT_RGBA8); image.fill(Color(0.2, 0.4, 0.6, 0.7))
 	var key := BAKE.cache_key("test", "shader-v1", {"seed": 7, "quality": "high"}, Vector2i(8, 4))
-	# Issue 80 moved disk I/O out of remember/cached and onto the bake worker.
-	# Keep this regression on that API so it can reach the damage/death checks.
-	var scratch := OS.get_environment("TEMP") if OS.has_environment("TEMP") else "/tmp"
-	OS.set_environment("VS_WORLD_CACHE", scratch.path_join("voidsworn-fb1-cache"))
-	var writer := Thread.new()
-	writer.start(BAKE._finish_image.bind(key, image))
-	while writer.is_alive(): await process_frame
-	writer.wait_to_finish()
+	# Seed the disk cache, then let the shared service load it after memory clears.
+	var override := OS.get_environment("VS_WORLD_CACHE")
+	var had_override := OS.has_environment("VS_WORLD_CACHE")
+	var scratch := OS.get_temp_dir().path_join("voidsworn-fb1-cache-%d" % OS.get_process_id())
+	OS.set_environment("VS_WORLD_CACHE", scratch)
+	check(BAKE._save(key, image, {}, {}, scratch), "persistent RGBA fixture saves")
 	BAKE._cache.clear()
-	var reader := Thread.new()
-	reader.start(BAKE._work.bind(key, {"size": Vector2i(8, 4), "compute": false}))
-	while reader.is_alive(): await process_frame
-	var loaded: Dictionary = reader.wait_to_finish()
-	var disk: Image = loaded.image
+	var disk: Image = await BAKE.service(self).bake("test", "shader-v1", {"seed": 7, "quality": "high"}, Vector2i(8, 4), 32)
+	if had_override: OS.set_environment("VS_WORLD_CACHE", override)
+	else: OS.unset_environment("VS_WORLD_CACHE")
+	for name in DirAccess.get_files_at(scratch):
+		if BAKE._bake_name(name): DirAccess.remove_absolute(scratch.path_join(name))
+	DirAccess.remove_absolute(scratch)
 	check(disk != null and disk.get_size() == Vector2i(8, 4), "persistent RGBA cache loads after memory is cleared")
 	check(BAKE.cache_key("test", "shader-v2", {"seed": 7, "quality": "high"}, Vector2i(8, 4)) != key, "cache invalidates shader changes")
 	check(BAKE.cache_key("test", "shader-v1", {"seed": 8, "quality": "high"}, Vector2i(8, 4)) != key, "cache invalidates seeds")
 	check(BAKE.cache_key("test", "shader-v1", {"quality": "high", "seed": 7}, Vector2i(8, 4)) == key, "cache settings order does not cause rebakes")
 	check(BAKE.cache_key("test", "shader-v1", {"seed": 7, "quality": "high"}, Vector2i(16, 8)) != key, "cache invalidates dimensions")
-	check(absf(disk.get_pixel(0, 0).a - image.get_pixel(0, 0).a) < 0.01, "persistent cache retains sky transmittance alpha")
+	check(disk != null and absf(disk.get_pixel(0, 0).a - image.get_pixel(0, 0).a) < 0.01, "persistent cache retains sky transmittance alpha")
 	if OS.get_environment("FB1_SHOTS") != "" and DisplayServer.get_name() != "headless":
 		for i in 480: fx.step(1.0 / 60.0)
 		await captures(s, wounded, organic, crystal, meshes)

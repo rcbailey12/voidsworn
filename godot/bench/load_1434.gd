@@ -639,15 +639,16 @@ func _drain(label: String) -> void:
 	var sw0 := Time.get_ticks_msec()
 	var sworst := 0
 	var slast := Time.get_ticks_usec()
-	while svc != null and (not svc._unsaved.is_empty() or svc._active != "" or not svc._queue.is_empty()) and Time.get_ticks_msec() - sw0 < 180000:
+	while svc != null and bool(svc.busy_status()["busy"]) and Time.get_ticks_msec() - sw0 < 180000:
 		await process_frame
 		var now := Time.get_ticks_usec()
 		sworst = maxi(sworst, now - slast)
 		slast = now
 	# Artoo on PR 1445: count the writes that saved, not an empty queue
+	var st: Dictionary = svc.busy_status() if svc != null else {}
 	_say("[load1434] world bake writes %s: %s in %d ms, worst frame meanwhile %d ms (reported only)" % [
-		label, "no bake service" if svc == null else "%d written, %d failed, %d still queued%s" % [svc.written, svc.write_failed, svc._unsaved.size(),
-			", one still being written" if svc._active == svc.SAVE_JOB else ""], Time.get_ticks_msec() - sw0, sworst / 1000])
+		label, "no bake service" if svc == null else "%d written, %d failed, %d still queued%s" % [svc.written, svc.write_failed, int(st["unsaved"]),
+			", one still being written" if bool(st["saving"]) else ""], Time.get_ticks_msec() - sw0, sworst / 1000])
 
 
 # issue 1434 (LOAD19: the warm profile still paid 5 s for 83 pipelines): the shader codes this launch made through

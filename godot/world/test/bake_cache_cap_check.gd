@@ -27,6 +27,9 @@ func _blob(folder: String, name: String, bytes: int) -> void:
 
 func _init() -> void:
 	GUARD.arm(self, "bake_cache_cap_check")
+	_run.call_deferred()
+
+func _run() -> void:
 	var top := OS.get_user_data_dir().path_join("bake_cap_check_%d" % OS.get_process_id())
 	var folder := top.path_join("v3")
 	DirAccess.make_dir_recursive_absolute(folder)
@@ -50,24 +53,26 @@ func _init() -> void:
 	# A real map last used even earlier, then loaded by a battle through the worker: the load refreshes it.
 	var img := Image.create(64, 32, false, Image.FORMAT_RGBA8)
 	img.fill(Color(0.2, 0.4, 0.6, 1))
-	BAKE._finish_image(K("loaded"), img, {})   # the game's own save path (no review picture)
-	BAKE.touch(folder, K("loaded"), now - 9000)
-	var got: Dictionary = BAKE._work(K("loaded"), {"size": Vector2i(64, 32), "compute": false}, {})
-	_expect(got.source == "loaded" and got.image != null, "a battle loads a cached map through the worker")
-	var stamp := float(BAKE._read_used(folder).get(K("loaded"), 0))
+	var loaded := BAKE.cache_key("loaded", "", {}, Vector2i(64, 32))
+	BAKE._save(loaded, img, {}, {}, folder)
+	BAKE.touch(folder, loaded, now - 9000)
+	var svc = BAKE.service(self)
+	var got: Image = await svc.bake("loaded", "", {}, Vector2i(64, 32), 32)
+	_expect(got != null, "a battle loads a cached map through the worker")
+	var stamp := float(BAKE._read_used(folder).get(loaded, 0))
 	_expect(stamp >= now, "loading a map refreshes its last-use stamp")
 	_blob(folder, K("old") + ".png.tmp", 10 * KB)
 	_blob(folder, "used.json.junk", 1)
 	_blob(folder, "photo.png", 10 * KB)
 	_blob(folder, "notes.tmp", 10 * KB)
-	var size_loaded := FileAccess.get_size(folder.path_join(K("loaded") + ".png"))
+	var size_loaded := FileAccess.get_size(folder.path_join(loaded + ".png"))
 
 	# 11 blobs of 100 KB plus the loaded map, cap 550 KB: the six oldest unheld maps go, k0 to k5.
 	var r: Dictionary = BAKE.prune(folder, 550 * KB + size_loaded, {K("battle"): true}, "")
 	for i in 6: _expect(not FileAccess.file_exists(folder.path_join(K("k%d" % i) + ".png")), "oldest k%d removed" % i)
 	for i in range(6, 10): _expect(FileAccess.file_exists(folder.path_join(K("k%d" % i) + ".png")), "newer k%d kept" % i)
 	_expect(FileAccess.file_exists(folder.path_join(K("battle") + ".png")), "the map the running battle holds is kept though oldest")
-	_expect(FileAccess.file_exists(folder.path_join(K("loaded") + ".png")), "the map a battle just loaded is kept")
+	_expect(FileAccess.file_exists(folder.path_join(loaded + ".png")), "the map a battle just loaded is kept")
 	_expect(int(r.after) <= 550 * KB + size_loaded and int(r.before) > int(r.after), "folder ends under the cap (%d -> %d bytes)" % [r.before, r.after])
 	_expect(FileAccess.file_exists(folder.path_join(K("old") + ".png.tmp")), "a .tmp younger than a day is kept")
 	for f in ["used.json.junk", "photo.png", "notes.tmp"]:
@@ -100,7 +105,7 @@ func _init() -> void:
 
 	# A fresh save through the real save path is never removed, even when it alone exceeds the cap.
 	var fresh := Image.create(64, 32, false, Image.FORMAT_RGBA8)
-	BAKE._finish_image(K("fresh"), fresh, {})
+	BAKE._save(K("fresh"), fresh, {}, {}, folder)
 	_expect(FileAccess.file_exists(folder.path_join(K("fresh") + ".png")), "the save path writes the new map")
 	r = BAKE.prune(folder, 1, {}, K("fresh"))
 	_expect(FileAccess.file_exists(folder.path_join(K("fresh") + ".png")), "the map just saved survives a tiny cap")
@@ -118,4 +123,5 @@ func _init() -> void:
 	DirAccess.remove_absolute(top)
 	if failures == 0: print("PASS: bake cache cap (issue 1265)")
 	else: printerr("FAIL: %d bake cache cap checks" % failures)
+	BAKE.clear_static()
 	quit(1 if failures else 0)
