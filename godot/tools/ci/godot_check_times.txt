@@ -125,6 +125,7 @@ movement_flight_check 1
 multi_death_check 12
 multi_kill_pace_check 6
 munition_body_check 2
+munition_warm_nova_check 15
 music_check 3
 nebula_wake_check 4
 nem_dodge_test 6
