@@ -43,3 +43,15 @@ The new callout, skip click, and muzzle checks failed before the fixes and passe
 All 254 listed headless game checks passed locally across the full run and eight environment-only reruns. Six needed the CI profile path, prefetch needed CI-style audio imports omitted, and formation needed the tracked SF3 and SB4 measurements missing from the sparse checkout. Standing checks exited 0 with the recorded KNOWN rows. All 379 saved Godot battles, 30 seeded campaign runs, Nemesis scenarios, and the tree hand-off passed. The rules cache on/off records matched for all 379 battles, and all 15 ruled-number checks passed. The checked-in A16 death fixture is stale on the unchanged inputs. A fresh A16 bake is left to CI, as this lane is code only.
 
 PR #2253 can close as included once the runner publishes the combined changes on #2104 and GitHub's All checks is green. The Board owns the real ST-0 before and after captures at cameras 170 and 26 after review.
+
+## Run 5 recheck after the next main update
+
+Verified combined head `eaffa9793f59399484fb751432d52a441b2b64c8`, which includes runner-merged main `061f6268652a311b7a977cf40739f96c5bb88c5f`. The prior port from #2253 at `2856c8e8439a98a099a2842ffa6ade7850ccb1b4` survived. No gameplay code needed changing. The kept and dropped hunks listed above still apply.
+
+The seed-10 Battle 2 round-3 check placed all four plates with no overlap or crossing visible rings. It also confirmed that the killed target keeps its plate until the cut ends. `big_moments_check` and `weapon_layers_check` passed. The load check passed for 489 scripts and 17 scenes.
+
+All 255 listed headless game checks passed on Windows with isolated profiles, with no reruns needed. The seed-361 bot battle and the campaign tree hand-off passed separately.
+
+All 379 saved battles, 30 seeded campaigns and the Nemesis scenarios matched. No saved result changed compared with main. The rules safety net matched all 379 battles with the cache on and off, and all 15 ruled-number checks passed.
+
+Standing checks exited 0 with the two recorded KNOWN rows. GitHub's A16 job still needs a fresh bake because the fixture record is stale. No GPU capture ran. The Board queues the ST-0 before and after pictures at cameras 170 and 26 after CI and review.
