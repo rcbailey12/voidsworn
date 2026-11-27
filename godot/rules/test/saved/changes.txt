@@ -1,3 +1,300 @@
+Run 4: #2205 combined with R460 (#2206)
+
+All 379 battles were played on the combined rules, not copied from either side.
+These 59 records changed against the runner checkout at 700e6cfe. For seven, the
+old archive and merged manifest disagreed about the count. Those records were
+rebuilt too. PRNG, math and threat records reproduced without changes.
+
+Saved manifest before: a48d2c33f12f46becc58ee85ee82c98d2489bb976c87b1c2882b6c8baef8fd11
+Saved manifest after: 0331863d3c38cfe53bc375d1b0d534ae1c83a042fe56db394cd87d51c03bf6ad
+
+Saved Godot results: changed battles
+Later differences count changed records after the first, aligned by turn index.
+Changed battle s8
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.enemy: 11 -> 15
+  later changed records: 123; total records: 123 -> 124
+Changed battle s10
+  Reason: Cap-blocked enemy hull budget becomes elite upgrades.
+  turn 0, round 1, after tick player; unit x09 (enemy b_spitter)
+  state.units[4].aim: 0 -> 6
+  later changed records: 333; total records: 334 -> 214
+Changed battle s14
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.enemy: 10 -> 14
+  later changed records: 145; total records: 144 -> 146
+Changed battle s25
+  Reason: Cap-blocked enemy hull budget becomes elite upgrades.
+  turn 0, round 1, after tick player; unit x012 (enemy h_interdictor)
+  state.units[6].aim: 0 -> 6
+  later changed records: 470; total records: 471 -> 464
+Changed battle s27
+  Reason: Struck Glasswright ships get normal regeneration instead of a refill.
+  turn 0, round 1, after tick player; unit x010 (player i_wisp)
+  state.units[4].shHit[0]: 0 -> 1
+  later changed records: 224; total records: 225 -> 199
+Changed battle s29
+  Reason: Slip the Net no longer grants post-fire movement.
+  turn 0, round 1, after tick player; unit x06 (player cathedral)
+  state.units[0].fx.fade: 0.5 [d:3fe0000000000000] -> <missing>
+  later changed records: 206; total records: 199 -> 207
+Changed battle s33
+  Reason: Heavier Glasswright roster changes the ships and their deployment.
+  turn 0, round 1, after tick player; unit x06 (player penitent)
+  state.units[1].q: 1 -> -1
+  later changed records: 309; total records: 310 -> 153
+Changed battle s35
+  Reason: Cap-blocked enemy hull budget becomes elite upgrades.
+  turn 0, round 1, after tick player; unit x015 (enemy c_raider)
+  state.units[9].aim: 8 -> 14
+  later changed records: 256; total records: 257 -> 243
+Changed battle s36
+  Reason: Heavier Glasswright roster changes the ships and their deployment.
+  turn 0, round 1, after tick player; unit x08 (player penitent)
+  state.units[1].q: 0 -> 1
+  later changed records: 486; total records: 196 -> 487
+Changed battle s39
+  Reason: Cap-blocked enemy hull budget becomes elite upgrades.
+  turn 0, round 1, after tick player; unit x013 (enemy d_scythe)
+  state.units[6].aim: 0 -> 6
+  later changed records: 503; total records: 421 -> 504
+Changed battle s43
+  Reason: Heavier Glasswright roster changes the ships and their deployment.
+  turn 0, round 1, after tick player; unit x05 (player b_drone)
+  state.units[1].q: 3 -> 0
+  later changed records: 120; total records: 121 -> 111
+Changed battle s45
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.enemy: 8 -> 10
+  later changed records: 124; total records: 125 -> 118
+Changed battle s55
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 11 -> 12
+  later changed records: 196; total records: 196 -> 197
+Changed battle s56
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 11 -> 12
+  later changed records: 201; total records: 202 -> 158
+Changed battle t_casttwice
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 7
+  later changed records: 116; total records: 89 -> 117
+Changed battle t_flakskip
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  saved record count differs from manifest
+Changed battle t_lensaloft
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 7
+  later changed records: 50; total records: 51 -> 51
+Changed battle t_recordedangle
+  Reason: Struck Glasswright ships get normal regeneration instead of a refill.
+  turn 40, round 3, after tick player; unit x04 (player i_song)
+  state.units[0].sh[0]: 25 -> 23
+  later changed records: 10; total records: 51 -> 51
+Changed battle t_burnflaw
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 10 -> 11
+  later changed records: 31; total records: 32 -> 32
+Changed battle t_longlight
+  Reason: Struck Glasswright ships get normal regeneration instead of a refill.
+  turn 32, round 3, after fire x03; unit x03 (player i_song)
+  state.units[0].shHit[0]: 0 -> 1
+  later changed records: 4; total records: 37 -> 37
+Changed battle t_flawforever
+  Reason: Struck Glasswright ships get normal regeneration instead of a refill.
+  turn 37, round 3, after tick player; unit x04 (player i_song)
+  state.units[0].sh[0]: 25 -> 16
+  later changed records: 9; total records: 47 -> 47
+Changed battle t_twoimages
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 74; total records: 68 -> 75
+Changed battle t_angles
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit x07 (enemy d_boss)
+  state.units[3].hp: 132 -> 240
+  later changed records: 78; total records: 77 -> 79
+Changed battle t_refraction
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 2 -> 4
+  later changed records: 81; total records: 82 -> 82
+Changed battle t_mirrorturns
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  saved record count differs from manifest
+Changed battle t_falsehulls
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 69; total records: 70 -> 70
+Changed battle t_rechargelit
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 37; total records: 38 -> 38
+Changed battle t_glasscorrected
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  saved record count differs from manifest
+Changed battle t_hardlight
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 60; total records: 61 -> 61
+Changed battle t_wardglass
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 68; total records: 69 -> 69
+Changed battle t_deployread
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 22; total records: 23 -> 23
+Changed battle t_castcorrected
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 32; total records: 32 -> 33
+Changed battle t_firstlight
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 61; total records: 54 -> 62
+Changed battle t7a_flightpaths
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  saved record count differs from manifest
+Changed battle t7a_replay
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  saved record count differs from manifest
+Changed battle t7a_starlings
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  saved record count differs from manifest
+Changed battle t7a_flightcast
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 7
+  later changed records: 109; total records: 110 -> 99
+Changed battle t7a_forgeahead
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 7
+  later changed records: 120; total records: 100 -> 121
+Changed battle t7a_onelens
+  Reason: Struck Glasswright ships get normal regeneration instead of a refill.
+  turn 26, round 2, after tick player; unit x04 (player i_song)
+  state.units[0].sh[0]: 25 -> 14
+  later changed records: 12; total records: 38 -> 39
+Changed battle t7a_lighttogether
+  Reason: Struck Glasswright ships get normal regeneration instead of a refill.
+  turn 18, round 2, after tick player; unit x04 (player i_song)
+  state.units[0].sh[0]: 25 -> 15
+  later changed records: 10; total records: 28 -> 29
+Changed battle t7a_mirroraside
+  Reason: The #2206 seed still proves Mirror Aside fires on the combined rules.
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].name: "Starfall" -> "Glass Heron"
+  later changed records: 75; total records: 65 -> 76
+Changed battle t7a_splitthree
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 62; total records: 62 -> 63
+Changed battle t7a_fleetelsewhere
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 70; total records: 70 -> 71
+Changed battle t7a_weakside
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 37; total records: 38 -> 38
+Changed battle t7a_prismsface
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 37; total records: 38 -> 38
+Changed battle t7a_lensrotates
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 36; total records: 37 -> 37
+Changed battle t7a_facetlit
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 34; total records: 34 -> 35
+Changed battle t7a_flightcast_m3
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 7
+  later changed records: 102; total records: 103 -> 75
+Changed battle t7a_forgeahead_m3
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 7
+  later changed records: 116; total records: 94 -> 117
+Changed battle t529_nostop_m3
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.enemy: 6 -> 12
+  later changed records: 63; total records: 64 -> 64
+Changed battle t_wardglass_m3
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 68; total records: 69 -> 69
+Changed battle t7a_facetlit_m3
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 34; total records: 34 -> 35
+Changed battle t7a_fleetelsewhere_m3
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 69; total records: 70 -> 63
+Changed battle t_falsehulls_m3
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 104; total records: 94 -> 105
+Changed battle t_flawforever_m3
+  Reason: Struck Glasswright ships get normal regeneration instead of a refill.
+  turn 37, round 3, after tick player; unit x04 (player i_song)
+  state.units[0].sh[0]: 25 -> 16
+  later changed records: 9; total records: 47 -> 47
+Changed battle r1651_aelith
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  saved record count differs from manifest
+Changed battle r1651_vaelen
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 7
+  later changed records: 68; total records: 65 -> 69
+Changed battle r1651_thorne
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 10
+  later changed records: 126; total records: 127 -> 127
+Changed battle r1651_mirelle
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 8
+  later changed records: 105; total records: 106 -> 103
+FAIL: saved Godot results; 379 battles checked, 52 changed, 0 other files changed, 59 failures; 32.658 s
+
+Earlier #2205 comparison follows.
+
 Saved manifest before (main b193fe726): 9332e6dba44a7f292f10c3c35693f1c78e2eea75e50ab3854292a6e29b5f60a3
 Saved manifest after: 735f6af8ae2f00ea84d7e366d5a34103af3b138fdb88e1001c62646073df32fa
 

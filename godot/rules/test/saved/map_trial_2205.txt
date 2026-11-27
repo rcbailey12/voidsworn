@@ -161,3 +161,15 @@ boss3_ambush seed 1019 - enemy i_boss -> i_boss, enemy i_song -> i_song, enemy f
 boss3_ambush seed 1020 - player c_marauder -> c_marauder, player c_reaver -> c_reaver, player c_raider -> c_raider, enemy b_boss -> b_boss, enemy b_razor -> b_razor, enemy b_drone -> b_drone, enemy b_spitter -> b_spitter, enemy spore -> spore
 boss3_ambush seed 1022 - enemy fighter -> bomber
 boss3_ambush seed 1023 - player d_harvester -> d_harvester, player d_jackal -> d_jackal, player d_scythe -> d_scythe, enemy d_boss -> d_boss, enemy d_scythe -> d_scythe, enemy d_jackal -> d_jackal
+
+Run 4: combined with R460 (#2206)
+
+R460 increases the Glasswright Sliver, its lancer variant, and the Lancet by one CP.
+The 43 affected Sector 2 and 3 boss encounters have different generated lineups
+or different ship and wing placement after those lineups change. No input, map
+shape or arena changed compared with the earlier #2205 baseline.
+
+boss2_rout (11): 1000, 1001, 1002, 1010, 1011, 1012, 1016, 1017, 1020, 1021, 1022
+boss2_ambush (9): 1001, 1002, 1004, 1006, 1007, 1009, 1011, 1017, 1018
+boss3_rout (12): 1000, 1004, 1010, 1011, 1012, 1015, 1016, 1017, 1019, 1020, 1022, 1023
+boss3_ambush (11): 1001, 1002, 1004, 1007, 1008, 1010, 1011, 1016, 1018, 1019, 1022

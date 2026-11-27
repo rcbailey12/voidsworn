@@ -158,3 +158,149 @@ FAIL at step 12 (after optHeat:h_cmd optHeat:h_cmd pickAdmiral:ashgrove pickFact
 nem.txt - W6 changes offered weaknesses or adaptations. 14 of 223 rows change. First differing row 11.
   Before: b1 {"credits":10,"fleet":[["x01",135],["x03",50]],"nem":{"adapt":[],"adaptSector":0,"beaten":0,"dead":false,"epithets":[],"fac":"corsair","fed":0,"g":"m","held":{"cap":{"callsign":"Lantern","captain_id":"captain:x02","fac":"voidsworn","full_name":"Osric Kellan","pending":0,"perks":[],"portrait_id":"nem_voidsworn_1","rank":0,"trait_line":"","xp":0},"hp":1,"mk":1,"mods":[],"name":"Black Anvil","tpl":"harrow","uid":"x02"},"honed":0,"lessons":[],"loot":40,"met":0,"name":"Skarn Gut","persona":"proud","portrait":"nem_corsair_4","revealed":[],"revived":false,"riches":1,"scarKinds":[],"scars":0,"seen":{},"signatures":["raid"],"title":"Apex","traits":["swift","rockets"],"weak":["anchor","torp"]},"nemAssign":["corsair","corsair","corsair"],"nemClock":4,"nemStrike":true,"nems":{"corsair":{"adapt":[],"adaptSector":0,"beaten":0,"dead":false,"epithets":[],"fac":"corsair","fed":0,"g":"m","held":{"cap":{"callsign":"Lantern","captain_id":"captain:x02","fac":"voidsworn","full_name":"Osric Kellan","pending":0,"perks":[],"portrait_id":"nem_voidsworn_1","rank":0,"trait_line":"","xp":0},"hp":1,"mk":1,"mods":[],"name":"Black Anvil","tpl":"harrow","uid":"x02"},"honed":0,"lessons":[],"loot":40,"met":0,"name":"Skarn Gut","persona":"proud","portrait":"nem_corsair_4","revealed":[],"revived":false,"riches":1,"scarKinds":[],"scars":0,"seen":{},"signatures":["raid"],"title":"Apex","traits":["swift","rockets"],"weak":["anchor","torp"]}},"rng":424859581,"variants":{}}
   After:  b1 {"credits":10,"fleet":[["x01",135],["x03",50]],"nem":{"adapt":[],"adaptSector":0,"beaten":0,"dead":false,"epithets":[],"fac":"corsair","fed":0,"g":"m","held":{"cap":{"callsign":"Vesper","captain_id":"captain:x02","fac":"voidsworn","full_name":"Osric Kellan","pending":0,"perks":[],"portrait_id":"nem_voidsworn_5","rank":0,"trait_line":"","xp":0},"hp":1,"mk":1,"mods":[],"name":"Black Anvil","tpl":"harrow","uid":"x02"},"honed":0,"lessons":[],"loot":40,"met":0,"name":"Skarn Gut","persona":"proud","portrait":"nem_corsair_4","revealed":[],"revived":false,"riches":1,"scarKinds":[],"scars":0,"seen":{},"signatures":["raid"],"title":"Apex","traits":["swift","rockets"],"weak":["anchor","torp"]},"nemAssign":["corsair","corsair","corsair"],"nemClock":4,"nemStrike":true,"nems":{"corsair":{"adapt":[],"adaptSector":0,"beaten":0,"dead":false,"epithets":[],"fac":"corsair","fed":0,"g":"m","held":{"cap":{"callsign":"Vesper","captain_id":"captain:x02","fac":"voidsworn","full_name":"Osric Kellan","pending":0,"perks":[],"portrait_id":"nem_voidsworn_5","rank":0,"trait_line":"","xp":0},"hp":1,"mk":1,"mods":[],"name":"Black Anvil","tpl":"harrow","uid":"x02"},"honed":0,"lessons":[],"loot":40,"met":0,"name":"Skarn Gut","persona":"proud","portrait":"nem_corsair_4","revealed":[],"revived":false,"riches":1,"scarKinds":[],"scars":0,"seen":{},"signatures":["raid"],"title":"Apex","traits":["swift","rockets"],"weak":["anchor","torp"]}},"rng":424859581,"variants":{}}
+
+Run 4: combined with R460 (#2206)
+
+Compared with the earlier #2205 baseline. All 30 seeds and Nemesis were re-run.
+Twenty-eight seeded records changed. Seeds 11 and 14 and all 223 Nemesis lines
+reproduced byte for byte. The first difference per changed seed follows.
+
+c1.jsonl - Glasswright wreck or prize CP
+  Step 16: Lancet CP rises from 2 to 3 and crosses the tow limit.
+  Before: "takeSalvage:1:tow:1 | takeSalvage:2:mod:1 | takeSalvage:2:cred:1 | takeSalvage:2:tow:1"
+  After:  "takeSalvage:2:mod:1 | takeSalvage:2:cred:1 | takeSalvage:2:tow:1"
+
+c2.jsonl - Glasswright wreck or prize CP
+  Step 14: state "run" differs at run.reward.prizes[0].cp
+  Before: 1
+  After:  2
+
+c3.jsonl - Glasswright wreck or prize CP
+  Step 9: state "run" differs at run.reward.prizes[0].cp
+  Before: 1
+  After:  2
+
+c4.jsonl - Glasswright wreck or prize CP
+  Step 12: state "run" differs at run.reward.wrecks[2].cp
+  Before: 2
+  After:  3
+
+c5.jsonl - Slip the Net removed from the boon pool
+  Step 30: state "run" differs at run.reward.boonOffer[0].id
+  Before: "e_hunt"
+  After:  "e_chain"
+
+c6.jsonl - Slip the Net removed from the boon pool
+  Step 15: state "run" differs at run.reward.boonOffer[2].id
+  Before: "r_prow"
+  After:  "r_burn"
+
+c7.jsonl - Slip the Net removed from the boon pool
+  Step 12: state "run" differs at run.boons[0].id
+  Before: "r_jink"
+  After:  "r_mom"
+
+c8.jsonl - Slip the Net removed from the boon pool
+  Step 21: state "run" differs at run.reward.boonOffer[0].id
+  Before: "s_cap"
+  After:  "i_line"
+
+c9.jsonl - Glasswright wreck or prize CP
+  Step 105: state "run" differs at run.reward.wrecks[1].cp
+  Before: 2
+  After:  3
+
+c10.jsonl - Slip the Net removed from the boon pool
+  Step 30: state "run" differs at run.reward.boonOffer[1].id
+  Before: "a_long"
+  After:  "a_crit"
+
+c12.jsonl - Glasswright wreck or prize CP
+  Step 19: state "run" differs at run.reward.wrecks[1].cp
+  Before: 2
+  After:  3
+
+c13.jsonl - Slip the Net removed from the boon pool
+  Step 20: state "run" differs at run.reward.boonOffer[1].id
+  Before: "r_prow"
+  After:  "r_burn"
+
+c15.jsonl - Slip the Net removed from the boon pool
+  Step 14: state "run" differs at run.reward.boonOffer[1].id
+  Before: "h_brood"
+  After:  "i_wall"
+
+c16.jsonl - Slip the Net removed from the boon pool
+  Step 12: state "run" differs at run.reward.boonOffer[0].id
+  Before: "a_aim"
+  After:  "a_lance"
+
+c17.jsonl - Glasswright wreck or prize CP
+  Step 23: state "run" differs at run.reward.prizes[0].cp
+  Before: 1
+  After:  2
+
+c18.jsonl - Glasswright wreck or prize CP
+  Step 19: state "run" differs at run.reward.prizes[0].cp
+  Before: 1
+  After:  2
+
+c19.jsonl - Slip the Net removed from the boon pool
+  Step 29: state "run" differs at run.reward.boonOffer[0].id
+  Before: "h_wings"
+  After:  "h_hatch"
+
+c20.jsonl - Slip the Net removed from the boon pool
+  Step 13: state "run" differs at run.reward.boonOffer[1].id
+  Before: "e_hunt"
+  After:  "e_chain"
+
+c21.jsonl - Glasswright wreck or prize CP
+  Step 17: state "run" differs at run.reward.wrecks[1].cp
+  Before: 2
+  After:  3
+
+c22.jsonl - Glasswright wreck or prize CP
+  Step 28: state "run" differs at run.reward.wrecks[1].cp
+  Before: 1
+  After:  2
+
+c23.jsonl - Slip the Net removed from the boon pool
+  Step 19: state "run" differs at run.reward.boonOffer[2].id
+  Before: "a_aim"
+  After:  "a_lance"
+
+c24.jsonl - Slip the Net removed from the boon pool
+  Step 33: state "run" differs at run.reward.boonOffer[0].id
+  Before: "e_chain"
+  After:  "e_kindle"
+
+c25.jsonl - Slip the Net removed from the boon pool
+  Step 17: state "run" differs at run.reward.boonOffer[0].id
+  Before: "r_slip"
+  After:  "a_mark"
+
+c26.jsonl - Glasswright wreck or prize CP
+  Step 45: state "run" differs at run.reward.wrecks[0].cp
+  Before: 2
+  After:  3
+
+c27.jsonl - Glasswright wreck or prize CP
+  Step 79: state "run" differs at run.reward.wrecks[2].cp
+  Before: 2
+  After:  3
+
+c28.jsonl - Slip the Net removed from the boon pool
+  Step 17: state "run" differs at run.reward.boonOffer[1].id
+  Before: "a_long"
+  After:  "a_crit"
+
+c29.jsonl - Slip the Net removed from the boon pool
+  Step 21: state "run" differs at run.reward.boonOffer[1].id
+  Before: "r_prow"
+  After:  "r_burn"
+
+c30.jsonl - Slip the Net removed from the boon pool
+  Step 36: state "run" differs at run.reward.boonOffer[1].id
+  Before: "e_kindle"
+  After:  "e_reload"

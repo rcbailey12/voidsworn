@@ -17,6 +17,7 @@ var matrix_stats := {"rounds": 0, "n": 0, "timeout": 0, "rams": {"player": 0, "e
 var hulls := {}
 var weapons := {}
 var abilities := {}
+var fades := {}
 var _identity := {}
 var _speed := 1.0
 var _enemy_animation := false
