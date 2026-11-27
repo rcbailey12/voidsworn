@@ -290,11 +290,9 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 	var rhythm := _volley_rng(fx)
 	var pattern := _volley_pattern(rhythm, total)
 	var clusters := {}   # hit section -> last real surface point in this volley
-	# Battle events carry an aggregate PD count, while intercepted entries
-	# remain false in shots. Never turn a rolled hit into an interception.
-	var pd_left := maxi(int(opts.get("pd", 0)), 0)
-	var pd_ships: Array = opts.get("pd_ships", [])
-	var pd_index := 0
+	# Count-only callers retain the old fallback. Live battle events identify each intercepted shot.
+	var pd_by_shot: Dictionary = opts.get("pd_by_shot", {})
+	var pd_left := maxi(int(opts.get("pd", 0)), 0) if pd_by_shot.is_empty() else 0
 	var pd_cued := {}
 	var tur_last := {}    # turret -> its last shot's fire time: it holds its aim through that, then trains back to rest
 	var froms: Array = []   # each shot's muzzle (world) and turret (-1 for a fixed gun), for the checks
@@ -311,15 +309,15 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 			hd = hits[hj] if hj < hits.size() else {"shield": 0, "hull": 1, "section": "mid", "crit": false}
 			hk = hj
 			hj += 1
-		elif pd_left > 0 and lk in ["torp", "rockets", "star"]:
+		elif lk in ["torp", "rockets", "star"] and (pd_by_shot.has(i) or pd_left > 0):
 			hd = {"pd": true}
-			if pd_index < pd_ships.size():
-				var id := str(pd_ships[pd_index])
+			var id := str(pd_by_shot.get(i, ""))
+			if not id.is_empty():
 				hd["pd_ship"] = id
 				hd["pd_cue"] = not pd_cued.has(id)
 				pd_cued[id] = true
-			pd_index += 1
-			pd_left -= 1
+			elif pd_left > 0:
+				pd_left -= 1
 		var m: Dictionary = mounts[i % mounts.size()]
 		var from: Vector3 = m["p"]
 		var tgt = _target(fx, Tg, to_c, from, hit, hd, quad, kt, pattern[i], rhythm, clusters)
@@ -791,7 +789,8 @@ static func _weapon_shader(fx, routed := false) -> Shader:
 
 
 static func _burst(fx, p: Vector3, axis: Vector3, T: float, size: float, kind: String, life: float, col: Color,
-		strength := 3.0, px := 0.0, velocity := Vector3.ZERO, opacity := 1.0, aspect := 1.0, gun := true, seed_override := -1.0) -> void:
+		strength := 3.0, px := 0.0, velocity := Vector3.ZERO, opacity := 1.0, aspect := 1.0, gun := true,
+		book := true, seed_override := -1.0) -> void:
 	var seed: float = seed_override if seed_override >= 0.0 else fx.rng.randf()
 	fx.later(T, func l_burst() -> void:
 		var power := strength
@@ -1698,7 +1697,7 @@ static func pd_flak(fx, muzzle: Vector3, toward: Vector3, at: float, faction: St
 		ends.append(start + PD_PUFF_LIFE)
 		# These extra puffs must not change the seeded paths of later rounds.
 		var seed := float(posmod(hash(Vector4(p.x, p.y, p.z, start)), 4096)) / 4096.0
-		_burst(fx, p, dir, start, 1.15, "cool", PD_PUFF_LIFE, tint, 0.65, 13.0, Vector3.ZERO, 0.72, 1.0, true, seed)
+		_burst(fx, p, dir, start, 1.15, "cool", PD_PUFF_LIFE, tint, 0.65, 13.0, Vector3.ZERO, 0.72, 1.0, true, false, seed)
 		fx.spark(p, start, 0.14, faction, 1.6, 0.035, 0.13, (dir + side * float(j - 1) * 0.5) * 9.0 * fx.unit,
 			2.0, 2.0, 5.0, fx.SparkRole.WEAPON, spark_tint)
 

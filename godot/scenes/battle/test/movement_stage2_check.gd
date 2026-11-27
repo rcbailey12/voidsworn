@@ -194,6 +194,10 @@ func _guard_orbit(world: Node3D) -> void:
 	var tick := func(real_dt: float) -> void:
 		fx.step(real_dt)
 		wing._process(real_dt)
+	fx.hit_pause(fx.now, 3)
+	tick.call(0.0)
+	tick.call(0.04)
+	check(fx.dt < 0.02 and is_equal_approx(wing._guard_mix, fx.dt * 1.6), "hit pause slows the guard orbit blend-in")
 	for i in 16:
 		tick.call(0.05)
 	var center := Vector3(carrier.position.x, ALT.WING, carrier.position.z)
@@ -219,6 +223,14 @@ func _guard_orbit(world: Node3D) -> void:
 	tick.call(0.0)   # the frame that receives the hit starts the pause
 	tick.call(0.04)
 	check(fx.dt < 0.02 and held.distance_to(wing.visual_position()) < radius * 0.02, "hit pause slows the orbit with the FX clock")
+	wing.guard_has_target = true
+	fx.hit_pause(fx.now, 3)
+	tick.call(0.0)
+	var before_exit := wing._guard_mix
+	tick.call(0.04)
+	check(fx.dt < 0.02 and is_equal_approx(wing._guard_mix, before_exit - fx.dt * 2.5), "hit pause slows the guard orbit blend-out")
+	wing.guard_has_target = false
+	tick.call(0.25)
 	held = wing.visual_position()
 	wing.hold_wing_orbit(fx.now + 1.0)
 	tick.call(0.5)

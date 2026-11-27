@@ -2461,11 +2461,12 @@ func _step_motion(dt: float) -> void:
 		return
 	var prior_bob_time := _bob_time
 	_bob_time = float(fx_clock.now) if is_instance_valid(fx_clock) else _bob_time + dt
+	var fx_dt := maxf(_bob_time - prior_bob_time, 0.0)
 	if not squad_kind.is_empty() and (is_instance_valid(guard_carrier) or _guard_mix > 0.0):
-		_step_guard_orbit(dt)
+		_step_guard_orbit(fx_dt)
 	# Let a battle ship settle before it vents a small pair. Each ship has its own cadence.
 	if not campaign_map and not dead and visible and path_dur <= 0.0 and squad_kind.is_empty():
-		_idle_time += maxf(_bob_time - prior_bob_time, 0.0)
+		_idle_time += fx_dt
 		if _idle_time >= lerpf(8.0, 15.0, bob_seed * 0.1):
 			var phase := _bob_time + bob_seed
 			_side_puffs(1.0 if sin(phase) > 0.0 else -1.0, 0.16)

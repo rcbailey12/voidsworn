@@ -2748,6 +2748,7 @@ func oathStopTorps(t, shots: Array, res) -> void:
 		if not shots[i]: continue
 		shots[i] = false
 		res["pd"] = z0(res.get("pd")) + 1
+		if events_on: res.get_or_add("pd_by_shot", {})[i] = ""   # a screen, not ship flak
 		stopped += 1
 		t["oathScreen"] = {"round": B["round"], "stopped": stopped}
 		treeFx(t, "oathWings", "the wall takes the salvo")
@@ -2765,6 +2766,7 @@ func screenTorps(t, shots: Array, res, mult = null) -> void:
 			if shots[i]:
 				if rnd() < ch:
 					shots[i] = false; shot += 1
+					if events_on: res.get_or_add("pd_by_shot", {})[i] = ""
 				break
 	if shot != 0:
 		res["pd"] = z0(res.get("pd")) + shot; flt(t, ns(shot) + " torpedo" + ("es" if shot > 1 else "") + " shot down by wings", "#bfe3ff", 30)
@@ -2828,7 +2830,7 @@ func rocketDefense(w, t, shots: Array, res, mult = null) -> void:
 		while i < shots.size() and d["intercepts"] > 0:
 			if shots[i] and rnd() < 0.55 * im:
 				shots[i] = false; d["intercepts"] = d["intercepts"] - 1; shot += 1
-				if events_on: res.get_or_add("pd_ships", []).append(d["id"])   # presentation only: the actual escort that fired
+				if events_on: res.get_or_add("pd_by_shot", {})[i] = d["id"]   # presentation only: the actual escort that fired
 			i += 1
 	if shot != 0:
 		res["pd"] = shot; flt(t, ns(shot) + " rocket" + ("s" if shot > 1 else "") + " shot down", "#bfe3ff", 30)
@@ -2889,7 +2891,7 @@ func torpImpact(S, wi, wGun, live, keep, b0) -> bool:
 		m3Fx(t, "falseHulls", "the torpedoes chase a false image")   # issue 1650 Mastery III
 	foldMiss(t, shots)   # issue 1649: Fold skip
 	var shooter = real if real != null else gh
-	emit({"t": "fire", "unit": shooter["id"], "weapon": wi, "weapon_id": w["id"], "kind": w["k"], "arc": w["arc"], "name": w.get("n"), "target": t["id"], "shots": shots.duplicate(), "pd": z0(res.get("pd")), "pd_ships": res.get("pd_ships", []), "quad": quad}); hook("fire", shooter)
+	emit({"t": "fire", "unit": shooter["id"], "weapon": wi, "weapon_id": w["id"], "kind": w["k"], "arc": w["arc"], "name": w.get("n"), "target": t["id"], "shots": shots.duplicate(), "pd": z0(res.get("pd")), "pd_by_shot": res.get("pd_by_shot", {}), "quad": quad}); hook("fire", shooter)
 	B["prog"] = z0(B.get("prog")) + 1
 	if not live.call():
 		if is_same(B, b0) and real != null:
@@ -3873,7 +3875,7 @@ func fireWeapon(u, wi: int, t, opts: Dictionary = {}) -> bool:
 			if jt(shots[mi2]): halfShot = mi2
 			treeFx(u, "frameZero", "the frame zero shot is recorded")   # Eclipse shared C1b
 	if not jt(opts.get("intercept")) and t["side"] != u["side"] and foldMiss(t, shots): halfShot = -1   # issue 1649: Fold skip
-	emit({"t": "fire", "unit": u["id"], "weapon": wi, "weapon_id": w["id"], "kind": w["k"], "arc": w["arc"], "name": w.get("n"), "target": t["id"], "shots": shots.duplicate(), "pd": z0(res.get("pd")), "pd_ships": res.get("pd_ships", []), "quad": quad}); hook("fire", u)
+	emit({"t": "fire", "unit": u["id"], "weapon": wi, "weapon_id": w["id"], "kind": w["k"], "arc": w["arc"], "name": w.get("n"), "target": t["id"], "shots": shots.duplicate(), "pd": z0(res.get("pd")), "pd_by_shot": res.get("pd_by_shot", {}), "quad": quad}); hook("fire", u)
 	if B != null: B["prog"] = z0(B.get("prog")) + 1
 	if not live.call():
 		if not jt(opts.get("intercept")) and is_same(B, b0):

@@ -3,6 +3,7 @@ extends SceneTree
 const GUARD := preload("res://tools/ci/check_guard.gd")
 const FX := preload("res://fx/fx.gd")
 const WEAP := preload("res://fx/fx_weapons.gd")
+const RULES := preload("res://rules/rules.gd")
 const LOOK := preload("res://render/look.gd")
 const RIM := preload("res://render/look_rim.gd")
 const NEBULA_HULLS := preload("res://world/nebula_hulls.gd")
@@ -109,10 +110,10 @@ func _flak_pops(world: Node3D, fx) -> void:
 	_check(starts == [0, 45, 90, 135, 180], "all five point-defense pops are alive on cue: %s ms" % str(starts))
 
 
-func _defender_flak(world: Node3D, fx) -> void:
-	var toward := Vector3(85, 5, 18)
+func _add_flak_escort(world: Node3D, fx, id: String, at: Vector3) -> void:
 	var body := Node3D.new()
 	world.add_child(body)
+	body.position = at
 	var part := MeshInstance3D.new()
 	var box := BoxMesh.new()
 	box.size = Vector3(24, 5, 8)
@@ -121,7 +122,63 @@ func _defender_flak(world: Node3D, fx) -> void:
 	var core := Marker3D.new()
 	core.name = "hp_core"
 	body.add_child(core)
-	fx.add_ship("escort", body, {"faction": "voidsworn", "cls": "Frigate", "meshes": [part], "shielded": false})
+	fx.add_ship(id, body, {"faction": "voidsworn", "cls": "Frigate", "meshes": [part], "shielded": false})
+
+
+func _indexed_intercepts() -> void:
+	var world := Node3D.new()
+	root.add_child(world)
+	var fx := FX.new()
+	world.add_child(fx)
+	fx.manual = true
+	fx.setup({"quality": "high"})
+	fx.compat = false
+	var rules := RULES.new()
+	var first := {"id": "first", "side": "player", "intercepts": 1, "weapons": [{"k": "flak", "r": 3}], "q": 0, "r": 1}
+	var second := {"id": "second", "side": "player", "intercepts": 1, "weapons": first.weapons, "q": 1, "r": 0}
+	var target := {"id": "target", "side": "player", "intercepts": 0, "q": 0, "r": 0}
+	rules.B = {"units": [first, second, target]}
+	# Seed 1 makes the first escort fail at index 1 and stop index 2, then the second stops index 1.
+	var shots := [false, true, true, true]
+	var res := {}
+	rules.rng.rnd_seed(1)
+	rules.rocketDefense({"rockets": true}, target, shots, res)
+	var pd_by_shot: Dictionary = res.get("pd_by_shot", {})
+	_check(shots == [false, false, false, true] and res.get("pd") == 2 and first.intercepts == 0 and second.intercepts == 0,
+		"ship defence keeps the same roll results, intercept count and charges")
+	_check(pd_by_shot == {2: "first", 1: "second"}, "rules attach each flak ship to the shot it stopped")
+	_add_flak_escort(world, fx, "first", Vector3(15, 0, 30))
+	_add_flak_escort(world, fx, "second", Vector3(15, 0, -30))
+	fx.volley_at(Vector3(-85, 0, 4), "torp", Vector3(85, 5, 18),
+		{"weapon_id": "torp", "shots": shots, "pd": res.get("pd", 0), "pd_by_shot": pd_by_shot})
+	var projectiles: Array = fx.dstate.get("proj", [])
+	var intercepted := projectiles.map(func(p): return is_finite(float(p.dead_at)))
+	_check(intercepted == [false, true, true, false], "the ordinary miss and the hit both fly past the PD intercept beat")
+	var cue_ends: Array = fx.dstate.get("pd_puff_ends", [])
+	_check(cue_ends.size() == 6, "each defender adds one three-puff cue")
+	var matched := {}
+	for i in 180:
+		fx.step(0.02)
+		for node in world.find_children("*", "MeshInstance3D", true, false):
+			if node.get_meta("fx_picture_kind", "") != "cool":
+				continue
+			var mat := node.material_override as ShaderMaterial
+			if not is_equal_approx(float(mat.get_shader_parameter("lifetime")), WEAP.PD_PUFF_LIFE):
+				continue
+			var end := float(mat.get_shader_parameter("born")) + WEAP.PD_PUFF_LIFE
+			for j in cue_ends.size():
+				var correct_side: bool = node.global_position.z < -20.0 if j < 3 else node.global_position.z > 20.0
+				if correct_side and absf(end - float(cue_ends[j])) < 0.001:
+					matched[j] = true
+		if matched.size() == 6:
+			break
+	_check(matched.size() == 6, "shot 1 cues the second escort and shot 2 cues the first, despite reverse interception order")
+	world.free()
+
+
+func _defender_flak(world: Node3D, fx) -> void:
+	var toward := Vector3(85, 5, 18)
+	_add_flak_escort(world, fx, "escort", Vector3.ZERO)
 	var defender = fx.ship("escort")
 	var muzzle := WEAP._pd_origin(defender, Vector3(-85, 0, 4))
 	_check(muzzle.is_finite(), "the firing ship gives PD a real surface point")
@@ -129,8 +186,8 @@ func _defender_flak(world: Node3D, fx) -> void:
 	var shots := [false, false]
 	var opts := {"weapon_id": "htorp", "shots": shots, "pd": 2}
 	fx.volley_at(Vector3(-85, 0, 4), "torp", toward, opts)
-	_check(not fx.dstate.has("pd_puff_ends"), "an interception with no ship attributed adds no near-ship puffs")
-	opts["pd_ships"] = ["escort", "escort"]
+	_check(fx.dstate.get("pd_puff_ends", []).is_empty(), "an interception with no ship attributed adds no near-ship puffs")
+	opts["pd_by_shot"] = {0: "escort", 1: "escort"}
 	fx.volley_at(Vector3(-85, 0, 4), "torp", toward, opts)
 	var ends: Array = fx.dstate.get("pd_puff_ends", [])
 	_check(ends.size() == 3, "two intercepted rocket groups make only one three-puff cue at their defender")
@@ -206,6 +263,7 @@ func _run() -> void:
 	_defender_flak(world, fx)
 	_quality_downgrade()
 	world.free()
+	_indexed_intercepts()
 	_shader_cache()
 	STATIC_CACHES.clear_all()
 	print("GRAPHICS_CORRECTNESS failures=", failures)

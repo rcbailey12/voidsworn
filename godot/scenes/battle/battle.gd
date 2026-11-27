@@ -3241,7 +3241,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 		for h in hits:
 			hl.append({"shield": h["shield"], "hull": h["hull"], "section": h.get("section", ""), "crit": h["crit"],
 				"shieldFraction": h.get("shieldFraction", -1.0)})
-		var r: Dictionary = gfx.volley(str(a_id), str(e["kind"]), str(t_id), {"weapon_id": str(e.get("weapon_id", "")), "slot": int(e["weapon"]) if e.get("weapon") != null else -1, "shots": shots, "hits": hl, "quad": int(e["quad"]), "pd": int(e.get("pd", 0)), "pd_ships": e.get("pd_ships", []),
+		var r: Dictionary = gfx.volley(str(a_id), str(e["kind"]), str(t_id), {"weapon_id": str(e.get("weapon_id", "")), "slot": int(e["weapon"]) if e.get("weapon") != null else -1, "shots": shots, "hits": hl, "quad": int(e["quad"]), "pd": int(e.get("pd", 0)), "pd_by_shot": e.get("pd_by_shot", {}),
 			"break_k": int(land["break_k"]) if not (land["downs"] as Array).is_empty() else -1})
 		land["pts"] = r.get("hit_pts", [])   # issue 1239: each hit's shield point, so the failure aims at the breaking shot
 		# issue 1211: lance and torpedo cues on the effect's own fire times, on the effect clock (they played at 0 before)

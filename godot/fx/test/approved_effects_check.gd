@@ -324,7 +324,7 @@ func _play_events() -> Dictionary:
 # so the check also proves the battle hands the rules' pd count to the volley.
 func _pd_probe(b, mine: String, foe: String) -> String:
 	var e := {"t": "fire", "unit": mine, "target": foe, "kind": "torp", "name": "PD probe", "weapon": 0, "weapon_id": "",
-		"shots": [false, false], "quad": 0, "pd": 2, "pd_ships": [foe, foe]}
+		"shots": [false, false], "quad": 0, "pd": 2, "pd_by_shot": {0: foe, 1: foe}}
 	b._play_fire(e, [])   # not awaited: the rounds are read while they fly
 	var near_ship := false
 	var marked := false
