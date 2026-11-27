@@ -91,6 +91,123 @@ the front view the two torpedo tube bores sit side by side INSIDE
 the one hull's bow, flanking its central spearhead point." (The
 top view still splits; see the slip note in designs.md.)
 
+## Round 2 Harrow (Nov 19, 2026; these produced the delivered files)
+
+Beauty, generated fresh from the S8 three-quarter anchor (not from
+the round 1 Harrow): "Using the attached picture as the reference
+for material, colour and rendering style (forged black iron plate
+with fine rivet lines along the seams, frost-white markings,
+glowing ember-orange heat light, massive gothic space warship):
+draw a destroyer of the same fleet, a single spaceship in deep
+space, three-quarter view from the front and above, bow pointing
+left. CRITICAL: the ship has ONE single solid hull, one narrow
+black-iron blade with ONE spearhead point at the bow, exactly like
+the reference ship's hull. Set into the two angled cheek plates of
+that single spearhead, one on each side of the central point, are
+two deep torpedo tubes: dark round bores with thick forged lips,
+recessed INTO the solid bow like gun ports, NOT separate cylinders
+and NOT splitting the hull. Behind the bow the hull widens
+slightly into an armoured magazine section with thin ember
+heat-vent slits, then runs back as one smooth blade with plain
+riveted flanks and NO gun ports. One pair of low turret tubs at
+the deck edges amidships, each with a single short barrel. Four
+slim radiator spires with ember-glowing fins along the spine
+toward the stern. Two deep-set engine bells glowing ember orange
+at the stern. Frost-white markings are limited to one thin stripe
+and a small sigil: NO chevron patterns, NO hazard stripes, NO
+industrial markings. Painterly realistic rendering, deep space
+background. No text, no other ships."
+
+Sheet: the standard sheet prompt above, from the round 2 beauty,
+with the feature list restated and "exactly four slim radiator
+spires" and "one thin frost-white stripe, no chevrons" spelled
+out.
+
+Line-up: regenerated with the round 2 Harrow beauty in the same
+four-reference pattern as above, then one corrective take after
+the smallest ship drifted into a sea-going naval vessel: "redraw
+the SAME four-ship profile line-up with ONE correction. The bottom
+ship is wrong: it is drawn as a sea-going naval vessel with a mast
+and a red hull bottom. Replace it with the frigate from the second
+picture: a black-iron SPACE frigate... NO mast, NO red paint, no
+waterline, floating in space like the other three. Keep the other
+three ships and the stacked layout, relative sizes and deep space
+background unchanged."
+
+## Round 3: Hearth and Bastion (Nov 22, 2026)
+
+Generated image-to-image from the accepted S8 beauty/blockout and
+the Harrow round 2 concept as material and style references, on a
+flat neutral dark grey background (Ryan's R368 note: the new ships
+are the references now). The operative text for each picture:
+
+hearth_beauty.webp: "Concept art beauty shot of a single new
+spaceship in the same fleet and art style as the reference images,
+three-quarter view 45 degrees off the bow toward port, 30 degrees
+above the deck, bow to the left. The ship is a carrier: a black
+forged-iron blade hull, long and wide for its length, widest at
+the stern third, one thin frost-white stripe and one small
+frost-white sigil, ember orange light only. Its flank carries one
+long recessed hangar trench holding exactly two squared
+rectangular hangar mouths with flat lintels, flat sills and heavy
+armoured lips, dark deep bores with only a thin line of dim ember
+light low inside each mouth. One pair of small single-emitter
+turret tubs at the deck edges near the bow third, one pair of
+twin flak tubs at the deck edges near the stern. Six radiator
+spires stand as two separate ridges of three along the upper
+edges of the hull, iron posts with ember glowing between
+horizontal slats, never solid glowing towers. Four large deep-set
+ember engine bells at the stern. No dorsal flight deck, no
+landing pad, no flat top surface, no arches, no pointed tops, no
+crosses, no statues, no rust, no blue light, no hazard chevrons,
+no flame plumes, no vehicles visible. A spaceship, never a sea
+vessel."
+
+hearth_sheet.webp: the same ship as a three-view sheet, three
+stacked panels (three-quarter as above; true side, bow left; true
+top, bow pointing up the page, belly never visible), caption
+length 16.5 and a 5-unit scale bar on the side and top panels,
+every view the same ship with the same counts: two rectangular
+mouths per flank at 38 and 54 percent, turret pair at 30 percent,
+flak pair at 86 percent, six spires in two ridges of three between
+44 and 80 percent, four bells. (Delivered take slipped: see
+designs.md.)
+
+bastion_beauty.webp: "Concept art beauty shot of a single new
+spaceship in the same fleet and art style as the reference images,
+three-quarter view 45 degrees off the bow toward port, 30 degrees
+above the deck, bow to the left. The ship is a battleship: a black
+forged-iron blade hull, long, dense and muscular, widest at the
+stern third, one thin frost-white stripe and one small
+frost-white sigil, ember orange light only. Along the visible
+flank, one tight row of exactly five deep round gun ports with
+dark bores and ember glow from within, thin horizontal ember
+slits between the ports, the whole row framed as one recessed
+armoured gun-deck band. A single lance emitter set flush in the
+spearhead bow face, a dark recessed bore, with a raised iron
+power trunk running aft along the centre ridge. One pair of twin
+flak tubs at the deck edges just aft of the gun row, and no other
+turrets anywhere. Six radiator spires in a single row along the
+spine over the stern half, iron posts with ember glowing between
+horizontal slats. Three very large deep-set ember engine bells at
+the stern, the largest bells in the fleet. No arches, no crosses,
+no statues, no cathedral windows, no rust, no blue light, no
+hazard chevrons, no flame plumes. A spaceship, never a sea
+vessel." (Delivered take slipped: the port row is missing; see
+designs.md.)
+
+bastion_sheet.webp: the same ship as a three-view sheet as above,
+caption length 21.0, counts restated: five ports per side between
+34 and 66 percent with horizontal slits between, lance emitter in
+the bow face with power trunk to 28 percent, flak pair at 62
+percent and no other turrets, six spires between 64 and 84
+percent, three bells. (Delivered take slipped: see designs.md.)
+
+family_lineup.webp (round 3) was not generated: it is drawn
+programmatically from the tables in designs.md so the relative
+lengths are exact. The generator's line-ups in rounds 1 and 2
+admitted approximate scale; the drawn check removes the question.
+
 ## family_lineup.webp
 
 "Using the four attached pictures as the exact design references,
