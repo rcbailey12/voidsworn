@@ -19,6 +19,9 @@ also reports what it carried from earlier stops. The player ability line shows u
 ability id, including automatic replacement launches. An omitted ability fired zero times in that row. Faction
 matrix prints the `FM` and `FID` JSON lines for existing report consumers. The default activation
 schedule is alternating. In the battle modes, pass `--classic` after the count to exercise the classic bot.
+`FM.exchange` records the total credited hull damage dealt by each side, including wings, for each ordered matchup.
+Divide `dealt` by `taken` for the player-side damage exchange ratio.
+`FM.fades` counts attempts with post-fire movement left and successful retreats, split by faction and side.
 
 - Each campaign battle prints a `TRIAL` JSON line before its cell summary. The record carries the player faction,
   difficulty, cell (mode, sector, encounter kind, and column), seed, arm, and player `abilities_fired` by id.
@@ -41,8 +44,8 @@ schedule is alternating. In the battle modes, pass `--classic` after the count t
   player faction in `campaign` or `campaignrewards`. The sim uses the campaign's faction hull equivalents for
   the fixed sector fleets and keeps the reference admiral, Vex, unless `SIM_BUILD` sets an admiral.
 - `CSEC=1,3` selects campaign sectors. `ONLY_BOSS=1` selects the sector 1 and 3 boss cells and the sector 1
-  elite comparison in either campaign mode. `FROWS=voidsworn,corsair`, `CPT=8`, and
-  `NOADM=1` select matrix rows, fleet command points, and the reference no-admiral setup.
+  elite comparison in either campaign mode. In matrix mode, `FROWS` and `FCOLS` select player and enemy
+  factions by ID. `CPT` sets fleet command points and `NOADM=1` uses the reference no-admiral setup.
 - `AI=standard`, `CAP=0`, `BOTCMD=0`, and `BOTBRACE=0` select the rules or bot options from the prior sim.
   `PACE_OLD=1` changes the timing estimate. `CATS=1` prints a timing breakdown in plain campaign mode.
 - Set `SIM_BUILD` to an absolute JSON file path for a build comparison. Apply the same fixture in both arms with

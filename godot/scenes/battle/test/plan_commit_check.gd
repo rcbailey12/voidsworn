@@ -124,6 +124,8 @@ func _burn_hotkey() -> void:
 
 func _winning_volley() -> void:
 	var last := await _last_enemy()
+	# Pin a hit so this tests the ledger through a won volley, not the miss roll.
+	b.api.R.rng.rnd_seed(7)
 	_click_unit(last)
 	b.hold = true
 	b._on_key(KEY_ENTER)

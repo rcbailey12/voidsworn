@@ -54,36 +54,17 @@ func _value(source: String, inputs: Dictionary) -> float:
 
 func _ribbon(height: float) -> void:
 	var code: String = FX.RIBBON.get_slice("void fragment() {", 1)
-	var condition := code.get_slice("if (", 1).get_slice(") {", 0)
-	var divisor := code.get_slice("beam_pixels /= ", 1).get_slice(";", 0)
 	var ratio := height / HEIGHT_1080
-	for k in [5, 8, 11]:
-		# Sample both the fixed floors and a beam wide enough to use the proportional widths.
-		for width in [8.0, 32.0]:
-			var inputs := {"height": height, "k": k, "vPixels": width * ratio, "x": 0.5,
-				"vSide": 0.5, "arc": 0.25, "s": 0.5}
+	# Every new beam's layers receive the same signed coordinate in 1080-line pixels.
+	# Sample both sides, including a projected close-up width. A 4K framebuffer must
+	# double the physical pixels per detail, not the reference width the shader sees.
+	for width in [26.0, 60.0, 120.0]:
+		for side in [-0.6, 0.0, 0.35]:
+			var inputs := {"height": height, "vSide": side, "vPixels": width * ratio}
 			inputs["fr"] = _value(_rhs(code, "fr"), inputs)
-			inputs["beam_pixels"] = _value(_rhs(code, "beam_pixels"), inputs)
-			if _value(condition, inputs) != 0.0:
-				inputs["beam_pixels"] /= _value(divisor, inputs)
-			var to_pixels: float = inputs["vPixels"] / inputs["beam_pixels"]
-			var label := "ribbon %d at %dp, %.0f px base" % [k, height, width]
-			inputs["hot_floor"] = _value(_rhs(code, "hot_floor"), inputs)
-			var hot_floor := 2.0 if k == 8 else 3.0
-			_near(_value(_rhs(code, "hot_width"), inputs) * to_pixels, maxf(hot_floor, width * 0.17) * ratio, label + " core")
-			_near(_value(_rhs(code, "glow_width"), inputs) * to_pixels, maxf(7.0, width * 0.48) * ratio, label + " sheath")
-			inputs["px"] = _value(_rhs(code, "px"), inputs)
-			_near(inputs["px"], width * 0.25, label + " reference pixel distance")
-			var branch := code.get_slice("} else if (k == %d) {" % k, 1).get_slice("\n\t}", 0)
-			match k:
-				5:
-					_near(_value(_rhs(branch, "d"), inputs), width * 0.125, label + " ion filament")
-				8:
-					_check(branch.contains("smoothstep(1.1, 3.0, px)"), label + " needle uses the reference pixel distance")
-				11:
-					inputs["pinch"] = _value(_rhs(branch, "pinch"), inputs)
-					_near(_value(_rhs(branch, "d"), inputs), (width * 0.25 - 2.0 - 3.5 * sin(0.5 * 3.14159)) / 1.15,
-						label + " null lance rail")
+			_near(_value(_rhs(code, "beam_y"), inputs), side * width * 0.5,
+				"beam detail at %dp, %.0f px base, side %.2f" % [height, width, side])
+	_check(code.contains("beam_layers(k, s, beam_y,"), "layered beams consume the scaled signed width")
 
 
 func _trail(height: float) -> void:
@@ -140,5 +121,5 @@ func _run() -> void:
 		_trail(height)
 		_world(height)
 	if _failures == 0:
-		print("PASS: ribbon cores, sheaths and accents, trail floors, stars, dust and well agree with main at 1080p and double in pixels at 2160p")
+		print("PASS: beam details, trail floors, stars, dust and well use their 1080-line sizes at both 1080p and 2160p")
 	quit(1 if _failures else 0)

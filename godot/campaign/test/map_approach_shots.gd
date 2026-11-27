@@ -25,7 +25,7 @@ class Driver extends Scene:
 		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 		Engine.max_fps = 0
 		await _frames(15)
-		JSM.rnd_seed(344)
+		C.rng.rnd_seed(344)
 		_ro_seen = {"fleet": true, "retreat": true}
 		C.titleScreen(); C.act("newRunScreen"); C.act("startRun")
 		if C.page.get("kind") == "aspect": C.act("pickAspect", C.W["aspOffer"][0])

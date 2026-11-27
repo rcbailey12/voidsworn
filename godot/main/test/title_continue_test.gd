@@ -27,7 +27,7 @@ func _run() -> void:
 		return
 	c.persist_on = false
 	c.fixed_clock = true
-	preload("res://rules/jsm.gd").rnd_seed(1124)
+	c.seed_rng(1124)
 	c.META["renown"] = 22
 	var profile := c.save_text()
 	root.size = Vector2i(1920, 1080)
@@ -47,8 +47,8 @@ func _run() -> void:
 	c.titleScreen()
 	c.act("newRunScreen")
 	c.act("startRun")
-	if c.modal_d != null and c.modal_d.get("kind") == "aspect":
-		c.act("pickAspect", c.W["aspOffer"][0])
+	_check(c.page.get("kind") == "aspect", "the migration fixture reaches the aspect page")
+	c.act("pickAspect", c.W["aspOffer"][0])   # the map fixture has finished flagship setup
 	c.act("saveQuit")
 	var old: Dictionary = JSON.parse_string(c.save_text())
 	old["run"].erase("v")

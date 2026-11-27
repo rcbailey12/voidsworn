@@ -1221,56 +1221,85 @@
    "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\I16_11\\"
   },
   "I8_37": {
-   "name": "The Unfinished",
+   "name": "The Unfinished, Glasswright flagship",
    "faction": "ithar",
    "cls": "Ark",
    "band": "XL",
-   "length_world": 26,
+   "game_ship": "i_boss",
+   "length_world": 26.0,
    "hardpoints": {
     "gun": 5,
-    "engine": 1,
-    "breach": 10,
-    "core": 1
+    "engine": 3,
+    "breach": 7,
+    "core": 1,
+    "rcs": 4,
+    "board": 2
    },
-   "breaches": 10,
-   "skins": 21,
+   "breaches": 7,
+   "turrets": 3,
    "files": {
     "I8_37.glb": {
-     "bytes": 20768712,
-     "sha256": "01b16b327558445c08d3704096722253fc4b860ff3e1ce16260d996f289dd9dc"
+     "bytes": 21156340,
+     "sha256": "03f30748469286baff18a4b0a48067aee12be39f54cf2e29800bad2bbe7624ba"
     },
     "I8_37_base.jpg": {
-     "bytes": 1768514,
-     "sha256": "36c6a13ac01fd129d3cab8cca7c66dfb6537164934091c8482e1f3d83656befd"
+     "bytes": 4720585,
+     "sha256": "f8eec29b6de2d6f5c56f7d400c85d16d1dad0d34ad35a3e91999a90b9e998eaf"
     },
     "I8_37_emission.jpg": {
-     "bytes": 355238,
-     "sha256": "1ed3299a9eec513a1b89126b9761fdf298b15aed2d2d90fda3d63f6e1c8d8b13"
+     "bytes": 803867,
+     "sha256": "71bdb69bea9a78f9ad638faaba01cd15c6b31087d3a4bdb36f44448380f4325b"
+    },
+    "I8_37_inside_glass_21a45ec1_emission.jpg": {
+     "bytes": 69975,
+     "sha256": "c75bb169beaf4cae350a31d61fde6700df840fc3db34f1919871698bd4f31e72"
+    },
+    "I8_37_inside_glass_32d80a95_emission.jpg": {
+     "bytes": 71718,
+     "sha256": "d21ac8dbfa99ed5eb827a8b5cb4b7e21a17542065fec367279fc6eb41b816ffe"
+    },
+    "I8_37_inside_glass_44017149_emission.jpg": {
+     "bytes": 108816,
+     "sha256": "ae330aedd884a9b4c2e3faadf0eac42a58d2138fa3fc767191fbd1d93a427c6d"
+    },
+    "I8_37_inside_glass_83978ada_base.jpg": {
+     "bytes": 58402,
+     "sha256": "f13940c188e7f7f8220b006a41ca26771c9e7ffb774698f98a7abc83035324ad"
+    },
+    "I8_37_inside_glass_83978ada_normal.png": {
+     "bytes": 45613,
+     "sha256": "26cc944ea0ebab82595786c4fcaa800c557ba0769491c6abbf2c992c2d8bd684"
+    },
+    "I8_37_inside_glass_83978ada_orm.png": {
+     "bytes": 163631,
+     "sha256": "69ce58d7bb12ab54010bb1fffc11167e8a8d1156efd9712f48c40d33bd33627a"
+    },
+    "I8_37_inside_glass_f0eaffa9_emission.jpg": {
+     "bytes": 66364,
+     "sha256": "d3d9cfad5441d7fb2975bb475cd4e61ca58e64deea772f7eca617520b5980eb8"
     },
     "I8_37_normal.png": {
-     "bytes": 2349042,
-     "sha256": "f541bb2bb50ab920574cdbbb28530850e1508b647eacce885510b549dd01f3ee"
+     "bytes": 17987113,
+     "sha256": "053faa92711c9378b6a522fcaf3fe6bafd062733f7dca19de526816c7233bacd"
     },
     "I8_37_orm.png": {
-     "bytes": 4717114,
-     "sha256": "cfc64dcd8a2932f2209628fab53864a74889fe28f0b50aff1568927ee32a8fd9"
+     "bytes": 18966513,
+     "sha256": "d72de5620ac1b9e36c84d4c4b3bc1665060801d2f80da670acc4b0dafd91a5b7"
     },
     "I8_37_parts_base.jpg": {
-     "bytes": 803073,
-     "sha256": "c1825833adccdd62fd26c83c4b60fe7d8cdf17f0de32c0351da66d169b2241bc"
+     "bytes": 1844579,
+     "sha256": "efee102ba5274ed7d6e3536bd6d3bddaefafd8c16d1f23f0e72dc6885cce7d60"
     },
     "I8_37_parts_normal.png": {
-     "bytes": 702729,
-     "sha256": "a83e42c8fec10bf8668599a9e8326a3f8debc37ad0b4aca679707e52989e6b8f"
+     "bytes": 11010707,
+     "sha256": "98f7047b0f9c09ec43d97da2683c3e5bbeddb9e8125c5ccc3a243c30d06408d5"
     },
     "I8_37_parts_orm.png": {
-     "bytes": 2316719,
-     "sha256": "b2aa0f356dc94e7e41c9f021ecb4c4358911cb87e53434f7a6dd47ce233d443c"
+     "bytes": 11039119,
+     "sha256": "f8ccdd4ac64e5a9f218c8eec66667df356915c0981b0ab3ed40d5d30bcdbdbc4"
     }
    },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\I8_37\\",
-   "preview": "previews/I8_37.jpg",
-   "damage_preview": "previews/I8_37_damage.jpg"
+   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\I8_37\\"
   },
   "O1_37": {
    "name": "Defence station",

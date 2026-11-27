@@ -35,7 +35,7 @@ func play(seed: int, mode: String) -> Dictionary:
 		C.arc_source = (func(_b): return {}) if mode == "empty" else card
 		C.arc_chose_cb = func(ev, k): chosen.append([ev["id"], k])
 		C.arc_end_cb = func(won): ended.append(won)
-	JSM.rnd_seed(seed); C.UID = 1; C.META = C.defaultMeta(); C.SAVED_RUN = null; C.ended = false
+	C.rng.rnd_seed(seed); C.UID = 1; C.META = C.defaultMeta(); C.SAVED_RUN = null; C.ended = false
 	C.titleScreen()
 	var s := seed; var steps := 0; var streak := 0
 	const STAY = ["closeModal", "buyHull", "buyMod", "repair", "repairAll", "upgradeMk", "sellShip", "sellConfirm", "yardFleet", "equip", "unequip", "promote", "fleetScreen", "pickFaction", "pickAdmiral", "optAlt", "optCmd", "optHeat", "progTab", "buyVariant", "c3retreat", "c3retreatNo", "factionVerb", "buyTrack"]
@@ -71,7 +71,7 @@ func play(seed: int, mode: String) -> Dictionary:
 		if x[0] == "eventChoice" and own: continue
 		streak = streak + 1 if x[0] in STAY else 0
 		C.act(x[0], x[1])
-	return {"canon": JSM.canon(C.META, "", {"updated": 1, "runAt": 1}, true) + str(JSM.rng_s), "trail": trail, "sector": maxs, "ended": C.ended}
+	return {"canon": JSM.canon(C.META, "", {"updated": 1, "runAt": 1}, true) + str(C.rng.rng_s), "trail": trail, "sector": maxs, "ended": C.ended}
 
 func _init() -> void:
 	var seeds = [11, 12, 13, 14]

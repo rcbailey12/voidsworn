@@ -31,7 +31,7 @@ func check(ok: bool, what: String) -> void:
 
 
 func fresh(seed: int) -> void:
-	C.UID = 1; JSM.rnd_seed(seed); C.META = C.defaultMeta(); C.META["backfilled"] = 1; C.META["wonFix41"] = 1; C.SAVED_RUN = null; C.RUN = null; C.B = null; C.tel_log = []
+	C.UID = 1; C.rng.rnd_seed(seed); C.META = C.defaultMeta(); C.META["backfilled"] = 1; C.META["wonFix41"] = 1; C.SAVED_RUN = null; C.RUN = null; C.B = null; C.tel_log = []
 	C.picked_admiral = "vex"; C.picked_faction = "voidsworn"; C.run_opt = {"alt": false, "cmdAlt": false, "heat": []}
 	C.titleScreen(); C.act("newRunScreen"); C.act("startRun")
 
@@ -60,7 +60,7 @@ func _init() -> void:
 
 	# Ask the story layer, before any further campaign call, for the commander it will name.
 	var reg_n = reg.size()
-	var rng0 = JSM.rng_s
+	var rng0 = C.rng.rng_s
 	var cache0 = C.RUN.get("nem")
 	var S = Story.new()
 	S.C = C
@@ -70,7 +70,7 @@ func _init() -> void:
 	check(got is Dictionary and str(got.get("name", "")) == str(reg[f2].get("name", "")), "the sector 2 commander's name reaches the story context")
 	var rival: String = S._fill("{rival}", C.RUN)
 	check(rival == Tokens.full_name(reg[f2]), "the story text reader names the sector 2 commander: " + rival)
-	check(reg.size() == reg_n and JSM.rng_s == rng0 and is_same(C.RUN.get("nem"), cache0), "asking for the Nemesis changed nothing: registry, PRNG and the RUN.nem alias are as they were")
+	check(reg.size() == reg_n and C.rng.rng_s == rng0 and is_same(C.RUN.get("nem"), cache0), "asking for the Nemesis changed nothing: registry, PRNG and the RUN.nem alias are as they were")
 
 	# A save written after the advance loads and reads the same commander through the real continue path.
 	C.saveRun()
