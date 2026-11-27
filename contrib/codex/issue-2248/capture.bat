@@ -2,14 +2,15 @@
 setlocal
 rem Run from a GPU lane after green All checks and review of the exact after commit.
 rem Optional first argument: the reviewed commit. Double-click pins the reviewed checkout's HEAD.
-set "LB_BEFORE=061f6268652a311b7a977cf40739f96c5bb88c5f"
+rem Compare against the merged cap tint fix, not the base from the first run.
+set "LB_BEFORE=4a6c1c18b2b1a84991ac48bf9cceb97220179faa"
 set "LB_AFTER=%~1"
 set "LB_CHECK="
 if /i "%LB_AFTER%"=="check" (
   set "LB_CHECK=1"
   set "LB_AFTER="
 )
-set "LB_ROOT=%USERPROFILE%\Downloads\voidsworn_test\board_d\issue-2248"
+set "LB_ROOT=%USERPROFILE%\Downloads\voidsworn_test\board\issue-2248"
 set "LB_HOME=%LB_ROOT%\look_bench"
 set "LB_SHEETS=%LB_ROOT%\shots"
 set "LB_MOMENTS=%~dp0look_moments.json"

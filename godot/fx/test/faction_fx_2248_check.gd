@@ -7,6 +7,8 @@ const SPECIAL := preload("res://fx/fx_special.gd")
 const SH := preload("res://fx/fx_shaders.gd")
 const POOLS := preload("res://fx/fx_pool.gd")
 const BREACH := preload("res://fx/fx_breach.gd")
+const ROOT := preload("res://tools/ci/world_root.gd")
+const A16_FIXTURE := "res://fx/test/fixtures/C19_51_unbaked.glb.gz"
 
 # The cold face pigments on main at 061f6268. The seam's heat is a separate input.
 const MAIN_CAP := {"deathless": Vector3(0.16, 0.12, 0.21), "corsair": Vector3(0.35, 0.105, 0.065)}
@@ -147,13 +149,54 @@ func _check_api() -> void:
 		"FX API documents the optional plume tint, its fallback, its profile and the shared callers")
 
 
+func _barge() -> Node3D:
+	# Pass the installed C19_51 GLB after -- to exercise its painted export too.
+	var args := OS.get_cmdline_user_args()
+	var doc := GLTFDocument.new()
+	var state := GLTFState.new()
+	var result: Error
+	if args.is_empty():
+		var bytes := FileAccess.get_file_as_bytes(A16_FIXTURE).decompress_dynamic(-1, FileAccess.COMPRESSION_GZIP)
+		if bytes.is_empty():
+			return null
+		result = doc.append_from_buffer(bytes, A16_FIXTURE.get_base_dir(), state)
+	else:
+		result = doc.append_from_file(args[0], state)
+	if result != OK:
+		return null
+	var hull: Node3D = doc.generate_scene(state)
+	if hull == null:
+		return null
+	var holder := ROOT.hold(world, hull)
+	fx.add_ship("T", holder, {"faction": "corsair", "cls": "Battle-barge", "code": "C19_51", "shielded": false})
+	return holder
+
+
 func _check_cap(faction: String) -> void:
 	_setup()
-	_ship(faction, "Cruiser")
+	var is_barge := faction == "corsair"
+	if is_barge:
+		var holder := _barge()
+		if holder == null:
+			_check(false, "C19_51 loads")
+			_end()
+			return
+		var ship = fx.ship("T")
+		_check(ship.hull.authored and ROOT.at_game_size(ship, ROOT.held_length(holder)),
+			"C19_51 uses its authored hull at game size")
+		# Let the real export finish cutting before starting the death clock, as the look bench does.
+		DEATH.precompute(fx, ship, "blast", true)
+		var deadline := Time.get_ticks_msec() + 120000
+		while not DEATH.finish_precompute(fx, ship) and Time.get_ticks_msec() < deadline:
+			await process_frame
+			OS.delay_msec(1)
+	else:
+		_ship(faction, "Cruiser")
 	fx.death("T", "blast")
 	# Give the actual cut worker time to finish. Then look after the seam has cooled, not at a stand-alone material.
 	var cap_count := 0
 	var cold_count := 0
+	var soot_count := 0
 	var darkest_ratio := 1.0
 	var brightest_ratio := 0.0
 	var deadline := Time.get_ticks_msec() + 10000
@@ -174,6 +217,8 @@ func _check_cap(faction: String) -> void:
 					cap_count += 1
 					if is_zero_approx(mat.get_shader_parameter("heat")):
 						cold_count += 1
+					if mat.get_shader_parameter("cold_soot") == true:
+						soot_count += 1
 					var paint := _rgb(mat.get_shader_parameter("scorch_tint"))
 					var ratio := paint.dot(LUMA) / (MAIN_CAP[faction] as Vector3).dot(LUMA)
 					darkest_ratio = minf(darkest_ratio, ratio)
@@ -181,6 +226,9 @@ func _check_cap(faction: String) -> void:
 	_check(cap_count >= 2 and cold_count == cap_count and darkest_ratio > 0.0 and brightest_ratio <= 0.75,
 		"%s cold cap pigment is darker than main on all %d released pieces (%.3f to %.3f of main)" %
 		[faction, cap_count, darkest_ratio, brightest_ratio])
+	_check(cap_count >= 2 and soot_count == (cap_count if is_barge else 0),
+		"%s uses the expected cold cap finish (%d of %d active caps with matte soot)" %
+		["C19_51" if is_barge else "Eclipse", soot_count, cap_count])
 	_end()
 
 

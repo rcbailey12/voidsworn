@@ -146,6 +146,7 @@ uniform float heat = 0.0;
 uniform int cap_kind = 0; // 0: metal, 1: glass, 2: flesh
 uniform float section_scale = 1.0;
 uniform vec3 scorch_tint = vec3(0.20, 0.21, 0.22);
+uniform bool cold_soot = false;
 uniform vec3 cap_albedo = vec3(0.32);
 // R367: the seam's heat in the faction's death colours (defaults for an unstyled hull).
 uniform vec3 heat_cool = vec3(0.12, 0.025, 0.013);
@@ -185,6 +186,14 @@ void fragment() {
 		ALBEDO = base * (0.58 + 0.42 * coarse);
 		ROUGHNESS = mix(0.95, 0.67, coarse);
 		METALLIC = lip ? 0.46 : 0.23;
+		if (cold_soot) {
+			// Bare metal still reflects the board lights when its pigment darkens. Cooled soot is matte.
+			float soot = 1.0 - temperature * temperature;
+			ALBEDO *= mix(1.0, 0.18, soot);
+			ROUGHNESS = mix(ROUGHNESS, 1.0, soot);
+			METALLIC *= 1.0 - soot;
+			SPECULAR = 0.5 * (1.0 - soot);
+		}
 		vec3 hot = mix(heat_cool, heat_hot, smoothstep(0.10, 0.72, temperature));
 		hot = mix(hot, heat_white, 0.30 * smoothstep(0.82, 1.0, temperature));
 		float seam = edge * mix(0.06, 1.0, smoothstep(0.27, 0.68, coarse));
@@ -1826,6 +1835,8 @@ static func _piece_materials(am: ArrayMesh, pc: Dictionary, weathered := false, 
 		var kind := int(pc.get("cap_kind", CAP_METAL))
 		mat.set_shader_parameter("cap_kind", kind)
 		mat.set_shader_parameter("scorch_tint", pc.get("scorch_tint", Color(0.20, 0.21, 0.22)))
+		if pc.get("faction", "") == "corsair":
+			mat.set_shader_parameter("cold_soot", true)
 		if kind == CAP_GLASS:
 			mat.set_shader_parameter("cap_albedo", _cap_albedo("ithar", "glass", Vector3(0.32, 0.32, 0.32)))
 		elif kind == CAP_FLESH:
