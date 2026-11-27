@@ -1,15 +1,17 @@
 extends SceneTree
-# Issue 1434. Three things the title backdrop and the battle load must keep:
+# Issue 1434. Things the title backdrop and the battle load must keep:
 # 1. W4: the title's decorative battle loads no sound bank and never changes the shared sfx bus, at volume 0.25 and muted
 #    (before: the bus jumped from -21.42 to -5.25 dB for a frame and the whole bank loaded, about 435 ms).
 # 2. Item 10: the backdrop is capped at High, and stop_build() (main.gd, leaving the title) puts the menu's viewport
 #    settings back and stops a build still under way.
 # 3. Item 2: the sliced build (the windowed path, forced here with --sliced-load) builds every ship, counts them on the
 #    cover, and a stop part way builds nothing more.
+# 4. LOAD39: behind the live menu the wreck kit stays in place, without the painted hull chunk work that can stall a draw.
 
 const BattleScene := preload("res://scenes/battle/battle.tscn")
 const Sfx := preload("res://audio/sfx.gd")
 const SV := preload("res://render/ship_view.gd")
+const BOARD_LOOK := preload("res://world/board_look.gd")
 
 var fails := 0
 
@@ -29,6 +31,36 @@ func _check(ok: bool, what: String) -> void:
 func _bus() -> Array:
 	var i := AudioServer.get_bus_index("sfx")
 	return [AudioServer.get_bus_volume_db(i), AudioServer.is_bus_mute(i)] if i >= 0 else [null, null]
+
+
+func _check_debris() -> void:
+	BOARD_LOOK.set_look("cine", false)
+	for title_only in [true, false]:
+		var sc = BattleScene.instantiate()
+		sc.showcase = true   # no turns, but the second case uses the normal battle's world load
+		sc.title_backdrop = title_only
+		sc.args["sliced-load"] = true
+		sc.args["nofx"] = true
+		sc.args["quality"] = "high"
+		sc.args["map"] = "belt"
+		sc.args["seed"] = 4242
+		root.add_child(sc)
+		var deadline := Time.get_ticks_msec() + 20000
+		while not sc.showcase_ready and Time.get_ticks_msec() < deadline:
+			await process_frame
+		var w = sc.world
+		_check(sc.showcase_ready and w != null and w._living != null and not w._terr_pts.debris.is_empty(),
+			"debris fixture builds a living wreck field (title %s)" % title_only)
+		if w != null and w._living != null:
+			if title_only:
+				_check(not w._living._wreck_slots.is_empty() and w._debris_ships.is_empty()
+					and not w.ship_debris_pending() and not w._living.has_node("HullDebris"),
+					"the title keeps its wreck kit and never queues painted hull debris")
+			else:
+				_check(not w._debris_ships.is_empty(), "the normal battle world still requests painted hull debris")
+		sc.stop_build()
+		sc.queue_free()
+		await process_frame
 
 
 func _run() -> void:
@@ -90,6 +122,7 @@ func _run() -> void:
 	_check(str(sc3.args.get("quality")) == "max" and not sc3.sfx.silent, "a plain showcase keeps Max and its sound")
 	sc3.queue_free()
 	await process_frame
+	await _check_debris()
 	# the sliced build: every ship, the count, and a stop part way
 	var b = BattleScene.instantiate()
 	b.args["sliced-load"] = true

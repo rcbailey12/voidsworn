@@ -940,7 +940,11 @@ func _begin(a) -> void:
 		for u in V["units"]:
 			_make_view(u)
 	_sync(V)
-	if world != null: world.use_ship_debris(views.values())
+	# LOAD39: a cold lit proxy for the first painted hull chunk stalled the title draw for 1.9 s.
+	# Keep the world's existing wreck kit behind the live menu. Only battles and their previews
+	# upgrade those slots to cut hull meshes, with the normal load cover and pipeline warm-up.
+	if world != null and not title_backdrop:
+		world.use_ship_debris(views.values())
 	# open on your fleet, looking toward the enemy (the browser game's camera starts over the player's side)
 	var hv: Dictionary = board.home_view(V["units"])   # shared with the Hold relay beacon's placement (issue 1536)
 	cam.home = hv["target"]
