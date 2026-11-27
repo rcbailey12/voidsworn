@@ -16,3 +16,6 @@
 *.webp binary
 *.ogg binary
 *.wav binary
+# Independent check additions can land together. The check-list lint still rejects duplicate script entries.
+godot/tools/ci/godot_checks.txt merge=union
+godot/tools/ci/godot_check_times.txt merge=union

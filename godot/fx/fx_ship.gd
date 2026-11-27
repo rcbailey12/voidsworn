@@ -2795,15 +2795,18 @@ func _plume_glow() -> Color:
 	return glow
 
 
+func _plume_profile() -> DAMAGE_PLUME.Profile:
+	if faction == "hegemony":
+		return DAMAGE_PLUME.Profile.ELECTRIC
+	if wounds_v2 and faction == "deathless":
+		return DAMAGE_PLUME.Profile.VIOLET
+	return DAMAGE_PLUME.Profile.BASE
+
+
 func _attach_damage_plume(fx, e: Dictionary, p: Vector3, axis: Vector3, length: float, form: DAMAGE_PLUME.Form) -> void:
 	var phase := float(posmod(hash(e.id) + _seed, 127)) / 127.0
-	var glow := _plume_glow()
-	var profile := DAMAGE_PLUME.Profile.BASE
-	if faction == "hegemony":
-		profile = DAMAGE_PLUME.Profile.ELECTRIC
-	elif wounds_v2 and faction == "deathless":
-		profile = DAMAGE_PLUME.Profile.VIOLET
-	var plume := DAMAGE_PLUME.build(fx, _dmg_root, p, axis, length, form, fac, phase, "fx_damage_" + e.id, glow, profile)
+	var plume := DAMAGE_PLUME.build(fx, _dmg_root, p, axis, length, form,
+		fac, phase, "fx_damage_" + e.id, _plume_glow(), _plume_profile())
 	e["node"] = plume
 	e["mat"] = plume.material_override
 	e["particles"] = 1
@@ -2859,7 +2862,7 @@ func _build_wing_smoke(fx) -> void:
 		p = exhaust.p
 	var phase := float(posmod(_seed, 127)) / 127.0
 	_wing_smoke = DAMAGE_PLUME.build(fx, parent, p, Vector3.LEFT, length, DAMAGE_PLUME.Form.WING,
-		fac, phase, "fx_wing_damage_smoke")
+		fac, phase, "fx_wing_damage_smoke", _plume_glow(), _plume_profile())
 
 
 func _clear_wing_smoke() -> void:
