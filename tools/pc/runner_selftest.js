@@ -261,6 +261,14 @@ if (probe) {
   if (process.env.STUB_AGENT_NO_CHANGE !== '1') {
     fs.writeFileSync('agent_started.txt', expectResume ? 'resumed work verified' : 'fresh start verified');
   }
+  if (process.env.STUB_BRIEF_UNREADABLE) {
+    if (process.env.STUB_BRIEF_UNREADABLE === 'codex-1223') {
+      console.log('OpenAI Codex v0.171.0\\nShellExecuteExW failed to launch setup helper: 1223\\nI could not open CODEX_TASK.md. Please paste it.');
+    } else {
+      console.log('OpenAI Codex v0.171.0\\nI finished without running any shell commands.');
+    }
+    process.exit(0);
+  }
   const agentHold = process.env.STUB_AGENT_HOLD;
   if (agentHold) {
     fs.writeFileSync(agentHold + '.ready', 'agent owns checkout');
@@ -346,7 +354,7 @@ const defaults = {
   PC_WAIT_FOR: '', PC_WAIT_RUN: '', PC_WAIT_SECONDS: '2', STUB_GIT_FAULT: '', STUB_AUTH_FAIL: '',
   STUB_PROBE_TIMEOUT: '', STUB_FETCH_HOLD: '', STUB_CHECKOUT_EDIT: '', STUB_RECHECK_FAIL: '', STUB_CHECKOUT_MARKER: '',
   STUB_CHECKOUT_EDIT_PATH: '',
-  STUB_ACCOUNT_FAULT: '', STUB_EXPECT_FRESH: '', STUB_AGENT_HOLD: '', STUB_AGENT_EXIT: '', STUB_CHECKS_EXIT: '', STUB_IGNORED_WORK: '', STUB_REFUSED_WORK: '',
+  STUB_ACCOUNT_FAULT: '', STUB_EXPECT_FRESH: '', STUB_AGENT_HOLD: '', STUB_AGENT_EXIT: '', STUB_CHECKS_EXIT: '', STUB_IGNORED_WORK: '', STUB_REFUSED_WORK: '', STUB_BRIEF_UNREADABLE: '',
   // Issue 722: about 68 GB fake free space, above the 60 GB floor, so fixture runs pass the space check on any host;
   // the dedicated floor tests force 100 MB instead. Settings and hashes fixtures stay unset unless a test names them.
   PC_TEST_SPACE_FREE_MB: '70000', PC_TEST_SETTINGS: '', PC_TEST_HASHES: '',
@@ -957,6 +965,53 @@ async function testClaimFailures() {
     pass(arm + ': failed status-comment claim stops before checkout or model calls and releases only its label');
   });
 }
+async function testFinishReleasesClaimBeforeCleanup() {
+  const home = path.join(root, 'finish-claim');
+  const out = path.join(home, 'out');
+  const repo = path.join(home, 'board', 'repo');
+  const log = path.join(out, 'result.txt');
+  const env = { ...defaults, USERPROFILE: home, PC_RUN_TEMP: home,
+    PC_TEST_GH_DB: path.join(home, 'gh-db.json'), PC_TEST_GH_TRACE: log };
+  // Use one transcript for the fake REST calls and the real cleanup logs. No timing or large checkout needed.
+  write(log, '');
+  write(env.PC_TEST_GH_DB, JSON.stringify(gh.database(2262, base)));
+  write(path.join(path.dirname(repo), 'repo-kept-newest', 'fixture.txt'), 'kept checkout');
+  for (const args of [
+    ['init', out, 'codex/issue-2262'],
+    ['announce', out, '2262', 'codex', repo, '21600', 'fixture resume', 'real'],
+    ['scratch', out]
+  ]) {
+    const step = await ps(args, env);
+    assert.equal(step.code, 0, step.text);
+  }
+  assert.equal(JSON.parse(read(env.PC_TEST_GH_DB)).running, true);
+  write(path.join(out, 'run_commit.txt'), base);
+  write(path.join(out, 'confirmed_commit.txt'), base);
+  const finish = await ps(['finish', out, '0', '', 'real', '1', repo], {
+    ...env, PC_RUN_SCRATCH: read(path.join(out, 'scratch_path.txt')).trim()
+  });
+  assert.equal(finish.code, 0, finish.text);
+  const state = JSON.parse(read(path.join(out, 'status.json')));
+  const db = JSON.parse(read(env.PC_TEST_GH_DB));
+  assert.equal(state.status, 'checked_push');
+  assert.equal(state.confirmed_commit, base);
+  assert.equal(state.github.claimed, false);
+  assert.equal(db.running, false);
+  assert.match(db.comments[0].body, /Runner status: finished/);
+  const lines = read(log).split(/\r?\n/).map(line => line.trim());
+  const call = (method, endpoint) => lines.findIndex(line => {
+    if (!line.startsWith('{')) return false;
+    const entry = JSON.parse(line);
+    return entry.method === method && entry.endpoint === 'repos/rcbailey12/voidsworn/' + endpoint;
+  });
+  const comment = call('PATCH', 'issues/comments/' + state.github.comment);
+  const release = call('DELETE', 'issues/2262/labels/running');
+  const scratch = lines.findIndex(line => line.startsWith('run scratch removed:'));
+  const kept = lines.findIndex(line => line.startsWith('kept checkout retained (newest):'));
+  assert(comment >= 0 && release > comment && scratch > release && kept > release,
+    `expected comment and label release before both cleanups, got lines ${comment}, ${release}, ${scratch}, ${kept}`);
+  pass('finish records the checked push and releases the claim before scratch and kept-checkout cleanup');
+}
 async function testAssignedBranch() {
   await parallel([
     ['codex', 'moved-seat', 'Branch: assigns'],
@@ -1155,6 +1210,27 @@ async function testNoEditRerun() {
     assert.equal(run('git', ['--git-dir', remote, 'rev-parse', branch]).text.trim(), pushed);
     pass(arm + ': no-edit rerun delivers the runner merge and runs both checks; another unchanged rerun exits 7');
   });
+  // Brief-unreadable / zero-command Codex abort on a runner merge must NEVER publish an empty checkpoint or overwrite PR body.
+  for (const mode of ['codex-1223', 'zero-exec']) {
+    const branch = 'codex/issue-687';
+    const remote = fixtureSource('brief-refuse-' + mode);
+    const earlier = fixtureCommit({ 'progress.txt': 'from partial\n', 'earlier.txt': 'delivered\n' }, base, '', remote);
+    write(path.join(remote, 'refs/heads', branch), earlier + '\n');
+    fs.unlinkSync(path.join(remote, 'refs/heads', branch + '-partial'));
+    const main = fixtureCommit({ 'progress.txt': 'base\n', 'main.txt': 'new on main\n' }, base, 'main advanced\n', remote);
+    write(path.join(remote, 'refs/heads/main'), main + '\n');
+    const refused = await job('codex', 'same-seat', {
+      CODEX_TEST_ROOT: path.join(root, 'brief-refuse-' + mode), STUB_RUNNER_TOOLS: deliveryTools,
+      PC_TEST_STOP_BEFORE_PUBLISH: '0', WORK_SKIP_CHECKS: '0', STUB_AGENT_NO_CHANGE: '1',
+      STUB_EXPECT_FRESH: '1', STUB_BRIEF_UNREADABLE: mode, PC_TEST_SOURCE: remote
+    });
+    assert.equal(refused.code, 15, refused.text + refused.result);
+    assert.equal(refused.state.status, 'failed', refused.result);
+    assert(refused.result.includes('delivery refused:'), refused.result);
+    assert.equal(run('git', ['--git-dir', remote, 'rev-parse', branch]).text.trim(), earlier, 'remote branch must stay on earlier tip');
+    assert.equal(fs.existsSync(path.join(refused.out, 'commit.txt')) ? read(path.join(refused.out, 'commit.txt')).trim() : '', '', 'PR description / commit message must not be generated');
+    pass('codex brief-unreadable guard (' + mode + '): blocks merge-only empty delivery even on exit 0');
+  }
 }
 async function testWorkhorseSlots() {
   const workRoot = path.join(root, 'workhorse slots');
@@ -1591,7 +1667,7 @@ async function testRunnerStartChecks() {
     testAccounting, testAccountingFaults,
     testCleanAndCacheReuse, testSharedShipCopySafety, testKeptLookalikes, testCampaignParityCleanup, testLateCheckoutEdits,
     testIncomingCheckoutCollisions, testKeptCheckoutHistory,
-    testClaimRules, testClaimFailures, testAssignedBranch, testDeliveryCleanup, testNoEditRerun, testResumeAndFailures, testGitRetries,
+    testClaimRules, testClaimFailures, testFinishReleasesClaimBeforeCleanup, testAssignedBranch, testDeliveryCleanup, testNoEditRerun, testResumeAndFailures, testGitRetries,
     testHeldCheckout, testMergedPartial, testResumeConflict, testChainRelease, testProbeTimeout,
     testMirrorAndConfirmation, testRunnerStartChecks
   ], check => check());

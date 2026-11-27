@@ -73,6 +73,18 @@ try {
   write('.gitignore', 'godot/.godot/\n');
   write('contrib/opus/LOOP.md', 'before\n');
   write('contrib/opus/FINDINGS.md', 'before\n');
+  // Stand-ins read the same paths as the two real lints. The other standing rows run the real lints.
+  for (const [lint, log] of [['memory_lint_tests.js', 'FINDINGS.md'], ['doc_check_tests.js', 'LOOP.md']]) {
+    write('contrib/opus/tools/' + lint, `
+      const fs = require('node:fs');
+      const path = require('node:path');
+      const log = fs.readFileSync(path.join(process.env.VS_ROOT, 'contrib/opus', ${JSON.stringify(log)}), 'utf8');
+      if (log.includes('planted lint error')) {
+        console.error('FAIL: planted lint error');
+        process.exitCode = 1;
+      }
+    `);
+  }
   write('godot/project.godot', 'config_version=5\n');
   write('godot/tools/ci/load_all.gd', fs.readFileSync(path.join(root, 'godot/tools/ci/load_all.gd')));
   git('add', '.');
@@ -136,7 +148,17 @@ try {
   permit(shell('git push --force-with-lease origin opus/issue-1660', main));
   permit(shell('cd ' + work + ' && git push -u origin opus/issue-1660', main));
   permit(shell('for i in 1 2 3; do git push -u origin opus/issue-1660 && break; sleep 2; done', main));
-  permit(shell('git push', main));
+  deny(shell('git push origin', main), /explicit remote/);
+  deny(shell('git push origin HEAD', main), /named branch or refspec/);
+  deny(shell('git --git-dir .git push origin', main), /explicit remote/);
+  deny(shell('git push origin "$BRANCH"', main), /plain git push/);
+  deny(shell('git push origin HEAD:heads/main', main), /named branch or refspec/);
+  git('config', 'push.default', 'upstream');
+  deny(shell('git push', main), /explicit remote/);
+  git('config', 'remote.origin.push', 'refs/heads/opus/issue-1660:refs/heads/board/fixture');
+  deny(shell('git push origin opus/issue-1660', main), /named branch or refspec/);
+  permit(shell('git push origin HEAD:refs/heads/opus/issue-1660', main));
+  git('config', '--unset', 'remote.origin.push');
   permit(shell('git push relay HEAD:refs/heads/pc-out-proof', main));
   permit(shell('git push -q origin opus/issue-1660', fence));
   permit(shell('git commit -m "main menu push fix"', main));
@@ -144,6 +166,33 @@ try {
 
   deny(shell('git push origin HEAD:refs/heads/main', fence), /Only a main seat/);
   deny(shell('git push --mirror origin', main), /named branches/);
+  deny(shell("git push origin 'refs/heads/*:refs/heads/*'", main), /wildcard/);
+  deny(shell('git push origin :', main), /matching refspec/);
+  deny(shell('git push --repo origin +HEAD:main', main), /explicit remote/);
+  deny(shell('git -c alias.ship=push ship origin opus/issue-1660:main', main), /not through an alias/);
+  git('config', 'alias.ship', 'push');
+  deny(shell('git ship origin opus/issue-1660:main', main), /not through an alias/);
+  git('config', 'alias.deliver', 'ship');
+  deny(shell('git deliver origin opus/issue-1660:main', main), /not through an alias/);
+  git('config', 'alias.st', 'status --short');
+  permit(shell('git st', main));
+  git('config', 'alias.pushlog', 'log --grep=push');
+  permit(shell('git pushlog', main));
+  git('config', 'alias.lg', '!git log --oneline --grep="git push"');
+  permit(shell('git lg', main));
+  git('config', 'alias.apinotes', "!printf '%s' 'gh api repos/team/game/merges'");
+  permit(shell('git apinotes', main));
+  for (const name of ['status', 'diff', 'log']) {
+    permit(shell('git -c alias.' + name + '=push ' + name, main));
+  }
+  permit(shell('git log --grep="example; git push origin main"', main));
+  for (const expansion of [
+    '!git -c color.ui=never push', '!git send-pack', '!gh api repos/team/game/merges',
+    '!f() { git log -1 && git push; }; f', '!echo "$(git status)"',
+  ]) {
+    git('config', 'alias.shellship', expansion);
+    deny(shell('git shellship', main), /not through an alias/);
+  }
   deny(shell('git push origin :main', main), /cannot be deleted/);
   deny(shell('git push origin --delete main', main), /cannot be deleted/);
   deny(shell('git push -f origin HEAD:main', main), /fast-forward/);
@@ -161,6 +210,17 @@ try {
   deny(shell('gh api -X PUT repos/team/game/contents/README.md -f message=x -f content=eA==', main), /Direct writes to main/);
   permit(shell('gh api -X PUT repos/team/game/contents/README.md -f message=x -f content=eA== -f branch=opus/issue-1660', main));
   permit(shell('gh api -X GET repos/team/game/git/refs/heads/main', main));
+  deny(shell('gh api -X POST repos/team/game/merges -f base=main -f head=opus/issue-1660', main), /pull request/);
+  deny(shell('gh api repos/team/game/merges -f base=main -f head=opus/issue-1660', main), /pull request/);
+  deny(shell('gh api -XPOST repos/team/game/merges --input payload.json', main), /pull request/);
+  deny(shell('gh api --raw-field base=main --method=POST "repos/{owner}/{repo}/merges?test=1" -f head=opus/issue-1660', main), /pull request/);
+  for (const flag of ['-f', '-F', '--field', '--raw-field']) {
+    permit(shell('gh api ' + flag + ' body="blocks /merges; /contents; /git/refs/heads/main" repos/team/game/issues/1/comments', main));
+  }
+  permit(shell('gh api repos/team/game/issues/1/comments --raw-field=body="see /merges"', main));
+  permit(shell('gh api repos/team/game/contents/merges -F branch=opus/issue-1660 -f message="branch=main"', main));
+  deny(shell('gh api repos/team/game/git/refs -f ref=refs/heads/main -f sha=abc', main), /Direct writes to main/);
+  permit(shell('gh api -X PUT repos/team/game/pulls/1660/merge', main));
   console.log('PASS main guard: force, delete, mirror, unverifiable and direct API writes to main blocked; branch writes allowed');
 
   git('switch', '-q', 'main');
@@ -170,19 +230,42 @@ try {
   git('commit', '-m', 'Change only both Board logs');
   permit(shell('git push origin main', main));
   permit(shell('git push origin HEAD:refs/heads/main', main));
-  permit(shell('git push', main));
+  deny(shell('git push', main), /explicit remote/);
   permit(shell('cd ' + work + ' && git push origin main 2>&1', main));
+  const goodLogTip = git('rev-parse', 'HEAD');
+  for (const log of ['FINDINGS.md', 'LOOP.md']) {
+    const file = 'contrib/opus/' + log;
+    write(file, 'planted lint error\n');
+    git('add', file);
+    git('commit', '-m', 'Plant a Board log lint error');
+    permit(shell('git push origin main', main)); // F9 stays off until F6 and the LOOP roll land.
+    write(file, 'unstaged fix\n');
+    permit(shell('git push origin main', main));
+    git('reset', '-q', '--hard', goodLogTip);
+  }
   write('README.md', 'planted outside change\n');
   git('add', 'README.md');
   git('commit', '-m', 'Plant a disallowed change');
   deny(shell('git push origin main', main), /Each commit/);
-  deny(shell('git push', main), /Each commit/);
+  deny(shell('git push', main), /explicit remote/);
   deny(shell('git status && git push origin main', main), /Bash call of its own/);
   deny(shell("git commit -qam 'x' && git push origin main 2>&1", main), /Bash call of its own/);
   deny(shell('git push origin main 2>&1', main), /Each commit/);
   deny(shell('git -C "' + work.split(path.sep).join('/') + '" push origin main', main), /Each commit/);
   git('revert', '--no-edit', 'HEAD');
   deny(shell('git push origin main', main), /Each commit/);
+  const boardWorktree = path.join(temp, 'board-worktree');
+  git('worktree', 'add', '-b', 'board-log-fixture', boardWorktree, 'origin/main');
+  assert.ok(fs.statSync(path.join(boardWorktree, '.git')).isFile());
+  for (const name of ['LOOP.md', 'FINDINGS.md']) {
+    const file = 'contrib/opus/' + name;
+    fs.appendFileSync(path.join(boardWorktree, file), 'Board worktree update\n');
+    git('-C', boardWorktree, 'add', file);
+    git('-C', boardWorktree, 'commit', '-m', 'Update ' + name);
+    permit(shell('git push origin HEAD:refs/heads/main', { cwd: boardWorktree }));
+    git('-C', boardWorktree, 'push', 'origin', 'HEAD:refs/heads/main');
+    assert.equal(git('-C', boardWorktree, 'rev-parse', 'HEAD'), git('--git-dir', remote, 'rev-parse', 'main'));
+  }
   console.log('PASS Board log push: LOOP.md and FINDINGS.md fast-forward to main allowed; any other change blocked even if reverted');
 
   const dash = String.fromCharCode(0x2014);
@@ -195,6 +278,15 @@ try {
   console.log('PASS punctuation hook: flagged the planted em dash and cleared after replacement');
 
   git('reset', '-q', '--hard', 'origin/main');
+  const installed = path.join(os.homedir(), 'Downloads', 'voidsworn_test', 'godot', 'Godot_v4.7.2-stable_win64_console.exe');
+  const godot = mainEnv.GODOT_EXE || mainEnv.GODOT ||
+    (process.platform === 'win32' && fs.existsSync(installed) ? installed : 'godot');
+  const version = spawnSync(godot, ['--headless', '--version'], { encoding: 'utf8', timeout: 30000, windowsHide: true });
+  if (version.error?.code === 'ENOENT' && godot === 'godot') {
+    console.log('Godot not installed: real parse subprocess not exercised. Missing-engine behavior is tested below.');
+  } else {
+  assert.ifError(version.error);
+  assert.equal(version.status, 0, version.stderr);
   const loaderPath = 'godot/tools/ci/load_all.gd';
   const loader = fs.readFileSync(path.join(work, loaderPath), 'utf8');
   write(loaderPath, loader + '\n# Earlier edit\n');
@@ -221,6 +313,7 @@ try {
   permit(fixedGodot);
   assert.match(fixedGodot.stdout, /Godot parse check passed/);
   console.log('PASS Godot hook: skipped a clean turn, blocked a real parse error, ended after one unchanged retry, passed the fix');
+  }
 
   // Godot missing: never block, on the first stop or the retry; say it was skipped.
   write('godot/probe.gd', 'extends Node\nfunc broken(\n');

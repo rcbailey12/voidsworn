@@ -130,8 +130,10 @@ check(gs.some(r => r.how === 'theme default'), 'text floor scan reads the theme 
 }
 
 // 5. HD9: one hull-low line in the port
+const shipPlate = read('godot/ui/battle/ship_plate.gd');
 const campaignHull = read('godot/ui/campaign/campaign_ui.gd');
-const lows = [...hud.matchAll(/HULL_LOW if \w+ < ([\d.]+)/g), ...campaignHull.matchAll(/(?:BLOOD|HULL_LOW) if f < ([\d.]+)/g), ...campaignHull.matchAll(/HULL_LOW if float\(s\["frac"\]\) < ([\d.]+)/g)].map(m => +m[1]);
+const battleLows = [hud, shipPlate].flatMap(source => [...source.matchAll(/HULL_LOW if \w+ < ([\d.]+)/g)]);
+const lows = [...battleLows, ...campaignHull.matchAll(/(?:BLOOD|HULL_LOW) if f < ([\d.]+)/g), ...campaignHull.matchAll(/HULL_LOW if float\(s\["frac"\]\) < ([\d.]+)/g)].map(m => +m[1]);
 // (issue 652: the Lime roster row left hud.gd; the battle's fleet foot is drawn by ledger.gd with its own hull line)
 check(lows.length >= 3 && lows.every(v => v === 0.35), `every hull-low line is 0.35: nameplate, campaign bars and hull figures (HD9; found ${lows.join(', ')})`);
 

@@ -128,10 +128,14 @@ Technical calls made without Ryan; any of them can be reversed.
 - The main drive idles at a pilot glow (G4 engine level 0.35) at rest and while coasting; the full plume only while it pushes.
 - Jets are drawn by the scene (additive puffs, about 5% of the hull's length, left in space where fired).
 - Enemy volleys hold the battle for the browser's own volley length at the B2 pace, while G4's longer effects play on over the next volley; your own first volley at normal speed plays in full; a killing volley waits for its impacts; deaths hold half their length at most on the enemy's turn (big hulls 0.8 s at least).
-- The title shows a decorative battle on open maps (no belts), Max and High graphics only; the browser's map showcase is not carried over (G3's 3D map replaces it).
+- The title's decorative battle on open maps builds in slices after the menu paints and uses High without MSAA or TAA, even on Max. Low keeps the static sky. The browser's map showcase is not carried over (G3's 3D map replaces it).
 - The concept-art hulls toggle is not carried over (Godot has the game hulls only). Temporal AA is a setting, off by default.
 - The ship sheet leaves out the enemy reach line (it needs a threat pass per hover; R shows the threat map).
 - The ambient bed plays at the browser's levels: room tone 0.032 over the synth bed.
 - The round budget: past 5 s of a round's enemy time the rest of its turn speeds up smoothly (to 0.3 of the pace by 9 s), so the 20-ship sector 3 fight's worst round is about 12 s (Oct 31; was 8 s to 0.35 by 13 s). An ordinary 8 s enemy round now plays in about 7.3 s.
 - Under the round budget a killing volley lets go halfway to its last impact and a big hull's death hold shrinks.
 - The new game name (Embers of the Hollow Sun) shows on the title, the window title and the exe properties, but the exe file stays Voidsworn.exe and saves stay in the old Voidsworn user folder (project.godot pins custom_user_dir_name), so nothing Ryan has saved is lost.
+
+### First launch note for Windows playtesters
+
+The playtest build is unsigned. Windows may say it does not recognize `Voidsworn.exe` or show an unknown publisher before the game opens. Keep SmartScreen on. Use only a build shared directly by the team, and contact the team if you cannot verify where the file came from or Windows blocks it. [Microsoft's SmartScreen guidance](https://learn.microsoft.com/windows/apps/package-and-deploy/smartscreen-reputation)
