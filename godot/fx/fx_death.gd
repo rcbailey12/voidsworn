@@ -348,6 +348,16 @@ static func boom_col(src, key: String, fallback: Color) -> Color:
 	return c
 
 
+# The faction's own death style even on an acid kill: its cook-off beats (Sunward magazine pops, Navy arcs across the break,
+# Glasswright light spilling from the core, Eclipse's guttering dim) still play when an acid-killed hull breaks off (Ryan,
+# Nov 22: "the faction specific explosion when it breaks off"; the 1394G sheets showed big hulls breaking with none).
+static func boom_style(src) -> String:
+	_boom += 1
+	var st := str(dstyle(src).get("style", ""))
+	_boom -= 1
+	return st
+
+
 static func melting(src) -> bool:
 	return src is Object and is_instance_valid(src) and src.has_meta("death_melt")
 
@@ -396,11 +406,11 @@ static func _style_pic(m: ShaderMaterial, src) -> void:
 		m.set_shader_parameter("fac_fire", Color(fire.r, fire.g, fire.b, 1.0))
 		m.set_shader_parameter("fac_mid", st.get("fire_mid", fire))
 		m.set_shader_parameter("fac_prism", float(st.get("prism", 0.0)))
-		m.set_shader_parameter("fac_smoke", float(st.get("smoke", 1.0)))
+		m.set_shader_parameter("fac_smoke", dsmoke(src))   # an acid kill's cook-off pictures carry no soot (R398)
 	else:
 		m.set_shader_parameter("fac_fire", Color(1, 1, 1, 0))
 		m.set_shader_parameter("fac_prism", 0.0)
-		m.set_shader_parameter("fac_smoke", 1.0)
+		m.set_shader_parameter("fac_smoke", dsmoke(src))
 
 
 # `pool_tag` keeps a caller that changes the material's shader (the weapon bursts) in a pool of its own (issue 1237).
@@ -2814,6 +2824,7 @@ static func _death_inner(fx, s, cause: String) -> float:
 		"drumbeat": _drumbeat(fx, s, T, timeline)
 		"patch": _patch_tear(fx, s, T, timeline)
 		"melt": _melt_glow(fx, s, T, timeline)
+	if melt and boom_style(s) == "drumbeat": _drumbeat(fx, s, T, timeline)   # the magazines cook off under the acid
 		# "arc" strikes from _break_up_inner, once the wreck really exists (a cold cut can split late: Artoo on 1399)
 	if s.death_big and not melt:
 		_tell(fx, s, T, timeline, cause, seeds, lines)
@@ -3607,7 +3618,7 @@ static func _big_core(fx, s, node_ref: WeakRef, local: Vector3, R: float, tint: 
 			fx.spark(p, fx.now + fx.rng.randf() * 0.05, 0.6 + fx.rng.randf() * 0.5, s.faction, 6.0, 0.06, maxf(L * 0.004, 0.05), d * L * fx.rng.randf_range(0.6, 1.3), 0.8, 2.0, 10.0, fx.SparkRole.DEATH)
 	# R367 (issue 1399): a Glasswright's stored light spills as glittering dust; Eclipse's core gutters out and the scene
 	# dims for an instant on every big Eclipse death (Eclipse only, R389: no other faction dims the scene)
-	var style := str(dstyle(s).get("style", ""))
+	var style := boom_style(s)
 	if style == "shatter": _glitter(fx, s, p, s.hull.L)
 	if style == "peel": fx.dim_scene(fx.now + 0.20)
 
@@ -3615,6 +3626,12 @@ static func _big_core(fx, s, node_ref: WeakRef, local: Vector3, R: float, tint: 
 # R367 (issue 1399): the Glasswrights' stored light spills from the core as glittering dust that drifts and fades slowly
 # (deaths_and_hits.md, "How each faction dies": no fire and no smoke, glittering dust).
 static func _glitter(fx, s, p: Vector3, L: float) -> void:
+	_boom += 1
+	_glitter_inner(fx, s, p, L)
+	_boom -= 1
+
+
+static func _glitter_inner(fx, s, p: Vector3, L: float) -> void:
 	if fx.quality == "low": return
 	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
 	for j in 36:
@@ -3697,6 +3714,12 @@ static func _drumbeat(fx, s, T: float, tl: DeathTimeline) -> void:
 
 
 static func _drum_pop(fx, s, b: int, n: int, side: float) -> void:
+	_boom += 1
+	_drum_pop_inner(fx, s, b, n, side)
+	_boom -= 1
+
+
+static func _drum_pop_inner(fx, s, b: int, n: int, side: float) -> void:
 	if not is_instance_valid(s.root) or s.has_meta("death_hidden") or fx.ships.get(s.id) != s: return
 	var h = s.hull
 	var x: float = h.box.position.x + h.L * (0.08 + 0.84 * (float(b) + 0.5) / float(n))
@@ -3765,6 +3788,12 @@ static func _arcs(fx, s) -> void:
 
 
 static func _arc_strike(fx, s, ra: WeakRef, rb: WeakRef) -> void:
+	_boom += 1
+	_arc_strike_inner(fx, s, ra, rb)
+	_boom -= 1
+
+
+static func _arc_strike_inner(fx, s, ra: WeakRef, rb: WeakRef) -> void:
 	var na = ra.get_ref()
 	var nb = rb.get_ref()
 	if not is_instance_valid(na) or not is_instance_valid(nb): return
@@ -4117,7 +4146,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 		if is_instance_valid(fx.camera): face_view = node.to_local(fx.camera.global_position).normalized()
 		node.set_meta("tear_site", _edge_sites(pc, cen, face_view, 1)[0] + face_view * h.L * 0.02)
 		# R367 round 2: a Hegemony break's arcs are pinned to points on each piece's own torn face (Artoo on PR 1418)
-		if str(dstyle(s).get("style", "")) == "arc": node.set_meta("arc_sites", _edge_sites(pc, cen, face_view, 8))
+		if boom_style(s) == "arc": node.set_meta("arc_sites", _edge_sites(pc, cen, face_view, 8))
 		# Separate on the board plane while allowing each piece to tumble freely.
 		var out: Vector3 = cen - h.c
 		out.y = 0.0
@@ -4195,7 +4224,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 	BEATS.on_break(fx, s, wreck, cause, center, xf)
 	# R367 (issue 1399): Hegemony lightning jumps the gap the moment the pieces part, however late a cold cut split them
 	# (Artoo on 1399: a timer from the nominal cut gave up after a second); a no-pieces pop has no gap and gets none
-	if str(dstyle(s).get("style", "")) == "arc" and not organic: _arcs(fx, s)
+	if boom_style(s) == "arc" and not organic: _arcs(fx, s)
 	if organic:
 		# Issue 1238: a big Chorus rupture is its kill beat. No fireball: the beat (and the death sound's low end) lands
 		# just after the skin bursts.
@@ -4236,7 +4265,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 			_spawn_ship_debris(fx, s, center, xf.basis.x * 2.0, 1, maxf(h.L * 0.15, 0.3), 0.0)
 		return
 	_core_flash(fx, flash_site, R, 70.0, tint, null, Vector3.ZERO, s, s.death_tier, xf)
-	if str(dstyle(s).get("style", "")) == "shatter": _glitter(fx, s, flash_site, h.L * 0.6)
+	if boom_style(s) == "shatter": _glitter(fx, s, flash_site, h.L * 0.6)
 	if not dstyle(s).is_empty(): _fac_pop(fx, s, flash_site, h.L)
 	fx.resolve_death_core(s, true)
 	# The pop is light first, then a short body. The 384 px cells cover both small rows without a rebake.
