@@ -2047,6 +2047,12 @@ func volley_at(from: Vector3, kind: String, to: Vector3, opts := {}) -> Dictiona
 	return WEAP.volley_points(self, from, kind, to, opts)
 
 
+func standalone_hit(id: String, hit: Dictionary, from: Vector3, breaking: bool) -> void:
+	var target: SHIP = ships.get(id)
+	if target != null and not target.dead and not target.gone:
+		WEAP.standalone_hit(self, target, hit, from, breaking)
+
+
 # hit_lp (issue 1239): the breaking hit's point on the shield, in the shield's frame (a volley's "hit_pts"); INF aims
 # at the middle of the quadrant.
 func shield_break(id: String, quad: int, hit_lp := Vector3.INF) -> void:
@@ -2216,8 +2222,9 @@ func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -
 			var hi: Dictionary = s.hull.surface(s.hull.core + Vector3(s.hull.L * 0.05 + dx, 0, 0), side) if dx != 0.0 else h
 			ends.append(hi["p"] if not hi.is_empty() else lp)
 		BOARDING.crossing(self, a, launch, s, ends, hold, recipe)
-		var launch_col: Color = recipe.core
-		sprx(18.0, toward, now + hold * 0.12, minf(0.3, hold * 0.2), launch_col, 2.0, 0.3 * k, 0.8 * k, 18)
+		var organic: bool = a.faction == "chorus"
+		var launch_col: Color = a.fac.damage_glow if organic else recipe.core
+		sprx(18.0, toward, now + hold * 0.12, minf(0.3, hold * 0.2), launch_col, 2.0, 0.3 * k, 0.8 * k, 20 if organic else 18)
 		board_lines_s = hold
 	return maxf(3.2, hold)
 

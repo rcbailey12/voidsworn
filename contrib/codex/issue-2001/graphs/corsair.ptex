@@ -1,0 +1,489 @@
+{
+  "type": "graph",
+  "name": "graph",
+  "label": "Ashfall Hullbreakers | buckled salvage and oxide",
+  "nodes": [
+    {
+      "name": "Forging_variation",
+      "type": "fbm4",
+      "parameters": {
+        "noise": 0,
+        "scale_x": 8,
+        "scale_y": 8,
+        "iterations": 3,
+        "folds": 0,
+        "offset": 0,
+        "persistence": 0.55,
+        "lacunarity": 2
+      },
+      "node_position": {
+        "x": 0,
+        "y": -340
+      },
+      "seed_int": 28957
+    },
+    {
+      "name": "Surface_wear",
+      "type": "fbm4",
+      "parameters": {
+        "noise": 1,
+        "scale_x": 22,
+        "scale_y": 17,
+        "iterations": 4,
+        "folds": 0,
+        "offset": 0,
+        "persistence": 0.62,
+        "lacunarity": 2
+      },
+      "node_position": {
+        "x": 0,
+        "y": 160
+      },
+      "seed_int": 28980
+    },
+    {
+      "name": "Oxide_or_pitting",
+      "type": "fbm4",
+      "parameters": {
+        "noise": 3,
+        "scale_x": 29,
+        "scale_y": 29,
+        "iterations": 2,
+        "folds": 0,
+        "offset": 0,
+        "persistence": 0.55,
+        "lacunarity": 2
+      },
+      "node_position": {
+        "x": 0,
+        "y": 410
+      },
+      "seed_int": 29036
+    },
+    {
+      "name": "Plate_layout",
+      "type": "shader",
+      "parameters": {
+        "columns": 3,
+        "rows": 6,
+        "stagger": 0.42,
+        "irregular": 0.83,
+        "wear_bend": 0.25,
+        "seam_width": 0.066,
+        "rivet_radius": 0.037
+      },
+      "node_position": {
+        "x": 315,
+        "y": -330
+      },
+      "shader_model": {
+        "name": "Beveled plate joints and fasteners",
+        "shortdesc": "Beveled plate joints and fasteners",
+        "longdesc": "Beveled plate joints and fasteners",
+        "instance": "",
+        "code": [
+          "vec2 grid = vec2($columns, $rows);",
+          "vec2 p = ($uv + vec2(0.117, 0.173)) * grid;",
+          "p += vec2(($warp_in($uv) - 0.5) * $wear_bend, ($warp_in($uv.yx + vec2(0.41, 0.13)) - 0.5) * $wear_bend);",
+          "float row = floor(p.y);",
+          "float row_id = mod(row, $rows);",
+          "p.x += mod(row, 2.0) * $stagger + $irregular * (rand(vec2(row_id, 71.0)) - 0.5);",
+          "vec2 f = fract(p);",
+          "vec2 cell_id = mod(floor(p), grid);",
+          "vec2 rim = min(f, 1.0 - f);",
+          "float width = $seam_width;",
+          "float vertical = 1.0 - smoothstep(width * 0.35, width, rim.x);",
+          "float horizontal = 1.0 - smoothstep(width * 0.35, width, rim.y);",
+          "float seam = max(vertical, horizontal);",
+          "float station = abs(abs(f.x - 0.5) - 0.28);",
+          "float fastener_dist = length(vec2(station, abs(rim.y - 0.075) * grid.x / grid.y));",
+          "float fastener = (1.0 - smoothstep($rivet_radius * 0.33, $rivet_radius, fastener_dist)) *",
+          "    step($irregular * 0.4, rand(cell_id + vec2(12.0, 3.0)));",
+          "float plate = mix(0.5, rand(cell_id + vec2(59.0, 26.0)), 1.0 - seam);"
+        ],
+        "global": "",
+        "inputs": [
+          {
+            "name": "warp_in",
+            "label": "Warp_In",
+            "type": "f",
+            "default": "0.5"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "f",
+            "shortdesc": "Joints",
+            "f": "seam"
+          },
+          {
+            "type": "f",
+            "shortdesc": "Fastener heads",
+            "f": "fastener"
+          },
+          {
+            "type": "f",
+            "shortdesc": "Plate offset",
+            "f": "plate"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "columns",
+            "label": "Columns",
+            "type": "float",
+            "default": 3,
+            "min": 1,
+            "max": 12,
+            "step": 1
+          },
+          {
+            "name": "rows",
+            "label": "Rows",
+            "type": "float",
+            "default": 6,
+            "min": 2,
+            "max": 12,
+            "step": 2
+          },
+          {
+            "name": "stagger",
+            "label": "Stagger",
+            "type": "float",
+            "default": 0.42,
+            "min": 0,
+            "max": 1,
+            "step": 0.01
+          },
+          {
+            "name": "irregular",
+            "label": "Irregular",
+            "type": "float",
+            "default": 0.83,
+            "min": 0,
+            "max": 1,
+            "step": 0.01
+          },
+          {
+            "name": "wear_bend",
+            "label": "Wear Bend",
+            "type": "float",
+            "default": 0.25,
+            "min": 0,
+            "max": 0.4,
+            "step": 0.01
+          },
+          {
+            "name": "seam_width",
+            "label": "Seam Width",
+            "type": "float",
+            "default": 0.066,
+            "min": 0.008,
+            "max": 0.13,
+            "step": 0.001
+          },
+          {
+            "name": "rivet_radius",
+            "label": "Rivet Radius",
+            "type": "float",
+            "default": 0.037,
+            "min": 0.012,
+            "max": 0.065,
+            "step": 0.001
+          }
+        ]
+      }
+    },
+    {
+      "name": "Finish",
+      "type": "shader",
+      "parameters": {
+        "roughness": 0.66,
+        "layer_share": 0.46,
+        "wear": 1
+      },
+      "node_position": {
+        "x": 650,
+        "y": -175
+      },
+      "shader_model": {
+        "name": "Height, tinted detail and roughness",
+        "shortdesc": "Height, tinted detail and roughness",
+        "longdesc": "Height, tinted detail and roughness",
+        "instance": "",
+        "code": [
+          "float joint_mask = $joint($uv);",
+          "float bolt = $fastener($uv);",
+          "float plate_tone = $plate($uv) - 0.5;",
+          "float wear = $grain($uv) - 0.5;",
+          "float pit = 1.0 - smoothstep(0.11, 0.34, $pitting($uv));",
+          "float height = 0.50 - 0.100 * joint_mask + 0.085 * bolt",
+          "    + (0.022 * plate_tone + 0.082 * wear - 0.090 * pit) * $wear;",
+          "float shade = 0.965 - 0.18 * joint_mask - 0.055 * pit * $wear + 0.065 * plate_tone * $wear;",
+          "float roughness = $roughness + 0.17 * joint_mask - 0.15 * bolt",
+          "    + (0.25 * wear + 0.11 * pit) * $wear;"
+        ],
+        "global": "",
+        "inputs": [
+          {
+            "name": "joint",
+            "label": "Joint",
+            "type": "f",
+            "default": "0.5"
+          },
+          {
+            "name": "fastener",
+            "label": "Fastener",
+            "type": "f",
+            "default": "0.5"
+          },
+          {
+            "name": "plate",
+            "label": "Plate",
+            "type": "f",
+            "default": "0.5"
+          },
+          {
+            "name": "grain",
+            "label": "Grain",
+            "type": "f",
+            "default": "0.5"
+          },
+          {
+            "name": "pitting",
+            "label": "Pitting",
+            "type": "f",
+            "default": "0.5"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "f",
+            "shortdesc": "Relief",
+            "f": "height"
+          },
+          {
+            "type": "rgba",
+            "shortdesc": "Multiply color + share",
+            "rgba": "vec4(clamp(shade * vec3(1.000, 0.961, 0.917), 0.0, 1.0), $layer_share)"
+          },
+          {
+            "type": "f",
+            "shortdesc": "Roughness",
+            "f": "clamp(roughness, 0.0, 1.0)"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "roughness",
+            "label": "Roughness",
+            "type": "float",
+            "default": 0.66,
+            "min": 0.1,
+            "max": 0.95,
+            "step": 0.01
+          },
+          {
+            "name": "layer_share",
+            "label": "Layer Share",
+            "type": "float",
+            "default": 0.46,
+            "min": 0,
+            "max": 1,
+            "step": 0.01
+          },
+          {
+            "name": "wear",
+            "label": "Wear",
+            "type": "float",
+            "default": 1,
+            "min": 0,
+            "max": 1,
+            "step": 0.01
+          }
+        ]
+      }
+    },
+    {
+      "name": "Normal_from_relief",
+      "type": "normal_map",
+      "parameters": {
+        "param0": 9,
+        "param1": 2.05,
+        "param2": 1,
+        "param4": 1
+      },
+      "node_position": {
+        "x": 940,
+        "y": 70
+      }
+    },
+    {
+      "name": "Material",
+      "type": "material",
+      "parameters": {
+        "size": 9,
+        "flags_transparent": false,
+        "albedo_color": {
+          "type": "Color",
+          "r": 1,
+          "g": 1,
+          "b": 1,
+          "a": 1
+        },
+        "roughness": 1,
+        "normal": 1,
+        "ao": 1,
+        "depth_scale": 0,
+        "metallic": 0.7,
+        "sss": 0,
+        "emission_energy": 1
+      },
+      "node_position": {
+        "x": 1540,
+        "y": -390
+      }
+    },
+    {
+      "name": "Preview_normal_format",
+      "type": "normal_map_convert",
+      "parameters": {
+        "op": 0
+      },
+      "node_position": {
+        "x": 1220,
+        "y": -390
+      }
+    },
+    {
+      "name": "Save_corsair_grain",
+      "type": "export",
+      "parameters": {
+        "size": 9,
+        "format": 0,
+        "suffix": "corsair_grain"
+      },
+      "node_position": {
+        "x": 1250,
+        "y": -100
+      }
+    },
+    {
+      "name": "Save_corsair_n",
+      "type": "export",
+      "parameters": {
+        "size": 9,
+        "format": 0,
+        "suffix": "corsair_n"
+      },
+      "node_position": {
+        "x": 1250,
+        "y": 135
+      }
+    },
+    {
+      "name": "Save_corsair_roughness",
+      "type": "export",
+      "parameters": {
+        "size": 9,
+        "format": 0,
+        "suffix": "corsair_roughness"
+      },
+      "node_position": {
+        "x": 1250,
+        "y": 370
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "Forging_variation",
+      "from_port": 0,
+      "to": "Plate_layout",
+      "to_port": 0
+    },
+    {
+      "from": "Plate_layout",
+      "from_port": 0,
+      "to": "Finish",
+      "to_port": 0
+    },
+    {
+      "from": "Plate_layout",
+      "from_port": 1,
+      "to": "Finish",
+      "to_port": 1
+    },
+    {
+      "from": "Plate_layout",
+      "from_port": 2,
+      "to": "Finish",
+      "to_port": 2
+    },
+    {
+      "from": "Surface_wear",
+      "from_port": 0,
+      "to": "Finish",
+      "to_port": 3
+    },
+    {
+      "from": "Oxide_or_pitting",
+      "from_port": 0,
+      "to": "Finish",
+      "to_port": 4
+    },
+    {
+      "from": "Finish",
+      "from_port": 0,
+      "to": "Normal_from_relief",
+      "to_port": 0
+    },
+    {
+      "from": "Normal_from_relief",
+      "from_port": 0,
+      "to": "Preview_normal_format",
+      "to_port": 0
+    },
+    {
+      "from": "Finish",
+      "from_port": 1,
+      "to": "Material",
+      "to_port": 0
+    },
+    {
+      "from": "Preview_normal_format",
+      "from_port": 0,
+      "to": "Material",
+      "to_port": 4
+    },
+    {
+      "from": "Finish",
+      "from_port": 2,
+      "to": "Material",
+      "to_port": 2
+    },
+    {
+      "from": "Finish",
+      "from_port": 1,
+      "to": "Save_corsair_grain",
+      "to_port": 0
+    },
+    {
+      "from": "Normal_from_relief",
+      "from_port": 0,
+      "to": "Save_corsair_n",
+      "to_port": 0
+    },
+    {
+      "from": "Finish",
+      "from_port": 2,
+      "to": "Save_corsair_roughness",
+      "to_port": 0
+    }
+  ],
+  "node_position": {
+    "x": 0,
+    "y": 0
+  },
+  "parameters": {}
+}

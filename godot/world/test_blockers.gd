@@ -55,7 +55,7 @@ func _run() -> void:
 				world.build(view, {"seed": seed, "fac": "hegemony", "quality": "low", "hex_world": board.hex_world,
 					"biome": {"rock": ["stone", "iron", "carbon", "ice", "crystal"][cases % 5]}})
 				var before := var_to_str(api.R.B)
-				var rng_before := JSM.rng_u32()
+				var rng_before: int = api.R.rng.rng_u32()
 				var version_before := api.version
 				var expected := {}
 				for k in view.terrain:
@@ -78,7 +78,7 @@ func _run() -> void:
 				var b: Dictionary = view.units[-1]
 				check(api.line_blockers(a, b).is_empty() == api.R.los(a, b), "blocker query agrees with los")
 				for h in api.line_blockers(a, b): check(api.R.sightBlocked(h.q, h.r), "outlined blocker really blocks")
-				check(var_to_str(api.R.B) == before and JSM.rng_u32() == rng_before and api.version == version_before, "presentation queries preserve battle state, RNG and API version")
+				check(var_to_str(api.R.B) == before and api.R.rng.rng_u32() == rng_before and api.version == version_before, "presentation queries preserve battle state, RNG and API version")
 				world.free(); board.free()
 				cases += 1
 				await process_frame

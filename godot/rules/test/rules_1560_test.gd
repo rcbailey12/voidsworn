@@ -55,7 +55,7 @@ func _init() -> void:
 		["15: no ram after firing, from the move overlay either", c_15],
 		["16: the corona splash hits only a ship next to the target", c_16],
 		["16: the corona splash counts over the ship it hit, not in the target's hull number", c_16_attrib],
-		["17: Full ahead opens again on the next turn", c_17],
+		["17: Move clears but retired orders stay unavailable on the next turn", c_17],
 		["18: the Garrison ally never turns a loss into a retreat", c_18_garrison],
 		["18: the Chorus free pivot is offered with no movement left", c_18_pivot],
 		["18 (Godot): a move to a hex the ship cannot reach is refused", c_18_move],
@@ -194,7 +194,7 @@ func c_16_attrib() -> Array:
 func c_17() -> Array:
 	fresh(["penitent"], "hegemony", ["h_picket"]); var u = P[0]
 	u["moved"] = true; R.startSideTurn("player")
-	return [u["moved"] == false and R.canOrder(u, "full") == true, "moved " + str(u["moved"]) + ", full " + str(R.canOrder(u, "full"))]
+	return [u["moved"] == false and not R.canOrder(u, "full"), "moved " + str(u["moved"]) + ", full " + str(R.canOrder(u, "full"))]
 func c_18_garrison() -> Array:
 	fresh(["penitent", "harrow"], "hegemony", ["h_picket"])
 	P[0]["dead"] = true; P[1]["reinf"] = true

@@ -478,7 +478,7 @@ func render() -> void:
 		"aspect": body = _podium()
 		"map": body = _map()
 		"fleet": body = _fleet(pg["data"])
-		"shipyard": body = _wrap_page(_shipyard())
+		"shipyard": body = _shipyard()
 		"battle":   # the test battle's panel; a dialog over the battle (the rewards) shows over the scene alone, as in the game shell
 			body = _battle_stub(pg["data"]) if (C.modal_d == null or C.modal_d["kind"] == "retreat") else Control.new()
 		"legacy": body = _kit_page(_legacy(), 1440, [kbtn("Back", "title", "", "back")])
@@ -527,7 +527,7 @@ func _focus_first(keep_key := "", sc: ScrollContainer = null, point := Vector2.I
 		if panel != null and modal_box.is_ancestor_of(panel):
 			_restore_focus(panel, sc, keep_key, point)
 		return
-	if C.modal_d == null and C.page.get("kind") == "fleet":
+	if C.modal_d == null and C.page.get("kind") in ["fleet", "shipyard"]:
 		get_viewport().gui_release_focus()
 		return
 	# The chart takes the keys again when the dialog or drawer closes (issue 1559 item 6).
@@ -666,16 +666,6 @@ func _pin_foot(cardp: Node) -> void:
 		var gap = Control.new(); gap.size_flags_vertical = Control.SIZE_EXPAND_FILL; gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		body.add_child(gap); body.move_child(gap, body.get_child_count() - 2)
 		body.size_flags_vertical = Control.SIZE_EXPAND_FILL
-func _wrap_page(inner: Control, maxw: float = 1440) -> Control:
-	var sc = ScrollContainer.new(); sc.set_anchors_preset(Control.PRESET_FULL_RECT); sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	_page_scroll = sc
-	var hb = HBoxContainer.new(); hb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var m = MarginContainer.new()
-	m.add_theme_constant_override("margin_top", px(12)); m.add_theme_constant_override("margin_bottom", px(96))   # room under the page for the fixed finishing action
-	inner.custom_minimum_size.x = min(px(maxw), int(get_viewport().get_visible_rect().size.x) - px(80))
-	var sh = shell_panel(18); sh.add_child(inner)   # one matte panel per page (ui_style.md 2): the page's wells sit on it
-	m.add_child(sh); hb.add_child(spacer()); hb.add_child(m); hb.add_child(spacer()); sc.add_child(hb)
-	return sc
 # The page's finishing action, fixed in the bottom right corner of the screen where it never moves (ui_style.md 7):
 # Done on the fleet screen, Leave shipyard in the shipyard.
 func _page_finish(kind: String) -> void:
@@ -1805,54 +1795,6 @@ func _fac_crest(Pt, fac: String) -> Texture2D:   # the crest of the first admira
 	return null
 
 # ---------------- ship cards, fleet, shipyard ----------------
-func _ship_card(s: Dictionary, refit: bool, extra: Array = [], apart: Array = []) -> Control:   # apart: buttons set on their own row below the rest (issue 2029 item 4)
-	var t = C.HULLS[s["tpl"]]; var d = C.derive(s); var cap = s["cap"]
-	var cv = card(false, 330); var v = cv[1]
-	var r0 = hbox(); var name_label = lbl(s["name"], 20, BONE, font_semi); name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	r0.add_child(name_label); r0.add_child(lbl("MK " + C.roman(s["mk"]), 17, BONE2, font_caps, false)); v.add_child(r0)
-	v.add_child(lbl(t["n"], 18, BONE2))
-	if C.jt(s.get("ripped")): v.add_child(lbl("Captured prize, links ripped out.", 17, VERD))
-	var r1 = hbox(); r1.add_child(lbl("Hull " + C.hull_text(s["hp"]) + "/" + C.hull_text(d["maxHp"]), 17)); r1.add_child(spacer()); r1.add_child(lbl(C.numstr(t["cp"]) + " CP", 17, BONE3, null, false)); v.add_child(r1)
-	v.add_child(bar(float(s["hp"]) / float(d["maxHp"])))
-	v.add_child(rich("[b]" + c("Shields", BONE2) + "[/b] " + C.numstr(d["shMax"]) + ", +" + C.numstr(d["regen"]) + "/turn   [b]" + c("Armor", BONE2) + "[/b] " + C.pct(d["armor"]) + "\n[b]" + c("Speed", BONE2) + "[/b] " + C.numstr(d["speed"]) + "   [b]" + c("Turns", BONE2) + "[/b] " + C.numstr(d["turns"]) + "   [b]" + c("Evasion", BONE2) + "[/b] " + C.numstr(d["ev"]), 17))
-	if C.jt(t.get("ab")) and C.ABILITIES.has(t["ab"]): v.add_child(rich(c(esc(C.ABILITIES[t["ab"]]["n"]) + ".", VERD) + " " + c(esc(C.ABILITIES[t["ab"]]["d"]), BONE3), 17))
-	for w in d["weapons"]:
-		var arc = "Turret" if w["arc"] == "T" else str(C.ARC_NAME.get(w["arc"], w["arc"]))
-		v.add_child(lbl(str(w["n"]) + "  " + arc + "  " + C.numstr(w["shots"]) + "×" + C.numstr(w["dmg"]) + ", range " + C.numstr(w["r"]) + ((", reload " + C.numstr(w["cd"])) if C.jt(w.get("cd")) else ""), 17, BONE3))
-	var sect = vbox(4); sect.add_child(HSeparator.new())
-	sect.add_child(lbl(C.rankName(cap) + " " + str(cap["full_name"]), 18, BONE, font_semi))
-	var nx = C.RANK_XP[int(cap["rank"]) + 1] if int(cap["rank"]) + 1 < C.RANK_XP.size() else null
-	if nx != null:
-		var nxt = cap.duplicate(); nxt["rank"] = float(cap["rank"]) + 1
-		sect.add_child(lbl(C.numstr(cap["xp"]) + "/" + C.numstr(nx) + " experience to " + C.rankName(nxt), 17, BONE3))
-	else: sect.add_child(lbl(C.numstr(cap["xp"]) + " experience, highest rank", 17, BONE3))
-	if cap["perks"].size() > 0:
-		var pf = flow(4)
-		for p in cap["perks"]:
-			var pl = lbl(str(C.PERKS[p]["n"]), 17, VERD, null, false); pl.tooltip_text = str(C.PERKS[p]["d"]); pl.mouse_filter = Control.MOUSE_FILTER_PASS; pf.add_child(pl)
-		sect.add_child(pf)
-	else: sect.add_child(lbl("No perks yet.", 17, BONE3))
-	add(sect, abtn("Choose promotion perk", "promote", s["uid"], true, true))
-	v.add_child(sect)
-	var rs = vbox(4); rs.add_child(HSeparator.new()); rs.add_child(sec_head("Refits"))
-	for i in range(int(C.z0(t.get("slots")))):   # R1: hulls without refit slots (sector flagships) show none
-		if i < s["mods"].size() and C.jt(s["mods"][i]):
-			var m = s["mods"][i]; var rr = hbox(6)
-			rr.add_child(rich("[b]" + esc(C.modName(m)) + "[/b] " + c(esc(C.MODULES[m]["d"]), BONE3), 17))
-			if refit: add(rr, abtn("Remove", "unequip", s["uid"] + ":" + str(i), false, true))
-			rs.add_child(rr)
-		else: rs.add_child(lbl("Empty refit slot", 17, BONE3))
-	v.add_child(rs)
-	if extra.size() > 0:
-		var ex = flow(6)
-		for b in extra: add(ex, b)
-		v.add_child(HSeparator.new()); v.add_child(ex)
-	if apart.size() > 0:   # issue 2029 item 4: Decommission cannot be taken back, so it sits on its own row, away from Repair and Mk
-		var ap = flow(6); ap.name = "ApartRow"
-		for b in apart: add(ap, b)
-		var gap = Control.new(); gap.custom_minimum_size.y = px(14); gap.name = "ApartGap"
-		v.add_child(gap); v.add_child(HSeparator.new()); v.add_child(ap)
-	return cv[0]
 const FleetManifest = preload("res://ui/campaign/fleet_manifest.gd")
 var fleet_manifest: Control
 var fleet_state := {"uid": "", "mode": "", "held": {}}
@@ -1909,115 +1851,20 @@ func _yard_repair_label(rows: Array, currency_suffix: String) -> String:
 	var partial: String = C.numstr(points) + " of " if points > 0.0 and points < missing else ""
 	return "Repair " + partial + C.numstr(missing) + " for " + C.numstr(hull["cost"]) + currency_suffix
 
+const Shipyard := preload("res://ui/campaign/shipyard.gd")
+var _yard_run = null
+var _yard_state := {}
+
 func _shipyard() -> Control:
-	var v = vbox(10); var R = C.RUN; var n = C.page["data"]["node"]; var st = n["stock"]; var pm = C.priceMult(); var cp = C.fleetCP()
-	var head = hbox(); head.add_child(gothic("Shipyard")); head.add_child(spacer())
-	var hw = " biomass" if C.hullKey() == "bio" else ""   # issue 1178: Chorus hull work is paid in biomass
-	if hw != "":
-		head.add_child(_readout("Biomass", C.numstr(C.z0(R.get("bio"))), BONE, true)); var gb = Control.new(); gb.custom_minimum_size.x = px(28); head.add_child(gb)
-	head.add_child(_readout("Credits", C.numstr(R["credits"]), BONE, true)); var gp = Control.new(); gp.custom_minimum_size.x = px(28); head.add_child(gp); head.add_child(_readout("Command points", C.numstr(cp) + "/" + C.numstr(R["cpCap"]), BONE, true))
-	var rb = abtn("Refits", "yardFleet")
-	if rb != null: rb.size_flags_vertical = Control.SIZE_SHRINK_CENTER; head.add_child(rb)
-	v.add_child(head)   # Leave shipyard is the finishing action, fixed at the bottom right (_page_finish)
-	if hw != "": v.add_child(lbl("The Chorus regrow with biomass: repairs, new hulls and Marks are paid in biomass. Refits, upgrade tracks, protocol rerolls and the late market take biomass first, then credits.", 18, VERD))
-	v.add_child(lbl("Repairs cost %s per 2 hull, rounded up. A Mark upgrade adds 20%% hull and shields and 15%% damage. New hulls come with a fresh %s." % [(("1" if pm == 1.0 else C.numstr(snappedf(pm, 0.0001))) + (hw if hw != "" else (" credit" if pm == 1.0 else " credits"))), str(C.CAPTAINS.get(str(R["fac"]), C.CAPTAINS["voidsworn"])["ranks"][0]).to_lower()], 18, BONE2))
-	var all_repairs: Array = C.preview_op("repairAll")
-	var all_miss: float = all_repairs.reduce(func(total, row): return total + row["delta"], 0.0)
-	_yard_bar = abtn(("Repair entire fleet for " + C.numstr(all_repairs[0]["cost"]) + hw) if all_miss > 0 else "Fleet fully repaired", "repairAll")
-	add(v, _yard_bar)
-	_yard_tip_dock = hbox(0)
-	_yard_tip_dock.alignment = BoxContainer.ALIGNMENT_END
-	_yard_tip_dock.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_yard_tip_dock.hide()
-	v.add_child(_yard_tip_dock)
-	var cores = C.or_(R.get("cores"), [])
-	if not cores.is_empty():   # issue 1178: Eclipse core recovery
-		v.add_child(sec_head("Recovered cores"))
-		v.add_child(lbl("Each core regrows its ship at Mk I, full hull, no refits.", 17, BONE3))
-		var crow = flow(8)
-		for i in range(cores.size()):
-			var cc = card(false, 320)
-			cc[1].add_child(rich("[b]" + esc(C.HULLS[cores[i]]["n"]) + "[/b]", 20))
-			_hull_summary(cc[1], FleetManifest.preview_ship(C, cores[i]), "core:" + str(i))
-			add(cc[1], abtn("Regrow the " + str(C.HULLS[cores[i]]["n"]) + " for " + C.numstr(C.coreCost(cores[i])), "restoreCore", i))
-			crow.add_child(cc[0])
-		v.add_child(crow)
-	if st.get("late") is Dictionary:   # issue 1178: the Sector 3 market
-		v.add_child(sec_head("Late market"))
-		v.add_child(lbl("Sector 3 yards sell whatever the war left behind: salvage and room for one more ship.", 17, BONE3))
-		var lm = flow()
-		for o in C.lateShopOffers():
-			var lc = card(false, 300)
-			if o["kind"] == "relic":
-				lc[1].add_child(lbl(C.relicName(o["r"]), 20, BONE, font_semi)); lc[1].add_child(lbl(C.relicText(o["r"]), 18, BONE2))
-			else:
-				lc[1].add_child(lbl("Command expansion", 20, BONE, font_semi)); lc[1].add_child(lbl("+1 command point for the rest of the run (at most " + C.numstr(C.TB["LATE_SHOP"]["cpMax"]) + " a run).", 18, BONE2))
-			if C.jt(o["done"]): lc[1].add_child(lbl("Bought", 18, VERD))
-			elif C.jt(o.get("full")): lc[1].add_child(lbl("Already at the limit", 18, BONE3))
-			else: add(lc[1], abtn("Buy for " + C.numstr(o["cost"]) + C.shopWord(o["cost"]), "lateBuy", o["id"]))
-			lm.add_child(lc[0])
-		v.add_child(lm)
-	var cards = flow()
-	for s in R["fleet"]:
-		var repair_label := _yard_repair_label(C.preview_op("repair", s["uid"]), hw)
-		var mark := _preview_row(C.preview_op("upgradeMk", s["uid"]), "mark")
-		var mark_label := "Upgrade Mark"
-		if not mark.is_empty():
-			mark_label = ("Mk " + C.roman(mark["new"]) + " for " + C.numstr(mark["cost"]) + hw) if mark["old"] < 3 else "Max Mark"
-		var sell = C.sellValue(s)   # R1 (TXT-8): what the button pays; hulls without a shop price too
-		var ex = [abtn(repair_label, "repair", s["uid"], false, true),
-			abtn(mark_label, "upgradeMk", s["uid"], false, true)]
-		var apart = [abtn("Decommission (+" + C.numstr(sell) + hw + ")", "sellShip", s["uid"], false, true)]   # asks first: the sell modal names the ship and the credits
-		cards.add_child(_ship_card(s, false, ex, apart))
-	v.add_child(cards)
-	v.add_child(sec_head("Hulls for sale"))
-	var hs = flow()
-	for h in st["hulls"]:
-		var t = C.HULLS[h]; var offer: Dictionary = C.preview_op("buyHull", h)[0]
-		var cost: float = offer["cost"]; var reason: String = offer["disabled_reason"]
-		var cv = card(false, 320); var cvv = cv[1]
-		cvv.add_child(rich("[b]" + esc(t["n"]) + "[/b]" + (" " + c("Variant", VERD) if C.jt(t.get("variant")) else ""), 20))
-		if C.jt(t.get("variant")): cvv.add_child(lbl(C.HULL_VARIANTS[t["variant"]]["d"], 17, VERD))
-		_hull_summary(cvv, FleetManifest.preview_ship(C, h), "yard:" + str(h))
-		var fr = hbox(); add(fr, abtn("Buy for " + C.numstr(cost) + hw, "buyHull", h))
-		if reason == "Not enough command points.": fr.add_child(lbl("Not enough command points", 17, BONE3, null, false))
-		elif reason == "That unique hull is already in the fleet.": fr.add_child(lbl("Only one allowed", 17, BONE3, null, false))
-		cvv.add_child(fr); hs.add_child(cv[0])
-	v.add_child(hs)
-	if st.get("cap") is Array and not st["cap"].is_empty():
-		v.add_child(sec_head("Captured hulls"))
-		v.add_child(lbl("Prizes taken from the Meridian Directorate and Eclipse, refitted along the Cinder Line. Their links are ripped out: no synchronized fire, no Archive restore. Sold at Crusade prices.", 17, BONE3))
-		var cs = flow()
-		for h in st["cap"]:
-			var t2 = C.HULLS[h]; var offer: Dictionary = C.preview_op("buyHull", h)[0]
-			var cost2: float = offer["cost"]
-			var cv3 = card(false, 320); var cvv3 = cv3[1]
-			cvv3.add_child(rich("[b]" + esc(t2["n"]) + "[/b]", 20))
-			cvv3.add_child(lbl("Captured prize, links ripped out.", 17, VERD))
-			_hull_summary(cvv3, FleetManifest.preview_ship(C, h, true), "cap:" + str(h))
-			var fr2 = hbox(); add(fr2, abtn("Buy for " + C.numstr(cost2) + hw, "buyHull", h))
-			if offer["disabled_reason"] == "Not enough command points.": fr2.add_child(lbl("Not enough command points", 17, BONE3, null, false))
-			cvv3.add_child(fr2); cs.add_child(cv3[0])
-		v.add_child(cs)
-	v.add_child(sec_head("Refits for sale"))
-	var ms = flow()
-	for i in range(st["mods"].size()):
-		var m = st["mods"][i]; var cv2 = card(false, 300)
-		cv2[1].add_child(lbl(C.modName(m), 20, BONE, font_semi)); cv2[1].add_child(lbl(C.MODULES[m]["d"], 18, BONE2))
-		if C._has_num(st["sold"], i): cv2[1].add_child(lbl("Bought", 18, VERD))
-		else:
-			var cost: float = C.preview_op("buyMod", "", i)[0]["cost"]
-			add(cv2[1], abtn("Buy for " + C.numstr(cost) + C.shopWord(cost), "buyMod", i))
-		ms.add_child(cv2[0])
-	v.add_child(ms)
-	v.add_child(sec_head("Class refits"))
-	v.add_child(lbl("A class refit upgrades every ship of that class you own now or later: +6% hull and +6% damage per level, up to " + C.numstr(C.CLASS_TRACK_MAX) + ".", 17, BONE3))
-	var tr = flow(8)
-	for cls in C.fleetClasses():
-		var lv = int(C.classTrack(cls)); var mx = lv >= int(C.CLASS_TRACK_MAX)
-		add(tr, abtn(C.clsName(cls) + " " + "●".repeat(lv) + "○".repeat(int(C.CLASS_TRACK_MAX) - lv) + " " + ("(full)" if mx else "for " + C.numstr(C.classTrackCost(cls)) + C.shopWord(C.classTrackCost(cls))), "buyTrack", cls))
-	v.add_child(tr)
-	return v
+	if not is_same(_yard_run, C.RUN):
+		_yard_run = C.RUN
+		_yard_state = {}
+	var yard := Shipyard.new()
+	yard.setup(self, _yard_state)
+	_page_scroll = yard.market_scroll
+	_yard_tip_dock = yard.tip_dock
+	_yard_bar = yard.repair_all
+	return yard
 
 # ---------------- the battle page (stub battles; the game shell replaces it with the real battle) ----------------
 func _battle_stub(d: Dictionary) -> Control:
@@ -2134,7 +1981,7 @@ func _legacy() -> Control:
 const HELP := [
 	["", "Embers of the Hollow Sun is a hex fleet-tactics roguelite. Lead your ships across three contested sectors toward the Hollow Sun, fighting a sector flagship at the end of each map. Any hull or captain lost in battle stays lost for the rest of the run."],
 	["", "Between runs, check Progression on the title screen: spend renown to unlock hull variants and permanent legacy upgrades, level up admirals to open branch skills and Command evolutions, and raise sync with Lattice cores so they offer rarer protocols (and eventually a starting gift). Finishing your first run unlocks Threat modifiers for extra difficulty and renown."],
-	["Your turn", "Each ship moves, turns, and then fires its ready weapons once per round. Most hulls cannot move after firing (Glasswright ships and the Slip the Net protocol are the exceptions). Forward hexes cost 1 movement; turning 60° costs 1 movement and uses a turn charge (capital ships only turn once per round, so plan headings early). Press Q or E to turn the ghost in place; the turn happens when you commit."],
+	["Your turn", "Each ship moves, turns, and then fires its ready weapons once per round. Only Glasswright ships can move after firing. Forward hexes cost 1 movement; turning 60° costs 1 movement and uses a turn charge (capital ships only turn once per round, so plan headings early). Press Q or E to turn the ghost in place; the turn happens when you commit."],
 	["", "Attitude thrusters keep your formation flexible: ships can sideslip diagonally or reverse one hex without rotating (2 movement each, or a slow hull's entire move). Ships can also pass above or below asteroids, wrecks, and enemy hulls for +1 movement, though they cannot end their move on an occupied hex. Each faction bends one thruster rule (check the Helm readout)."],
 	["", "Click an enemy outside current weapon range to plot the cleanest burn into firing range (the ghost shows the stop); click it again or press Enter to burn and fire on arrival."],
 	["", "Keep moving. Stationary ships take +10 enemy aim, while moving 3+ hexes grants -5 to be hit. Port and starboard flank batteries hit 10% harder after moving 2+ hexes (45% harder for Sunward Crusade)."],
@@ -2799,15 +2646,15 @@ func _well_text(v: VBoxContainer) -> void:
 # Back button runs. The flagship aspect page has no back action yet (phase 4 adds one to both twins), so Esc does nothing
 # there until then.
 const BACK_ACTS := ["title", "backToSetup"]
-# Issue 1448: the confirms that take a reward, relic or promotion perk, or buy a hull, play the built reward chime
+# Issue 1448: confirms that take a reward or promotion perk, or buy a hull, play the built reward chime
 # (cues.json ui_reward) in place of the plain confirm.
-const REWARD_ACTS := ["takeMod", "takeBoon", "takeSalvage", "prizeConfirm", "takePerk"]
+const REWARD_ACTS := ["takeMod", "takeBoon", "takeSalvage", "prizeConfirm", "takePerk", "buyHull"]
 # Names the action a button runs, so the player-path recorder presses the real button (and hears its cue) instead of
 # calling the action under it (issue 1448: SND1C's reward picks were silent because the recorder skipped the buttons).
 static func press_tag(b: Control, act: String, arg) -> void:
 	b.set_meta("press_act", act); b.set_meta("press_arg", str(arg))
 func cue_role(act: String, fallback: String) -> String:
-	if act in ["buyHull", "buyMod", "lateBuy"]: return "purchase"
+	if act in ["buyMod", "lateBuy"]: return "purchase"
 	if act in ["equip", "fitRewardRefit", "fitWreckRefit", "fitBoughtRefit"]: return "install"
 	if act == "takeRelic": return "relic"
 	if act in REWARD_ACTS: return "reward"

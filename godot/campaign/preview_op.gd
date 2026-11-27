@@ -33,6 +33,8 @@ static func plan(c, action: String, key: String, slot: int) -> Dictionary:
 					p["price"] = c.repairBill(points if points > 0.0 else maxf(0.0, miss), pm)
 				else:
 					after["hp"] = full
+				# A paid repair also restores the last battle's cosmetic section cutouts.
+				after.erase("yard_sections")
 				_entry(p, c, sh, after)
 			if action == "repairAll": p["price"] = c.repairBill(maxf(0.0, missing), pm)
 			if ships.is_empty(): p["reason"] = "No ship to repair."

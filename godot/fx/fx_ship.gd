@@ -80,7 +80,7 @@ var wounds_v2 := wounds_v2_setting()
 var eng_tier := 0               # 0 healthy, 1 engine hit or eng stage 2, 2 eng stage 3, 3 engines crippled (stage 4)
 var dead_nozzles: Array = []    # nozzles dark at tiers 2 and 3 (never every nozzle: one always gutters on)
 var _sick_len := SICK_LEN
-var eng_soot := false           # the drive's last build coughs black soot (the Hullbreakers only, under Wounds V2)
+var eng_soot := false           # the drive's last build coughs black soot (Hullbreakers only)
 var _want_off := {}             # weapon slot -> true: the slots the last view held off
 var _exact_slots := false       # the last view carried a weapons list (the old section turret picker stays off)
 var _slot_off := {}             # weapon slot -> true, as shown
@@ -489,9 +489,8 @@ func _build_engines(fx) -> void:
 	var drive_sparks := POOLS.Batch.new() if extra == "embers" else null
 	var sick_sparks := POOLS.Batch.new() if extra == "embers" else null
 	var qs := POOLS.streak_shape() if extra == "embers" else []
-	# issue 1741 (R416): under Wounds V2 a damaged drive keeps its own faction's exhaust; only the Hullbreakers cough soot
-	# (main: any sputtering drive took the Hullbreaker soot, on glass, flesh and obsidian too)
-	var corsair = extra == "soot" or (_eng_sputter and not wounds_v2)
+	# Issue 1991: the legacy wound switch must not change the drive's faction exhaust either.
+	var corsair := extra == "soot"
 	eng_soot = corsair
 	var q = POOLS.quad_shape()
 	var rs = POOLS.ribbon_shape(14)
@@ -588,7 +587,10 @@ func _build_trails(fx) -> void:
 		mi.name = "fx_trail_%s" % id
 		mi.top_level = true
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		mi.material_override = fx.mat(SH.TRAIL, 1)
+		var mat: ShaderMaterial = fx.mat(SH.TRAIL, 1)
+		var ember: Color = fac.damage_glow if faction == "deathless" else Color(1.0, 0.5, 0.15)
+		mat.set_shader_parameter("trail_ember", Vector3(ember.r, ember.g, ember.b))
+		mi.material_override = mat
 		mi.extra_cull_margin = 16384.0
 		fx.add_child(mi)
 		mi.global_transform = Transform3D.IDENTITY
@@ -723,7 +725,7 @@ func _update_trails(fx, _moved: bool) -> bool:
 		xfm = root.global_transform * (get_meta("death_motion") as Transform3D) * (get_meta("death_hull_motion", Transform3D.IDENTITY) as Transform3D)
 	var eng: Color = fac["engine"]
 	var lvl = clampf(_eng_cur, 0.0, 2.0)
-	var style: int = 1 if (String(fac.get("engine_extra", "")) == "soot" or (_eng_sputter and not wounds_v2)) else int(fac["trail"])
+	var style: int = 1 if eng_soot else int(fac["trail"])
 	for ti in _trails.size():
 		var t: Dictionary = _trails[ti]
 		var hist: Array = t["hist"]
@@ -1699,6 +1701,7 @@ func _rcs(fx) -> void:
 		fx.record_spawn(self, wp)
 		match faction:
 			"ithar":
+				# R412: keep the pale-gold correction glints until Ryan picks a new jet colour.
 				fx.spr(wp, fx.now, 0.14, Color(1.0, 0.86, 0.57), 1.5, 0.65 * k, 0.18 * k, 16, axis * k, 0.0, 0.0, 0.0, 13.0)
 			"deathless":
 				fx.ring(wp, axis, fx.now, 0.2, Color(0.59, 0.38, 1.0), 0.75, 0.20 * k, 0.9 * k, 3)
@@ -2792,15 +2795,18 @@ func _plume_glow() -> Color:
 	return glow
 
 
+func _plume_profile() -> DAMAGE_PLUME.Profile:
+	if faction == "hegemony":
+		return DAMAGE_PLUME.Profile.ELECTRIC
+	if wounds_v2 and faction == "deathless":
+		return DAMAGE_PLUME.Profile.VIOLET
+	return DAMAGE_PLUME.Profile.BASE
+
+
 func _attach_damage_plume(fx, e: Dictionary, p: Vector3, axis: Vector3, length: float, form: DAMAGE_PLUME.Form) -> void:
 	var phase := float(posmod(hash(e.id) + _seed, 127)) / 127.0
-	var glow := _plume_glow()
-	var profile := DAMAGE_PLUME.Profile.BASE
-	if wounds_v2:
-		match faction:
-			"hegemony": profile = DAMAGE_PLUME.Profile.ELECTRIC
-			"deathless": profile = DAMAGE_PLUME.Profile.VIOLET
-	var plume := DAMAGE_PLUME.build(fx, _dmg_root, p, axis, length, form, fac, phase, "fx_damage_" + e.id, glow, profile)
+	var plume := DAMAGE_PLUME.build(fx, _dmg_root, p, axis, length, form,
+		fac, phase, "fx_damage_" + e.id, _plume_glow(), _plume_profile())
 	e["node"] = plume
 	e["mat"] = plume.material_override
 	e["particles"] = 1
@@ -2856,7 +2862,7 @@ func _build_wing_smoke(fx) -> void:
 		p = exhaust.p
 	var phase := float(posmod(_seed, 127)) / 127.0
 	_wing_smoke = DAMAGE_PLUME.build(fx, parent, p, Vector3.LEFT, length, DAMAGE_PLUME.Form.WING,
-		fac, phase, "fx_wing_damage_smoke")
+		fac, phase, "fx_wing_damage_smoke", _plume_glow(), _plume_profile())
 
 
 func _clear_wing_smoke() -> void:
@@ -2907,7 +2913,7 @@ func _cough(fx) -> void:
 		var kind := 3
 		if wounds_v2 and faction == "voidsworn":
 			col = Color(0.13, 0.115, 0.10)    # issue 1741: forged-iron drive smoke, grey, never the Hullbreaker soot
-		elif wounds_v2 and faction == "hegemony":
+		elif faction == "hegemony":
 			col = Color(0.30, 0.36, 0.44); kind = 7   # issue 1741: the Directorate's cold vapour (no soot, no orange)
 		if faction == "deathless":
 			col = Color(0.055, 0.025, 0.09); kind = 8
@@ -2916,7 +2922,7 @@ func _cough(fx) -> void:
 		for j in 4:
 			fx.spr(p + d * r * 0.5, fx.now + j * 0.06, 0.9 + 0.2 * fx.rng.randf(), col, 0.55, r * 1.1, r * 4.2, kind,
 				fx.rcone(d, 0.35) * r * (5.0 + 3.0 * fx.rng.randf()), 2.0)
-	for j in (0 if wounds_v2 and faction == "chorus" else 5):   # issue 1741: a Chorus drive coughs spores, no sparks
+	for j in (0 if faction == "chorus" else 5):   # issue 1741: a Chorus drive coughs spores, no sparks
 		fx.spark(p + d * r * 0.4, fx.now + fx.rng.randf() * 0.12, 0.18 + 0.12 * fx.rng.randf(), faction, 3.0,
 			0.06, 0.08, fx.rcone(d, 0.6) * r * (8.0 + 6.0 * fx.rng.randf()), 2.0, 0.0, 0.0, fx.SparkRole.ENGINE)
 	_wlog(["cough", sick_nozzle, fx.now])
@@ -3385,7 +3391,8 @@ func tick_flare(fx, kind: String) -> void:
 		var T: float = fx.now
 		var tint: Color = fac.damage_glow if faction == "deathless" else Color(0.7, 0.8, 1.0)
 		for i in 20:
-			fx.spark(wp + fx.rdir() * 3.0 * k, T + fx.rng.randf() * 0.3, 0.5, faction, 4.0, 0.15, 0.1, fx.rdir() * 6.0, 0.5)
+			fx.spark(wp + fx.rdir() * 3.0 * k, T + fx.rng.randf() * 0.3, 0.5, faction, 4.0, 0.15, 0.1, fx.rdir() * 6.0, 0.5,
+				0.0, 0.0, fx.SparkRole.HULL, tint)
 
 
 # A mark's geometry follows the section's actual damage, including repairs.

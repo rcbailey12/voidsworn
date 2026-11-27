@@ -10,7 +10,7 @@ const JSM = BattleAPI.JSM   # the shared JS maths and the one PRNG the rules and
 func _ready() -> void:
 	var C = CampaignScript.new(); C.load_tables()
 	var ui = UIScript.new(); add_child(ui); ui.bind(C)
-	JSM.rnd_seed(4242); C.titleScreen(); C.act("newRunScreen"); C.act("startRun"); C.act("pickAspect", C.W["aspOffer"][0]); C.act("closeModal")
+	C.rng.rnd_seed(4242); C.titleScreen(); C.act("newRunScreen"); C.act("startRun"); C.act("pickAspect", C.W["aspOffer"][0]); C.act("closeModal")
 	for i in 30: await get_tree().process_frame
 	await get_tree().create_timer(2.2).timeout   # the arrival camera settles over the whole chart
 	var m = ui.map3d
