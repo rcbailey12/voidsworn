@@ -650,7 +650,10 @@ function Write-JanitorResume($path, [string[]]$lines) {
     [IO.File]::Delete($fresh)
   }
   [IO.File]::WriteAllLines($fresh, $lines)
-  if (Test-Path -LiteralPath $path -PathType Leaf) { [IO.File]::Replace($fresh, $path, $null) } else { [IO.File]::Move($fresh, $path) }
+  # Windows PowerShell 5.1 turns $null into an empty backup path. This overload needs an actual null string.
+  if (Test-Path -LiteralPath $path -PathType Leaf) {
+    [IO.File]::Replace($fresh, $path, [NullString]::Value)
+  } else { [IO.File]::Move($fresh, $path) }
 }
 function Get-Rotated($items, [string[]]$names, $start) {
   # One ordering for the walk and the lookup (ordinal, case blind), and an exact name wins (review of PR 1592: Sort-Object
@@ -766,6 +769,31 @@ function Review-HeldGpuSlots($dryRun) {
   }
 }
 
+function Invoke-StorageUpkeep($root, $now, $dryRun) {
+  foreach ($file in (Get-Item -LiteralPath $root -Force).EnumerateFiles('janitor_*.txt')) {
+    if ($file.Name -cnotmatch '\Ajanitor_[0-9]{8}-[0-9]{4}\.txt\z' -or
+        ($file.Attributes -band [IO.FileAttributes]::ReparsePoint) -or $file.LastWriteTimeUtc -ge $now.AddDays(-30)) { continue }
+    if (Get-BoardKeepReason $file.FullName) { continue }
+    if ($dryRun) { Log "would remove old janitor log: $($file.Name)"; continue }
+    if (Cleanup-Paused) { return }
+    try { [IO.File]::Delete($file.FullName); Log "removed old janitor log: $($file.Name)" }
+    catch { Log "kept old janitor log $($file.Name) : $($_.Exception.Message)" }
+  }
+  foreach ($mirror in @(Get-PcStorageMirrors $root)) {
+    if ($dryRun) { Log "would run nightly git gc under the mirror lock: $mirror"; continue }
+    if (Cleanup-Paused) { break }
+    Assert-GpuQuiet -SoloOnly
+    $lock = $null
+    try {
+      $lock = Open-MirrorWriterLock $mirror 'janitor' 'nightly git gc' 0
+      $result = Invoke-BoundedMirrorGit (Get-MirrorGcArgs $mirror) 180 'nightly git gc' -NativeGit
+      if ($result.Code -ne 0) { throw "git gc exit $($result.Code): $($result.Lines -join ' ')" }
+      Log "nightly git gc done: $mirror"
+    } catch { Log "nightly git gc skipped $mirror : $($_.Exception.Message)" }
+    finally { if ($lock) { $lock.Dispose() } }
+  }
+}
+
 $trigger = $args[0]
 if ($trigger -eq '--install-task') {
   if ($args.Count -gt 2 -or ($args.Count -eq 2 -and $args[1] -ne '--dry-run')) {
@@ -851,6 +879,7 @@ try {
   if ($dryRun) { Write-LegacyJobRepos $root }
   $script:boardKeep = Read-BoardKeepList (Join-Path $root 'janitor_keep.txt')
   Log "Board keep list: $($script:boardKeep.Count) paths"
+  if ($dryRun) { Invoke-StorageUpkeep $root $now $true }
   $mirror = Repo-Mirror
   # Issue 1186: each Workhorse arm's slot folder keeps its set-aside copies beside its one checkout, like a board lane.
   $slots = @()
@@ -955,6 +984,8 @@ try {
   if (-not $dryRun) {
     $lines = @(foreach ($k in @('lane','temp','neon','bench','shots','root')) { if ($script:resume[$k]) { "$k $($script:resume[$k])" } })
     Write-JanitorResume $resumePath ([string[]]$lines)
+    # Save every scan cursor before doing mirror maintenance outside the scan budget.
+    if ($trigger -eq '--nightly') { Invoke-StorageUpkeep $root $now $false }
   }
 } catch {
   if ($script:log) { Log "janitor stopped: $($_.Exception.Message)" }

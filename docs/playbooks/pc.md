@@ -37,7 +37,10 @@ anywhere else, except a smoke before merge that sets `OPUS_JOB_HEAD_PREMERGE=1`,
   the last job left there that is not proven rebuildable is saved into that job's `out_<name>\slot_leftovers`; when it
   cannot be (over 200 MB, a staged change, a nested repo) the slot gets `hold.txt` and is skipped until the Board has
   looked and removed it, and a job that just took it moves on to the next free slot. The reset is a forced checkout of the pin and `git clean -ffdx` that keeps only `godot\.godot`
-  and `*.import` sidecars warm; it deletes only inside `slots`. The ships step then copies into the slot as below (its
+  and non-ship `*.import` sidecars warm; it deletes only inside `slots`. A generated ship scene or resource can be
+  cleared only when its bytes match the installed file at that path or the last copy receipt. Otherwise it is saved or
+  the slot is held. The ships step keeps its receipt with the slot as well as the attempt, so relaying an attempt does
+  not erase the proof. The ships step then copies into the slot as below (its
   side files go to `<attempt>\<name>_ships_*.txt`), so a publish during a job changes nothing under it. A slot job has no
   checkout of its own for the tail to remove. Codex lanes move onto the slots later, after a Windows log of two slot jobs.
 - `ships`: built hulls from `build\godot`: `gen` whole with plain `/E`, no skip flags, so the source wins (its
@@ -132,6 +135,44 @@ nightly run. Leave the Windows account signed in overnight so the task can use i
 and lock prevent a second cleanup if the old watcher is running too. `janitor_task.bat --dry-run` previews the task and
 prints the exact action Windows will run.
 `janitor.bat --dry-run` previews cleanup.
+
+### Git cache upkeep (issue 2181)
+
+Mirror writers fetch heads and tags only. A new or reused agent lane does not fetch
+`board/pc-out-*` heads, but old copies are not removed when a job starts. The nightly
+janitor runs Git GC under each available mirror's writer lock with a two-week grace
+period and leaves reflogs intact. It drops only its own timestamped logs older than
+30 days, respecting the keep list. Preview both with `janitor.bat --dry-run`.
+The nightly pass saves its lane, TEMP, Neon, bench, Codex shots and job cursors
+before storage upkeep starts. GC skips a mirror another writer holds.
+
+For live helper cleanup, a legacy code-mirror relay tip also has to match the
+current tip on the game repo. The private relay requires the same check against
+its own origin. A mirror-only tip is useful to inspect in a dry run, not authority
+to remove a result. For an approved result folder with top-level media, the Board
+can use `relay_push.bat <job> <result folder> results` to relay it to the private
+repo. A missing file or unproved change keeps the local copy.
+
+For CI, apply PR 2196's workflow patch first, then
+`contrib/codex/issue-2181/w11-after-2196.patch`. Standing checks use the lane
+sparse inputs and read omitted tracked paths through the index. A16 retains
+`.github/actions`, `tools` and `godot` so both fresh and stale fixture paths can
+run. Re-run Standing checks and A16 on GitHub after the Board applies both patches.
+
+The Board can run `prune_relay_branches.ps1 audit` to list every legacy relay head
+and its proof against the live private relay. `audit-cached` is read-only and does
+not clear any branch for deletion. A matching tip, or every tip path matching by
+mode and object ID on its named counterpart, is required in addition to the old
+keep rules. Any missing, changed or unreadable counterpart keeps the branch.
+Preview local Git caches with `compact_repos.ps1`. Only the Board's `-Live` run
+with idle lanes drops cached pull refs and legacy copies proven elsewhere.
+Mirrored legacy heads also have to be gone from the game repo first. The compactor
+never deletes an upstream branch.
+
+Refresh each Codex lane's tools before the next job. The launcher refuses to
+claim an issue if the lane's `runner_hashes.txt` is missing, incomplete or no
+longer matches. Lane refresh writes the manifest. The separate tools_live
+watchdog check still applies.
 
 Low space triggers `--low-space` from the runner, and enabled job tails trigger `--after-job`. They share one run per hour.
 Helper jobs enable their after-job trigger with Ryan's approval via `OPUS_JOB_JANITOR=1`. An admitted after-job run logs

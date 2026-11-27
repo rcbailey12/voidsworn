@@ -8,6 +8,11 @@ const http = require('node:http');
 const os = require('node:os');
 const path = require('node:path');
 
+if (process.platform !== 'win32') {
+  console.log('SKIP runner_openai_resume_selftest: needs the Windows watchdog and OpenCode');
+  process.exit(0);
+}
+
 const exe = process.argv[2] || path.join(process.env.APPDATA, 'npm', 'opencode.cmd');
 const helper = path.join(__dirname, 'work_issue.ps1');
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'runner1093 proof '));

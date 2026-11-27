@@ -311,6 +311,9 @@ write(gitStub, '@echo off\r\n"' + process.execPath + '" "' + path.join(root, 'gi
 write(path.join(root, 'git.js'), `
 const fs = require('fs'), path = require('path'), cp = require('child_process');
 const a = process.argv.slice(2), mode = process.env.STUB_GIT_FAULT || '';
+// cmd drops a bare caret as it passes arguments to this fault shim. The real runner calls git.exe directly.
+const excluded = a.indexOf('refs/heads/board/pc-out-*');
+if (excluded >= 0 && (a.includes('fetch') || a.includes('remote.origin.fetch'))) a[excluded] = '^' + a[excluded];
 // This hook runs after reuse eligibility, immediately before the real branch switch.
 if (a.includes('checkout') && a.includes('-B') && process.env.STUB_CHECKOUT_EDIT) {
   fs.writeFileSync(path.join(a[a.indexOf('-C') + 1], process.env.STUB_CHECKOUT_EDIT_PATH || 'progress.txt'), process.env.STUB_CHECKOUT_EDIT);
@@ -319,7 +322,8 @@ if (a.includes('checkout') && a.includes('-B') && process.env.STUB_CHECKOUT_EDIT
 if (a.includes('status') && process.env.STUB_RECHECK_FAIL === '1' && fs.existsSync(process.env.STUB_CHECKOUT_MARKER)) {
   console.error('stub status failure after branch switch'); process.exit(55);
 }
-const op = a.includes('fetch') ? 'fetch' : a[0] === 'clone' ? 'clone' : '';
+// Fault and count the mirror transfer, not the separate local fetch into the lane checkout.
+const op = a[0] === '--git-dir' && a.includes('fetch') ? 'fetch' : a[0] === 'clone' ? 'clone' : '';
 const hold = process.env.STUB_FETCH_HOLD;
 if (op === 'fetch' && hold) {
   fs.writeFileSync(hold + '.ready', 'fetch holds the mirror');
@@ -366,9 +370,11 @@ function gitEnvironment(env) {
 // Copy the launchers and run their real helpers through the warm fixture shell.
 // Only the agent watchdog is replaced. Its preflight kill path and the separate
 // runner_stall_tests row still exercise the real timeout code.
+const runnerFiles = ['codex_issue.bat', 'codex_issue.ps1', 'runner_common.ps1', 'work_issue.bat', 'work_issue.ps1', 'review_evidence.ps1', 'run_timeout.ps1', 'tmo.bat', 'gpu_slots.js', 'disk_space.ps1', 'janitor.ps1', 'janitor_salvage.ps1',
+    'janitor_neon.ps1', 'janitor_relay.ps1', 'neon_idle_threads.js', 'janitor.bat'];
 function fixtureTools(name, scenario = '') {
   const dir = path.join(root, name);
-  for (const file of ['codex_issue.bat', 'codex_issue.ps1', 'work_issue.bat', 'work_issue.ps1', 'runner_common.ps1', 'review_evidence.ps1', 'run_timeout.ps1', 'gpu_slots.js', 'janitor.ps1', 'janitor_salvage.ps1', 'janitor_neon.ps1', 'janitor_relay.ps1', 'neon_idle_threads.js', 'janitor.bat']) {
+  for (const file of runnerFiles.filter(name => name !== 'tmo.bat')) {
     let body = read(path.join(here, file));
     if (file.endsWith('.bat')) {
       body = body.replace(/powershell -NoProfile (?:-ExecutionPolicy Bypass )?(?=-File |-Command "(?:\(Get-Date\)|Get-Date -Format))/g,
@@ -419,12 +425,23 @@ process.exitCode = result.status ?? 125;
 const tools = fixtureTools('launchers');
 const faultTools = fixtureTools('accounting runner', 'accounting');
 const deliveryTools = fixtureTools('delivery runner', 'delivery');
+const fixtureManifests = new Map();
+function fixtureManifest(dir) {
+  if (!fixtureManifests.has(dir)) {
+    const file = path.join(dir, 'fixture_hashes.txt');
+    write(file, runnerFiles.map(n => crypto.createHash('sha256').update(fs.readFileSync(path.join(dir, n))).digest('hex') + '  ' + n).join('\n') + '\n');
+    fixtureManifests.set(dir, file);
+  }
+  return fixtureManifests.get(dir);
+}
 async function job(arm, label, extra = {}) {
   const home = extra.CODEX_TEST_ROOT || path.join(root, arm + '-' + label);
   fs.mkdirSync(home, { recursive: true });
   // Use the short fixture root for TEMP. Each mock runner still makes its own GUID scratch beneath it.
   const temp = root;
+  const launchers = extra.STUB_RUNNER_TOOLS || tools;
   const env = gitEnvironment({ ...defaults, TEMP: temp, TMP: temp, TMPDIR: temp, PC_TEST_MIRROR: path.join(home, 'mirror.git'), WORK_ROOT: home, CODEX_TEST_ROOT: home, PC_TEST_TRACE: path.join(home, 'probe_args.txt'), PC_TEST_COUNTER: path.join(home, 'tries'),
+    PC_TEST_HASHES: arm === 'codex' ? fixtureManifest(launchers) : '',
     PC_TEST_GH_DB: path.join(home, 'gh-db.json'), PC_TEST_GH_TRACE: path.join(home, 'gh.jsonl'), ...extra });
   testPidFiles.push(env.PC_TEST_TRACE + '.pid');
   if (!fs.existsSync(env.PC_TEST_GH_DB)) {
@@ -458,7 +475,7 @@ async function job(arm, label, extra = {}) {
     if (label === 'two-current') db.issue.body += '\n## Run 2 THIS IS THE JOB NOW\nAnother job.\n';
     write(env.PC_TEST_GH_DB, JSON.stringify(db)); write(env.PC_TEST_GH_TRACE, '');
   }
-  const bat = path.join(extra.STUB_RUNNER_TOOLS || tools, arm === 'codex' ? 'codex_issue.bat' : 'work_issue.bat');
+  const bat = path.join(launchers, arm === 'codex' ? 'codex_issue.bat' : 'work_issue.bat');
   const cmd = '""' + bat + '" 687' + (arm === 'codex' ? '' : ' ' + arm + ' dryrun') + '"';
   const r = await runEntryPoint(cmd, env);
   write(path.join(home, 'console.txt'), r.text);
@@ -1618,7 +1635,6 @@ async function testRunnerStartChecks() {
   pass('a low-disk run stops before the mirror, the model probe and the agent');
   // The Board writes work217\runner_hashes.txt with hashwrite after copying the runner and watchdog files; hashcheck then
   // guards the running copies. A mismatch or a missing file is a warning, never a stop.
-  const runnerFiles = ['codex_issue.bat', 'codex_issue.ps1', 'runner_common.ps1', 'work_issue.bat', 'work_issue.ps1', 'review_evidence.ps1', 'run_timeout.ps1', 'tmo.bat', 'gpu_slots.js', 'janitor.ps1', 'janitor_salvage.ps1', 'janitor_neon.ps1', 'janitor_relay.ps1', 'neon_idle_threads.js', 'janitor.bat'];
   const hashesGood = path.join(root, 'board_hashes_good.txt');
   write(hashesGood, runnerFiles.map(n => crypto.createHash('sha256').update(fs.readFileSync(path.join(here, n))).digest('hex') + '  ' + n).join('\n') + '\n');
   const hashOut = path.join(root, 'hashcheck'); fs.mkdirSync(hashOut); write(path.join(hashOut, 'result.txt'), '');
@@ -1627,6 +1643,7 @@ async function testRunnerStartChecks() {
   assert.equal((await ps(['hashwrite', here, hashesWritten], defaults)).code, 0);
   assert.equal(read(hashesWritten), read(hashesGood));
   assert.equal((await ps(['hashcheck', hashOut, here, hashesGood], defaults)).code, 0);
+  assert.equal((await ps(['hashcheck', hashOut, here, hashesGood, 'strict-runner'], defaults)).code, 0);
   assert(read(path.join(hashOut, 'result.txt')).includes(`runner files match the Board hashes (${runnerFiles.length} checked)`));
   pass('hashwrite and hashcheck agree on the runner and watchdog files');
   const hashesBad = path.join(root, 'board_hashes_bad.txt');
@@ -1636,6 +1653,34 @@ async function testRunnerStartChecks() {
   assert.equal((await ps(['hashcheck', hashOut, here, path.join(root, 'no_such_hashes.txt')], defaults)).code, 0);
   assert(read(path.join(hashOut, 'result.txt')).includes('WARNING: no Board hashes file'));
   pass('a hash mismatch and a missing hashes file warn without stopping');
+  const laneManifest = read(fixtureManifest(tools));
+  for (const [label, lines, reason] of [
+    ['missing', laneManifest.split('\n').filter(l => !l.endsWith('disk_space.ps1')), /leaves out: disk_space\.ps1/],
+    ['changed', laneManifest.split('\n').map(l => l.endsWith('disk_space.ps1') ? '0'.repeat(64) + '  disk_space.ps1' : l),
+      /lane runner files differ.*disk_space\.ps1/],
+  ]) {
+    const file = path.join(root, 'disk-helper-' + label + '.txt');
+    write(file, lines.join('\n'));
+    assert.equal((await ps(['hashcheck', hashOut, here, file, 'strict-runner'], defaults)).code, 14);
+    assert.match(read(path.join(hashOut, 'result.txt')), reason);
+  }
+  pass('strict-runner rejects an omitted or changed disk-space helper');
+  const hashCases = [
+    ['missing', null, /no hashes file/],
+    ['incomplete', laneManifest.split('\n').filter(l => !l.endsWith('runner_common.ps1')).join('\n'), /leaves out: runner_common\.ps1/],
+    ['changed', laneManifest.replace(/^[0-9a-f]{64}(?=  codex_issue\.bat)/m, '0'.repeat(64)), /lane runner files differ.*codex_issue\.bat/],
+  ];
+  for (const [label, content, reason] of hashCases) {
+    const file = path.join(root, 'strict-' + label + '.txt');
+    if (content !== null) write(file, content);
+    const stopped = await job('codex', 'hash-' + label, { PC_TEST_HASHES: file });
+    assert.equal(stopped.code, 14, stopped.result);
+    assert.match(stopped.result, reason);
+    assert.equal(stopped.state.status, 'failed');
+    assert(!fs.existsSync(stopped.repo), 'strict hash failure must precede checkout');
+    assert.equal(read(stopped.env.PC_TEST_GH_TRACE), '', 'strict hash failure must precede the issue claim');
+  }
+  pass('Codex stops before GitHub or checkout when lane hashes are missing, incomplete or wrong');
   const hashWarn = await job('deepseek', 'hashwarn', { PC_TEST_HASHES: hashesBad });
   assert.equal(hashWarn.code, 0, hashWarn.text + '\n' + hashWarn.result);
   assert(fs.existsSync(path.join(hashWarn.repo, 'agent_started.txt')));
@@ -1655,7 +1700,7 @@ async function testRunnerStartChecks() {
     testAccounting, testAccountingFaults,
     testCleanAndCacheReuse, testSharedShipCopySafety, testKeptLookalikes, testCampaignParityCleanup, testLateCheckoutEdits,
     testIncomingCheckoutCollisions, testKeptCheckoutHistory,
-    testClaimRules, testClaimFailures, testAssignedBranch, testDeliveryCleanup, testNoEditRerun, testCodexPushExits, testResumeAndFailures, testGitRetries,
+    testClaimRules, testClaimFailures, testFinishReleasesClaimBeforeCleanup, testAssignedBranch, testDeliveryCleanup, testNoEditRerun, testCodexPushExits, testResumeAndFailures, testGitRetries,
     testHeldCheckout, testMergedPartial, testResumeConflict, testChainRelease, testProbeTimeout,
     testMirrorAndConfirmation, testRunnerStartChecks
   ], check => check());

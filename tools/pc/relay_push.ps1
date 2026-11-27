@@ -2,7 +2,8 @@
 # branch pc-out-<job>, with the attempt folder at <attempt folder name>/ in its tree, instead of a board/pc-out branch of
 # the main repo (22.66 GB with 316 such branches on Nov 22). The layout is the one opus_job_head.ps1 proves before it
 # removes a checkout (relay_branch.txt "relay/pc-out-<job> <attempt folder name>").
-#   relay_push.bat <job> <attempt folder> [dry | leftovers]
+#   relay_push.bat <job> <attempt folder> [dry | leftovers | results]
+# results includes top-level media and result subfolders for the janitor's exact-file proof.
 # leftovers adds only checkout_leftovers to an existing private relay. It checks that all other
 # attempt results are already there. For a custom location, pass the branch suffix as <job> and -TreePath to the ps1.
 # Sends out and out_* folders and the small text files at the attempt's top (status, done, logs). When the attempt is
@@ -256,7 +257,7 @@ try {
   for ($b = 0; $b -lt $batches.Count; $b++) {
     $part = @($batches[$b]); $last = $b -eq $batches.Count - 1
     for ($try = 0; $try -lt 2; $try++) {
-      Run-Git --git-dir $relayMirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune origin | Out-Null
+      Run-Git --git-dir $relayMirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune --no-auto-maintenance --no-tags --refmap= origin '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*' | Out-Null
       $ErrorActionPreference = 'Continue'
       $parent = (& $gitExe @gitLongPaths --git-dir $relayMirror rev-parse --verify -q "refs/heads/$branch^{commit}" 2>$null) | Select-Object -Last 1
       $ErrorActionPreference = 'Stop'

@@ -94,7 +94,7 @@ try {
   git('init', '-q', '--bare', source);
   git('init', '-q', '-b', 'main', workspace);
   put(path.join(workspace, 'tracked.txt'), 'tracked');
-  put(path.join(workspace, '.gitignore'), 'godot/gen/\ngodot/assets/ships/*/\n');
+  put(path.join(workspace, '.gitignore'), 'godot/gen/*\n!godot/gen/job-edit.res\ngodot/assets/ships/*/\n');
   git('-C', workspace, 'add', '.');
   git('-C', workspace, 'commit', '-qm', 'fixture');
   git('-C', workspace, 'remote', 'add', 'origin', source);
@@ -140,6 +140,8 @@ try {
   const liveLegacy = legacyJob(465);
   const staleLegacy = legacyJob(466);
   const movedLegacy = legacyJob(467);
+  const changedLegacy = legacyJob(472);
+  put(changedLegacy.picture, 'legacy picture 473');
   git('--git-dir', source, 'update-ref', '-d', staleLegacy.ref);
   git('--git-dir', source, 'update-ref', movedLegacy.ref, liveLegacy.commit);
   const takes = attempt(461, 1);
@@ -241,7 +243,7 @@ try {
   let log = run(shell, [...janitorArgs, '--low-space'], undefined, active);
   assert.match(log, /Neon pass kept: T3 is open/);
   for (const removed of [saved, scratch, codexShots, wholeJob, safeHold, liveLegacy.dir]) assert(!fs.existsSync(removed), `expected low-space removal ${removed}\n${log}`);
-  for (const kept of [bench, big, changed, activeJob, keptJob, takes, eligible.local, staleWholeJob, staleLegacy.picture, movedLegacy.picture, editedHold]) {
+  for (const kept of [bench, big, changed, activeJob, keptJob, takes, eligible.local, staleWholeJob, staleLegacy.picture, movedLegacy.picture, changedLegacy.picture, editedHold]) {
     assert(fs.existsSync(kept), `expected low-space keep ${kept}\n${log}`);
   }
   assert.match(log, /GPU slot hold released: slot_gpu_1/);
@@ -270,14 +272,48 @@ try {
     assert.match(fs.readFileSync(path.join(path.dirname(slotRepo), 'ships_copied.txt'), 'utf8'), /^last use [0-9a-f]{64}/);
     fs.unlinkSync(attemptRecord); // The per-attempt copy can go with relayed results while the warm slot stays.
     put(path.join(shipSource, newGlb), 'repainted after the install');
-    const unproved = put(path.join(slotGodot, 'gen', 'job-edit.scn'), 'unique scene');
+    // The ignored scene has new bytes. The untracked resource matches a tracked file at another path only.
+    const unproved = { 'job-edit.scn': 'unique scene', 'job-edit.res': 'tracked' };
+    for (const [name, bytes] of Object.entries(unproved)) put(path.join(slotGodot, 'gen', name), bytes);
     const reset = run(shell, [...slotHead, 'slot', resetAttempt, 'next', pin], undefined, slotEnv);
     assert(!fs.existsSync(installed), 'the slot receipt proves the old copy after the attempt receipt is gone');
-    assert(!fs.existsSync(unproved), 'the slot is reusable once its unproved scene is saved');
-    assert.equal(fs.readFileSync(path.join(resetAttempt, 'out_new', 'slot_leftovers', 'files', 'godot', 'gen', 'job-edit.scn'), 'utf8'), 'unique scene', reset);
+    for (const [name, bytes] of Object.entries(unproved)) {
+      assert(!fs.existsSync(path.join(slotGodot, 'gen', name)), 'the slot is reusable once its unproved file is saved');
+      assert.equal(fs.readFileSync(path.join(resetAttempt, 'out_new', 'slot_leftovers', 'files', 'godot', 'gen', name), 'utf8'), bytes, reset);
+    }
   } finally {
     if (fs.existsSync(path.join(resetAttempt, 'slot.txt'))) run(shell, [...slotHead, 'slotrelease', resetAttempt]);
   }
+
+  // Stop all three companion scans at a real entry, then check that all cursors survived upkeep.
+  const cappedOut = path.join(root, 'board_f', 'issue-2145');
+  put(path.join(cappedOut, 'shots', 'local.png'), 'untouched capped fixture');
+  put(path.join(cappedOut, 'status.json'), JSON.stringify({
+    status: 'checked_push', finished: old, scratch: { path: path.join(temp, 'missing-capped') },
+  }));
+  const resume = path.join(root, 'janitor_resume.txt');
+  // A previous interruption already left a file. Windows PowerShell must replace it, not fail before upkeep.
+  put(resume, ['neon ' + eligible.local, 'bench ' + bench, 'shots ' + cappedOut].join('\n') + '\n');
+  const capTime = '2026-11-24T09:30:00Z';
+  const stable = dir => git('--git-dir', dir, 'show-ref');
+  const relayMirror = path.join(root, 'relay-mirror.git');
+  const mirrorRefs = stable(mirror);
+  const relayRefs = stable(relayMirror);
+  const capped = run(shell, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', [
+    '$locks = @($env:R455_CODE_MIRROR, $env:R455_RELAY_MIRROR) | ForEach-Object { [IO.File]::Open("$_"+".lock", "OpenOrCreate", "ReadWrite", "None") }',
+    'try { & $env:R455_JANITOR --nightly; exit $LASTEXITCODE } finally { foreach ($lock in $locks) { $lock.Dispose() } }',
+  ].join('; ')], undefined, {
+    PC_JANITOR_CAP_SECONDS: '0', PC_TEST_JANITOR_NOW: capTime,
+    R455_CODE_MIRROR: mirror, R455_RELAY_MIRROR: relayMirror, R455_JANITOR: path.join(tools, 'janitor.ps1'),
+  });
+  const cursors = fs.readFileSync(resume, 'utf8');
+  for (const phase of ['neon', 'bench', 'shots']) {
+    assert.match(cursors, new RegExp('^' + phase + ' .+', 'm'), capped);
+    assert(capped.indexOf('time cap: stopped the ' + phase) < capped.indexOf('nightly git gc skipped'), capped);
+  }
+  assert.equal((capped.match(/nightly git gc skipped.*stayed locked/g) || []).length, 2, capped);
+  assert.equal(stable(mirror), mirrorRefs);
+  assert.equal(stable(relayMirror), relayRefs);
 
   log = run(shell, [...janitorArgs, '--nightly']);
   for (const removed of [bench, path.dirname(eligible.attachment), ...[eligible, notRelayed, changedAttachment, partialAttachment, staleAttachment]
@@ -364,7 +400,7 @@ Clear-ScratchFolder $helper '' 'fixture' 24 $env:PC_RUN_TEMP ([DateTime]::UtcNow
   }
   assert.match(totals, /--low-space/);
   assert.match(totals, /--nightly/);
-  console.log('PASS janitor_r455_tests: schedules, fresh relays, entry/process races, Neon attachment proof and log retention, scratch, slots and per-kind totals');
+  console.log('PASS janitor_r455_tests: schedules, fresh relays, entry/process races, Neon attachment proof and log retention, scratch, slots, legacy origin proof, resume cursors, busy mirrors and per-kind totals');
 } finally {
   // Only the isolated fixture from mkdtemp. Windows Git worktree roots here are plain directories.
   assert.equal(path.dirname(fixture), os.tmpdir());

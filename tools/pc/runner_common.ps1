@@ -9,7 +9,7 @@
 # space <out> <settings file> <target path>: refuse to start when the target's drive has less than min_free_gb
 #   (default 60) free; one line in result.txt, status failed. Test knobs: PC_TEST_SETTINGS, PC_TEST_SPACE_FREE_MB.
 # hashwrite <tools dir> <hash file>: the Board writes SHA-256 of the runner and watchdog files after copying them.
-# hashcheck <out> <tools dir> <hash file> [strict]: warn in result.txt when the running copies differ. With strict
+# hashcheck <out> <tools dir> <hash file> [strict|strict-runner]: warn in result.txt when the running copies differ. With strict
 #   (issue 1194), a differing or missing watchdog, slot or step helper file (tmo.bat, run_timeout.ps1, gpu_slots.js,
 #   job_wrap.bat) stops the job with exit 14. Test knob: PC_TEST_HASHES.
 # preflight-tools <out> <list> (issue 1194): find each named tool (godot, blender, ffmpeg, node, pil) before a job clones
@@ -609,6 +609,23 @@ function Assert-PlainDirectory($directory) {
     }
   }
 }
+function Get-PcStorageMirrors($root) {
+  Assert-PlainDirectory (Get-Item -LiteralPath $root -Force)
+  foreach ($name in @('repo-mirror.git','repo-mirror-b.git','repo-mirror-c.git','repo-mirror-d.git',
+      'repo-mirror-e.git','repo-mirror-f.git','relay-mirror.git')) {
+    $dir = Get-Item -LiteralPath (Join-Path $root $name) -Force -ErrorAction SilentlyContinue
+    if (-not $dir) { continue }
+    try {
+      Assert-PlainDirectory $dir
+      $head = Get-Item -LiteralPath (Join-Path $dir.FullName 'HEAD') -Force -ErrorAction SilentlyContinue
+      if ($head -is [IO.FileInfo] -and -not ($head.Attributes -band [IO.FileAttributes]::ReparsePoint)) { $dir.FullName }
+    } catch { Write-Warning "mirror upkeep skipped $name : $($_.Exception.Message)" }
+  }
+}
+function Get-MirrorGcArgs($gitDir) {
+  @('--git-dir',$gitDir,'-c','gc.autoDetach=false','-c','gc.reflogExpire=never','-c','gc.reflogExpireUnreachable=never',
+    'gc','--prune=2.weeks.ago')
+}
 function Test-PathInsideRepo($path, $repo) {
   $separator = [IO.Path]::DirectorySeparatorChar
   $comparison = if ($separator -eq '\') { [StringComparison]::OrdinalIgnoreCase } else { [StringComparison]::Ordinal }
@@ -1123,7 +1140,8 @@ function Update-SharedMirror($mirror, $source, $job, $attempts = 1, $wait = 1800
       $url = @(Git @('--git-dir',$mirror,'remote','get-url','origin'))
       if ($gitExit -ne 0 -or $url[0] -ne $source) { throw 'shared repo copy has an unexpected origin; kept unchanged' }
       $fetch = Invoke-BoundedMirrorGit @('--git-dir',$mirror,'-c','http.lowSpeedLimit=1000','-c','http.lowSpeedTime=60',
-        '-c','fetch.writeCommitGraph=false','fetch','--no-auto-maintenance','--prune','origin') $seconds
+        '-c','fetch.writeCommitGraph=false','fetch','--no-auto-maintenance','--prune','--no-tags','--refmap=','origin',
+        '+refs/heads/*:refs/heads/*','+refs/tags/*:refs/tags/*') $seconds
       if ($fetch.Code -eq 0) { Must-Git @('--git-dir',$mirror,'symbolic-ref','HEAD','refs/heads/main') }
     } finally { $lock.Dispose() }
     Write-GitLog $fetch.Lines
@@ -1545,6 +1563,11 @@ function Invoke-LockedRunner($start, $issue) {
     finally { $child.Dispose() }
   } finally { $lock.Dispose() }
 }
+function Runner-HashFiles {
+  @('codex_issue.bat','codex_issue.ps1','runner_common.ps1','work_issue.bat','work_issue.ps1','review_evidence.ps1',
+    'run_timeout.ps1','tmo.bat','gpu_slots.js','disk_space.ps1','janitor.ps1','janitor_salvage.ps1',
+    'janitor_neon.ps1','janitor_relay.ps1','neon_idle_threads.js','janitor.bat')
+}
 if ($mode -eq 'cleanup-library') { return }
 function End-Announcement($s) {
   if (-not $s.github -or -not $s.github.claimed) { return }
@@ -1693,10 +1716,6 @@ try {
     $null = New-Item -ItemType Directory -Force -Path $parent
     Update-SharedMirror $mirror $source $br 3 -ReportWait
     $reuse = Can-ReuseRepo $repo $mirror $patterns
-    if ($reuse) {
-      # --prune: a reused slot must drop a branch GitHub deleted, or a rerun would continue its stale tip (PR 1804).
-      Retry-Git 'checkout fetch' @('-C',$repo,'fetch','--no-tags','--no-auto-maintenance','--prune',$mirror,'+refs/heads/*:refs/remotes/origin/*')
-    }
     # A pinned lane must not hold the shared mirror lock for the ten-minute preservation wait.
     if (-not $reuse) { Keep-Repo $repo 'kept' }
     Warn-KeptRepos $repo
@@ -1705,7 +1724,8 @@ try {
         Log "local clone attempt $attempt/3"
         # Reacquire around each local clone: mirror fetch and hardlink cloning must still serialize.
         $lock = Open-MirrorWriterLock $mirror $br 'git clone --local --no-checkout' 1800 -ReportWait
-        try { $null = Git @('clone','-q','-c','core.autocrlf=false','--local','--no-checkout',$mirror,$repo) }
+        # Clone just main's ref, then fetch the filtered set below. --local still hardlinks the immutable objects.
+        try { $null = Git @('clone','-q','-c','core.autocrlf=false','--local','--no-checkout','--single-branch','--branch','main',$mirror,$repo) }
         finally { $lock.Dispose() }
         if ($gitExit -eq 0) { break }
         Keep-Repo $repo 'clone-failed'
@@ -1715,6 +1735,18 @@ try {
     Add-ProfileCacheExclude $repo
     # Local hardlinks share immutable objects without alternates. All pushes go to GitHub, never to the mirror.
     Must-Git @('-C',$repo,'remote','set-url','origin',$source)
+    $laneHeads = '+refs/heads/*:refs/remotes/origin/*'
+    $excludeRelay = '^refs/heads/board/pc-out-*'
+    # Git 2.29+ negative refspec. Old copied relay refs stay for the Board's compaction pass.
+    Must-Git @('-C',$repo,'config','--replace-all','remote.origin.fetch',$laneHeads)
+    Must-Git @('-C',$repo,'config','--add','remote.origin.fetch',$excludeRelay)
+    # --prune drops deleted job branches so a rerun cannot start from a stale tip (PR 1804).
+    $refs = @($laneHeads,$excludeRelay)
+    if (-not $reuse) { $refs += '+refs/tags/*:refs/tags/*' } # Keep the prior clone's tag inventory.
+    $lock = Open-MirrorWriterLock $mirror $br 'git fetch into lane' 1800 -ReportWait
+    try {
+      Retry-Git 'checkout fetch' (@('-C',$repo,'fetch','--no-tags','--no-auto-maintenance','--prune',$mirror) + $refs)
+    } finally { $lock.Dispose() }
     if (-not $reuse -and $patterns.Count) {
       # Write the patterns file and settings directly; the checkout below applies them. Passing '/*' as an argument let
       # PowerShell on Linux expand it into root folders, which left out every file (issue 1186, CI).
@@ -2033,9 +2065,7 @@ try {
   elseif ($mode -eq 'hashwrite') {
     # The Board runs this right after copying the runner files to a PC tools folder; hashcheck then guards the copies.
     $tools = $args[1]; $hashf = $args[2]
-    $names = @('codex_issue.bat','codex_issue.ps1','runner_common.ps1','work_issue.bat','work_issue.ps1','review_evidence.ps1',
-      'run_timeout.ps1','tmo.bat','gpu_slots.js','janitor.ps1','janitor_salvage.ps1','janitor_neon.ps1','janitor_relay.ps1',
-      'neon_idle_threads.js','janitor.bat')
+    $names = Runner-HashFiles
     $lines = @()
     foreach ($n in $names) {
       $p = Join-Path $tools $n
@@ -2046,13 +2076,13 @@ try {
     Write-Host "hashes written to $hashf ($($names.Count) files)"
   }
   elseif ($mode -eq 'hashcheck') {
-    # Issue 722 (audit 706 finding 6): the running copies must be what the Board copied. A drift or a missing
-    # hashes file is a warning only: a run must never stop because the Board has not written hashes yet.
+    # Without strict, older Workhorse launches still warn. Codex requires the complete lane manifest.
     $script:out = $args[1]; $tools = $args[2]; $hashf = $args[3]
     if ($test -and $env:PC_TEST_HASHES) { $hashf = $env:PC_TEST_HASHES }
     # Issue 1194 (Artoo on PR 1254): strict fails closed. A missing or empty manifest, or one that leaves out a guarded
     # file, stops the job as surely as a changed file.
-    $strict = $args[4] -eq 'strict'
+    $strictRunner = $args[4] -eq 'strict-runner'
+    $strict = $strictRunner -or $args[4] -eq 'strict'
     function Stop-Strict($why) {
       Log "STOPPED: $why"
       if (Test-Path -LiteralPath (Join-Path $script:out 'status.json')) { State 'failed' "STOPPED: $why" }
@@ -2066,11 +2096,14 @@ try {
     $want = @{}
     foreach ($l in [IO.File]::ReadAllLines($hashf)) {
       $m = [regex]::Match($l, '^([0-9a-fA-F]{64})\s+(\S+)\s*$')
+      if ($strictRunner -and (-not $m.Success -or $m.Groups[2].Value -notmatch '\A[A-Za-z0-9_.-]+\z' -or
+          $want.ContainsKey($m.Groups[2].Value))) { Stop-Strict "invalid or duplicate entry in $hashf" }
       if ($m.Success) { $want[$m.Groups[2].Value] = $m.Groups[1].Value.ToLower() }
     }
     if ($strict) {
       $required = @('tmo.bat', 'run_timeout.ps1', 'gpu_slots.js')
-      if (Test-Path -LiteralPath (Join-Path $tools 'job_wrap.bat')) { $required += 'job_wrap.bat' }
+      if ($strictRunner) { $required = Runner-HashFiles }
+      elseif (Test-Path -LiteralPath (Join-Path $tools 'job_wrap.bat')) { $required += 'job_wrap.bat' }
       $absent = @($required | Where-Object { -not $want.ContainsKey($_) })
       if ($absent.Count) { Stop-Strict "the hashes file $hashf leaves out: $($absent -join ', ')" }
     }
@@ -2083,6 +2116,7 @@ try {
     }
     if ($bad.Count) { Log "WARNING: these runner files differ from the Board-copied hashes: $($bad -join ', ')" }
     else { Log "runner files match the Board hashes ($($want.Count) checked)" }
+    if ($strictRunner -and $bad.Count) { Stop-Strict "lane runner files differ from $($hashf): $($bad -join ', ')" }
     # Issue 1194: a job must not run a watchdog or slot reader other than the one the hashes name.
     $guarded = @('tmo.bat', 'run_timeout.ps1', 'gpu_slots.js', 'job_wrap.bat')
     $stop = @($bad | Where-Object { $guarded -contains ($_ -replace ' \(missing\)$', '') })
