@@ -183,20 +183,30 @@ assert.equal(p.status, 0, p.stdout + p.stderr + String(p.error || ''));
 pass('Windows real file timestamps, commit-only progress, log bytes, housekeeping exclusion and resume note');
 
 // Actual command launch, process-tree termination, stop reason and resume note. All output stays in TEMP.
-for (const scenario of ['silent', 'busy', 'lying-killer', 'launcher-exit']) {
+for (const scenario of ['silent', 'idle-helper', 'completed-linger', 'unfinished-linger', 'busy', 'lying-killer', 'launcher-exit']) {
   const busy = scenario === 'busy';
+  const completedLinger = scenario === 'completed-linger';
+  const unfinishedLinger = scenario === 'unfinished-linger';
+  const idleHelper = scenario === 'idle-helper';
   const folder = path.join(root, scenario);
   fs.mkdirSync(folder);
   const fake = path.join(folder, 'agent.js');
   const pidFile = path.join(folder, 'pids.txt'); pidFiles.push(pidFile);
-  const cleanChild = "if (['TMO_REPO','TMO_OUT','TMO_LOG','TMO_ERR_LOG'].some(k=>process.env[k])) throw Error('watch settings leaked to child'); ";
+  const cleanChild = "if (['TMO_REPO','TMO_OUT','TMO_LOG','TMO_ERR_LOG','TMO_COMPLETE_FILE'].some(k=>process.env[k])) throw Error('watch settings leaked to child'); ";
   const recordPid = `require('fs').appendFileSync(${JSON.stringify(pidFile)}, process.pid+'\\n'); `;
-  // Busy and early-exit launchers also own a child and a grandchild, not merely a single sleeping process.
+  // Busy, idle-helper, linger and early-exit launchers also own a child and a grandchild, not merely a single sleeping process.
   const leaf = path.join(folder, 'leaf.js'), child = path.join(folder, 'child.js');
-  fs.writeFileSync(leaf, recordPid + 'setInterval(()=>{},100);');
+  // idle-helper simulates a background MCP/helper doing tiny periodic timer wakeups without real work.
+  fs.writeFileSync(leaf, recordPid + (idleHelper ? 'setInterval(()=>{ let s=0; for(let i=0;i<500;i++) s+=i; }, 50);' : 'setInterval(()=>{},100);'));
   fs.writeFileSync(child, recordPid + `require('child_process').spawn(process.execPath,[${JSON.stringify(leaf)}],{stdio:'inherit',windowsHide:true}); setInterval(()=>{},100);`);
-  const nested = ['busy', 'launcher-exit'].includes(scenario) ? `require('child_process').spawn(process.execPath,[${JSON.stringify(child)}],{stdio:'inherit',windowsHide:true,detached:true}); ` : '';
-  fs.writeFileSync(fake, cleanChild + recordPid + nested + (busy ? "console.log('working'); setInterval(()=>console.log('still working'),100);" : "console.log('last action: waiting'); setInterval(()=>{},100);") +
+  const nested = ['busy', 'idle-helper', 'completed-linger', 'unfinished-linger', 'launcher-exit'].includes(scenario)
+    ? `require('child_process').spawn(process.execPath,[${JSON.stringify(child)}],{stdio:'inherit',windowsHide:true,detached:true}); ` : '';
+  const lastFile = path.join(folder, 'last.md');
+  let body = "console.log('last action: waiting'); setInterval(()=>{},100);";
+  if (busy) body = "console.log('working'); setInterval(()=>console.log('still working'),100);";
+  else if (completedLinger) body = `console.log('exec\\n  succeeded in 5ms:\\nOK\\ncodex\\nFinished task.\\ntokens used\\n1,234\\nFinished task.'); require('fs').writeFileSync(${JSON.stringify(lastFile)}, 'Finished task.\\n'); setInterval(()=>{},100);`;
+  else if (unfinishedLinger) body = `console.log('codex\\nI will read CODEX_TASK.md now.'); require('fs').writeFileSync(${JSON.stringify(lastFile)}, 'I will read CODEX_TASK.md now.\\n'); setInterval(()=>{},100);`;
+  fs.writeFileSync(fake, cleanChild + recordPid + nested + body +
     (scenario === 'launcher-exit' ? 'setTimeout(()=>process.exit(7),1500);' : ''));
   const killer = path.join(folder, 'taskkill.bat');
   fs.writeFileSync(killer, '@echo off\r\necho stub taskkill ' + (busy ? 'Access denied' : 'false success') + '\r\nexit /b ' + (busy ? '5' : '0') + '\r\n');
@@ -207,15 +217,18 @@ for (const scenario of ['silent', 'busy', 'lying-killer', 'launcher-exit']) {
   try { run = spawnSync('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(pc, 'run_timeout.ps1')], {
     cwd: folder, env: { ...process.env, TMO_ARGS: `4 "${process.execPath}" "${fake}"`,
       TMO_REPO: path.join(root, 'repo'), TMO_OUT: folder, TMO_LOG: log, TMO_ERR_LOG: '',
+      TMO_COMPLETE_FILE: (completedLinger || unfinishedLinger) ? lastFile : '',
+      TMO_EXIT_GRACE_S: (completedLinger || unfinishedLinger) ? '0.4' : '',
       STALL_MIN: scenario === 'launcher-exit' ? '1' : '0.02', PC_RUNNER_TEST: '1', PC_TEST_POLL_MS: '100', PC_TEST_SCAN_S: '0.1', PC_TEST_TIMEOUT_LOG: path.join(root, 'timeouts.log'),
       PC_TEST_TASKKILL: ['busy', 'lying-killer'].includes(scenario) ? killer : '' },
     stdio: ['ignore', fd, fd], windowsHide: true, timeout: 30000
   }); } finally { fs.closeSync(fd); }
   helpers.push(run.pid);
   const output = fs.readFileSync(log, 'utf8');
-  assert.equal(run.status, scenario === 'launcher-exit' ? 7 : 124, output + String(run.error || ''));
+  const expectedCode = scenario === 'launcher-exit' ? 7 : completedLinger ? 0 : 124;
+  assert.equal(run.status, expectedCode, output + String(run.error || ''));
   const pids = fs.readFileSync(pidFile, 'utf8').trim().split(/\r?\n/).map(Number);
-  assert.equal(pids.length, ['busy', 'launcher-exit'].includes(scenario) ? 3 : 1);
+  assert.equal(pids.length, ['busy', 'idle-helper', 'completed-linger', 'unfinished-linger', 'launcher-exit'].includes(scenario) ? 3 : 1);
   if (scenario === 'launcher-exit') {
     assert(!alive(pids[0]) && pids.slice(1).every(alive), 'ordinary queue launchers must be able to leave background work running');
     for (const pid of pids.slice(1).reverse()) process.kill(pid, 'SIGKILL');
@@ -227,11 +240,18 @@ for (const scenario of ['silent', 'busy', 'lying-killer', 'launcher-exit']) {
   assert(pids.every(pid => !alive(pid)), scenario + ': fake agents survived: ' + pids);
   const verified = output.match(/kill verified: all (\d+) processes gone \(PIDs ([\d, ]+)\)/);
   assert(verified && Number(verified[1]) >= pids.length && pids.every(pid => verified[2].split(', ').map(Number).includes(pid)), output);
+  if (completedLinger) {
+    assert(!fs.existsSync(path.join(folder, 'stop_reason.txt')), 'completed linger must not write stop_reason.txt');
+    assert(output.includes('COMPLETED_REAPED'), output);
+    assert.equal(fs.readFileSync(lastFile, 'utf8').trim(), 'Finished task.');
+    pass('Windows completed-linger: preserves completed result (last.md + tokens used), reaps hung tree and exits 0');
+    continue;
+  }
   if (busy) assert(/taskkill PID \d+ exit 5:/.test(output) && output.includes('Access denied'), output);
   if (scenario === 'lying-killer') assert(/taskkill PID \d+ exit 0:/.test(output), output);
   assert.equal(fs.readFileSync(path.join(folder, 'stop_reason.txt'), 'utf8'), reason);
   const note = fs.readFileSync(path.join(folder, 'resume.txt'), 'utf8');
-  assert(note.includes(reason) && note.includes(busy ? 'still working' : 'last action: waiting'));
+  assert(note.includes(reason) && note.includes(busy ? 'still working' : unfinishedLinger ? 'I will read CODEX_TASK.md now.' : 'last action: waiting'));
   pass(`Windows ${scenario}: verifies every agent is gone, saves reason and tail, logs taskkill and fallback result`);
 }
 const timeoutLog = fs.readFileSync(path.join(root, 'timeouts.log'), 'utf8');

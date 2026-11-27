@@ -83,8 +83,9 @@ static func breach(fx, target, hit: Dictionary, t: float, recipe: Dictionary) ->
 	var p: Vector3 = target.to_world(hit.p)
 	var n: Vector3 = target.dir_world(hit.n)
 	var k: float = target.scale_k()
-	var tint: Color = recipe.tint
-	var core: Color = recipe.core
+	var own_glow: bool = target.faction in ["ithar", "chorus", "deathless", "hegemony"]
+	var tint: Color = target.fac.damage_glow if own_glow else recipe.tint
+	var core: Color = tint.lerp(Color.WHITE, 0.55) if own_glow else recipe.core
 	var organic: bool = recipe.look == "umbilical" or target.faction == "chorus"
 	var across := n.cross(Vector3.UP).normalized()
 	if across.length_squared() < 0.01:
@@ -102,8 +103,11 @@ static func breach(fx, target, hit: Dictionary, t: float, recipe: Dictionary) ->
 	fx.event_paths.add(fx, "board_cutter", path, radii, tint, core, recipe.style, 3.5, t, t + 0.63, first, first)
 	fx.ring(p + n * 0.17, n, t, 0.55, tint, 1.25, 1.0 * k, 3.4 * k, 2, 0.0, 0.0, 42.0)
 	fx.sprx(26.0, p + n * 0.40, t, 0.39, core, 2.25, 0.85 * k, 1.65 * k, 18)
+	var glass: bool = target.faction == "ithar"
+	var vent_kind := 16 if glass else (20 if organic else 7)
+	var vent_col := tint * 0.55 if glass else tint.lerp(Color(0.21, 0.22, 0.27), 0.45)
 	for i in 10:
 		var drift: Vector3 = fx.rcone(n, 0.34) * (4.5 * k)
-		fx.sprx(15.0, p + n * 0.24, t + 0.12 + i * 0.16, 0.95, tint.lerp(Color(0.21, 0.22, 0.27), 0.45),
-			0.52, 0.43 * k, 2.3 * k, 20 if organic else 7, drift, 0.95)
+		fx.sprx(15.0, p + n * 0.24, t + 0.12 + i * 0.16, 0.95, vent_col,
+			0.52, 0.43 * k, 2.3 * k, vent_kind, drift, 0.95)
 	fx.light(p + n * 0.9, t, 2.15, 3.8, tint, 1, 15.0 * k)

@@ -31,7 +31,7 @@ func _rmdir(p: String) -> void:
 # A run saved on the map with a `want` stop one lane ahead; returns [campaign, target node id].
 func _map_save(path: String, seed: int, want: String) -> Array:
 	var C = _fresh(path)
-	API.JSM.rnd_seed(seed); C.META = C.defaultMeta()
+	C.rng.rnd_seed(seed); C.META = C.defaultMeta()
 	var adm = null
 	for id in C.ADMIRALS.keys():
 		if C.ADMIRALS[id].get("fac") == "voidsworn" and adm == null: adm = id

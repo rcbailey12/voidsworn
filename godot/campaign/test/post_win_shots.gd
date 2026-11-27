@@ -25,7 +25,7 @@ func _run() -> void:
 	var err: String = campaign.load_tables()
 	if err != "": _fail(err); return
 	campaign.fixed_clock = true
-	JSM.rnd_seed(1)
+	campaign.rng.rnd_seed(1)
 	campaign.newRun("vex", "voidsworn")
 	ui = CampaignUI.new()
 	root.add_child(ui)
@@ -60,7 +60,7 @@ func _run() -> void:
 	if not await _card("promotions", "P1177_promotions"): return
 
 	for stop in [["drydock", "D1177_drydock"], ["field", "F1177_field_repairs"]]:
-		JSM.rnd_seed(1177)
+		campaign.rng.rnd_seed(1177)
 		campaign.newRun("vex", "voidsworn")
 		var n = campaign.RUN["map"]["cols"][0][0]
 		n["type"] = stop[0]

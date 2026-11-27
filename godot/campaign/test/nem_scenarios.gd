@@ -8,14 +8,14 @@ var C
 var OUT := PackedStringArray()
 func rec(tag: String, x) -> void: OUT.append(tag + " " + JSM.canon(x, "", {}, true))
 func state(tag: String) -> void:
-	rec(tag, {"nem": C.RUN.get("nem"), "nemClock": C.RUN.get("nemClock"), "nemStrike": C.RUN.get("nemStrike"), "nemAssign": C.RUN.get("nemAssign"), "nems": C.RUN.get("nems"), "credits": C.RUN["credits"], "fleet": C.RUN["fleet"].map(func(s): return [s["uid"], s["hp"]]), "variants": C.META["variants"], "rng": JSM.rng_s & 0xFFFFFFFF})
+	rec(tag, {"nem": C.RUN.get("nem"), "nemClock": C.RUN.get("nemClock"), "nemStrike": C.RUN.get("nemStrike"), "nemAssign": C.RUN.get("nemAssign"), "nems": C.RUN.get("nems"), "credits": C.RUN["credits"], "fleet": C.RUN["fleet"].map(func(s): return [s["uid"], s["hp"]]), "variants": C.META["variants"], "rng": C.rng.rng_s & 0xFFFFFFFF})
 func setup(seed: int, fac: String) -> void:
-	C.UID = 1; JSM.rnd_seed(seed); C.META = C.defaultMeta(); C.META["backfilled"] = 1; C.META["wonFix41"] = 1; C.SAVED_RUN = null; C.RUN = null; C.B = null; C.tel_log = []   # the JS META reset clears its tel too
+	C.UID = 1; C.rng.rnd_seed(seed); C.META = C.defaultMeta(); C.META["backfilled"] = 1; C.META["wonFix41"] = 1; C.SAVED_RUN = null; C.RUN = null; C.B = null; C.tel_log = []   # the JS META reset clears its tel too
 	C.picked_admiral = "vex"; C.picked_faction = "voidsworn"; C.run_opt = {"alt": false, "cmdAlt": false, "heat": []}
 	C.titleScreen(); C.act("newRunScreen"); C.act("startRun"); C.act("pickAspect", C.W["aspOffer"][0]); C.act("closeModal")
 	C.RUN["nemAssign"] = [fac, fac, fac]; C.RUN["nems"] = {}; C.RUN["nem"] = null; C.nemActive(); state("new " + fac)
 func fresh(seed: int) -> void:
-	C.UID = 1; JSM.rnd_seed(seed); C.META = C.defaultMeta(); C.META["backfilled"] = 1; C.META["wonFix41"] = 1; C.SAVED_RUN = null; C.RUN = null; C.B = null; C.tel_log = []   # the JS META reset clears its tel too
+	C.UID = 1; C.rng.rnd_seed(seed); C.META = C.defaultMeta(); C.META["backfilled"] = 1; C.META["wonFix41"] = 1; C.SAVED_RUN = null; C.RUN = null; C.B = null; C.tel_log = []   # the JS META reset clears its tel too
 	C.picked_admiral = "vex"; C.picked_faction = "voidsworn"; C.run_opt = {"alt": false, "cmdAlt": false, "heat": []}
 	C.titleScreen(); C.act("newRunScreen"); C.act("startRun")
 func toMap() -> void:
