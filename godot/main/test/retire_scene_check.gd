@@ -48,7 +48,6 @@ class StubShow extends Node3D:
 	static var built_while_pending := -1
 	var showcase := false
 	var title_backdrop := false
-	var reduce_motion := false
 	var args := {}
 	var showcase_ready := false
 

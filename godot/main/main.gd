@@ -368,8 +368,6 @@ func _apply_settings() -> void:
 		_apply_display()
 	if battle != null and is_instance_valid(battle):
 		_settings_to_battle(battle)
-	if is_instance_valid(showcase):
-		showcase.reduce_motion = bool(settings.get("reduce_motion", false))
 	if music != null:
 		music.set_volume(float(settings.get("music_volume", 0.7)))
 		music.set_on(bool(settings.get("music", true)))
@@ -513,6 +511,39 @@ func _career_shot(path: String) -> void:
 var showcase: Node = null
 
 
+# Issue 1217 phase 2: the title's battle cycles the enemy through every faction that has built ships (your side is the
+# Sunward line, so all six show over a few visits), starting at a random one each launch. Built ships are listed in
+# res://gen/manifest.json on the PC; a build without it falls back to the repo's ship list.
+static var _showcase_i := -1
+
+static func showcase_factions() -> Array:
+	var out: Array = []
+	for path in ["res://gen/manifest.json", "res://assets/ships/manifest.json"]:
+		if not FileAccess.file_exists(path):
+			continue
+		var m = JSON.parse_string(FileAccess.get_file_as_string(path))
+		if not (m is Dictionary) or not (m.get("ships") is Dictionary):
+			continue
+		for id in m["ships"]:
+			var e = m["ships"][id]
+			var f := str(e.get("faction", "")) if e is Dictionary else ""
+			if f != "" and f != "voidsworn" and not out.has(f):
+				out.append(f)
+		if not out.is_empty():
+			break
+	out.sort()
+	return out if not out.is_empty() else ["hegemony", "corsair"]
+
+
+static func next_showcase_fac() -> String:
+	var facs := showcase_factions()
+	if _showcase_i < 0:
+		_showcase_i = randi() % facs.size()
+	else:
+		_showcase_i = (_showcase_i + 1) % facs.size()
+	return str(facs[_showcase_i])
+
+
 func _start_showcase() -> void:
 	if quitting or title == null or not is_instance_valid(title) or showcase != null or not _showcase_wanted():
 		return
@@ -534,7 +565,8 @@ func _start_showcase() -> void:
 	showcase.showcase = true
 	showcase.title_backdrop = true   # issue 1434: capped at High, silent, no combat warm-up
 	showcase.args["quality"] = "high"
-	showcase.reduce_motion = bool(settings.get("reduce_motion", false))
+	showcase.args["fac"] = next_showcase_fac()
+	showcase.args["map"] = ["open", "planet", "station", "storm"][randi() % 4]  # open fields: the dense belts hide the ships at this height
 	add_child(showcase)
 	move_child(showcase, 0)
 	# issue 1434: the backdrop builds a few ships per frame behind the live menu; this wait belongs to this title and this

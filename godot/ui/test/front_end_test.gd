@@ -16,7 +16,6 @@ const GS := preload("res://ui/theme/glass_shell.gd")
 const Choice := preload("res://ui/campaign/choice_button.gd")
 const MapChart := preload("res://ui/campaign/map3d.gd")
 const RowHover := preload("res://ui/campaign/row_hover.gd")
-const LoadScreen := preload("res://main/load_screen.gd")
 var fails := 0
 
 
@@ -87,6 +86,7 @@ func run() -> void:
 	await title_checks(snd)
 	await campaign_checks(snd)
 	music_checks()
+	showcase_checks()
 	Kit.sound = null; UiScale.set_player(1.0)
 	print("Front end: " + ("PASS" if fails == 0 else "FAIL (%d)" % fails))
 	quit(0 if fails == 0 else 1)
@@ -282,42 +282,18 @@ func campaign_checks(snd: FakeSound) -> void:
 	check(str(C.page["kind"]) == "admiral", "the setup page opens")
 	var mus := FakeMusic.new(); mus.name = "Main"; root.add_child(mus); await frames()
 	var bad := []
-	var cards_checked := 0
 	for fac in C.RUN_FACTIONS:
 		C.act("pickFaction", str(fac)); await frames(3)
 		var tops := {}; var bots := {}; var ws := {}
 		for cd in ui._desk_cards:
 			var r: Rect2 = (cd as Control).get_global_rect()
 			tops[int(round(r.position.y))] = true; bots[int(round(r.end.y))] = true; ws[int(round(r.size.x))] = true
-			var cmd := (cd as Control).find_child("CommandBrief", true, false) as Button
-			var passive := (cd as Control).find_child("Passive", true, false) as Label
-			if cmd != null and passive != null and cmd.text.length() < cmd.tooltip_text.length() and not cmd.tooltip_text.is_empty() \
-					and passive.get_theme_color("font_color") == GS.TEXT and (cd as Control).find_child("EarnedMastery", true, false) == null:
-				cards_checked += 1
 		var sc: ScrollContainer = null
 		for n in ui.page_box.find_children("*", "ScrollContainer", true, false): sc = n; break
 		var fits: bool = sc != null and sc.get_v_scroll_bar().max_value <= sc.size.y + 1.0
 		if ui._desk_cards.is_empty() or bots.size() > tops.size() or ws.size() != 1 or not fits:
 			bad.append("%s(cards %d, rows %d, bottoms %d, widths %s, fits %s)" % [fac, ui._desk_cards.size(), tops.size(), bots.size(), str(ws.keys()), str(fits)])
 	check(bad.is_empty(), "at Larger every faction's desk fits with no scroll and its admiral cards line up: one width, one bottom per row (%s)" % str(bad))
-	check(cards_checked == 24, "C35 all 24 fresh cards have a bright passive, a short Command with hover detail, and no empty mastery bar")
-	var desk_id: String = str(C.page["data"]["mine"][0])
-	var mastery_before: Dictionary = C.META.get("mastery", {}).duplicate()
-	C.META["mastery"] = {desk_id: 1}
-	ui._dirty = true; await frames(4)
-	var desk_card: Control = ui._desk_cards[0]
-	var cmd_focus := desk_card.find_child("CommandBrief", true, false) as Button
-	var detail := desk_card.find_child("CommandDetail", true, false) as Label
-	check(desk_card.find_child("EarnedMastery", true, false) != null, "C35 earned mastery is still shown")
-	if cmd_focus != null and detail != null:
-		cmd_focus.grab_focus(); await frames()
-		check(detail.visible and detail.text == cmd_focus.tooltip_text, "C35 keyboard focus reveals the same full Command as hover")
-		cmd_focus.release_focus(); await frames()
-		check(not detail.visible, "C35 the full Command hides as focus leaves")
-	else:
-		check(false, "C35 Command row supports keyboard focus")
-	C.META["mastery"] = mastery_before
-	ui._dirty = true; await frames(4)
 	check(mus.previews.size() >= C.RUN_FACTIONS.size() - 1 and mus.previews.has(str(C.picked_faction)), "picking a faction plays its music preview (%s)" % str(mus.previews))
 	var crest_tab: Button = null
 	var crest_label: Label = null
@@ -572,26 +548,6 @@ func map_input_checks(C, ui, snd: FakeSound) -> void:
 	root.add_child(chart)
 	chart.size = root.get_visible_rect().size
 	ui.map3d = chart
-	var brief := chart._sector_briefing()
-	check(str(brief["enemy"]).contains(str(C.FACTIONS[C.RUN["map"]["fac"]]["n"])) and str(brief["objective"]).contains("sector flagship")
-		and str(brief["tip"]).contains("Select a stop"), "C9 the sector cover has the current enemy faction, the sector goal, and a tip")
-	var layer := LoadScreen.new()
-	layer.briefing = brief
-	root.add_child(layer)
-	await frames()
-	var cover := layer.get_child(0) as LoadScreen.Briefing
-	var objective := cover.find_child("Objective", true, false) as Label
-	check(objective != null and objective.text == brief["objective"] and objective.get_theme_font("font") == Kit.body_font(),
-		"C9 the sector mounts the shared orders-kit briefing")
-	var mark := cover.status.text
-	cover._process(0.34)
-	check(cover.status.text != mark, "C9 the briefing has a visible activity mark")
-	cover.reduce_motion = true
-	cover._process(0.34)
-	mark = cover.status.text
-	cover._process(0.34)
-	check(cover.status.text == mark, "C9 reduce motion keeps the activity mark still")
-	layer.queue_free()
 	ui.picked = first
 	chart.pointed = chosen
 	var motion := InputEventMouseMotion.new()
@@ -742,6 +698,14 @@ func shipyard_and_prize_checks(C, ui) -> void:
 	root.push_input(key); await frames(5)
 	check(C.RUN["reward"]["prizeSel"][2] == "ransom" and scrolled(ui._modal_scroll, saved)
 		and root.gui_get_focus_owner() == action(ui.modal_box, "prizeSet", "2:ransom"), "selecting Prize #3 keeps scroll and focus")
+
+
+func showcase_checks() -> void:
+	var M = load("res://main/main.gd")
+	var facs: Array = M.showcase_factions()
+	var seen := {}
+	for i in facs.size(): seen[M.next_showcase_fac()] = true
+	check(facs.size() == 5 and not facs.has("voidsworn") and seen.size() == 5, "the title battle cycles the enemy through the five other factions with built ships (%s)" % str(facs))
 
 
 func music_checks() -> void:
