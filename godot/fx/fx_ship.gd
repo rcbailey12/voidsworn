@@ -12,6 +12,8 @@ const BREACH := preload("res://fx/fx_breach.gd")
 const SHIELD_CACHE := preload("res://fx/fx_shield_cache.gd")
 const WOUNDS := preload("res://fx/fx_wounds_flag.gd")
 const IDLE := preload("res://fx/fx_idle.gd")
+const STATUS_TICK := preload("res://fx/fx_status_tick.gd")
+const DAMAGE_PLUME := preload("res://fx/fx_damage_plume.gd")
 const SHIP_VIEW := preload("res://render/ship_view.gd")
 
 const TRAIL_PTS := 96
@@ -41,15 +43,25 @@ var death_tier = ""       # issue 462: "cruiser" or "capital" (deaths_and_hits.m
 var hull: HULL
 var dead = false
 var gone = false
+var death_fx_done := false
+var _death_draining := false
 var busy_until = -1.0
 var engine_level = 1.0
 var _eng_cur = 1.0
 var _eng_node: MeshInstance3D = null
 var _eng_mat: ShaderMaterial
 var _eng_rib_mat: ShaderMaterial
+var _eng_gate_written := -1.0
+var _sick_gate_written := -1.0
+var _eng_length_written := -1.0
+var _sick_length_written := -1.0
+var _eng_throttle_written := -1.0
+var _sick_throttle_written := -1.0
 # Issue 1587: with the engine section at stage 3+, one nozzle (sick_nozzle) is built into its own batches so it can gutter
 # on its own: a shorter plume with gaps, and a cough of smoke as the ship starts to move.
 var sick_nozzle := -1
+var _eng_spark_mat: ShaderMaterial
+var _sick_spark_mat: ShaderMaterial
 var _sick_mat: ShaderMaterial
 var _sick_rib_mat: ShaderMaterial
 var _cough_next := 0.0
@@ -68,7 +80,7 @@ var wounds_v2 := wounds_v2_setting()
 var eng_tier := 0               # 0 healthy, 1 engine hit or eng stage 2, 2 eng stage 3, 3 engines crippled (stage 4)
 var dead_nozzles: Array = []    # nozzles dark at tiers 2 and 3 (never every nozzle: one always gutters on)
 var _sick_len := SICK_LEN
-var eng_soot := false           # the drive's last build coughs black soot (the Hullbreakers only, under Wounds V2)
+var eng_soot := false           # the drive's last build coughs black soot (Hullbreakers only)
 var _want_off := {}             # weapon slot -> true: the slots the last view held off
 var _exact_slots := false       # the last view carried a weapons list (the old section turret picker stays off)
 var _slot_off := {}             # weapon slot -> true, as shown
@@ -133,7 +145,7 @@ var _patch_time := [-1.0, -1.0, -1.0]
 var _damage_emitters: Array = []
 var _fading_emitters: Array = []
 var _squad_smoke := false
-var _smoke_next := 0.0
+var _wing_smoke: MeshInstance3D
 var _emitter_key := ""
 var _burning = false
 var _dmg_root: Node3D
@@ -339,6 +351,7 @@ func remove_collider() -> void:
 
 func _hide_attachments() -> void:
 	remove_collider()
+	_clear_wing_smoke()
 	for node in [_dmg_root, _eng_node, _shield_mi]:
 		if is_instance_valid(node):
 			node.visible = false
@@ -369,9 +382,13 @@ func hide_live_hull() -> void:
 			_shield_mi.reparent(parent)
 	_hide_meshes()
 	_hide_attachments()
+	var view := root as SHIP_VIEW
+	if is_instance_valid(view):
+		view.clear_rcs_puffs()
 
 
 func teardown(fx, wait_for_damage := true) -> void:
+	clear_rift_pose()
 	gone = true
 	end_brownout()
 	if is_instance_valid(root) and root.get("fx_clock") == fx:
@@ -424,6 +441,44 @@ func scale_k() -> float:
 
 # ---------------------------------------------------------------- engines
 
+# Issue 2042 item 3: per-faction main plume palette (bright core + soft outer wash + style) derived from faction_looks.json.
+# style: 0 Sunward ember/frost, 1 Meridian ion spear, 2 Hullbreaker rough overburn, 3 Chorus organic pulse,
+#        4 Glasswright crystal violet (no white cold gas), 5 Eclipse violet/white-gold (no green, no orange).
+static func plume_palette(fac_id: String, fac_info: Dictionary) -> Dictionary:
+	var fid := fac_id.to_lower()
+	var eng: Color = fac_info.get("engine", Color(1.0, 0.55, 0.18))
+	var acc = fac_info.get("accent")
+	var weap: Color = fac_info.get("weapon", eng) if fac_info.get("weapon") is Color else eng
+	var dmg: Color = fac_info.get("damage_glow", eng) if fac_info.get("damage_glow") is Color else eng
+	match fid:
+		"hegemony":
+			return {"core": eng.lerp(Color.WHITE, 0.72), "wash": eng.lerp(weap, 0.35), "style": 1}
+		"corsair":
+			var cw: Color = (acc as Color).lerp(eng, 0.45) if acc is Color else eng
+			return {"core": eng.lerp(Color(1.0, 0.94, 0.8), 0.55), "wash": cw, "style": 2}
+		"chorus":
+			return {"core": dmg.lerp(Color(0.95, 1.0, 0.76), 0.35), "wash": eng * 0.88, "style": 3}
+		"ithar":
+			return {"core": eng.lerp(weap, 0.58), "wash": eng, "style": 4}
+		"deathless":
+			var wcore: Color = fac_info.get("weapon_core", eng) if fac_info.get("weapon_core") is Color else eng
+			var ew: Color = wcore.lerp(acc as Color, 0.22) if acc is Color else wcore
+			return {"core": eng.lerp(Color(0.94, 0.88, 1.0), 0.45), "wash": ew, "style": 5}
+		_:
+			var vw: Color = (acc as Color).lerp(eng, 0.58) if acc is Color else eng
+			return {"core": Color(1.0, 0.96, 0.86).lerp(eng, 0.18), "wash": vw, "style": 0}
+
+
+static func _apply_plume_palette(mat: ShaderMaterial, fac_id: String, fac_info: Dictionary) -> void:
+	var pal := plume_palette(fac_id, fac_info)
+	var pc: Color = pal["core"]
+	var pw: Color = pal["wash"]
+	mat.set_shader_parameter("engine_plume", true)
+	mat.set_shader_parameter("plume_core", Vector3(pc.r, pc.g, pc.b))
+	mat.set_shader_parameter("plume_wash", Vector3(pw.r, pw.g, pw.b))
+	mat.set_shader_parameter("plume_style", float(int(pal["style"])))
+
+
 func _build_engines(fx) -> void:
 	if is_instance_valid(_eng_node):
 		_eng_node.queue_free()
@@ -431,9 +486,11 @@ func _build_engines(fx) -> void:
 	var rb = POOLS.Batch.new()
 	var eng: Color = fac["engine"]
 	var extra := String(fac.get("engine_extra", "none"))
-	# issue 1741 (R416): under Wounds V2 a damaged drive keeps its own faction's exhaust; only the Hullbreakers cough soot
-	# (main: any sputtering drive took the Hullbreaker soot, on glass, flesh and obsidian too)
-	var corsair = extra == "soot" or (_eng_sputter and not wounds_v2)
+	var drive_sparks := POOLS.Batch.new() if extra == "embers" else null
+	var sick_sparks := POOLS.Batch.new() if extra == "embers" else null
+	var qs := POOLS.streak_shape() if extra == "embers" else []
+	# Issue 1991: the legacy wound switch must not change the drive's faction exhaust either.
+	var corsair := extra == "soot"
 	eng_soot = corsair
 	var q = POOLS.quad_shape()
 	var rs = POOLS.ribbon_shape(14)
@@ -465,8 +522,10 @@ func _build_engines(fx) -> void:
 			# a corona round the core in the faction's second colour (faction look data, accent; three factions set one)
 			b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, -20.0), Vector4(0, 0, 0, 1.0), Vector4(acc.r, acc.g, acc.b, 0.9),
 				Vector4(r * 5.0, r * 5.0, 4, fx.rng.randf()), Vector4(1.0, 0, 0, 0)))
-		rb.add(rs, POOLS.pack(Vector4(np.x, np.y, np.z, 3 if corsair else 0), Vector4(nd.x, nd.y, nd.z, plume), Vector4(eng.r, eng.g, eng.b, 0.9),
-			Vector4(r * 1.3, r * 0.5, fx.rng.randf(), 0), Vector4(-20.0, 1.0, 1.0, 0)))
+		# Issue 2042 item 3: tuck root slightly into the nozzle bell and widen quad for soft outer wash around the bright core.
+		var rp: Vector3 = np - nd * (r * 0.12)
+		rb.add(rs, POOLS.pack(Vector4(rp.x, rp.y, rp.z, 3 if corsair else 0), Vector4(nd.x, nd.y, nd.z, plume), Vector4(eng.r, eng.g, eng.b, 0.92),
+			Vector4(r * 2.15, r * 0.82, fx.rng.randf(), 0), Vector4(-20.0, 1.0, 1.0, 0)))
 		if corsair:
 			# soot coughs (the Corsair exception: haphazard, junky)
 			for k in 9:
@@ -480,27 +539,46 @@ func _build_engines(fx) -> void:
 				b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, -20.0 + k * 0.6), Vector4(v1.x, v1.y, v1.z, 2.0),
 					Vector4(eng.r * 0.4, eng.g * 0.4, eng.b * 0.3, 0.35), Vector4(r * 0.8, r * 3.0, 20, fx.rng.randf()), Vector4(2.4, 0, 0.6, 0)))
 		elif extra == "embers":
-			# embers in the faction's second colour when it has one (Eclipse: white-gold), else hot orange
-			var ec: Color = acc if acc is Color else Color(1.0, 0.5, 0.15)
+			# A looping local batch shares the same spark as burst and hit effects.
+			var sparks := sick_sparks if ni == sick_nozzle else drive_sparks
 			for k in 3:
 				var v2 := rot * Vector3(-6, fx.rng.randf() - 0.5, fx.rng.randf() - 0.5)
-				b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, -20.0 + k * 1.3), Vector4(v2.x, v2.y, v2.z, 0.9),
-					Vector4(ec.r, ec.g, ec.b, 2.2), Vector4(r * 0.2, r * 0.1, 19, fx.rng.randf()), Vector4(3.9, 0, 0.5, 0)))
+				var shutter := lerpf(0.035, 0.065, fx.rng.randf())
+				sparks.add(qs, fx.spark_particle(np, -20.0 + k * 1.3, 0.9, faction, 2.2, shutter,
+					r * 0.14, v2, 0.5, 0.0, 0.0, fx.SparkRole.ENGINE, 3.9))
 	_eng_mat = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
 	_eng_rib_mat = fx.mat(SH.RIBBON, 1)
+	_apply_plume_palette(_eng_rib_mat, faction, fac)
+	_eng_gate_written = -1.0
+	_sick_gate_written = -1.0
+	_eng_length_written = -1.0
+	_sick_length_written = -1.0
+	_eng_throttle_written = -1.0
+	_sick_throttle_written = -1.0
 	var holder = MeshInstance3D.new()
 	holder.name = "fx_engines"
 	_attach(holder)
 	_eng_node = holder
 	b_main.build(_eng_mat, holder, "fx_eng_cores")
 	rb_main.build(_eng_rib_mat, holder, "fx_eng_plumes")
+	_eng_spark_mat = _build_drive_sparks(fx, holder, drive_sparks)
+	_sick_spark_mat = _build_drive_sparks(fx, holder, sick_sparks)
 	_sick_mat = null
 	_sick_rib_mat = null
 	if sick_nozzle >= 0:
 		_sick_mat = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
 		_sick_rib_mat = fx.mat(SH.RIBBON, 1)
+		_apply_plume_palette(_sick_rib_mat, faction, fac)
 		sb.build(_sick_mat, holder, "fx_eng_sick_core")
 		srb.build(_sick_rib_mat, holder, "fx_eng_sick_plume")
+
+
+func _build_drive_sparks(fx, holder: Node3D, batch: POOLS.Batch) -> ShaderMaterial:
+	if batch == null or batch.particle_count == 0:
+		return null
+	var material: ShaderMaterial = fx.mat(SH.STREAK, 1)
+	batch.build(material, holder, "fx_drive_sparks")
+	return material
 
 
 func _build_trails(fx) -> void:
@@ -509,7 +587,10 @@ func _build_trails(fx) -> void:
 		mi.name = "fx_trail_%s" % id
 		mi.top_level = true
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		mi.material_override = fx.mat(SH.TRAIL, 1)
+		var mat: ShaderMaterial = fx.mat(SH.TRAIL, 1)
+		var ember: Color = fac.damage_glow if faction == "deathless" else Color(1.0, 0.5, 0.15)
+		mat.set_shader_parameter("trail_ember", Vector3(ember.r, ember.g, ember.b))
+		mi.material_override = mat
 		mi.extra_cull_margin = 16384.0
 		fx.add_child(mi)
 		mi.global_transform = Transform3D.IDENTITY
@@ -518,12 +599,17 @@ func _build_trails(fx) -> void:
 
 
 func update(fx, dt: float) -> void:
-	if gone or not is_instance_valid(root):
+	if gone or death_fx_done or not is_instance_valid(root):
 		return
-	if not hull.turrets.is_empty():
-		hull.turret_step(fx.now)    # issue 560: each turret's node at its pose for the effect clock
-	if not hull.doors.is_empty():
-		hull.door_step(fx.now)      # issue 1543: each launch mouth's door lobes at their pose for the effect clock
+	if dead and has_meta("death_hidden"):
+		_update_hidden_death(fx)
+		return
+	_step_rift_pose(fx.now)
+	if not dead:
+		if not hull.turrets.is_empty():
+			hull.turret_step(fx.now)    # issue 560: each turret's node at its pose for the effect clock
+		if not hull.doors.is_empty():
+			hull.door_step(fx.now)      # issue 1543: each launch mouth's door lobes at their pose for the effect clock
 	_update_damage_emitters(fx)
 	if idle_on:
 		_idle_step(fx)
@@ -556,14 +642,7 @@ func update(fx, dt: float) -> void:
 			# a heavy hit makes the drive stumble: the plume gutters and catches again
 			var flick := 1.0 if fposmod(sin(fx.now * 37.0 + float(_seed)) * 43758.5, 1.0) > 0.45 else 0.0
 			g *= 0.3 + 0.7 * maxf(flick, smoothstep(_stutter_until - 0.25, _stutter_until, fx.now))
-		_eng_mat.set_shader_parameter("gate", g)
-		_eng_rib_mat.set_shader_parameter("gate", g)
-		_eng_rib_mat.set_shader_parameter("lenk", clampf(0.5 + 0.5 * _eng_cur, 0.0, 1.8))
-		if _sick_mat != null:
-			var sg := g * sick_gate(fx.now, fx.reduce_flashing)
-			_sick_mat.set_shader_parameter("gate", sg)
-			_sick_rib_mat.set_shader_parameter("gate", sg)
-			_sick_rib_mat.set_shader_parameter("lenk", clampf(0.5 + 0.5 * _eng_cur, 0.0, 1.8) * _sick_len)
+		_write_engine_gate(fx, g)
 	var moving_now: bool = _moving > 0.0 and not dead
 	if moving_now and not _was_moving and sick_nozzle >= 0 and fx.now >= _cough_next:
 		_cough(fx)
@@ -580,20 +659,73 @@ func update(fx, dt: float) -> void:
 		_shield_mi.visible = fx.now < _shield_until or fx.now < _ion_until or (_route_on != Vector4.ZERO and not dead and not gone)
 
 
-func _update_trails(fx, _moved: bool) -> void:
+func _write_engine_gate(fx, gate: float) -> void:
+	if _eng_mat == null:
+		return
+	if gate != _eng_gate_written:
+		_eng_gate_written = gate
+		_eng_mat.set_shader_parameter("gate", gate)
+		if _eng_spark_mat != null:
+			_eng_spark_mat.set_shader_parameter("gate", gate)
+		_eng_rib_mat.set_shader_parameter("gate", gate)
+	var length := clampf(0.5 + 0.5 * _eng_cur, 0.0, 1.8)
+	if length != _eng_length_written:
+		_eng_length_written = length
+		_eng_rib_mat.set_shader_parameter("lenk", length)
+	var throttle := clampf(_eng_cur / 1.4, 0.15, 1.4)
+	if throttle != _eng_throttle_written:
+		_eng_throttle_written = throttle
+		_eng_rib_mat.set_shader_parameter("throttle_k", throttle)
+	if _sick_mat != null:
+		var sick_factor := sick_gate(fx.now, fx.reduce_flashing)
+		var sick_drive_gate := gate * sick_factor
+		if sick_drive_gate != _sick_gate_written:
+			_sick_gate_written = sick_drive_gate
+			_sick_mat.set_shader_parameter("gate", sick_drive_gate)
+			if _sick_spark_mat != null:
+				_sick_spark_mat.set_shader_parameter("gate", sick_drive_gate)
+			_sick_rib_mat.set_shader_parameter("gate", sick_drive_gate)
+		var sick_length := length * _sick_len
+		if sick_length != _sick_length_written:
+			_sick_length_written = sick_length
+			_sick_rib_mat.set_shader_parameter("lenk", sick_length)
+		var sick_throttle := throttle * sick_factor
+		if sick_throttle != _sick_throttle_written:
+			_sick_throttle_written = sick_throttle
+			_sick_rib_mat.set_shader_parameter("throttle_k", sick_throttle)
+
+
+func _update_hidden_death(fx) -> void:
+	if not _death_draining:
+		_death_draining = true
+		_update_damage_emitters(fx)
+		_status_step(fx)
+		_wound_step(fx)
+		_eng_cur = 0.0
+		_write_engine_gate(fx, 0.0)
+	# A shield collapse and world-space ribbons can outlast the last visible frame of the hull.
+	var trails_on := _update_trails(fx, false)
+	var shield_on := false
+	if is_instance_valid(_shield_mi):
+		shield_on = fx.now < _shield_until or fx.now < _ion_until
+		_shield_mi.visible = shield_on
+	death_fx_done = not trails_on and not shield_on
+
+
+func _update_trails(fx, _moved: bool) -> bool:
 	var _tclock: float = fx.now + _trail_extra   # the trails' clock (issue 1581)
 	if _trails.is_empty():
-		return
+		return false
+	var visible_tail := false
 	var xfm = xf()
 	# issue 1586 (Neon on PR 1666): a torch death's over-flaring drive keeps its exhaust while the flare runs, from the
 	# nozzles where the spiralling hull really is
-	var flaring: bool = dead and not death_big and fx.now < float(get_meta("death_flare_until", -1.0)) and has_meta("death_motion")
+	var flaring: bool = dead and not _death_draining and not death_big and fx.now < float(get_meta("death_flare_until", -1.0)) and has_meta("death_motion")
 	if flaring:   # the same pose fx_death._small_pose gives the dying hull
 		xfm = root.global_transform * (get_meta("death_motion") as Transform3D) * (get_meta("death_hull_motion", Transform3D.IDENTITY) as Transform3D)
 	var eng: Color = fac["engine"]
 	var lvl = clampf(_eng_cur, 0.0, 2.0)
-	var plume = clampf(1.5 * hull.W, 2.0, 32.0)
-	var style: int = 1 if (String(fac.get("engine_extra", "")) == "soot" or (_eng_sputter and not wounds_v2)) else int(fac["trail"])
+	var style: int = 1 if eng_soot else int(fac["trail"])
 	for ti in _trails.size():
 		var t: Dictionary = _trails[ti]
 		var hist: Array = t["hist"]
@@ -603,11 +735,14 @@ func _update_trails(fx, _moved: bool) -> void:
 		var lvl_t: float = lvl * (sick_gate(fx.now, fx.reduce_flashing) if ti == sick_nozzle else 1.0)
 		if dead_nozzles.has(ti):
 			lvl_t = 0.0   # issue 1741: a dead nozzle lays no fresh trail (the dim samples let the old ribbon fade out)
-		var start: Vector3 = xfm * (t["p"] as Vector3) + (xfm.basis * (t["d"] as Vector3)).normalized() * (0.3 * plume)
+		# Issue 2042 item 2: anchor the trail root directly to the live nozzle (no 0.3 * plume stern gap).
+		var start: Vector3 = xfm * (t["p"] as Vector3)
+		var back_dir: Vector3 = (xfm.basis * (t["d"] as Vector3)).normalized()
 		# Each sample belongs to world space for its entire life. Turning, stopping
 		# or throttling down never drags old exhaust along with the nozzle.
 		# (issue 1581, OpenAI review F4: no fresh exhaust while the battle has the drive cold, even as the plume eases down)
-		if (not dead or flaring) and lvl > 0.12 and not (_moving > 0.0 and engine_level < 0.12):
+		var active_burn: bool = (not dead or flaring) and lvl > 0.12 and not (_moving > 0.0 and engine_level < 0.12)
+		if active_burn:
 			if hist.is_empty() or ((hist[0][0] as Vector3).distance_to(start) > 0.03 * fx.unit and (_tclock - float(hist[0][1]) >= 0.05 or (hist[0][0] as Vector3).distance_to(start) > 1.2 * fx.unit)):
 				hist.push_front([start, _tclock, lvl_t])
 				changed = true
@@ -618,14 +753,20 @@ func _update_trails(fx, _moved: bool) -> void:
 		mi.visible = hist.size() >= 2
 		if not mi.visible:
 			continue
+		visible_tail = true
 		var mat := mi.material_override as ShaderMaterial
 		if changed:
 			t["mesh_time"] = _tclock
 			_trail_mesh(fx, t, eng)
 		mat.set_shader_parameter("trail_elapsed", (_tclock - float(t["mesh_time"])) / TRAIL_LIFE)
+		mat.set_shader_parameter("use_strip_taper", 1.0)
+		mat.set_shader_parameter("anchor_head", 1.0 if (active_burn and not dead_nozzles.has(ti)) else 0.0)
+		mat.set_shader_parameter("head_world", start)
+		mat.set_shader_parameter("head_dir", back_dir)
 		if int(t["style"]) != style:
 			t["style"] = style
 			mat.set_shader_parameter("trail_style", float(style))
+	return visible_tail
 
 
 func _trail_mesh(fx, t: Dictionary, eng: Color) -> void:
@@ -639,16 +780,19 @@ func _trail_mesh(fx, t: Dictionary, eng: Color) -> void:
 	var c0 = PackedFloat32Array()
 	var c1 = PackedFloat32Array()
 	var r: float = t["r"]
-	var w0 = r * 1.1
-	var w1 = r * 2.4 * clampf(scale_k(), 0.6, 1.6)
+	# Issue 2042 item 2: start at nozzle width and taper cleanly down to a slender tail (never a wide rectangle).
+	var w0 := r * 1.25
+	var w1 := r * 0.18 * clampf(scale_k(), 0.7, 1.3)
+	var denom := maxf(float(n - 1), 1.0)
 	for i in n:
 		var d = (hist[mini(i + 1, n - 1)][0] - hist[maxi(i - 1, 0)][0]).normalized()
+		var along := float(i) / denom
 		for sd in [-0.5, 0.5]:
 			verts.append(hist[i][0])
 			nrm.append(d)
 			uv.append(Vector2(clampf((_tclock - float(hist[i][1])) / TRAIL_LIFE, 0.0, 1.0), sd))
-			c0.append_array([eng.r, eng.g, eng.b, 0.28 * clampf(float(hist[i][2]), 0.0, 1.5)])
-			c1.append_array([w0, w1, float(t["seed"]), 0.0])
+			c0.append_array([eng.r, eng.g, eng.b, 0.34 * clampf(float(hist[i][2]), 0.0, 1.5)])
+			c1.append_array([w0, w1, float(t["seed"]), along])
 	if not _trail_indices.has(n):
 		var idx := PackedInt32Array()
 		for i in n - 1:
@@ -1201,10 +1345,11 @@ func shield_break(fx, quad: int, hit_lp := Vector3.INF) -> void:
 			# Voidsworn: the gold veil tears with crackling arcs running over the surface
 			for i in 40:
 				var tang = fx.rcone(wn, 1.4)
-				fx.stk(wp + fx.rdir() * 3.0 * k, T + fx.rng.randf() * 0.4, 0.3 + fx.rng.randf() * 0.4, sc.lerp(Color(1, 0.9, 0.6), 0.5), 6.0,
-					0.08, 0.14, 1, tang * (8 + fx.rng.randf() * 16) * k, 1.8)
+				fx.spark(wp + fx.rdir() * 3.0 * k, T + fx.rng.randf() * 0.4, 0.3 + fx.rng.randf() * 0.4, faction, 6.0,
+					0.08, 0.14, tang * (8 + fx.rng.randf() * 16) * k, 1.8, 0.0, 0.0, fx.SparkRole.SHIELD)
 			for i in 24:
-				fx.spr(wp + fx.rdir() * 4.0 * k, T + fx.rng.randf() * 0.5, 0.9 + fx.rng.randf() * 0.6, sc, 2.0, 0.25 * k, 0.1 * k, 19, fx.rcone(wn, 1.0) * 3.0 * k, 0.5)
+				fx.spark(wp + fx.rdir() * 4.0 * k, T + fx.rng.randf() * 0.5, 0.9 + fx.rng.randf() * 0.6, faction,
+					2.0, 0.06, 0.05 * k, fx.rcone(wn, 1.0) * 3.0 * k, 0.5, 0.0, 0.0, fx.SparkRole.SHIELD)
 		1:
 			# Hegemony: the hex lattice shatters into cells that fly apart
 			for i in 36:
@@ -1217,7 +1362,7 @@ func shield_break(fx, quad: int, hit_lp := Vector3.INF) -> void:
 				var pj = wp + fx.rdir() * 4.0 * k
 				_shield_flash(fx, pj, tj, sc.lerp(Color(1, 0.6, 0.3), 0.4), 3.0 * k, 4.0, 0.1)
 				for i in 8:
-					fx.stk(pj, tj, 0.3 + fx.rng.randf() * 0.3, Color(1, 0.6, 0.25), 6.0, 0.05, 0.12, 1, fx.rcone(wn, 1.0) * (8 + fx.rng.randf() * 12) * k, 2.0)
+					fx.spark(pj, tj, 0.3 + fx.rng.randf() * 0.3, faction, 6.0, 0.05, 0.12, fx.rcone(wn, 1.0) * (8 + fx.rng.randf() * 12) * k, 2.0, 0.0, 0.0, fx.SparkRole.SHIELD)
 		_:
 			# Ithar: the mint veil folds and sheets away in prismatic glints
 			for i in 30:
@@ -1251,7 +1396,6 @@ func _break_shear(fx, quad: int, hit_lp := Vector3.INF) -> void:
 	var sc: Color = fac["shield"]
 	var st: int = fac["shield_style"]
 	var k = scale_k()
-	var hot := sc.lerp(Color.WHITE, 0.55)
 	_shield_flash(fx, wp, T, sc.lerp(Color.WHITE, 0.4), 8.0 * k, 8.0, 0.18)
 	fx.light(wp + wn * 2.0, T, 0.7, 6.0, sc, 0)
 	fx.shake(T, 0.16, wp)
@@ -1268,8 +1412,8 @@ func _break_shear(fx, quad: int, hit_lp := Vector3.INF) -> void:
 		run = run.normalized() if run.length() > 1e-3 else fx.rcone(nw, 1.5).slide(nw).normalized()
 		var stut := 1.0 if st != 2 else (0.5 + 0.5 * float(i % 2))
 		for j in 3:
-			fx.stk(pw, ti + j * 0.03, 0.22 + fx.rng.randf() * 0.12, hot, 6.0 * stut, 0.1, 0.12, 1,
-				(run + fx.rdir() * 0.25) * (14 + fx.rng.randf() * 10) * k, 2.2)
+			fx.spark(pw, ti + j * 0.03, 0.22 + fx.rng.randf() * 0.12, faction, 6.0 * stut, 0.1, 0.12,
+				(run + fx.rdir() * 0.25) * (14 + fx.rng.randf() * 10) * k, 2.2, 0.0, 0.0, fx.SparkRole.SHIELD)
 		if st == 1:
 			# Navy: a cell of the lattice comes loose where the crack passes
 			fx.spr(pw, ti, 0.6 + fx.rng.randf() * 0.4, sc, 2.6, 0.45 * k, 0.25 * k, 16, (nw + run * 0.5) * (4 + fx.rng.randf() * 4) * k, 0.8)
@@ -1334,7 +1478,7 @@ func _break_collapse(fx, quad: int, hit_lp := Vector3.INF) -> void:
 	for i in 18:
 		var a: float = TAU * (float(i) + fx.rng.randf() * 0.4) / 18.0
 		var v: Vector3 = (t1 * cos(a) + t2 * sin(a) + wn * 0.15) * (10 + fx.rng.randf() * 6) * k
-		fx.stk(wp, Tk, 0.25 + fx.rng.randf() * 0.1, sc.lerp(Color.WHITE, 0.4), 5.0, 0.08, 0.12, 1, v, 2.5)
+		fx.spark(wp, Tk, 0.25 + fx.rng.randf() * 0.1, faction, 5.0, 0.08, 0.12, v, 2.5, 0.0, 0.0, fx.SparkRole.SHIELD)
 
 
 # Match pop's comfort booking and soft fallback, without its free-standing disc.
@@ -1494,7 +1638,7 @@ func _react_apply(fx, wi: int) -> void:
 		_show_rcs = false
 	if hull_pivot != null:
 		hull_pivot.rotation = angles + Vector3(_list, 0.0, 0.0)
-		hull_pivot.position = _pd
+		hull_pivot.position = _pd + _rift_offset
 	else:
 		# Bare hulls use the root. Subtract the applied yaw to keep their drift in the base heading.
 		var base_yaw := root.rotation.y - _app_yaw
@@ -1557,6 +1701,7 @@ func _rcs(fx) -> void:
 		fx.record_spawn(self, wp)
 		match faction:
 			"ithar":
+				# R412: keep the pale-gold correction glints until Ryan picks a new jet colour.
 				fx.spr(wp, fx.now, 0.14, Color(1.0, 0.86, 0.57), 1.5, 0.65 * k, 0.18 * k, 16, axis * k, 0.0, 0.0, 0.0, 13.0)
 			"deathless":
 				fx.ring(wp, axis, fx.now, 0.2, Color(0.59, 0.38, 1.0), 0.75, 0.20 * k, 0.9 * k, 3)
@@ -2401,6 +2546,9 @@ func _place_mark(fx, e) -> void:
 		var o = _marks[j]
 		if o.style != e.style or o.sec != e.sec or o.style in [BREACH.S_GAUSS_IN, BREACH.S_GAUSS_OUT]:
 			continue
+		# The three V2 Null Lance cuts overlap the repeat radius. Reheat the matching cut, not its neighbour.
+		if e.style == BREACH.S_NLANCE and e.v2 >= 0 and o.part_i != e.part_i:
+			continue
 		if whole_sec or o.c.distance_to(e.c) < o.R * 0.8 + e.R * 0.5 + o.hl:
 			var g: float = minf(o.grow * 1.2, BREACH.GROW_MAX)
 			var es2: Array = BREACH.marks_for(hull, o.look, maxi(o.wt, e.wt), o.hit_origin, o.hit_normal, o.ldir, o.seed_v, faction, g, 1.0 - section_fraction[o.sec], o.hatch_k)
@@ -2506,7 +2654,7 @@ func _build_section(fx, i: int, up: bool) -> void:
 		elif faction == "ithar":
 			fx.spr(wp, fx.now, 0.7, glow, 0.5, hull.L * 0.004, hull.L * 0.009, 16, fx.rcone(wn, 0.8) * hull.L * 0.1)
 		else:
-			fx.stk(wp, fx.now, 0.45, glow, 2.0, 0.04, 0.08, 1, fx.rcone(wn, 0.8) * hull.L * 0.18)
+			fx.spark(wp, fx.now, 0.45, faction, 2.0, 0.04, 0.08, fx.rcone(wn, 0.8) * hull.L * 0.18)
 	if st == 4 and faction != "chorus":
 		for j in 4: DEATH.BEATS.debris(fx, self, wp, fx.now, 2.0, fx.rcone(wn, 0.8) * hull.L * 0.07, hull.L * 0.009, 0.8)
 
@@ -2548,14 +2696,15 @@ func _refresh_damage_emitters(fx) -> void:
 	var smoke := 0
 	if not fx.compat and not squadron:
 		# Worst sections claim slots first. Stable ids preserve unchanged emitters.
-		for grade in [4, 3, 2]:
+		for grade in [4, 3, 2, 1]:
 			for i in 3:
 				var st: int = maxi(stage[i], 3 if _burning and i == 1 else 0)
 				if st != grade: continue
 				if st >= 3 and fires < caps.x:
 					desired.append({"id": "fire%d" % i, "kind": "fire", "sec": i, "st": st})
 					fires += 1
-				if smoke < caps.y:
+				# The hot wound already includes the smoke sheath. Do not draw it again at the same point.
+				elif smoke < caps.y:
 					desired.append({"id": "smoke%d" % i, "kind": "smoke", "sec": i, "st": st})
 					smoke += 1
 		if weight >= 3 and smoke < caps.y:
@@ -2581,7 +2730,8 @@ func _refresh_damage_emitters(fx) -> void:
 				smoke += 1
 	var keep: Array = []
 	for e in _damage_emitters:
-		if not is_instance_valid(e.get("node")):
+		# Keep an expired stage 1 ticket until the stage changes, so another section cannot replay it.
+		if not is_instance_valid(e.get("node")) and e.form != DAMAGE_PLUME.Form.SCORCH:
 			continue
 		var match_i := -1
 		for j in desired.size():
@@ -2589,7 +2739,7 @@ func _refresh_damage_emitters(fx) -> void:
 		if match_i >= 0:
 			keep.append(e)
 			desired.remove_at(match_i)
-		else:
+		elif is_instance_valid(e.get("node")):
 			# Old emitters fade only when repairing, with no new replacements in
 			# the same slot. Stage upgrades move the source inside immediately.
 			if stage[e.sec] < e.st and not fx.compat and desired.is_empty():
@@ -2610,71 +2760,69 @@ func _build_damage_emitter(fx, e: Dictionary) -> bool:
 	if a.is_empty(): return false
 	var p: Vector3 = a.p
 	var n: Vector3 = a.n
-	var glow: Color = fac.damage_glow
-	var eclipse_wound := wounds_v2 and faction == "deathless"
-	var wound_accent := BREACH.wound_col(fac["wound"], "interior_accent", glow) if eclipse_wound else glow
-	var b := POOLS.Batch.new()
-	var kind := 3
-	var color := Color(0.13, 0.12, 0.11)
-	var intensity := 0.36
-	var size0: float = hull.L * 0.014
-	var size1: float = hull.L * 0.065
-	var life := 2.5
-	var count := 5
-	var velocity: Vector3 = (n * 0.7 + Vector3.UP * 0.3) * hull.L * 0.10
-	if faction == "deathless": color = Color(0.055, 0.025, 0.09); kind = 8
-	if faction == "deathless" and e.st == 2:
-		kind = 7; color = wound_accent * 0.55
-		size0 = hull.L * 0.004; size1 = hull.L * 0.018
-		velocity = n * hull.L * 0.045
-	if faction == "chorus": color = chorus_gas(glow) * 0.45; kind = 20
-	if faction == "ithar": color = glow * 0.7; kind = 7; intensity = 0.24
+	var form := DAMAGE_PLUME.Form.DENT
+	var length: float = hull.L * 0.12
+	var axis := (n + Vector3.UP * 0.45).normalized()
 	if e.kind == "fire":
-		kind = 25
-		color = glow
-		count = 8
-		life = 1.0
-		intensity = 0.8
-		size0 = hull.L * 0.009
-		size1 = hull.L * 0.04
-		velocity = (n * 0.7 + Vector3.UP * 0.3) * hull.L * 0.06
+		form = DAMAGE_PLUME.Form.WOUND
+		length = hull.L * (0.19 if e.st == 4 else 0.15)
 		if e.st == 4: p -= n * hull.L * 0.018
-		if faction == "deathless": kind = 26
-		if eclipse_wound: color = wound_accent; intensity = 0.28
-		if wounds_v2 and faction == "hegemony": kind = 26   # cold electric vent, never the orange heat ramp
-		if faction == "chorus": kind = 20; intensity = 0.35; color = chorus_gas(glow)
-		if faction == "ithar": kind = 7; intensity = 0.3
 	elif e.kind == "vent":
-		kind = 7; color = glow.lerp(Color.WHITE, 0.75); intensity = 0.22
-		count = 4; life = 0.8
-		velocity = n * hull.L * 0.13
-		if eclipse_wound: color = wound_accent; intensity = 0.16
-		if faction == "chorus": kind = 20; color = chorus_gas(glow) * 0.6
-	var period := life if e.kind != "vent" else 3.2
-	for j in count:
-		var t: float = fx.now - life + float(j) / count * period
-		b.add(POOLS.quad_shape(), POOLS.pack(Vector4(p.x, p.y, p.z, t),
-			Vector4(velocity.x, velocity.y, velocity.z, life), Vector4(color.r, color.g, color.b, intensity),
-			Vector4(size0, size1, kind, j * 0.137), Vector4(period, 0, 0, 0.1)))
-	var holder := Node3D.new()
-	holder.name = "fx_damage_" + e.id
-	_dmg_root.add_child(holder)
-	var material: ShaderMaterial = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
-	b.build(material, holder, "fx_section_particles")
-	e["node"] = holder
-	e["mat"] = material
-	e["particles"] = b.particle_count
-	e["sprite_kind"] = kind
-	e["source"] = p
+		form = DAMAGE_PLUME.Form.VENT
+		length = hull.L * 0.19
+		axis = n
+	elif e.st == 1:
+		form = DAMAGE_PLUME.Form.SCORCH
+		length = hull.L * 0.075
+	elif faction == "deathless" and e.st == 2:
+		# Keep main's narrow, outward ion vent on shallow Eclipse wounds.
+		length = hull.L * 0.055
+		axis = n
+	_attach_damage_plume(fx, e, p, axis, length, form)
+	if form == DAMAGE_PLUME.Form.WOUND:
+		var light_pos: Vector3 = a.p + n * hull.L * 0.025
+		e["light"] = fx.light_source(e.node, light_pos - p, _plume_glow(), 0.32,
+			0.20, hull.L * 0.13 / fx.unit, e.phase * TAU, true)
 	return true
 
 
+func _plume_glow() -> Color:
+	var glow: Color = fac.damage_glow
+	if faction == "chorus":
+		return chorus_gas(glow)
+	if wounds_v2 and faction in ["hegemony", "deathless"]:
+		return BREACH.wound_col(fac["wound"], "interior_accent", glow)
+	return glow
+
+
+func _attach_damage_plume(fx, e: Dictionary, p: Vector3, axis: Vector3, length: float, form: DAMAGE_PLUME.Form) -> void:
+	var phase := float(posmod(hash(e.id) + _seed, 127)) / 127.0
+	var glow := _plume_glow()
+	var profile := DAMAGE_PLUME.Profile.BASE
+	if faction == "hegemony":
+		profile = DAMAGE_PLUME.Profile.ELECTRIC
+	elif wounds_v2 and faction == "deathless":
+		profile = DAMAGE_PLUME.Profile.VIOLET
+	var plume := DAMAGE_PLUME.build(fx, _dmg_root, p, axis, length, form, fac, phase, "fx_damage_" + e.id, glow, profile)
+	e["node"] = plume
+	e["mat"] = plume.material_override
+	e["particles"] = 1
+	e["form"] = form
+	e["source"] = p
+	e["phase"] = phase
+
+
 func _update_damage_emitters(fx) -> void:
-	if dead or gone:
-		for e in _damage_emitters + _fading_emitters:
-			if is_instance_valid(e.get("node")):
-				e.node.visible = false
+	if gone or (dead and has_meta("death_hidden")):
+		for emitters in [_damage_emitters, _fading_emitters]:
+			for e in emitters:
+				if is_instance_valid(e.get("node")):
+					e.node.hide()
+					e.node.queue_free()
+			emitters.clear()
+		_clear_wing_smoke()
 		return
+	# R459: attached fire and smoke stay on the hull through the tell. Already fading emitters finish normally.
 	for j in range(_fading_emitters.size() - 1, -1, -1):
 		var e: Dictionary = _fading_emitters[j]
 		if not is_instance_valid(e.get("node")):
@@ -2682,15 +2830,43 @@ func _update_damage_emitters(fx) -> void:
 			continue
 		var gate: float = clampf((e.until - fx.now) / 0.8, 0.0, 1.0)
 		e.mat.set_shader_parameter("gate", gate)
+		if e.has("light"):
+			e.light["base"] = 0.32 * gate
 		if gate <= 0.0:
 			e.node.queue_free()
 			_fading_emitters.remove_at(j)
-	if squadron and _squad_smoke and not fx.compat and fx.now >= _smoke_next:
-		_smoke_next = fx.now + 0.12
-		# World-space pooled samples form a short ribbon that stays behind a wing.
-		fx.spr(to_world(hull.c - Vector3.RIGHT * hull.L * 0.2), fx.now, 1.2,
-			Color(0.12, 0.12, 0.13), 0.32, hull.L * 0.015, hull.L * 0.10, 3,
-			dir_world(Vector3.LEFT) * hull.L * 0.20)
+	if not dead and squadron:
+		if not _squad_smoke or fx.compat:
+			_clear_wing_smoke()
+		elif not is_instance_valid(_wing_smoke):
+			_build_wing_smoke(fx)
+
+
+func _build_wing_smoke(fx) -> void:
+	var visual = root.get("hull")
+	var exhaust: Dictionary = visual.damage_exhaust() if is_instance_valid(visual) and visual.has_method("damage_exhaust") else {}
+	var parent: Node3D = exhaust.get("parent", _dmg_root)
+	var length: float = 1.65
+	var p: Vector3
+	if exhaust.is_empty():
+		# Minimal or legacy wings use their analysed stern, rather than a point between the craft.
+		var aft: Dictionary = hull.surface(hull.c, Vector3.LEFT)
+		if aft.is_empty():
+			return
+		p = aft.p
+		length = hull.L * 0.55
+	else:
+		p = exhaust.p
+	var phase := float(posmod(_seed, 127)) / 127.0
+	_wing_smoke = DAMAGE_PLUME.build(fx, parent, p, Vector3.LEFT, length, DAMAGE_PLUME.Form.WING,
+		fac, phase, "fx_wing_damage_smoke")
+
+
+func _clear_wing_smoke() -> void:
+	if is_instance_valid(_wing_smoke):
+		_wing_smoke.hide()
+		_wing_smoke.queue_free()
+	_wing_smoke = null
 
 
 # ---------------------------------------------------------------- live wounds (issue 1587)
@@ -2728,14 +2904,13 @@ func _cough(fx) -> void:
 	var r: float = nz["r"]
 	var p := to_world(nz["p"])
 	var d := dir_world(nz.get("d", Vector3(-1, 0, 0))).normalized()
-	var eng: Color = fac["engine"]
 	var glow: Color = fac["damage_glow"]
 	if faction != "ithar":
 		var col := Color(0.06, 0.05, 0.045)
 		var kind := 3
 		if wounds_v2 and faction == "voidsworn":
 			col = Color(0.13, 0.115, 0.10)    # issue 1741: forged-iron drive smoke, grey, never the Hullbreaker soot
-		elif wounds_v2 and faction == "hegemony":
+		elif faction == "hegemony":
 			col = Color(0.30, 0.36, 0.44); kind = 7   # issue 1741: the Directorate's cold vapour (no soot, no orange)
 		if faction == "deathless":
 			col = Color(0.055, 0.025, 0.09); kind = 8
@@ -2744,9 +2919,9 @@ func _cough(fx) -> void:
 		for j in 4:
 			fx.spr(p + d * r * 0.5, fx.now + j * 0.06, 0.9 + 0.2 * fx.rng.randf(), col, 0.55, r * 1.1, r * 4.2, kind,
 				fx.rcone(d, 0.35) * r * (5.0 + 3.0 * fx.rng.randf()), 2.0)
-	for j in (0 if wounds_v2 and faction == "chorus" else 5):   # issue 1741: a Chorus drive coughs spores, no sparks
-		fx.stk(p + d * r * 0.4, fx.now + fx.rng.randf() * 0.12, 0.18 + 0.12 * fx.rng.randf(), eng.lerp(Color.WHITE, 0.3), 3.0,
-			0.06, 0.08, 1, fx.rcone(d, 0.6) * r * (8.0 + 6.0 * fx.rng.randf()), 2.0)
+	for j in (0 if faction == "chorus" else 5):   # issue 1741: a Chorus drive coughs spores, no sparks
+		fx.spark(p + d * r * 0.4, fx.now + fx.rng.randf() * 0.12, 0.18 + 0.12 * fx.rng.randf(), faction, 3.0,
+			0.06, 0.08, fx.rcone(d, 0.6) * r * (8.0 + 6.0 * fx.rng.randf()), 2.0, 0.0, 0.0, fx.SparkRole.ENGINE)
 	_wlog(["cough", sick_nozzle, fx.now])
 
 
@@ -2896,9 +3071,8 @@ func _capability_step(fx) -> void:
 			continue   # flesh: the mount's spore wisp only, no metal sparks (R416 trap 2)
 		var p := to_world(md["p"])
 		var n := dir_world(md["n"]).normalized()
-		var sc: Color = (fac["engine"] as Color).lerp(Color.WHITE, 0.55)
 		for j in 3:
-			fx.stk(p, fx.now + fx.rng.randf() * 0.05, 0.18 + fx.rng.randf() * 0.12, sc, 3.5, 0.05, 0.07, 1,
+			fx.spark(p, fx.now + fx.rng.randf() * 0.05, 0.18 + fx.rng.randf() * 0.12, faction, 3.5, 0.05, 0.07,
 				(fx.rcone(n, 0.7)) * hull.L * (0.06 + 0.05 * fx.rng.randf()), 2.0)
 	if gen_down and fx.now >= _gen_next:
 		var k: float = 2.0 if fx.reduce_flashing else 1.0
@@ -2931,7 +3105,7 @@ func _gen_crackle(fx) -> void:
 	var p := p0
 	for j in 5:
 		var jag: Vector3 = (wt + wn * (fx.rng.randf() - 0.3) * 0.8).normalized()
-		fx.stk(p, fx.now + j * 0.02, 0.12 + 0.06 * fx.rng.randf(), col, 4.0, step * 1.2, 0.05, 1, jag * step * 6.0, 0.5)
+		fx.spark(p, fx.now + j * 0.02, 0.12 + 0.06 * fx.rng.randf(), faction, 4.0, 0.05, 0.05, jag * step * 6.0, 0.5, 0.0, 0.0, fx.SparkRole.SHIELD)
 		p += jag * step
 	if not fx.reduce_flashing:
 		fx.light(p0, fx.now, 0.12, 0.9, col, 1)
@@ -2943,14 +3117,13 @@ func _stern_sparks(fx) -> void:
 	_wlog(["stern_spark", dead_nozzles.size(), fx.now])
 	if faction == "chorus":
 		return   # a dead Chorus drive only coughs its spores (_cough)
-	var eng: Color = (fac["engine"] as Color).lerp(Color.WHITE, 0.4)
 	for ni in dead_nozzles:
 		var nz: Dictionary = hull.nozzles[ni]
 		var p := to_world(nz["p"])
 		var d := dir_world(nz.get("d", Vector3(-1, 0, 0))).normalized()
 		for j in 3:
-			fx.stk(p, fx.now + fx.rng.randf() * 0.1, 0.16 + 0.1 * fx.rng.randf(), eng, 3.0, 0.05, 0.07, 1,
-				fx.rcone(d, 0.7) * float(nz["r"]) * (6.0 + 4.0 * fx.rng.randf()), 2.0)
+			fx.spark(p, fx.now + fx.rng.randf() * 0.1, 0.16 + 0.1 * fx.rng.randf(), faction, 3.0, 0.05, 0.07,
+				fx.rcone(d, 0.7) * float(nz["r"]) * (6.0 + 4.0 * fx.rng.randf()), 2.0, 0.0, 0.0, fx.SparkRole.ENGINE)
 
 
 # The knocked-out slots as shown, the turrets jammed for them and the slots whose fixed mount smokes (for the checks).
@@ -3033,34 +3206,10 @@ func jammed_turrets() -> Array:
 	return out
 
 
-# A jammed turret's wisp: a thin looping smoke from its base (a damage emitter entry, so it fades and frees like one).
+# Jammed turrets and dead mounts/nozzles hand their existing attachment to the shared thin plume.
 func _build_wisp(fx, e: Dictionary) -> void:
 	var p: Vector3 = (e["mp"] as Vector3) if e.has("mp") else (hull.turrets[int(e["tur"])]["xf"] as Transform3D).origin + Vector3.UP * hull.L * 0.01
-	var glow: Color = fac.damage_glow
-	var kind := 3
-	var color := Color(0.15, 0.14, 0.13)
-	var intensity := 0.26
-	if faction == "deathless": color = Color(0.055, 0.025, 0.09); kind = 8
-	if faction == "chorus": color = chorus_gas(glow) * 0.45; kind = 20
-	if faction == "ithar": color = glow * 0.7; kind = 7; intensity = 0.18
-	var life := 2.2
-	var count := 3
-	var v: Vector3 = Vector3.UP * hull.L * 0.05
-	var b := POOLS.Batch.new()
-	for j in count:
-		b.add(POOLS.quad_shape(), POOLS.pack(Vector4(p.x, p.y, p.z, fx.now - life + float(j) / count * life),
-			Vector4(v.x, v.y, v.z, life), Vector4(color.r, color.g, color.b, intensity),
-			Vector4(hull.L * 0.004, hull.L * 0.022, kind, j * 0.211), Vector4(life, 0, 0, 0.1)))
-	var holder := Node3D.new()
-	holder.name = "fx_damage_" + String(e.id)
-	_dmg_root.add_child(holder)
-	var material: ShaderMaterial = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
-	b.build(material, holder, "fx_turret_wisp")
-	e["node"] = holder
-	e["mat"] = material
-	e["particles"] = b.particle_count
-	e["sprite_kind"] = kind
-	e["source"] = p
+	_attach_damage_plume(fx, e, p, Vector3.UP, hull.L * 0.095, DAMAGE_PLUME.Form.WISP)
 
 
 # Every frame: spark pops on jammed turrets and the hull's uneven power (fx_flick: the damage shader multiplies it onto
@@ -3077,15 +3226,15 @@ func _wound_step(fx) -> void:
 			continue
 		jm["next"] = fx.now + 2.0 + fx.rng.randf() * 2.0
 		var k: int = jm["k"]
+		if faction == "chorus":
+			_wlog(["spark", k, fx.now])   # Flesh has no metal spark or spark light. The wisp carries the damage.
+			continue
 		var p := to_world((hull.turrets[k]["xf"] as Transform3D).origin)
 		var sc := Color(0.75, 0.85, 1.0)
 		if wounds_v2 and faction == "deathless":
 			sc = (fac["damage_glow"] as Color).lerp(Color.WHITE, 0.4)   # issue 1741: Eclipse sparks in its own violet
-		if wounds_v2 and faction == "chorus":
-			_wlog(["spark", k, fx.now])   # issue 1741 (R416 trap 2): flesh does not throw metal sparks; the wisp carries it
-			continue
 		for j in 4:
-			fx.stk(p, fx.now + fx.rng.randf() * 0.05, 0.2 + fx.rng.randf() * 0.15, sc, 4.0, 0.05, 0.08, 1,
+			fx.spark(p, fx.now + fx.rng.randf() * 0.05, 0.2 + fx.rng.randf() * 0.15, faction, 4.0, 0.05, 0.08,
 				(fx.rdir() + Vector3.UP * 0.6).normalized() * hull.L * (0.08 + 0.06 * fx.rng.randf()), 2.0)
 		if not fx.reduce_flashing:
 			fx.light(p, fx.now, 0.15, 1.5, sc, 1)
@@ -3155,59 +3304,92 @@ func _blowout(fx, i: int) -> void:
 
 # ---------------------------------------------------------------- small events
 
-func pulse(fx, strength: float) -> void:
+var _rift_start := -1.0
+var _rift_life := 1.0
+var _rift_in := false
+var _rift_calm := false
+var _rift_offset := Vector3.ZERO
+
+
+func start_rift_pose(at: float, life: float, entering: bool, calm: bool) -> void:
+	if not is_instance_valid(hull_pivot) or dead or gone:
+		return
+	_rift_start = at
+	_rift_life = life
+	_rift_in = entering
+	_rift_calm = calm
+	if entering:
+		# Hide before the first drawn frame, even for a staggered arrival.
+		_apply_rift_pose(0.0, false)
+
+
+func _step_rift_pose(at: float) -> void:
+	if _rift_start < 0.0:
+		return
+	if dead or at >= _rift_start + _rift_life:
+		clear_rift_pose()
+		return
+	if at < _rift_start:
+		return
+	var u := smoothstep(0.0, 1.0, (at - _rift_start) / maxf(_rift_life, 0.001))
+	_apply_rift_pose(u if _rift_in else 1.0 - u, true)
+
+
+func _apply_rift_pose(open: float, show_hull: bool) -> void:
+	if not is_instance_valid(hull_pivot):
+		return
+	var pinch := 1.0 - open if not _rift_calm else 0.0
+	var off: Vector3 = Vector3.RIGHT * hull.L * pinch * (-0.32 if _rift_in else 0.43)
+	hull_pivot.position += off - _rift_offset
+	_rift_offset = off
+	hull_pivot.scale = Vector3(1.0 + 0.54 * pinch, 1.0 - 0.84 * pinch, 1.0 - 0.91 * pinch)
+	hull_pivot.visible = show_hull
+
+
+func clear_rift_pose() -> void:
+	if _rift_start < 0.0:
+		return
+	_apply_rift_pose(1.0, true)
+	_rift_start = -1.0
+
+
+# The live Nova stays on its current charge cue until Ryan selects an option.
+func legacy_pulse(fx) -> void:
 	var c: Color = fac["weapon"]
 	var cp: Dictionary = hull.core_point()   # issue 370: the ship's own pulse starts at its core
 	if cp.is_empty():
 		return
 	var p = to_world(cp["p"])
-	var k = scale_k()
-	fx.ring(p, dir_world(Vector3.UP), fx.now, 0.9, c, 1.2 * strength, hull.L * 0.3, hull.L * 0.9, 2)
-	fx.spr(p, fx.now, 0.8, c, 1.0 * strength, hull.L * 0.4, hull.L * 0.8, 18)
-	fx.light(p, fx.now, 0.7, 3.0 * strength, c, 1)
+	fx.ring(p, dir_world(Vector3.UP), fx.now, 0.9, c, 1.2, hull.L * 0.3, hull.L * 0.9, 2)
+	fx.spr(p, fx.now, 0.8, c, 1.0, hull.L * 0.4, hull.L * 0.8, 18)
+	fx.light(p, fx.now, 0.7, 3.0, c, 1)
 
 
 func tick_flare(fx, kind: String) -> void:
-	var h: Dictionary = hull.surface_sample(-1, 0.5, "flare")   # issue 370: a seen point on the plating, or none
+	if dead or gone or hull == null:
+		return
+	var h: Dictionary = {}
+	if kind == "acid":
+		var spots: Array = get_meta("acid_spots", [])
+		if not spots.is_empty() and spots.back().size() > 2:
+			h = {"p": spots.back()[0], "n": spots.back()[2]}
+	elif kind == "tidal" and fx.well.is_finite():
+		var local_well: Vector3 = xf().affine_inverse() * fx.well
+		h = hull.surface(hull.core, (local_well - hull.core).normalized())
+	if h.is_empty():
+		h = hull.surface_sample(-1, 0.65, "flare")
 	if h.is_empty():
 		return
-	var wp = to_world(h["p"])
-	var wn = dir_world(h["n"])
-	var k = scale_k()
-	var T: float = fx.now
-	match kind:
-		"acid":
-			for i in 6:
-				fx.spr(wp + fx.rdir() * 1.5 * k, T + i * 0.05, 1.6, _acid_colour(), 0.6, 1.0 * k, 4.0 * k, 20, wn * 1.5, 0.5)
-		"tidal":
-			for i in 20:
-				fx.stk(wp + fx.rdir() * 3.0 * k, T + fx.rng.randf() * 0.3, 0.5, Color(0.7, 0.8, 1.0), 4.0, 0.15, 0.1, 1, fx.rdir() * 6.0, 0.5)
-		"storm":
-			if _shield_mat != null:
-				shield_hit(fx, shield_point(wp + wn * 30.0)["local"], T, 0.6, 14.0, 0.8)
-		_:
-			for i in 8:
-				fx.spr(wp, T + i * 0.05, 0.7, Color(1, 0.5, 0.15), 2.4, 0.8 * k, 2.4 * k, 1, wn * 2.0 + fx.rdir(), 0.0)
-			fx.light(wp + wn, T, 0.6, 3.0, Color(1, 0.5, 0.15), 1)
-
-
-func jump_out(fx) -> void:
-	if dead or gone:
-		return
-	var T: float = fx.now
-	var bow = dir_world(Vector3(1, 0, 0))
-	var c: Color = fac["engine"]
-	var p = to_world(hull.core)   # issue 370: the jump flash at the core (hp_core, else the centre of volume)
-	for t in hull.nozzles:
-		var np = to_world(t["p"])
-		fx.spr(np, T, 0.5, c, 6.0, 2.0, 8.0, 2)
-	fx.light(p, T, 0.6, 6.0, c, 0)
-	fx.stk(p, T + 0.35, 0.4, c.lerp(Color.WHITE, 0.5), 10.0, hull.L * 3.0, hull.W * 0.4, 0, bow * hull.L * 20.0)
-	fx.ring(p, bow, T + 0.35, 0.6, c, 1.5, hull.L * 0.2, hull.L * 1.2, 1)
-	fx.later(T + 0.4, func l_jump() -> void:
-		if fx.ships.get(id) == self and not dead and not gone:
-			_hide_meshes()
-			teardown(fx, false))  # damage polling can finish its own job; do not block the jump frame
+	STATUS_TICK.play(fx, self, kind, h)
+	# Living and glass hulls keep the motes from the tick, not metal sparks.
+	if kind == "tidal" and faction not in ["chorus", "ithar"]:
+		var wp := to_world(h["p"])
+		var k := scale_k()
+		var T: float = fx.now
+		var tint: Color = fac.damage_glow if faction == "deathless" else Color(0.7, 0.8, 1.0)
+		for i in 20:
+			fx.spark(wp + fx.rdir() * 3.0 * k, T + fx.rng.randf() * 0.3, 0.5, faction, 4.0, 0.15, 0.1, fx.rdir() * 6.0, 0.5,
+				0.0, 0.0, fx.SparkRole.HULL, tint)
 
 
 # A mark's geometry follows the section's actual damage, including repairs.

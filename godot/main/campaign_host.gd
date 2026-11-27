@@ -107,10 +107,7 @@ func start(m: Node, o: Dictionary) -> void:
 
 
 func _seed_campaign(s: int) -> void:
-	if C.has_method("seed_rng"):
-		C.seed_rng(s & 0xFFFFFFFF)
-	else:
-		load("res://rules/jsm.gd").rnd_seed(s & 0xFFFFFFFF)  # fallback until campaign.seed_rng() lands (G3)
+	C.seed_rng(s & 0xFFFFFFFF)
 
 
 static func has_save(path: String = Campaign.SAVE_PATH) -> bool:
@@ -256,7 +253,8 @@ func _play_battle() -> void:
 			ui.visible = true
 		in_battle = false
 		_music_page = ""   # issue 1482
-		_save_round()   # the newest round start the rules packed, if the scene had not written it yet
+		if a.phase != "halted":
+			_save_round()   # keep the last safe checkpoint if the rules stopped with an error
 		C.leave_battle_saved()
 		return
 	battles += 1

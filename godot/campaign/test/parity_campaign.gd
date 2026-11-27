@@ -118,13 +118,13 @@ func acts_str() -> String:
 	return "|".join(out)
 
 func run_seed(seed: int, lines: PackedStringArray) -> int:
-	C.UID = 1; JSM.rnd_seed(seed); C.META = C.defaultMeta(); seed_meta(seed); C.SAVED_RUN = null
+	C.UID = 1; C.rng.rnd_seed(seed); C.META = C.defaultMeta(); seed_meta(seed); C.SAVED_RUN = null
 	reset_transients(); C.ended = false; C.toasts = []; C.tel_log = []
 	bot = {"s": seed % 2147483647, "streak": 0, "legacy": false, "help": false, "reloads": 0}
 	C.titleScreen()
 	var last = {}
 	var rec = func(i: int, act: String, arg: String) -> void:
-		var p = parts(); var r = {"i": i, "act": act, "arg": arg, "acts": acts_str(), "rng": JSM.rng_s & 0xFFFFFFFF, "h": {}}
+		var p = parts(); var r = {"i": i, "act": act, "arg": arg, "acts": acts_str(), "rng": C.rng.rng_s & 0xFFFFFFFF, "h": {}}
 		for k in ["run", "map", "meta", "t", "saved"]:
 			r["h"][k] = JSM.sha256(p[k]).substr(0, 16)
 			if last.get(k) != p[k]:

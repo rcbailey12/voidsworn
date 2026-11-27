@@ -39,6 +39,7 @@ var only := ""
 var standin := false
 var seed_add := 0   # --seed N: another battle's face of each look
 var timing := 0   # --timing N: after each board look's camera 170 still, N frames of GPU render time (run the GPU solo)
+var mm_trial := false   # --mm-trial: named terran/volcanic stills, fixed weather and verified live detail
 var started := 0
 var cam: Camera3D
 var stage: Node3D
@@ -131,6 +132,7 @@ func _run() -> void:
 	root.mode = Window.MODE_WINDOWED
 	root.size = Vector2i(1280, 720)
 	var argv := OS.get_cmdline_user_args()
+	mm_trial = argv.has("--mm-trial")
 	for i in argv.size():
 		if argv[i] == "--out" and i + 1 < argv.size(): out = argv[i + 1]
 		if argv[i] == "--tag" and i + 1 < argv.size(): tag = argv[i + 1]
@@ -167,9 +169,16 @@ func _run() -> void:
 	var pl_script: GDScript = load("res://world/world_planet.gd")
 	var new_board := pl_script.get_script_method_list().any(func(m): return m["name"] == "install_board")
 	print("planet v2 shots: ", "new board path" if new_board else "old board path (map3d icon shader)")
+	if mm_trial and (not new_board or only != "board"):
+		printerr("planet v2 shots: --mm-trial needs the baked board path and --only board")
+		quit(1)
+		return
 	if only == "" or only == "board":
-		for k in LOOK_KINDS:
-			await _board(k, new_board)
+		var kinds: Array = PL.MM_DETAIL_TILES.keys() if mm_trial else LOOK_KINDS
+		for k in kinds:
+			if not await _board(k, new_board):
+				quit(1)
+				return
 	# the procedural stand-in a battle keeps when its maps miss the loading cover (Fable, PR 1776 H11)
 	if new_board and (only == "" or only == "standin"):
 		standin = true
@@ -196,9 +205,12 @@ func _run() -> void:
 		print("planet v2 shots: band 2 PASS")
 	else:
 		print("planet v2 shots: band 2 MISS: ", ", ".join(band_misses))
+		if mm_trial and tag == "after":
+			quit(5)   # a completed trial with a failed grade, for the capture launcher's diagnostics
+			return
 	quit(0 if band_misses.is_empty() or tag == "before" else 1)
 
-func _board(k: int, new_board: bool) -> void:
+func _board(k: int, new_board: bool) -> bool:
 	_clear()
 	var rad := 50.0
 	var sp := SphereMesh.new()
@@ -256,19 +268,71 @@ func _board(k: int, new_board: bool) -> void:
 		am.set_shader_parameter("sun_pos", sun)
 		am.set_shader_parameter("gain", 1.0)
 		shell.material_override = am
+	var material := mi.material_override as ShaderMaterial
+	if mm_trial:
+		var enabled := OS.get_environment("VS_MM_TRIAL") == "1"
+		if material == null or material.get_shader_parameter("has_tex") != 1.0 \
+				or (material.get_shader_parameter("mm_detail") == true) != enabled:
+			printerr("planet v2 shots: baked surface or trial tile missing for ", PL.MM_DETAIL_TILES[k])
+			return false
+		material.set_shader_parameter("cloud_rate", 0.0)
 	# camera 170 at the home view's angle, looking at the planet's cap on the board plane
 	var t := Vector3(0, 0, 0)
 	cam.position = t + Vector3(0, cos(0.98), sin(0.98)) * 170.0
 	cam.look_at(t, Vector3.UP)
 	var pre := ("standin" if standin else "board") + ("" if seed_add == 0 else "_s%d" % seed_add)
-	await _save(pre + "_%d_c170" % k)
+	var code := str(PL.MM_DETAIL_TILES[k]) if mm_trial else pre + "_%d" % k
+	await _save(code + "_c170")
 	if timing > 0 and not standin:
 		await _time_frames("board_%d_c170" % k)
+	if mm_trial:
+		# At the stock limb distance the full-size bake's fine detail is already faded out.
+		var direction := _trial_ground_direction(material, k)
+		var focus := mi.position + direction * (rad - 8.0)
+		cam.position = focus + direction * 26.0
+		cam.look_at(focus, Vector3.UP)
+		await _save(code + "_c26")
+		return true
 	# close: low over the lit limb
 	var limb := Vector3(SUN_DIR.x, 0, SUN_DIR.z).normalized() * rad * 0.55
 	cam.position = limb + Vector3(-0.35, 0.55, 0.85).normalized() * 70.0
 	cam.look_at(limb + Vector3(0, -8, 0), Vector3.UP)
-	await _save(pre + "_%d_close" % k)
+	await _save(code + "_close")
+	return true
+
+
+# Use the baked sea and cloud masks to frame clear, lit ground on the same face in both passes.
+func _trial_ground_direction(material: ShaderMaterial, kind: int) -> Vector3:
+	var albedo := (material.get_shader_parameter("tex_a") as Texture2D).get_image()
+	var weather := (material.get_shader_parameter("tex_b") as Texture2D).get_image()
+	var tilt := float(material.get_shader_parameter("tilt"))
+	var turn := float(material.get_shader_parameter("turn"))
+	var sun := SUN_DIR.normalized()
+	var side := sun.cross(Vector3.UP).normalized()
+	var up := side.cross(sun)
+	var best := sun
+	var best_score := INF
+	# Side light shows Terran relief without filling the close view with the high-sun patch that missed on both legs.
+	# Keep Volcanic's proven seed-5 framing. Pick from the same baked masks in both legs, never from rendered brightness.
+	var terran: bool = PL.MM_DETAIL_TILES[kind] == "terran"
+	var extent := 4 if terran else 2
+	for y in range(-extent, extent + 1):
+		for x in range(-extent, extent + 1):
+			var n := (sun + (side * x + up * y) * 0.26).normalized()
+			var sun_incidence := sun.dot(n)
+			if terran and sun_incidence > 0.70:
+				continue
+			var tipped := n.rotated(Vector3.RIGHT, tilt)
+			var d := tipped.rotated(Vector3.UP, turn)
+			var u := fposmod(atan2(d.x, -d.z) / TAU + 0.5, 1.0)
+			var v := acos(clampf(d.y, -1.0, 1.0)) / PI
+			var px := Vector2i(int(u * albedo.get_width()), mini(int(v * albedo.get_height()), albedo.get_height() - 1))
+			var score := albedo.get_pixelv(px).a * 3.0 + weather.get_pixelv(px).r + (1.0 - sun_incidence) * 0.3
+			if score < best_score:
+				best_score = score
+				best = n
+	return best
+
 
 func _backdrop(name: String, P: Dictionary, bake_seed: int, size: Vector2i, spin: float) -> void:
 	_clear()

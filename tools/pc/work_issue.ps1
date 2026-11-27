@@ -1,4 +1,4 @@
-# Workhorse runner helpers (#217, Opus, Nov 7 2026). PowerShell 5.1. Called by work_issue.bat and work_setup.bat.
+﻿# Workhorse runner helpers (#217, Opus, Nov 7 2026). PowerShell 5.1. Called by work_issue.bat and work_setup.bat.
 # Usage:
 #   work_issue.ps1 prep    <n> <arm> <repo> <out> <godot exe>   writes <repo>\WORK_TASK.md and <out>\title.txt
 #   work_issue.ps1 balance <arm> <out file>                      writes the account balance (number and currency) or "unknown"
@@ -439,6 +439,26 @@ function Test-HeadChanged($out, $head) {
   }
   return $head -cne $tip
 }
+function Get-BriefRefusalReason($repo, $out, $head) {
+  # Guard against an agent that never read the task brief (e.g. sandbox setup error 1223) exiting 0 with zero edits
+  # on top of a runner-created main merge commit. Only checks when staged diff is empty and agent made no commits.
+  $preAgent = Read-Txt (Join-Path $out 'pre_agent_head.txt')
+  if ($preAgent -and $preAgent -cmatch '\A[0-9a-f]{40,64}\z' -and $head -cne $preAgent) { return '' }
+  $last = Read-Txt (Join-Path $out 'last.md')
+  $logText = Read-Txt (Join-Path $out 'log.txt')
+  $unreadableRx = '(?i)(?:couldn.?t|could not|cannot|can.?t|unable to|failed to)\s+(?:open|read|access)\s+[^\r\n]*(?:CODEX_TASK|WORK_TASK)\.md'
+  if ($last -match $unreadableRx -or $logText -match $unreadableRx) {
+    return 'agent reported it could not read the task brief with zero file changes; refusing empty/merge-only delivery'
+  }
+  $hasExecSuccess = $logText -match '(?m)^\s*succeeded in \d+'
+  if ($logText -match 'ShellExecuteExW failed' -and -not $hasExecSuccess) {
+    return 'sandbox launch failed (ShellExecuteExW) with zero successful commands and zero file changes; refusing empty/merge-only delivery'
+  }
+  if ($logText -match '(?m)^OpenAI Codex v' -and -not $hasExecSuccess) {
+    return 'Codex executed zero successful commands and made zero file changes; refusing empty/merge-only delivery'
+  }
+  return ''
+}
 function Write-Lines($path, $lines) { [IO.File]::WriteAllText($path, ((@($lines) -join "`n") + "`n"), (New-Object System.Text.UTF8Encoding($false))) }
 function Read-Lines($path) { if (-not (Test-Path -LiteralPath $path)) { return @() }; return @([IO.File]::ReadAllLines($path) | Where-Object { $_ -ne '' }) }
 # Folders and files named on the issue's "Deliver to" line (anything with a slash, or a file name with an extension).
@@ -724,6 +744,22 @@ elseif ($mode -eq 'guard') {
   if ($bad.Count) { Write-Host 'guard failed:'; $bad | ForEach-Object { Write-Host "  $_" }; exit 1 }
   exit 0
 }
+elseif ($mode -eq 'mark-pre-agent') {
+  try {
+    $head = Git-One -C $args[1] rev-parse HEAD
+    if ($head -cnotmatch '\A[0-9a-f]{40,64}\z') { throw 'could not read pre-agent HEAD' }
+    [IO.File]::WriteAllText((Join-Path $args[2] 'pre_agent_head.txt'), $head, [Text.Encoding]::ASCII)
+    exit 0
+  } catch { Write-Host "pre-agent mark failed: $($_.Exception.Message)"; exit 14 }
+}
+elseif ($mode -eq 'check-brief') {
+  try {
+    $head = Git-One -C $args[1] rev-parse HEAD
+    $why = Get-BriefRefusalReason $args[1] $args[2] $head
+    if ($why) { Write-Host "delivery refused: $why"; exit 15 }
+    exit 0
+  } catch { Write-Host "delivery refused: $($_.Exception.Message)"; exit 15 }
+}
 elseif ($mode -eq 'head-changed') {
   try {
     if (Test-HeadChanged $args[2] (Git-One -C $args[1] rev-parse HEAD)) { exit 0 }
@@ -756,6 +792,10 @@ elseif ($mode -eq 'commit') {
   if ($LASTEXITCODE -eq 0) {
     $partial = Read-Txt (Join-Path $out 'partial.txt')
     try {
+      if (-not $partial) {
+        $briefWhy = Get-BriefRefusalReason $repo $out $pre
+        if ($briefWhy) { Write-Host "delivery refused: $briefWhy"; Pop-Location; exit 15 }
+      }
       if (-not $partial -and -not (Test-HeadChanged $out $pre)) {
         Write-Host 'nothing left to commit after the refuse list'; Pop-Location; exit 7
       }
@@ -767,7 +807,9 @@ elseif ($mode -eq 'commit') {
   Write-Lines (Join-Path $out 'diffstat.txt') @(Git-Lines -c core.quotepath=off diff --cached --stat --no-renames)
   # The branch's earlier tip (an earlier run, or the Board's own fix-ups): kept, never overwritten.
   $old = ''
-  $ls = @(Git-Lines ls-remote origin "refs/heads/$br")
+  Set-PCGitNonInteractive
+  $net = @(PCGitNetworkOptions)
+  $ls = @(Git-Lines @net ls-remote origin "refs/heads/$br")
   if ($gx -ne 0) { Write-Host "push stopped: could not read branch $br on GitHub, the check failed; change kept as out\change.patch"; Save-Patch $out $pre; Pop-Location; exit 12 }
   if ($ls.Count) {
     $want = ($ls[0] -split '\s+')[0]
@@ -864,7 +906,10 @@ elseif ($mode -eq 'confirm') {
   $pre = Read-Txt (Join-Path $out 'pre_commit.txt'); $new = Read-Txt (Join-Path $out 'run_commit.txt')
   $num = @(Read-Lines (Join-Path $out 'diff_numstat.txt'))
   if ($push -eq 'dry') { Write-Host 'dry run: nothing pushed; the commit that would be pushed carries exactly out\diffstat.txt (checked before the push)'; Pop-Location; exit 0 }
-  $ls = @(Git-Lines ls-remote origin "refs/heads/$br")
+  . (Join-Path $PSScriptRoot 'runner_common.ps1') publication-library
+  Set-PCGitNonInteractive
+  $net = @(PCGitNetworkOptions)
+  $ls = @(Git-Lines @net ls-remote origin "refs/heads/$br")
   $remote = ''; if ($ls.Count) { $remote = ($ls[0] -split '\s+')[0] }
   if ($remote -ne $new) {
     Write-Lines (Join-Path $out 'DIFF_MISMATCH.txt') @('PUSH CHECK FAILED (issue 377)', "GitHub's $br is '$remote'", "the runner's commit is $new")

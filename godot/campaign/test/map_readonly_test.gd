@@ -41,7 +41,7 @@ func check(ok: bool, what: String) -> void:
 
 
 func fresh(seed: int) -> void:
-	C.UID = 1; JSM.rnd_seed(seed); C.META = C.defaultMeta(); C.META["backfilled"] = 1; C.META["wonFix41"] = 1; C.SAVED_RUN = null; C.RUN = null; C.B = null; C.tel_log = []
+	C.UID = 1; C.rng.rnd_seed(seed); C.META = C.defaultMeta(); C.META["backfilled"] = 1; C.META["wonFix41"] = 1; C.SAVED_RUN = null; C.RUN = null; C.B = null; C.tel_log = []
 	C.picked_admiral = "vex"; C.picked_faction = "voidsworn"; C.run_opt = {"alt": false, "cmdAlt": false, "heat": []}
 	C.titleScreen(); C.act("newRunScreen"); C.act("startRun")
 	C.act("pickAspect", C.W["aspOffer"][0]); C.act("closeModal")
@@ -49,7 +49,7 @@ func fresh(seed: int) -> void:
 
 # everything a reader must not touch, as one string
 func snap() -> String:
-	return JSON.stringify([C.RUN, C.SAVED_RUN, C.META]) + "|" + str(JSM.rng_s) + "|" + str(C.UID)
+	return JSON.stringify([C.RUN, C.SAVED_RUN, C.META]) + "|" + str(C.rng.rng_s) + "|" + str(C.UID)
 
 
 func all_nodes() -> Array:

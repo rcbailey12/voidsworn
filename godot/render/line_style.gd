@@ -134,6 +134,7 @@ const SHADER := """
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 uniform float gain = 1.0;
+uniform float cut_overlay_alpha = 1.0;
 uniform float breath = 0.0;
 """ + GLSL + """
 varying vec4 vcol;
@@ -146,7 +147,7 @@ void fragment() {
 	float d = UV.x + vc * 0.5 * ls_core_w(fw);
 	float l = ls_line(d, fw, vg);
 	float sh = mix(1.0, ls_breath(wp, TIME), breath);
-	ALBEDO = vcol.rgb * vcol.a * gain * sh * l;
+	ALBEDO = vcol.rgb * vcol.a * gain * sh * l * cut_overlay_alpha;
 }
 """
 

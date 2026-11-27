@@ -23,7 +23,7 @@ func fresh(admiral := "vex", faction := "voidsworn") -> Campaign:
 	c.fixed_clock = true
 	c.persist_on = false
 	c.META = c.defaultMeta()
-	API.JSM.rnd_seed(2078)
+	c.rng.rnd_seed(2078)
 	c.newRun(admiral, faction, {})
 	return c
 
@@ -112,9 +112,9 @@ func shipyard() -> void:
 	c.shipyardScreen({"type": "shipyard", "stock": {"hulls": ["warden"], "cap": [], "mods": [], "sold": []}})
 	sh["hp"] -= 13
 	var before: Dictionary = c.RUN.duplicate(true)
-	var rng: int = API.JSM.rng_s
+	var rng: int = c.rng.rng_s
 	var repair := c.preview_op("repair", uid)
-	check(c.RUN == before and API.JSM.rng_s == rng, "preview does not write run state or spend RNG")
+	check(c.RUN == before and c.rng.rng_s == rng, "preview does not write run state or spend RNG")
 	check(row(repair, "hull")["delta"] == 13 and row(repair, "hull")["is_better"], "repair previews 13 hull")
 	var money: float = c.RUN["credits"]
 	c.ACT_repair(uid)
@@ -209,7 +209,7 @@ func combat() -> void:
 	var quad := 0 # Avoid a mid-section break draining the remaining pool outside the shot.
 	var res := {"hull": 0, "shield": 0, "hits": 0, "misses": 0, "crits": 0, "sys": null}
 	r.landVolley(enemies[2], gun, target, {"shots": [true, false, true], "quad": quad,
-		"called": null, "res": res, "shBefore": shield_left, "per": func(_rear): return 1000.0, "torp": true})
+		"called": null, "res": res, "shBefore": shield_left, "per": func(_rear, _first_rear): return 1000.0, "torp": true})
 	var report := api.combat_report()
 	var events: Array = report["combat_events"]
 	check(events.size() == before + 2, "only the two landed volley hits are recorded once")

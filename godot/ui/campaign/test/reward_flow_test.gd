@@ -54,7 +54,7 @@ func reload() -> void:
 	await frames()
 
 func fixture() -> void:
-	Campaign.JSM.rnd_seed(1905)
+	C.rng.rnd_seed(1905)
 	C.newRun("vex", "voidsworn")
 	var ship = C.newShip("penitent")
 	ship["name"] = "Quiet Resolve"
@@ -109,7 +109,7 @@ func captain_loss_check() -> void:
 	for unit in C.B["units"].slice(1, 3):
 		unit["dead"] = true
 		unit["hp"] = 0
-	Campaign.JSM.rnd_seed(8)   # the first captain escapes and the second falls
+	C.rng.rnd_seed(8)   # the first captain escapes and the second falls
 	C.finishBattle("win")
 	await frames()
 	var losses: String = "Lost: the Cold Reckoning, the Iron Wake and Octavia Vale."

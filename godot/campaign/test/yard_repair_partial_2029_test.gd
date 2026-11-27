@@ -13,7 +13,7 @@ func _check(ok: bool, what: String) -> void:
 
 func _yard() -> Variant:
 	var C = Campaign.new(); C.load_tables(); C.fixed_clock = true
-	API.JSM.rnd_seed(2029); C.META = C.defaultMeta()
+	C.rng.rnd_seed(2029); C.META = C.defaultMeta()
 	var adm = null
 	for id in C.ADMIRALS.keys():
 		if C.ADMIRALS[id].get("fac") == "voidsworn" and adm == null: adm = id

@@ -66,7 +66,7 @@ func _init() -> void:
 # The save text a seed starts from: the run set up and saved at the fight's stop (as entering the stop saves it).
 func _start_text(s: int) -> Dictionary:
 	var C = _fresh()
-	JSM.rnd_seed(s * 7919); C.META = C.defaultMeta()
+	C.rng.rnd_seed(s * 7919); C.META = C.defaultMeta()
 	var facs := ["voidsworn", "corsair", "ithar", "deathless", "chorus", "hegemony"]
 	var fac: String = facs[s % facs.size()]
 	var adm = null
@@ -145,8 +145,8 @@ func _seed(s: int) -> Dictionary:
 # Plays the seed's fight from its start text; with reload, saves and resumes at random round starts.
 func _play(text: String, reload: bool, s: int) -> Dictionary:
 	lcg = s * 2654435761 % 2147483648
-	JSM.rnd_seed(s * 31337)   # the campaign's random stream at load (the game seeds it at random each launch)
 	var C = _fresh(); api = null
+	C.seed_rng(s * 31337)
 	C.load_save_text(text); C.titleScreen(); C.act("continueRun")
 	if C.pending_battle == null or api == null: return {"fail": "Continue did not start the fight (page %s)" % str(C.page.get("kind"))}
 	var mods = C.B["cfg"].get("storyMods")
@@ -167,7 +167,7 @@ func _play(text: String, reload: bool, s: int) -> Dictionary:
 					if C.page.get("kind") != "title": return {"fail": "Save and quit did not reach the title"}
 					var t2: String = C.save_text()
 					var D = _fresh(); api = null
-					JSM.rnd_seed(_rand(1 << 30))   # a new launch: the stream is restored from the save, not from here
+					D.seed_rng(_rand(1 << 30))   # a new launch: the stream is restored from the save, not from here
 					D.load_save_text(t2); D.titleScreen(); D.act("continueRun")
 					if D.pending_battle == null or api == null: return {"fail": "Continue did not resume round %d (page %s)" % [seen, str(D.page.get("kind"))]}
 					if int(api.R.B["round"]) != seen: return {"fail": "resumed round %d, saved %d" % [int(api.R.B["round"]), seen]}
@@ -192,14 +192,14 @@ func _play(text: String, reload: bool, s: int) -> Dictionary:
 			api.step()
 	if api.phase != "over": return {"fail": "no end after %d steps" % guard}
 	var B = api.R.B
-	var rec := {"round": B["round"], "over": B["over"], "rng_battle": JSM.rng_s, "log": str(B.get("log", [])).md5_text(), "units": []}
+	var rec := {"round": B["round"], "over": B["over"], "rng_battle": api.R.rng.rng_s, "log": str(B.get("log", [])).md5_text(), "units": []}
 	for u in B["units"]:
 		rec["units"].append([u["id"], u["tpl"], u["side"], u["hp"], u["sh"], u["q"], u["r"], u["facing"], C.jt(u.get("dead")), C.jt(u.get("fled")), C.jt(u.get("exited")), u.get("dealt"), u.get("kills")])
 	var raw := str(api.battle_result())
 	var res := raw if raw in ["win", "loss", "retreat"] else "loss"
 	C.finish_battle(res, B)
 	if C.saved_battle != null: return {"fail": "the round save outlived the settled battle"}
-	rec["rng_after"] = JSM.rng_s
+	rec["rng_after"] = C.rng.rng_s
 	if C.RUN != null:
 		var fl := []
 		for sh in C.RUN["fleet"]:

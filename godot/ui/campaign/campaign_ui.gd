@@ -2134,7 +2134,7 @@ func _legacy() -> Control:
 const HELP := [
 	["", "Embers of the Hollow Sun is a hex fleet-tactics roguelite. Lead your ships across three contested sectors toward the Hollow Sun, fighting a sector flagship at the end of each map. Any hull or captain lost in battle stays lost for the rest of the run."],
 	["", "Between runs, check Progression on the title screen: spend renown to unlock hull variants and permanent legacy upgrades, level up admirals to open branch skills and Command evolutions, and raise sync with Lattice cores so they offer rarer protocols (and eventually a starting gift). Finishing your first run unlocks Threat modifiers for extra difficulty and renown."],
-	["Your turn", "Each ship moves, turns, and then fires its ready weapons once per round. Most hulls cannot move after firing (Glasswright ships and the Slip the Net protocol are the exceptions). Forward hexes cost 1 movement; turning 60° costs 1 movement and uses a turn charge (capital ships only turn once per round, so plan headings early). Press Q or E to turn the ghost in place; the turn happens when you commit."],
+	["Your turn", "Each ship moves, turns, and then fires its ready weapons once per round. Only Glasswright ships can move after firing. Forward hexes cost 1 movement; turning 60° costs 1 movement and uses a turn charge (capital ships only turn once per round, so plan headings early). Press Q or E to turn the ghost in place; the turn happens when you commit."],
 	["", "Attitude thrusters keep your formation flexible: ships can sideslip diagonally or reverse one hex without rotating (2 movement each, or a slow hull's entire move). Ships can also pass above or below asteroids, wrecks, and enemy hulls for +1 movement, though they cannot end their move on an occupied hex. Each faction bends one thruster rule (check the Helm readout)."],
 	["", "Click an enemy outside current weapon range to plot the cleanest burn into firing range (the ghost shows the stop); click it again or press Enter to burn and fire on arrival."],
 	["", "Keep moving. Stationary ships take +10 enemy aim, while moving 3+ hexes grants -5 to be hit. Port and starboard flank batteries hit 10% harder after moving 2+ hexes (45% harder for Sunward Crusade)."],
@@ -2567,6 +2567,9 @@ func _modal(md: Dictionary) -> void:
 		"abandon":
 			h2.call("Abandon the current run?"); p.call("Starting over ends your saved run. Your best result so far is kept either way.", BONE2)
 			v.add_child(foot([abtn("Keep it", "closeModal", "", false, false, acts), fin("Abandon and start over", "abandonRun", "", acts)]))
+		"brokenRun":
+			h2.call("This run cannot continue"); p.call("The saved run could not be loaded. You can discard it and start again. Any recoverable profile progress stays.", BONE2)
+			v.add_child(foot([abtn("Keep the save", "closeModal", "", false, false, acts), fin("Discard the broken run", "discardBrokenRun", "", acts)]))
 		"sell":
 			var _s_fac := str(R.get("fac", "")); var _s_nm := str(d["ship"]["name"])
 			h2.call(("Reabsorb " if _s_fac == "chorus" else "Decommission ") + _s_nm + "?")
