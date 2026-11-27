@@ -132,6 +132,9 @@ with its own thrust personality (fx/thrust_profile.gd): Sunward lag and chunky w
 blue-white, Hullbreaker amber overburn with grit, Glasswright prismatic glints, Chorus bioluminescent vent pulses,
 Eclipse violet null ripples. A look only: no rules, arcs, clicks or parity change (7.4). Why: Ryan approved the
 movement stage 2 scope on Nov 21 2026 (issue 1582); "keep them flat" Nov 23 for torpedoes. Set: Ryan (issue 1582).
+On Nov 26 Ryan kept two movement extras (issue 2249): an idle wing with no live target circles its own carrier at the
+wing band, on the effect clock and off under Reduce motion. Its hex, orders and attack dive do not change. A ship that
+shoots down a craft or munition adds short, capped PD-C puffs near the firing ship, with cold sparks and no fire.
 
 ## 8. Battle sound
 

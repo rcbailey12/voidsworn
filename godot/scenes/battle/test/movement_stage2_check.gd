@@ -177,6 +177,83 @@ func _drop(world: Node3D) -> void:
 	fx.queue_free()
 
 
+func _guard_orbit(world: Node3D) -> void:
+	var carrier := _view(world, "Carrier", 3.0, Vector3(45, 0, 10))
+	var wing := SV.new()
+	world.add_child(wing)
+	var hex := Vector3(31, 0, 20)
+	var u := {"id": "guard_fixture", "fac": "hegemony", "cls": "Squadron", "squadron": true}
+	wing.setup(u, hex)
+	wing.set_band(ALT.height(u))
+	wing.guard_carrier = carrier
+	var fx := FX.new()
+	world.add_child(fx)
+	fx.manual = true
+	fx.setup({"quality": "low"})
+	wing.fx_clock = fx
+	var tick := func(real_dt: float) -> void:
+		fx.step(real_dt)
+		wing._process(real_dt)
+	fx.hit_pause(fx.now, 3)
+	tick.call(0.0)
+	tick.call(0.04)
+	check(fx.dt < 0.02 and is_equal_approx(wing._guard_mix, fx.dt * 1.6), "hit pause slows the guard orbit blend-in")
+	for i in 16:
+		tick.call(0.05)
+	var center := Vector3(carrier.position.x, ALT.WING, carrier.position.z)
+	var first: Vector3 = wing.visual_position() - center
+	var period := SV.GUARD_ORBIT_PERIOD
+	var radius := float(carrier.L) * 0.55 + SV.GUARD_ORBIT_CLEARANCE
+	check(period >= 12.0 and period <= 22.0, "the guard orbit takes a slow %.1f effect seconds" % period)
+	check(absf(first.length() - radius) < 0.02 and absf(first.y) < 0.01 and radius > carrier.L * 0.5,
+		"the guard wing clears its carrier at %.2f units on its own altitude band" % radius)
+	for q in range(1, 5):
+		tick.call(period / 4.0)
+		var expect := first.rotated(Vector3.DOWN, TAU * q / 4.0)
+		check((wing.visual_position() - center).distance_to(expect) < 0.02, "guard orbit quarter %d keeps its radius and period" % q)
+	check(wing.position == hex and wing.ring.position.y < 0.0, "orbit leaves the rules hex and footprint on the plane")
+	check(wing.hull.global_position.distance_to(wing.visual_position()) < 0.02, "the drawn wing follows its orbital centre")
+	var line_end: Vector3 = wing.to_global(wing.drop.position + wing.drop.basis.y * 0.5)
+	check(line_end.distance_to(wing.hull.global_position) < 0.02, "the drop-line reaches the orbiting wing, not empty air over its hex")
+	carrier.position += Vector3(4.0, 0.0, -3.0)
+	tick.call(0.0)
+	var held := wing.visual_position()
+	check(held.distance_to(center + first + Vector3(4.0, 0.0, -3.0)) < 0.02, "the orbit follows the carrier, not the launch hex")
+	fx.hit_pause(fx.now, 3)
+	tick.call(0.0)   # the frame that receives the hit starts the pause
+	tick.call(0.04)
+	check(fx.dt < 0.02 and held.distance_to(wing.visual_position()) < radius * 0.02, "hit pause slows the orbit with the FX clock")
+	wing.guard_has_target = true
+	fx.hit_pause(fx.now, 3)
+	tick.call(0.0)
+	var before_exit := wing._guard_mix
+	tick.call(0.04)
+	check(fx.dt < 0.02 and is_equal_approx(wing._guard_mix, before_exit - fx.dt * 2.5), "hit pause slows the guard orbit blend-out")
+	wing.guard_has_target = false
+	tick.call(0.25)
+	held = wing.visual_position()
+	wing.hold_wing_orbit(fx.now + 1.0)
+	tick.call(0.5)
+	check(held.is_equal_approx(wing.visual_position()), "a dive holds the drawn anchor and does not also orbit")
+	wing.guard_has_target = true
+	for i in 30:
+		tick.call(0.05)
+	check(wing.visual_position().is_equal_approx(hex + Vector3.UP * ALT.WING), "a wing with a live target stays on its hex")
+	wing.guard_has_target = false
+	for i in 16:
+		tick.call(0.05)
+	wing.calm = true
+	tick.call(0.05)
+	check(wing.visual_position().is_equal_approx(hex + Vector3.UP * ALT.WING), "Reduce motion turns the orbit off")
+	wing.calm = false
+	carrier.dead = true
+	tick.call(0.05)
+	check(wing.visual_position().is_equal_approx(hex + Vector3.UP * ALT.WING), "a dead carrier cannot take a wing into orbit")
+	wing.queue_free()
+	carrier.queue_free()
+	fx.queue_free()
+
+
 func _dive(world: Node3D) -> void:
 	var fx := FX.new()
 	world.add_child(fx)
@@ -410,6 +487,7 @@ func _run() -> void:
 	SV._manifest = man
 	_bands()
 	_drop(world)
+	_guard_orbit(world)
 	_dive(world)
 	_fable(world)
 	_personalities()

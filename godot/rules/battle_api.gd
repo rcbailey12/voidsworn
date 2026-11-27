@@ -307,6 +307,8 @@ func _i_view() -> Dictionary:
 			ws.append({"i": i, "id": w["id"], "name": w.get("n"), "kind": w["k"], "arc": w["arc"], "range": w["r"], "ready": R.weaponReady(w), "cd": w.get("cdLeft"), "off": w.get("off")})   # get(): B-20 refits lack them
 		us.append({"id": u["id"], "side": u["side"], "tpl": u["tpl"], "name": u["name"], "cls": u.get("cls"), "fac": u["fac"], "size": u["size"], "squadron": R.jt(u.get("isSq")),
 			"captain": u["ship"]["cap"].duplicate(true) if u.get("ship") is Dictionary else null,
+			"wing_parent": str(u["parent"]) if u.get("parent") != null else "",
+			"wing_target": str(u["wingOrder"]["id"]) if u.get("wingOrder") is Dictionary else "",
 			"q": int(u["q"]), "r": int(u["r"]), "facing": int(u["facing"]), "hp": u["hp"], "maxHp": u["maxHp"], "sh": u["sh"].duplicate(), "shMax": u["shMax"], "shp": u.get("shp"),
 			"route": u["route"].duplicate() if u.get("route") is Array else [0, 0, 0, 0], "cov": u["cov"].duplicate() if u.get("cov") is Array else null,   # issue 1446: R246 shield routing for the HUD and the bubble
 			"regenLock": R.jt(u.get("regenLock")), "st": {"acid": R.z0(u["st"].get("acid"))},

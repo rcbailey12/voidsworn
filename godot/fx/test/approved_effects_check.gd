@@ -324,11 +324,13 @@ func _play_events() -> Dictionary:
 # so the check also proves the battle hands the rules' pd count to the volley.
 func _pd_probe(b, mine: String, foe: String) -> String:
 	var e := {"t": "fire", "unit": mine, "target": foe, "kind": "torp", "name": "PD probe", "weapon": 0, "weapon_id": "",
-		"shots": [false, false], "quad": 0, "pd": 2}
+		"shots": [false, false], "quad": 0, "pd": 2, "pd_by_shot": {0: foe, 1: foe}}
 	b._play_fire(e, [])   # not awaited: the rounds are read while they fly
+	var near_ship := false
 	var marked := false
 	var down: Dictionary = {}
 	for i in 1200:
+		near_ship = near_ship or (b.gfx.dstate.get("pd_puff_ends", []) as Array).size() == 3
 		for p in b.gfx.dstate.get("proj", []):
 			if str(p.get("lk", "")) == "torp" and float(p.get("dead_at", INF)) < float(p.get("t1", 0.0)):
 				marked = true
@@ -350,4 +352,5 @@ func _pd_probe(b, mine: String, foe: String) -> String:
 			if n3.global_basis.orthonormalized().get_rotation_quaternion().angle_to(q0) > 0.05:
 				turned = true
 				break
+	_check(near_ship, "issue 2249: battle forwards the firing ship IDs and plays one PD-C cue for the volley")
 	return "marked %s, shot down %s, body turns %s" % [marked, not down.is_empty(), turned]
