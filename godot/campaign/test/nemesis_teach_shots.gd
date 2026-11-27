@@ -71,7 +71,7 @@ func _shot(name: String, needle: String, crop := false) -> void:
 
 func _run() -> void:
 	await _frames(4)
-	BattleAPI.JSM.rnd_seed(4242)
+	C.rng.rnd_seed(4242)
 	C.playtest_default = true
 	C.META = C.migrateMeta(C.defaultMeta())
 	C.META["opts"]["playtestAll"] = true

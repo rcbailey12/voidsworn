@@ -50,7 +50,8 @@ func _run() -> void:
 	root.add_child(battle)
 	while int(battle.V.get("round", 0)) < 5 and battle.errors.is_empty() and not battle.ended:
 		await process_frame
-	var expected := {"x05": ["x08", 1, 0], "x09": ["x06", 3, 2]}
+	# Symmetric deployment and the updated bot change which targets take the two salvos.
+	var expected := {"x05": ["x09", 1, 0], "x09": ["x05", 3, 0]}
 	var on_worker := battle.round4_steps > 0 and battle.round4_steps == battle.round4_worker_steps and battle.round4_sync_commands == 0
 	var reached_round5 := battle.errors.is_empty() and int(battle.V.get("round", 0)) >= 5
 	var ok := on_worker and reached_round5 and battle.salvos == expected and battle.evasive

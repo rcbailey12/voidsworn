@@ -94,14 +94,20 @@ func _run() -> void:
 	var b = BattleScene.instantiate()
 	b.args["sliced-load"] = true
 	b.args["noworld"] = true
+	b.args["nofx"] = true   # this fixture measures hull staging, not the cost of building battle shields
 	b.args["seed"] = 7
 	b.bot = true
 	root.add_child(b)
 	var units: int = (b.api.view()["units"] as Array).size() if b.api != null else -1
 	var t0 := Time.get_ticks_msec()
+	var steps := {}
 	while b.views.size() < units and Time.get_ticks_msec() - t0 < 20000:
 		await process_frame
+		var count: Label = b.hud.load_count
+		if is_instance_valid(count) and count.text.begins_with("SHIPS READY "):
+			steps[count.text] = true
 	_check(units > 0 and b.views.size() == units, "sliced build made every ship (%d of %d)" % [b.views.size(), units])
+	_check(steps.size() > 1, "C34 the cover reports more than one ship count while the build yields across frames")
 	# the same fight with every hull a kit ship (a stand-in scene): threaded load, worker instances, setup in two steps
 	var codes := {}
 	var hulls_n := 0
@@ -137,6 +143,7 @@ func _run() -> void:
 	var k = BattleScene.instantiate()
 	k.args["sliced-load"] = true
 	k.args["noworld"] = true
+	k.args["nofx"] = true
 	k.args["seed"] = 7
 	k.bot = true
 	root.add_child(k)

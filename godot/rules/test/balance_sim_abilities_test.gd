@@ -37,6 +37,9 @@ func _initialize() -> void:
 	if rows_checked != CASES.size():
 		_fail("Expected %d campaign report rows, got %d." % [CASES.size(), rows_checked])
 		return
+	if not _ability_fixtures():
+		return
+	print("PASS: every ship ability on both sides and SIM_BUILD capstone mastery")
 	print("PASS: balance sim trial keys and player abilities in campaign, campaignrewards and boss cells")
 	quit()
 
@@ -81,3 +84,60 @@ func _print_campaign(player_faction: String, cell: Array, count: float, totals: 
 		return
 	rows_checked += 1
 	super._print_campaign(player_faction, cell, count, totals, carried)
+
+# Use real hull kits and the same policy that drives the sim, with the minimum legal
+# prerequisites staged for abilities that a short seeded campaign may never need.
+func _ability_fixtures() -> bool:
+	var ship_for := {}
+	for tpl in battle.HULLS:
+		var ab: Variant = battle.HULLS[tpl].get("ab")
+		if ab != null and not ship_for.has(ab):
+			ship_for[ab] = tpl
+	for ab in battle.ABILITIES:
+		if not ship_for.has(ab):
+			_fail("No hull fixture for " + ab)
+			return false
+		var tpl: String = ship_for[ab]
+		for side in ["player", "enemy"]:
+			var mine: String = tpl if side == "player" else "warden"
+			var other: String = tpl if side == "enemy" else "warden"
+			var fac: String = battle.HULLS[mine].fac
+			_new_run("vex", fac, 1, 0, 9)
+			campaign.RUN.fleet = [battle.newShip(mine, false)]
+			campaign.RUN.flagUid = campaign.RUN.fleet[0].uid
+			battle.startBattle({"seed": 7, "kind": "battle", "fac": battle.HULLS[other].fac,
+				"col": 1, "obj": "rout", "dep": "line", "shape": "open", "map": "open", "enemies": [{"tpl": other}]})
+			battle.matrix = true
+			battle.abilities.clear()
+			battle.B.terrain.clear()
+			var p: Dictionary = battle.caps("player")[0]; var e: Dictionary = battle.caps("enemy")[0]
+			p.merge({"q": 8, "r": 8, "facing": 0}, true)
+			e.merge({"q": 11, "r": 8, "facing": 3}, true)
+			var u := p if side == "player" else e
+			u.hp = u.maxHp * 0.5
+			u.shp = u.shMax * 0.5; battle.syncShields(u)
+			for w in u.weapons:
+				if w.k == "torp": w.cdLeft = 2
+			if ab == "launch":
+				for wing in battle.squadronsOf(u): wing.dead = true
+				battle.startSideTurn(side)
+			elif ab == "ionpulse" and side == "player":
+				e.q = 13
+				for w in p.weapons: w.r = mini(w.r, 4)
+				if battle.canAbility(p):
+					_fail("Ion pulse must begin out of range")
+					return false
+				bot.bot_unit(p)
+			else:
+				bot._use_ability(u, false)
+				bot._use_ability(u, true)
+			if battle.abilities.get(side + ":" + ab, 0) != 1:
+				_fail("%s did not use %s on %s" % [tpl, ab, side])
+				return false
+	battle.matrix = false
+	_new_run("vex", "voidsworn", 1, 0, 9)
+	build = {"mastery": 3, "lineage": {"id": "vex", "capstone": 0, "picks": []}}
+	if not _apply_build() or battle.capMastery() != 3:
+		_fail("SIM_BUILD mastery did not reach the battle capstone")
+		return false
+	return true

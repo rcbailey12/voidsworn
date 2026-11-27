@@ -423,7 +423,7 @@ func _issue_1448(sfx_node: Node, real_music: Node) -> void:
 	var ui = CampaignUI.new()
 	root.add_child(ui); ui.bind(C); ui.use_3d_map = false
 	await process_frame
-	JSM.rnd_seed(868)
+	C.rng.rnd_seed(868)
 	var adm := ""
 	for id in C.ADMIRALS:
 		if str(C.ADMIRALS[id].get("fac", "")) == "voidsworn": adm = str(id); break
