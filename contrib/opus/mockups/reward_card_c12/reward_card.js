@@ -12,7 +12,7 @@ const wrecks = [
     refit: "Battery loaders", benefit: "Battery weapons fire +1 shot", credits: 19,
   },
   {
-    name: "Cordon cruiser", hull: "Cruiser", sprite: "H9_23",
+    name: "Vanguard cruiser", hull: "Cruiser", sprite: "H9_23",
     cause: "Blown apart. No refit survived.",
     credits: 46,
   },
