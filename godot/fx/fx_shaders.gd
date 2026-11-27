@@ -8,7 +8,7 @@ extends RefCounted
 #   a0 = CUSTOM0 (pos, tStart)   a1 = CUSTOM1 (vel, life)   a2 = CUSTOM2 (colour, intensity)
 #   a3 = CUSTOM3 (size0, size1, kind, seed)   a4 = (UV, UV2) = (period, accel, drag, spin)
 # period 0 = once; accel = acceleration along the velocity direction (u/s2, torpedo boost, rockets)
-# Shared kind IDs live in fx.gd. fx_kind_registry_check.gd checks the selectors below against that registry.
+# Shared kind IDs live in fx.gd. The headless registry check checks the selectors against them.
 # Brightness: every effect colour is multiplied by the global fx_gain (look.gd sets it per tonemapper; 0.5556 matches
 # the A3 proof under Godot's ACES, which applies an exposure bias of 1.8 that Babylon's curve does not).
 
@@ -349,6 +349,9 @@ void process() {
 """
 
 # Camera-facing sprites. See SpriteKind in fx.gd.
+const TICK_EMBER := 38
+const TICK_DROPLET := 39
+const VENT_JET := 40
 # The flash budget and SPRITE share these defaults for the bright kinds.
 const FLASH_SPRITE_FLOORS := {0: 14.0, 2: 12.0, 12: 10.0, 13: 12.0, 24: 56.0}
 
@@ -815,7 +818,7 @@ void fragment() {
 """
 
 # Camera-facing textured heads and tails. a3 = (length or blur seconds, width, drag, kind).
-# See StreakKind in fx.gd. NULL_SLUG uses its own shader, leaving its old branch below unused at runtime.
+# See StreakKind in fx.gd. NULL_SLUG uses its own shader, leaving its old branch here unused.
 const STREAK_VERTEX := """
 uniform float gate = 1.0;
 uniform sampler2D kit_tail : filter_linear, repeat_disable;
@@ -1054,6 +1057,9 @@ void fragment() {
 
 # Oriented rings. a1 = (normal, life); a3 = (size0, size1, kind, seed); a4 = (period, speed, drag, 0).
 # See RingKind in fx.gd.
+const RING_DEATH_FRONT := 5
+const RING_RIFT_ARCH := 11
+const RING_RIFT_SCAN := 12
 const RING := """
 shader_type spatial;
 render_mode unshaded, blend_premul_alpha, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
@@ -1222,7 +1228,12 @@ const RING_HARMONIC := 6   # crystalline pulse (5 reserved for the death front)
 # Ribbons along a straight line: plumes, beams, arcs. VERTEX = (s along 0..1, side -0.5..0.5).
 # a0 = (origin, kind); a1 = (dir, length); a2 = (colour, intensity); a3 = (width0, width1, seed, 0);
 # a4 = (tStart, life, period, 0)
-# See RibbonKind in fx.gd.
+# See RibbonKind in fx.gd. The weapon beams share a separate fragment recipe.
+const RIB_LANCE := 2
+const RIB_ION := 5
+const RIB_PULSAR := 7
+const RIB_NEEDLE := 8
+const RIB_NULL_LANCE := 11
 const RIBBON := """
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
@@ -2366,6 +2377,7 @@ void fragment() {
 # or deck, 0.75 conduit, 0.85 bone, 1 cut edge), COLOR.g a shade. Lit by the scene (the hull shadows it) plus a fire
 # point inside that the scene's lights cannot give; deeper is darker. Fires settle to a smoulder; a lance cut glows
 # white, then red, then goes black; acid keeps a faint green working glow.
+# HOLE and MARK share BreachStyle in fx.gd.
 const HOLE := """
 shader_type spatial;
 render_mode cull_disabled, fog_disabled;
@@ -3534,6 +3546,7 @@ static func tear_strain_code() -> String:
 
 # Screen-space distortion: shockwave rings and heat haze bend the picture behind them (max only).
 # Per quad: a0 = (pos, tStart), a1 = (normal, life), a3 = (size0, size1, kind, strength). See DistortKind in fx.gd.
+const DISTORT_BEAM := 2
 const DISTORT := """
 shader_type spatial;
 render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;

@@ -78,13 +78,14 @@ effect: a weapon hit, a shield response, a trail, a death.
 
 Pick kind IDs from the [registry in fx.gd](../../godot/fx/fx.gd) before adding an emitter or changing a shader branch
 (issue 2176). SPRITE, STREAK, RING, RIBBON, DISTORT and BREACH each have their own number space. Reuse an existing name
-only for the same effect. For a new effect, add a name and an unused number there first. Keep shipped IDs, legacy gaps
-and reservations for other PRs intact. Use the named ID at new call sites, and keep the shader's vertex and fragment
-tests in step with it. A reservation alone does not turn on an effect.
+only for the same effect. Add new names and unused IDs there first. Keep shipped IDs and reservations for other PRs
+intact. Use the registry name at new call sites or alias that entry directly. Keep the matching shader selectors in
+step. A reservation alone does not turn on an effect.
 
-When adding a BREACH style, keep the matching `S_*` constant in `fx_breach.gd` in step too. The headless
-`fx_kind_registry_check.gd` in `godot_checks.txt` rejects duplicate numbers within a family, unregistered shader
-comparisons, and drift in those breach constants.
+The legacy GDScript constants, rift shape lookup and BREACH `S_*` constants still serve their existing callers. The
+registry check compares them with `fx.gd` and rejects competing named emitters and shader dispatch arms. Using the same
+ID in both vertex and fragment code is fine. Run `godot --headless --path godot --script res://fx/test/fx_kind_registry_check.gd`
+from the repo root. The check also runs from `godot/tools/ci/godot_checks.txt`.
 
 ## 4. The checks that prove it
 
