@@ -189,6 +189,7 @@ headless|fx/test/close_action_moments_check.gd|-|-|issues 1524, 1461 and 2039: i
 headless|fx/test/broadside_mount_check.gd|-|-|issue 1117: every muzzle tier checks fixed gun bearing and turret reach, a broadside leaves from the facing flank, and missing muzzles use plating or skip the effect
 headless|fx/test/fx_smoke.gd|-|-|every weapon look, the damage ladder, shield breaks and every death cause on box ships
 headless|fx/test/fx_correctness_1933_check.gd|-|-|issue 1933: early brownout and wear on battle-prepared hulls, one shield-blocked ram, shader patch text, equal-time callbacks and boarding on the manual clock
+headless|fx/test/fx_kind_registry_check.gd|-|-|issue 2176: shared IDs, named emitters and competing shader arms, with collision fixtures
 headless|fx/test/pixel_scale_check.gd|-|-|issues 1968 and 2047: layered beam details, trail floors, star and dust sizes and well chroma retain their 1080-line scales at 2160p
 headless|fx/test/fx_attachments_1965_check.gd|-|-|issue 1965: hinged doors and rotating turrets keep their materials, the shield follows the hull in the same frame, and delayed wreck debris keeps its faction rim after teardown
 headless|fx/test/munition_body_check.gd|-|-|issue 1379 (R362): torpedo and rocket bodies come from the faction part kits with the hull finish, keep the casing frame; no-file factions and the star torpedo keep their old look

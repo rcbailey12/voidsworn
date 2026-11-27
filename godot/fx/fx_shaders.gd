@@ -8,6 +8,7 @@ extends RefCounted
 #   a0 = CUSTOM0 (pos, tStart)   a1 = CUSTOM1 (vel, life)   a2 = CUSTOM2 (colour, intensity)
 #   a3 = CUSTOM3 (size0, size1, kind, seed)   a4 = (UV, UV2) = (period, accel, drag, spin)
 # period 0 = once; accel = acceleration along the velocity direction (u/s2, torpedo boost, rockets)
+# Shared kind IDs live in fx.gd. The headless registry check checks the selectors against them.
 # Brightness: every effect colour is multiplied by the global fx_gain (look.gd sets it per tonemapper; 0.5556 matches
 # the A3 proof under Godot's ACES, which applies an exposure bias of 1.8 that Babylon's curve does not).
 
@@ -347,15 +348,7 @@ void process() {
 }
 """
 
-# Sprites (camera-facing). kinds:
-#  0 flash   1 flame   2 fireball core   3 smoke   4 engine core   5 squib   7 vent gas   8 soot   11 sputtering core
-#  12 beam charge   13 beam impact flare   14 plasma bolt   15 bio glob   16 prism glint   17 star ball
-#  18 soft lift (reduce-flashing pop: a gentle glow, no peak)   19 ember   20 acid fume   21 heat glow (cooling metal)
-#  22 coil glow (gauss charge, stepped)   23 craft (a tiny strike craft silhouette with an engine dot)
-#  24 death core (counted, short plateau)   25 death fire (steady ribbon/edge flame)
-#  26 faction-coloured plasma fire (Eclipse damage, steady)   27 directional hit gas (no emission)
-#  40 directional hull-rupture vent jet (VENT_JET: tapered hot root + sheared gas cone)
-#  41 legacy Nova Cannon shell (SPR_NOVA_LEGACY)
+# Camera-facing sprites. See SpriteKind in fx.gd.
 const TICK_EMBER := 38
 const TICK_DROPLET := 39
 const VENT_JET := 40
@@ -825,10 +818,7 @@ void fragment() {
 """
 
 # Camera-facing textured heads and tails. a3 = (length or blur seconds, width, drag, kind).
-# kinds: 0 shell/tracer   3 flame tongue   4 textured las dart
-# Kind 5 now routes to NULL_SLUG; its old vertex branch below is unused there.
-#        6 droplet (bio, falls off a glob)   8 shared analytic spark (a4.y selects crystal)
-#        9 shell   10 energy dart   11 crystal dart   12 scrap
+# See StreakKind in fx.gd. NULL_SLUG uses its own shader, leaving its old branch here unused.
 const STREAK_VERTEX := """
 uniform float gate = 1.0;
 uniform sampler2D kit_tail : filter_linear, repeat_disable;
@@ -1066,8 +1056,7 @@ void fragment() {
 """
 
 # Oriented rings. a1 = (normal, life); a3 = (size0, size1, kind, seed); a4 = (period, speed, drag, 0).
-# kinds: 0 smoke ring (alpha)   1 shockwave   2 soft pop ring (reduce-flashing replacement)   3 thin pale ring (gauss
-#        muzzle shock, sonic boom)   4 hex-cell ring (Hegemony shield shatter)   5 soft death front (camera-facing)
+# See RingKind in fx.gd.
 const RING_DEATH_FRONT := 5
 const RING_RIFT_ARCH := 11
 const RING_RIFT_SCAN := 12
@@ -1239,7 +1228,7 @@ const RING_HARMONIC := 6   # crystalline pulse (5 reserved for the death front)
 # Ribbons along a straight line: plumes, beams, arcs. VERTEX = (s along 0..1, side -0.5..0.5).
 # a0 = (origin, kind); a1 = (dir, length); a2 = (colour, intensity); a3 = (width0, width1, seed, 0);
 # a4 = (tStart, life, period, 0)
-# Kinds 0/1/3/6/9 are the legacy plume, trail, spark and lash. The weapon beams share a separate fragment recipe.
+# See RibbonKind in fx.gd. The weapon beams share a separate fragment recipe.
 const RIB_LANCE := 2
 const RIB_ION := 5
 const RIB_PULSAR := 7
@@ -2388,6 +2377,7 @@ void fragment() {
 # or deck, 0.75 conduit, 0.85 bone, 1 cut edge), COLOR.g a shade. Lit by the scene (the hull shadows it) plus a fire
 # point inside that the scene's lights cannot give; deeper is darker. Fires settle to a smoulder; a lance cut glows
 # white, then red, then goes black; acid keeps a faint green working glow.
+# HOLE and MARK share BreachStyle in fx.gd.
 const HOLE := """
 shader_type spatial;
 render_mode cull_disabled, fog_disabled;
@@ -3555,7 +3545,7 @@ static func tear_strain_code() -> String:
 
 
 # Screen-space distortion: shockwave rings and heat haze bend the picture behind them (max only).
-# Per quad: a0 = (pos, tStart), a1 = (normal, life), a3 = (size0, size1, kind, strength): 0 ring, 1 haze, 2 beam lens.
+# Per quad: a0 = (pos, tStart), a1 = (normal, life), a3 = (size0, size1, kind, strength). See DistortKind in fx.gd.
 const DISTORT_BEAM := 2
 const DISTORT := """
 shader_type spatial;

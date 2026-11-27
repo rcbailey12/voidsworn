@@ -74,6 +74,20 @@ effect: a weapon hit, a shield response, a trail, a death.
 6. Make the before and after strip, camera 170 first. That strip is the one image for Ryan.
 7. Write what changed into this playbook if it taught anything (a new trap, a new moment).
 
+### Shared effect kind IDs
+
+Pick kind IDs from the [registry in fx.gd](../../godot/fx/fx.gd) before adding an emitter or changing a shader branch
+(issue 2176). SPRITE, STREAK, RING, RIBBON, DISTORT and BREACH each have their own number space. Reuse an existing name
+only for the same effect. Add new names and unused IDs there first. Keep shipped IDs and reservations for other PRs
+intact. Use the registry name at new call sites or alias that entry directly. Keep the matching shader selectors in
+step. A reservation alone does not turn on an effect.
+
+The legacy GDScript constants, rift shape lookup and BREACH `S_*` constants still serve their existing callers. The
+registry check compares named kind constants across `godot/fx/*.gd` with `fx.gd`, including unprefixed names in emitter
+kind slots. It also rejects overlapping shader dispatch arms and unregistered IDs inside dispatch ranges. Using the
+same kind in vertex and fragment code is fine. Run `godot --headless --path godot --script res://fx/test/fx_kind_registry_check.gd`
+from the repo root. The check also runs from `godot/tools/ci/godot_checks.txt`.
+
 ## 4. The checks that prove it
 
 - The bench strip at camera 170 shows the effect, with its measured size and time beside the table's row. The row is a

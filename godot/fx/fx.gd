@@ -19,6 +19,130 @@ const EVENT_PATHS := preload("res://fx/fx_event_paths.gd")
 const DAMAGE_PLUME := preload("res://fx/fx_damage_plume.gd")
 const SHIP_VIEW := preload("res://render/ship_view.gd")
 
+# Shared effect kind registry (issue 2176). Numbers are unique within each family, not across families.
+# These IDs are packed into particle or mesh data. Keep shipped assignments stable and use named IDs in new emitters.
+# PR reservations do not add a shader branch or turn on an effect. The headless registry check reads the shader
+# selectors and legacy emitter constants against these assignments.
+enum SpriteKind {
+	FLASH = 0,
+	FLAME = 1,
+	FIREBALL_CORE = 2,
+	SMOKE = 3,
+	ENGINE_CORE = 4,
+	SQUIB = 5,
+	# No shipped sprite kind uses 6, 9 or 10.
+	VENT_GAS = 7,
+	SOOT = 8,
+	SPUTTER_CORE = 11,
+	BEAM_CHARGE = 12,
+	BEAM_IMPACT = 13,
+	PLASMA_BOLT = 14,
+	BIO_GLOB = 15,
+	PRISM_GLINT = 16,
+	STAR_BALL = 17,
+	SOFT_LIFT = 18,
+	EMBER = 19,
+	ACID_FUME = 20, # Also the existing organic mist mask.
+	HEAT_GLOW = 21,
+	COIL_GLOW = 22,
+	CRAFT = 23,
+	DEATH_CORE = 24,
+	DEATH_FIRE = 25,
+	PLASMA_FIRE = 26, # Existing faction-coloured fire, including Eclipse damage.
+	HIT_GAS = 27,
+	# 28 is unused on main. The old palette ember reservation did not ship.
+	BIO_CONTACT_GLOB = 29, # Reserved for PR 2021 (#1693).
+	BOLT_PLASMA = 30, # PR 2133
+	BOLT_BIO = 31,
+	BOLT_BOMB = 32,
+	MUZZLE_BALLISTIC = 33,
+	MUZZLE_ENERGY = 34,
+	MUZZLE_CRYSTAL = 35,
+	MUZZLE_BIO = 36,
+	ROCKET_SMOKE = 37,
+	TICK_EMBER = 38, # PR 2132
+	TICK_DROPLET = 39,
+	VENT_JET = 40, # Directional hull rupture (PR 2084).
+	NOVA_LEGACY = 41, # Legacy Nova Cannon shell (PR 2069).
+	# No shipped sprite kind or reservation uses 42 through 44.
+}
+
+enum StreakKind {
+	SHELL = 0,
+	SPARK = 1, # Legacy emitter ID, routed to SPARK_KIND.
+	# Keep legacy gap 2 free.
+	FLAME_TONGUE = 3,
+	LAS_DART = 4,
+	NULL_SLUG = 5, # Own pool and shader.
+	BIO_DROPLET = 6,
+	MOLTEN_DRIP = 7, # Legacy emitter ID, routed to SPARK_KIND.
+	SPARK_KIND = 8, # Shared spark pool (PR 2049), also used by hull hits.
+	BOLT_SHELL = 9, # PR 2133
+	BOLT_ENERGY = 10,
+	BOLT_CRYSTAL = 11,
+	BOLT_SCRAP = 12,
+}
+
+enum RingKind {
+	SMOKE = 0,
+	SHOCKWAVE = 1,
+	SOFT_POP = 2,
+	THIN_PALE = 3,
+	HEX_CELL = 4,
+	DEATH_FRONT = 5, # PR 2128
+	HARMONIC = 6, # PR 2136
+	RIFT_VENT = 7,
+	RIFT_BLOOM = 8,
+	RIFT_FACET = 9,
+	RIFT_FOLD = 10,
+	RIFT_ARCH = 11, # PR 2069
+	RIFT_SCAN = 12,
+}
+
+enum RibbonKind {
+	PLUME = 0,
+	TRAIL = 1,
+	LANCE = 2,
+	SPUTTER_PLUME = 3,
+	# Keep legacy gap 4 free.
+	ION = 5,
+	DOOM_LIGHTNING = 6,
+	PULSAR = 7,
+	NEEDLE = 8,
+	TENDRIL = 9,
+	ECLIPSE_ARC = 10, # Own pool and shader.
+	NULL_LANCE = 11, # Already shipped. PR 2136 extends it.
+}
+
+enum DistortKind {
+	RING = 0,
+	HAZE = 1,
+	BEAM = 2, # PR 2136
+}
+
+# Shared HOLE and MARK surface styles, not the mesh-cut kinds (K_*) or the faction wound modes.
+enum BreachStyle {
+	BREACH = 0,
+	BURN = 1,
+	SHELL = 2,
+	PLASMA = 3,
+	GAUSS_IN = 4,
+	GAUSS_OUT = 5,
+	BLAST = 6,
+	FLAK = 7,
+	ACID = 8,
+	ION = 9,
+	RAM = 10,
+	HATCH = 11,
+	DENT = 12,
+	SCORCH = 13,
+	PATCH = 14,
+	FISSURE = 15,
+	PRISM = 16,
+	STAR = 17,
+	NLANCE = 18, # PR 2136 also uses this style for its V2-off fallback.
+}
+
 signal torpedo_shot_down(pos: Vector3)
 
 # Faction colours and styles come from data (fx/faction_looks.json via fx/faction_look.gd; API.md 15), so a faction's
