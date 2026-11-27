@@ -759,6 +759,7 @@ func _begin(a) -> void:
 	_join_think()
 	retiring = false
 	opening = false
+	relay_glided = false
 	_skipped_camera_kinds.clear()
 	_shot_cut_timer = null
 	_cine_release()
@@ -999,6 +1000,8 @@ func _begin(a) -> void:
 		# on your line with the enemy beyond it
 		board.fills.visible = false
 		board.rings.visible = false
+		if board.relay_label != null:
+			board.relay_label.visible = false   # no board marks behind the menu
 		cam.reset_view()
 		cam.t = cam.home
 		cam.r = clampf(cam.home_r * 0.95, 120.0, 210.0)
@@ -1025,7 +1028,10 @@ func _begin(a) -> void:
 # the clear part of the screen: right of the fleet list, left of the info panel, under the top bar, above the card
 const OPEN_FRAME := [0.16, 0.13, 0.80, 0.80]
 const OPEN_HOLD := 1.75
+const RELAY_GLIDE := 1.2      # Council item 23: the one glide to the relay in a Hold battle's opening beat
+const RELAY_HOLD := 1.0       # then it rests on the relay this long before the hand-over glide
 var opening := false
+var relay_glided := false     # the trace: this battle's opening glided to the relay
 var opening_framed := false   # every ship and objective hex fitted in the clear part of the screen (for the trace)
 
 
@@ -1038,6 +1044,9 @@ func _opening_points() -> Array:
 	for k in V.get("terrain", {}):
 		if str(V["terrain"][k]) == "station":
 			keys.append(k)
+	var rh = _relay_hex()
+	if rh != null:
+		keys.append(board.key(rh.x, rh.y))   # Council item 23: the relay is an objective hex too
 	for k in keys:
 		var qr: PackedStringArray = str(k).split(",")
 		if qr.size() == 2:
@@ -1079,6 +1088,17 @@ func _start_opening() -> void:
 		await get_tree().process_frame
 		if _stale(g):
 			return
+	# Council item 23 (issue 1403): a Hold battle glides once to the relay, still inside the opening beat (a key or a click
+	# ends it as before), then on to the ship that is up
+	var rh = _relay_hex()
+	if opening and rh != null and not quitting and is_inside_tree() and is_instance_valid(cam):
+		relay_glided = true
+		cam.glide(board.hex_world(rh.x, rh.y), RELAY_GLIDE, cam.home_r)
+		tm = get_tree().create_timer(RELAY_GLIDE + RELAY_HOLD)
+		while opening and not quitting and is_inside_tree() and tm.time_left > 0.0:
+			await get_tree().process_frame
+			if _stale(g):
+				return
 	_end_opening()
 
 
@@ -4948,6 +4968,29 @@ func _well_line(q: int, r: int) -> String:
 	return ""
 
 
+# Council item 23 (issue 1403): the Hold objective's rule in one sentence, for the hover on the relay hex and the six hexes
+# around it (the rules count a ship within 1 hex, objectiveTick), and for the map key. Fighters never count.
+const RELAY_RULE := "Start a round with a ship on the relay or next to it and no enemy ship there to score 1 (fighters do not count); the first side to 3 wins."
+const RELAY_COL := "#ffc759"   # board.gd RELAY_LABEL_COL, the relay hex's gold
+
+
+func _relay_hex():
+	var o = V.get("obj")
+	if o is Dictionary and str(o.get("type", "")) == "hold" and o.get("hex") is Dictionary:
+		return Vector2i(int(o["hex"]["q"]), int(o["hex"]["r"]))
+	return null
+
+
+# "" off the relay and its ring, or on a board without one
+func _relay_line(q: int, r: int) -> String:
+	var h = _relay_hex()
+	if h == null or _hex_d(q, r, h.x, h.y) > 1:
+		return ""
+	var o: Dictionary = V["obj"]
+	return "[b][color=%s]%s[/color][/b] [color=#a7b09d](you %d/3, them %d/3)[/color]\n%s" % [RELAY_COL,
+		"Relay" if Vector2i(q, r) == h else "Next to the relay", int(o.get("score", 0)), int(o.get("escore", 0)), RELAY_RULE]
+
+
 func _unit_at(q: int, r: int) -> Dictionary:
 	for u in V.get("units", []):
 		if not u["dead"] and int(u["q"]) == q and int(u["r"]) == r:
@@ -5272,7 +5315,7 @@ func _next_ship(how := "tab") -> void:
 	if nid == sel:
 		hud.toast("No other ship is ready this round.")
 		return
-	_tip_retire("fired", "next_ship")
+	_tip_retire_seen("fired", "next_ship")
 	select(nid, how)
 	up_idx = _fleet_index(nid)
 	handed_t = Time.get_ticks_msec() / 1000.0
@@ -5312,7 +5355,7 @@ func _end_ship(how: String) -> void:
 		return
 	var active := _active_id()
 	var id := sel
-	_tip_retire("fired", "end_ship")
+	_tip_retire_seen("fired", "end_ship")
 	if _classic():
 		_cmd(func(): api.end_turn(); return true)
 	elif active == "" and sel != "" and _usable(_sel_unit()):
@@ -5800,7 +5843,7 @@ func _after_batches() -> void:
 		if lu.is_empty() or lu.get("dead", false):
 			plog.close("died")
 		elif lu.get("activated", false):
-			_tip_retire("fired", "activation_complete")
+			_tip_retire_seen("fired", "activation_complete")
 			plog.close("rules")
 	if target != "" and (not VU.has(target) or VU[target]["dead"]):
 		target = ""
@@ -6059,8 +6102,20 @@ func _tip() -> String:
 		var wl := _well_line(hover.x, hover.y)
 		if wl != "":
 			t += "\n" + wl
+		var rl := _relay_line(hover.x, hover.y)
+		if rl != "":
+			t += "\n" + rl
 		t += "\n[color=#7c8674]Q/E change the facing. %s[/color]" % ("Click again or Enter to go. Esc cancels." if hk == plan_k else "Click to plan the move (nothing moves yet).")
 		return t
+	var rest := _hex_tip(hk, s)
+	var relay := _relay_line(hover.x, hover.y)
+	if relay != "":
+		return relay + ("\n" + rest if rest != "" else "")
+	return rest
+
+
+# a hex off the move range: its objective zone, its terrain, or why the selected ship cannot enter it
+func _hex_tip(hk: String, s: Dictionary) -> String:
 	if board.zone_of.has(hk):
 		var zi := {"exit": ["Exit", "A ship that ends its move here jumps clear of the battle."], "texit": ["Transport exit", "An enemy transport that reaches this edge gets through."],
 			"guard": ["Station perimeter", "Every enemy ship this close to the station at the start of a round knocks out 1 integrity."]}.get(board.zone_of[hk], ["", ""])
@@ -6092,6 +6147,8 @@ func _legend() -> void:
 				"texit": ["Transport exit", "#e07a70", "An enemy transport that reaches this edge gets through."],
 				"guard": ["Station perimeter", "#e07a70", "Every enemy ship this close to the station at the start of a round knocks out 1 integrity."]}[z]
 			rows.append(zi)
+	if _relay_hex() != null:
+		rows.append(["Relay (gold hex)", RELAY_COL, RELAY_RULE])   # Council item 23 (issue 1403)
 	var blockers: Array = []
 	var block_col := ""
 	for k in TI.keys():
@@ -7713,6 +7770,14 @@ func _tip_retire(id: String, why: String) -> void:
 	if tip_pending == id: tip_pending = ""
 	_tip_log("retire", id, why)
 	_save_opts()
+
+
+# Council item 18 (issue 1403): an action card the player has not seen yet is not retired by the action it teaches. "Taking
+# turns" is earned by the first shot and shows on the next hand-over, so End ship, Tab or a ship ending itself in between
+# used to retire it unseen. It retires only once it is on screen or was dismissed in this battle.
+func _tip_retire_seen(id: String, why: String) -> void:
+	if tip_current == id or tip_dismissed.has(id):
+		_tip_retire(id, why)
 
 
 func _tip_dismiss(why: String) -> void:
