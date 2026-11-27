@@ -3580,7 +3580,7 @@ func _standalone_hit_impact(h: Dictionary, breaking: bool) -> void:
 		_flash(p + Vector3(0, 1.5, 0), 6.0 + sv.L * 0.3, FLOOK.of(fac).damage_glow, 0.3)
 	if not hull_hit and float(h["shield"]) > 0.0:
 		sfx.shield(p, false, fac)
-	elif hull_hit or bool(h["crit"]):
+	elif hull_hit:
 		sfx.hit(p, bool(h["crit"]))
 
 

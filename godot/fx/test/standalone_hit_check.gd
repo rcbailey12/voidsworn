@@ -24,12 +24,15 @@ class BattleFixture extends "res://scenes/battle/battle.gd":
 	func _tip_completed(_e: Dictionary) -> void:
 		pass
 
-class QuietSfx extends Node:
-	func hit(_p = null, _heavy := false) -> void:
-		pass
+class RecordingSfx extends Node:
+	var hull_hits: Array[bool] = []
+	var shield_hits: Array = []
 
-	func shield(_p = null, _big := false, _fac := "") -> void:
-		pass
+	func hit(_p = null, heavy := false) -> void:
+		hull_hits.append(heavy)
+
+	func shield(_p = null, big := false, fac := "") -> void:
+		shield_hits.append([big, fac])
 
 
 func _init() -> void:
@@ -54,8 +57,9 @@ func _check_faction(faction: String) -> void:
 	var battle := BattleFixture.new()
 	root.add_child(battle)
 	battle.user_speed = 0.01
-	battle.sfx = QuietSfx.new()
-	battle.add_child(battle.sfx)
+	var sfx := RecordingSfx.new()
+	battle.sfx = sfx
+	battle.add_child(sfx)
 	var fx := FX.new()
 	battle.gfx = fx
 	battle.add_child(fx)
@@ -86,6 +90,7 @@ func _check_faction(faction: String) -> void:
 	_check(battle.generic_pops == 0 and fx.get_node_or_null("fx_staged_flash") == null and ship._marks.is_empty(),
 		faction + " shield block makes no hull pop")
 	_check(ship._stutter_until < fx.now and ship._dip_peak == 0.0, faction + " shield blocks crit and ion reactions")
+	_check(sfx.shield_hits == [[false, faction]] and sfx.hull_hits.is_empty(), faction + " shield block plays only the shield cue")
 
 	await battle._play_batch({"events": [hit, {"t": "shield_down", "unit": "target", "quad": 1}], "view": {}})
 	fx.step(0.02)
@@ -110,6 +115,8 @@ func _check_faction(faction: String) -> void:
 		var actual: Vector3 = mat.get_shader_parameter("impact_tint")
 		_check(actual.is_equal_approx(Vector3(tint.r, tint.g, tint.b)), faction + " hull flash carries its own tint")
 	_check(battle.disp["target"]["hp"] == 35.0 and battle.music_hits == 3, faction + " hull damage and hit count still apply")
+	var expected_shield_cues := [[false, faction], [false, faction], [true, faction]]
+	_check(sfx.shield_hits == expected_shield_cues and sfx.hull_hits == [false], faction + " shield breaks and hull hits keep their cues")
 
 	var marks_before: int = ship._marks.size()
 	var notes_before := reactions.size()
@@ -122,6 +129,7 @@ func _check_faction(faction: String) -> void:
 	_check(ship._marks.size() == marks_before, faction + " zero-damage crit leaves no hull mark")
 	_check(reactions.size() == notes_before and ship._stutter_until == stutter_before and ship._dip_start == dip_before,
 		faction + " zero-damage crit makes no impact reaction")
+	_check(sfx.hull_hits == [false] and sfx.shield_hits == expected_shield_cues, faction + " zero-damage crit plays no impact cue")
 
 	no_damage["crit"] = false
 	no_damage["regenLock"] = true
