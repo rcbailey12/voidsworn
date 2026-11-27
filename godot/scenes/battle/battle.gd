@@ -4833,13 +4833,27 @@ var _threat_next := {}
 var _threat_inputs: Array[Callable] = []
 
 
-# Keep player intents in arrival order without blocking on the rules worker. The normal handlers still check
-# whether an order is legal when it runs (an earlier intent may have changed the plan or ended the activation).
-func _queue_threat_input(action: Callable) -> bool:
+# Keep player intents in arrival order without blocking on the rules worker. Use the cached view to remember
+# the ship and round, so a queued order can survive playback but cannot carry over to another activation.
+func _queue_threat_input(action: Callable, ship_order := true) -> bool:
 	if not _threat_busy or busy or thinking or warming or ended or retiring or quitting or api == null or api.phase != "player":
 		return false
-	_threat_inputs.append(action)
+	var intent := _replay_threat_order.bind(action, _threat_order_ship(), int(V.get("round", 0))) if ship_order else action
+	_threat_inputs.append(intent)
 	return true
+
+
+func _threat_order_ship() -> String:
+	var active := _active_id()
+	return sel if active == "" else active
+
+
+func _replay_threat_order(action: Callable, id: String, order_round: int) -> void:
+	if int(V.get("round", 0)) != order_round or _threat_order_ship() != id:
+		return
+	if id != "" and not _usable(VU.get(id, {})):
+		return
+	action.call()
 
 
 func _battle_modal_open() -> bool:
@@ -6024,14 +6038,18 @@ func _auto_end(id: String) -> void:
 	hud.toast("The %s has nothing left to do this round: next ship." % _name(id))
 	_refresh_ui()
 	var g := _gen
+	var order_round := int(V.get("round", 0))
 	await get_tree().create_timer(0.8).timeout
 	if not _stale(g):
-		_auto_end_finish(id)
+		_auto_end_finish(id, order_round)
 
 
-func _auto_end_finish(id: String) -> void:
-	var finish := _auto_end_finish.bind(id)
-	if _queue_threat_input(finish):
+func _auto_end_finish(id: String, order_round: int) -> void:
+	if int(V.get("round", 0)) != order_round:
+		ending = false
+		return
+	var finish := _auto_end_finish.bind(id, order_round)
+	if _queue_threat_input(finish, false):
 		return
 	if _battle_modal_open():
 		_threat_inputs.append(finish)
@@ -7550,6 +7568,8 @@ func _process(dt: float) -> void:
 		world.step(dt)
 	_step_cut_overlays(dt)
 	if api == null:
+		return
+	if not quitting and _show_rules_halt() and not bot:
 		return
 	# The worker may be done already. Retry orders held by playback or a modal as soon as the player can act again.
 	if not _threat_inputs.is_empty():

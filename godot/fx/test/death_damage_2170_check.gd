@@ -38,7 +38,7 @@ func _run() -> void:
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, box.get_mesh_arrays())
 	mesh.surface_set_material(0, StandardMaterial3D.new())
 	mi.mesh = mesh
-	fx.add_ship("box", body, {"faction": "voidsworn", "cls": "Frigate", "size": 0.8, "meshes": [mi]})
+	fx.add_ship("box", body, {"faction": "ithar", "cls": "Frigate", "size": 0.8, "meshes": [mi]})
 	var ship = fx.ship("box")
 	Death.precompute(fx, ship)
 	while not Death.finish_precompute(fx, ship):
@@ -72,6 +72,7 @@ func _run() -> void:
 	var rebuilt: Array = ship.current_arrays(mi, 0)
 	var last_job: Dictionary = ship._dmg_job
 	var cut: Dictionary = ship.get_meta("cut_job", {})
+	_check(cut.get("cap_kind") == Death.CAP_GLASS, "the deferred Glasswright cut keeps its glass fracture faces")
 	_check(rebuilt != first and rebuilt != intact and last_job["ents"].size() == 3,
 		"the last rebuild includes the wound queued behind the running task")
 	var cut_surfs: Array = cut.get("surfs", [])

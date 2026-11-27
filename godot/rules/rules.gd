@@ -479,11 +479,12 @@ func quietBlocks(u, t) -> bool: return B != null and u != null and t != null and
 # Swivel Arc Mounts: fixed fore weapons widen by 30 degrees each side. Flanks widen toward the bow only,
 # keeping the normal aft edge so neither fixed flank sweeps dead astern. Extra bearings deal -20% damage.
 func chaserArc(u, w, t) -> bool:
-	if u == null or not jt(g(u.get("fx"), "chaser")) or w.get("k") == "turret" or w["arc"] == "T" or w["arc"] == "R": return false
-	var a = relAng(u, t)
-	if w["arc"] == "F": return absf(a) <= 90.5
-	if w["arc"] in ["S", "P"]:
-		var side: float = a if w["arc"] == "S" else -a
+	if u == null or not jt(g(u.get("fx"), "chaser")) or w.get("k") == "turret" or w["arc"] == "T": return false
+	return _wide_fixed_arc(relAng(u, t), w["arc"])
+func _wide_fixed_arc(a: float, arc) -> bool:
+	if arc == "F": return absf(a) <= 90.5
+	if arc in ["S", "P"]:
+		var side: float = a if arc == "S" else -a
 		return side >= -0.5 and side <= 150.5
 	return false
 # Sinking Standard: once the flagship drops below 30% hull or falls, every other ship deals +20% damage for the battle

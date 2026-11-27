@@ -9,6 +9,8 @@ class TestBattle extends Battle:
 	var commands := 0
 	var exhausted := false
 	var play_commands := false
+	var run_rules := false
+	var enemy_acted := false
 
 	func _ready() -> void:
 		set_process(false)
@@ -19,17 +21,35 @@ class TestBattle extends Battle:
 	func _overlay() -> void:
 		pass
 
+	func _clear_overlay() -> void:
+		pass
+
 	func _ui(_id: String) -> Dictionary:
 		return {"orders": {"brace": true}, "ram": {"target": "enemy"}}
 
 	func _nothing_left(_id: String) -> bool:
 		return exhausted
 
-	func _cmd(_f: Callable) -> bool:
+	func _cmd(f: Callable) -> bool:
 		commands += 1
+		if run_rules:
+			return super._cmd(f)
 		if play_commands:
 			busy = true
 		return true
+
+	func _play_batch(bt: Dictionary) -> void:
+		for event: Dictionary in bt["events"]:
+			if event["t"] == "activation" and event["side"] == "enemy":
+				enemy_acted = true
+		await get_tree().process_frame
+
+	func _sync(view: Dictionary) -> void:
+		V = view
+		_index_view()
+
+	func select(id: String, _how := "pick") -> void:
+		sel = id
 
 
 var failures := 0
@@ -135,10 +155,12 @@ func _run() -> void:
 				_check(b.commands == 1, action + " sends exactly one command after the worker")
 		_free_battle(b)
 	await _check_playback()
+	await _check_handoff()
+	_check_rules_halt()
 	for action: String in ["end", "undo", "confirm", "auto-end", "auto-end without worker", "end with prompt"]:
 		await _check_modal(action)
 	if failures == 0:
-		print("PASS: threat inputs replay in order, wait for playback and modals, and auto-end retries")
+		print("PASS: threat inputs wait for playback and modals, stop at handoff, and respect rules halt")
 	quit(1 if failures else 0)
 
 
@@ -160,6 +182,43 @@ func _check_playback() -> void:
 	await process_frame
 	await process_frame
 	_check(b.commands == 2 and b.plan == null and b._threat_inputs.is_empty(), "turn and Enter resume in order and commit once")
+	_free_battle(b)
+
+
+func _check_handoff() -> void:
+	var b := _battle()
+	if b == null:
+		return
+	b.set_process(true)
+	b.run_rules = true
+	b.opening = true # Only skip the camera glide. The runner and enemy use the real rules.
+	var old := b.sel
+	var gate := _hold_threat_worker(b)
+	b._on_key(KEY_SPACE)
+	b._on_key(KEY_B)
+	await _release_threat_worker(b, gate)
+	for i in 120:
+		if not b.busy:
+			break
+		await process_frame
+	await process_frame
+	_check(not b.busy and b.enemy_acted and b.sel != "" and b.sel != old, "End plays the enemy activation and hands over to another ship")
+	_check(b.commands == 1 and b._threat_inputs.is_empty(), "Brace queued for the previous ship is discarded")
+	_free_battle(b)
+
+
+func _check_rules_halt() -> void:
+	var b := _battle()
+	if b == null:
+		return
+	b._threat_busy = true
+	b._on_key(KEY_B)
+	b._threat_busy = false
+	b.api.phase = "halted"
+	b.api.halted = "threat check halt"
+	b._process(0.0)
+	_check(b._rules_halt_shown and is_instance_valid(b.hud.menu) and b.commands == 0,
+		"the frame loop shows a rules halt before replaying any orders")
 	_free_battle(b)
 
 

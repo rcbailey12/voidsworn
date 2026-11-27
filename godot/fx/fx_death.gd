@@ -1627,6 +1627,7 @@ static func precompute(fx, s, cause := "blast", under_cover := false, shared_cut
 				sd["anchor"] = inv * (s.hull.turrets[tk]["node"] as Node3D).global_transform.origin
 			surfs.append(sd)
 	var inputs := {"seeds": seeds, "surfs": surfs, "cause": layout["cause"], "organic": s.faction == "chorus", "faction": s.faction, "L": s.hull.L,
+		"cap_kind": CAP_GLASS if s.faction == "ithar" else (CAP_FLESH if s.faction == "chorus" else CAP_METAL),
 		"mesh_on_worker": DisplayServer.get_name() != "headless", "plan": layout["plan"], "authored": s.hull.authored,
 		"ragged": s.death_big, "warp": layout["warp"],
 		"sites": s.death_big and s.faction != "chorus", "sp": s.hull.sp, "sn": s.hull.sn}
