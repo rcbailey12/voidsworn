@@ -1,0 +1,54 @@
+{
+  "source_commit": "061f6268652a311b7a977cf40739f96c5bb88c5f",
+  "source_dirty": true,
+  "source_diff_sha256": "bcf341f1ecba75243392e91886c2565e7378ac5e7d00befee7070e87f7200e10",
+  "source_dirty_files": {
+    "tools/blender/kits/eclipse/stack.py": "fd190e0b289e393f8f05803e41c655deda59b8e6"
+  },
+  "stage": "paint proof",
+  "schema": 1,
+  "picture_name": "eclipse_stack_run1.png",
+  "date": "2026-11-27T04:29:49Z",
+  "sources": [
+    {
+      "source_commit": "061f6268652a311b7a977cf40739f96c5bb88c5f",
+      "source_dirty": true,
+      "source_diff_sha256": "bcf341f1ecba75243392e91886c2565e7378ac5e7d00befee7070e87f7200e10",
+      "source_dirty_files": {
+        "tools/blender/kits/eclipse/stack.py": "fd190e0b289e393f8f05803e41c655deda59b8e6"
+      },
+      "stage": "paint proof"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    622,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "d9a2ac7b3687dd627a8bf5d0787a4fbeca0c5167e14f5f3d1e6bc72a974c4803"
+  ],
+  "stamp_template_sha256": "d9a2ac7b3687dd627a8bf5d0787a4fbeca0c5167e14f5f3d1e6bc72a974c4803",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABkUlEQVR4nO3VIQEAIQDAQPgGCDT9W76nABN3CeY21z4DAEq+1wEAcDMnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAGDU/aV8BCWCgbfIAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "d1eb91f365d3e3b076f0808dce23f8c7d9296f74d5da06228179c42336e15e6f",
+  "proof": {
+    "baseline_commit": "061f6268652a311b7a977cf40739f96c5bb88c5f",
+    "baseline_stack_sha256": "efe36c5637c31e9dff9403f323d585c57c877dce9962690b8ebb8d2c3ba0e08b",
+    "working_stack_sha256": "664e2658f6ec29a574542bcc6b2032fb58c48568aaf3ac6fd1c2b7a87fdd7c78",
+    "blender": "4.5.14 LTS Cycles CPU",
+    "geometry": "deathless_E12 sheet, D21_23",
+    "previews": [
+      "camera 170, native pixels",
+      "close rim and reactor"
+    ],
+    "modes": "before/after live glow nodes against the same opaque plate swatches; no bakes"
+  }
+}

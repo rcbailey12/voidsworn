@@ -8,9 +8,9 @@
 # never projected onto the ship. No downloaded asset: the trim sheet and the decal atlas are drawn by this file (own work
 # dedicated CC0, written into the job's textures folder with their licence lines, RULEBOOK 5.13).
 #
-# The faction (docs/playbooks/factions.md, Eclipse): "a black shade with a thin ring of green-white fire at its edge". Dark
-# violet-black plates; the green is a thin, cold green-white line along the rim of every shade plate (the sheet's corona strips),
-# plus the small bright core seen through gaps; never green pooled in hollows, ribs or sockets (reads as undead, Ryan Nov 10);
+# The faction (docs/playbooks/factions.md, Eclipse): a black shade with a thin ring of violet fire at its edge. Dark
+# violet-black plates, a thin corona along the rim of every shade plate (the sheet's corona strips), and a small bright core
+# seen through gaps. No green on the hull and no light pooled in hollows, ribs or sockets.
 # never flame: engines are an eclipse ring of pale light. Machine bodies in a system they made dark: clean machined plate,
 # ancient, dulled, never rust.
 #
@@ -41,12 +41,10 @@ LIFT = battle_lift()
 
 # ------------------------------------------------------------------------------------------------------------ concept colours
 # Sampled from the accepted concepts contrib/muse/design/concept_round8c_2026_11/deathless_E11_beauty.jpg (box x 40 to 1900,
-# y 40 to 1180) and deathless_E12_beauty.jpg (box x 180 to 1960, y 60 to 1000): k-means of the plate pixels (luminance 14 to 200,
-# the green excluded), of the dark pixels (6 to 30) and of the green pixels (g over r above 1.4 and over b above 1.2); sample_concept()
-# below repeats it. sRGB, as lit in the picture.
+# y 40 to 1180) and deathless_E12_beauty.jpg (box x 180 to 1960, y 60 to 1000): k-means of the plate pixels (luminance 14 to 200)
+# and dark pixels (6 to 30). sample_concept() ignores the old glow. Only the plates are sampled from the concept. sRGB, as lit.
 #   E12 plates (dark to light): (12,15,25) 29%, (25,24,38) 21%, (43,36,60) 17%, (61,51,82) 14%, (84,76,108) 9%, (115,107,137) 6%
 #   E11 plates: (22,17,22) 24%, (42,32,40) 18%, (64,51,61) 13%, (93,76,87) 11%, (124,103,115) 12%, (154,136,143) 11%, (188,172,177) 9%
-#   green rim (E12): (48,92,49), (84,136,82), (132,228,88); (E11): (54,92,65), (72,114,85), (101,152,115)
 # The hue is the concepts' (violet: blue over red over green; E11's mauve plates a redder violet), the lightness is set by the
 # faction sheet, not by the pictures' lighting: E11's lit plates at 124 to 188 are the lavender grey Ryan ruled out, so every
 # tone here sits in the concepts' lower half (E12's 12 to 84, E11's 22 to 93), scaled to read dark violet-black under the lift.
@@ -68,19 +66,6 @@ CONCEPT = dict(
     bare=((76, 68, 92), (124, 112, 144)),      # worn edges on rims and plate lips: the machined metal under the dark coat
     grime=((5, 4, 7), (10, 8, 12)),             # the dark of seams and deep recesses (the concepts' darkest 3,7,10 to 17,12,17)
 )
-# The light (pass 2, Ryan: "that green looks so plain and stark, just like neon paint"): the corona is light, not paint, the faint
-# green ring of a real eclipse. Cold green-white at its hottest (the hue of the concepts' brightest rim pixels, E12 132,228,88,
-# whitened), a deeper green where it is dim (E12 48,92,49 and 84,136,82, brightened to read as light).
-CORONA_HOT = (176, 255, 206)
-CORONA_DIM = (40, 190, 96)
-# the trapped light core (Board review of PR 643: the first core, near white at 1.9, flattened to a white blob): green-white at its
-# centre grading to the concepts' core green at its edge (E12 66,203,23 to 132,228,88), never white all over
-CORE_HOT = (220, 255, 204)
-CORE_EDGE = (28, 255, 12)
-CORONA_RGB = (128, 242, 164)     # the flat colour glow_material gives a corona surface the glow map does not hold (none on E11, E12)
-CORE_RGB = (44, 255, 24)
-
-
 # AgX and the warm key take colour out of dark tones: the first preview (sandbox, game light, lift 2.2) showed the shade plates
 # as a neutral grey-violet (median hull pixel at the beauty camera saturation 0.22 against the E12 concept's 0.57). So the albedo
 # carries the hue a little stronger than the tone it must show: its distance from its own grey is scaled by SAT.
@@ -199,13 +184,12 @@ def panel_nodes(c, col, amount, families=None, cells=None):
 # CODE_glow surface and CODE_glow_emission.jpg): the engine rings, the corona line on every shade rim, the corona strip lights,
 # the gun shades' rims, the core and the arc emitter's lens. A flat emissive colour read as neon paint (Ryan, Nov 13 11:06 CST:
 # "that green looks so plain and stark, just like neon paint"), so each kind of light is drawn on the map:
-#   the corona line (round 3, R243): the faint green ring of a real eclipse. Thin at rest: brightest along the middle of the strip and
+#   the corona line (round 3, R243): the faint ring of a real eclipse. Thin at rest: brightest along the middle of the strip and
 #     falling softly to its edges and sides (into the plate edge, never a hard band), and the bright core of it widens only in the
 #     brighter arcs. Its brightness varies along its length (brighter arcs, dimmer stretches, a few short breaks where plates
-#     overlap); cold green-white at its hottest, deeper green where dim. R243: the broader soft profile and extra brightness
+#     overlap); violet even at the brightest arcs, deeper violet where dim. R243: the soft profile and extra brightness
 #     keep the same thin strip readable at camera 170; brighter arcs cross the game's glow threshold.
-#   the core and the lens: green-white at the centre grading to the concepts' core green at the edge, the brightest light on the
-#     ship, never a white blob (Board review of PR 643).
+#   the core and the lens: violet with a slightly lighter centre, never a white blob (PR 643, issue 1422 run 2).
 #   the engine ring: as below.
 # Only the hull's corona trim material is marked hull_surface (GLOW_HULL). Engine rings, core and lens use an unmarked
 # material sharing the map, so every part surface still participates in breach clearance.
@@ -214,19 +198,26 @@ GLOW_STRENGTH = dict(corona=1.05, ecore=1.35, lens=1.25)     # only for a glow s
 GLOW_HULL = ('corona',)
 CORONA = dict(base=1.0, arc=1.1, arc_scale=9.0, arc_band=(.48, .78), breaks_scale=26.0, breaks=(.20, .25), rest_width=.75,
               arc_width=.50, hot=1.25)
-CORE = dict(edge=1.0, falloff=2.0, hot_radius=.18)
+CORE = dict(edge=.9, falloff=2.0, hot_radius=.18)
 
 
 def faction_look():
     p = os.path.join(REPO, 'godot', 'fx', 'faction_looks.json')
-    d = json.load(open(p, encoding='utf-8'))
+    with open(p, encoding='utf-8') as src:
+        d = json.load(src)
     return d.get(FACTION) or d.get('factions', {}).get(FACTION)
+
+
+def core_hot_colour(f):
+    # A small step toward the damage glow lifts the centre without washing out the rim violet.
+    return tuple(rim + .25 * (glow - rim) for rim, glow in zip(f['death']['rim'], f['damage_glow']))
 
 
 def glow_material(zone, hull=False):
     m = bpy.data.materials.new(f'p3_{zone}_hull' if hull else f'p3_{zone}'); m.use_nodes = True
     b = m.node_tree.nodes['Principled BSDF']
-    col = lin_raw(CORE_RGB if zone in ('ecore', 'lens') else CORONA_RGB)
+    # Fallback for a surface not on the emission map. Faction colours are already linear RGB.
+    col = faction_look()['death']['rim']
     b.inputs['Base Color'].default_value = (col[0] * .05, col[1] * .05, col[2] * .05, 1); b.inputs['Roughness'].default_value = .6
     b.inputs['Emission Color'].default_value = (*col, 1); b.inputs['Emission Strength'].default_value = GLOW_STRENGTH.get(zone, 1.0)
     m['ps_glow'] = 1; m['rim_soft'] = 1
@@ -324,16 +315,19 @@ def engine_glow_nodes(nt, r, e, d, a, tc, H):
     width = math_(nt, 'ADD', C['rest_width'], math_(nt, 'MULTIPLY', arc, C['arc_width'] - C['rest_width']))
     prof = math_(nt, 'POWER', math_(nt, 'MAXIMUM', across, 0.0), width)
     lh = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', math_(nt, 'ADD', C['base'], math_(nt, 'MULTIPLY', arc, C['arc'])), prof), brk)
-    line = mulc(nt, mixc(nt, lin_raw(CORONA_DIM), lin_raw(CORONA_HOT), math_(nt, 'POWER', lh, .8)), math_(nt, 'MULTIPLY', lh, C['hot']))
-    # the core: green-white in the middle grading to green at the edge (B = distance from the centre over the radius)
+    # Cap intensity before scaling RGB so the emission map cannot clip the blue first and bleach the rim.
+    arc_colour = math_(nt, 'MULTIPLY', arc, prof)
+    line = mulc(nt, mixc(nt, tuple(f['death']['fire_mid']), tuple(f['death']['rim']), arc_colour),
+                math_(nt, 'MULTIPLY', lh, C['hot'], clamp=True))
+    core_edge, core_hot = tuple(f['death']['rim']), core_hot_colour(f)
     k = math_(nt, 'POWER', ramp(nt, d, CORE['hot_radius'], 0.0), CORE['falloff'])
-    core = mulc(nt, mixc(nt, lin_raw(CORE_EDGE), lin_raw(CORE_HOT), k), math_(nt, 'ADD', CORE['edge'], math_(nt, 'MULTIPLY', k, 1 - CORE['edge'])))
+    core = mulc(nt, mixc(nt, core_edge, core_hot, k), math_(nt, 'ADD', CORE['edge'], math_(nt, 'MULTIPLY', k, 1 - CORE['edge'])))
     kd = H['kind']
     out = mixc(nt, ring, line, math_(nt, 'GREATER_THAN', kd, .5))
     out = mixc(nt, out, core, math_(nt, 'GREATER_THAN', kd, 1.5))
     heat = math_(nt, 'POWER', r, 2.5)
-    reactor = mulc(nt, mixc(nt, lin_raw(CORE_EDGE), lin_raw(CORE_HOT), heat),
-                   math_(nt, 'ADD', .28, math_(nt, 'MULTIPLY', heat, .92)))
+    reactor = mulc(nt, mixc(nt, core_edge, core_hot, heat),
+                   math_(nt, 'ADD', .28, math_(nt, 'MULTIPLY', heat, .72)))
     return mixc(nt, out, reactor, math_(nt, 'GREATER_THAN', kd, 2.5))
 
 
@@ -344,7 +338,7 @@ INSIDE_BASE = (.010, .008, .014)
 INSIDE_TINT = .20
 # Interior Kit V2 (issue 1743, R416 Layer 3) under R420 (Ryan, Nov 22; contrib/opus/plans/global_cohesion_standard.md 3):
 # deep obsidian-violet monolithic vaults in satin dark alloy, hairline violet-white bus rails from faction_looks.json
-# (deathless death.fire), the core in the same violet-white; zero green from archive or ecore, zero rust (factions.md, Eclipse:
+# (deathless death.fire), the core in the same violet as outside; zero green from archive or ecore, zero rust (factions.md, Eclipse:
 # archive vaults, dark decks). Each zone takes its role's colour here, inside the shared budgets of
 # tools/blender/kits/shared/interior_trim.py; the values match the 1741 breach interior.
 FAC_KEY = 'eclipse'
@@ -367,7 +361,7 @@ def inside_trims():
 def CORE_LIGHT():
     import interior_trim
     t = interior_trim.faction_interior(FAC_KEY)
-    return (tuple(t.get('core_rgb') or tuple(float(c) for c in faction_look()['death']['fire'])), t['core_strength'])
+    return (tuple(t.get('core_rgb') or core_hot_colour(faction_look())), t['core_strength'])
 
 
 def inside_material(room, trim=False):
@@ -382,10 +376,9 @@ def inside_material(room, trim=False):
     if src is not None and src.use_nodes and src.node_tree.nodes.get('Principled BSDF'):
         sb = src.node_tree.nodes['Principled BSDF']; rgb = tuple(sb.inputs['Base Color'].default_value)[:3]
         em = sb.inputs['Emission Strength'].default_value
-        if em > 0:      # the core: its own light stays (the bright bite when the ship breaks), in violet-white
-            # issue 1743 (R416 root cause 7, Ryan Nov 20 "Eclipse is all violet"): the inside core takes the faction's violet-white
-            # from faction_looks.json (deathless death.fire), never CORE_RGB's green; #1422 flips CORE_RGB itself for the hull
-            col = tuple(float(c) for c in faction_look()['death']['fire'])
+        if em > 0:      # the core: its own violet light stays (the bright bite when the ship breaks)
+            # Match the baked core's hot colour from faction_looks.json (R416, issues 1743 and 1422).
+            col = core_hot_colour(faction_look())
             b.inputs['Emission Color'].default_value = (*col, 1); b.inputs['Emission Strength'].default_value = em
     mx = max(rgb) or 1
     b.inputs['Base Color'].default_value = tuple(INSIDE_BASE[i] * (1 - INSIDE_TINT + INSIDE_TINT * rgb[i] / mx) for i in range(3)) + (1,)
@@ -397,7 +390,7 @@ def inside_material(room, trim=False):
 # ------------------------------------------------------------------------------------------------------------ running lights
 # The builder's call (issue 642; R207, R233: the Board reviews it): the Eclipse carry NO added running lamps. The red lamps are a
 # Hullbreaker rule (R228 item 4); a row of coloured points along the flanks reads as a navy's or a pirate's ship, and the Eclipse
-# are machines in a system they made dark (lore 7.1): their only lights are the corona (the thin green-white line on every shade
+# are machines in a system they made dark (lore 7.1): their only lights are the corona (the thin violet line on every shade
 # rim, which already marks the outline and the heading at the battle camera), the core seen through its port, the pale engine
 # rings, and the sheet's own corona strip lights over the belts (the kit's lamp, a short strip of the same corona light, never a
 # point). So RUNNING_LIGHTS is None: the shared stack adds no lamps and writes no lights.json; the standing light check has no
@@ -525,7 +518,7 @@ def write_textures(folder, rows, decals):
 
 
 def sample_concept():
-    """repeat the colour sampling above (needs Pillow): the cluster centres per concept, plates, dark and green"""
+    """Sample plates and recesses (needs Pillow). The concept's retired glow is not a palette source."""
     from PIL import Image
     out = {}
     for ship, (x0, y0, x1, y1) in (('E11', (40, 40, 1900, 1180)), ('E12', (180, 60, 1960, 1000))):
@@ -538,6 +531,6 @@ def sample_concept():
             for _ in range(40):
                 a = ((X[:, None] - C[None]) ** 2).sum(2).argmin(1); C = np.array([X[a == j].mean(0) if (a == j).any() else C[j] for j in range(k)])
             return [(tuple(int(v) for v in C[j]), round(float((a == j).mean()), 3)) for j in np.argsort(C.mean(1))]
-        green = (im[:, 1] > im[:, 0] * 1.4) & (im[:, 1] > im[:, 2] * 1.2) & (L > 50)
-        out[ship] = dict(green=km(im[green], 4), plate=km(im[~green & (L > 14) & (L < 200)], 8), dark=km(im[(L > 6) & (L < 30) & ~green], 4))
+        armour = im[:, 1] <= np.maximum(im[:, 0], im[:, 2])
+        out[ship] = dict(plate=km(im[armour & (L > 14) & (L < 200)], 8), dark=km(im[armour & (L > 6) & (L < 30)], 4))
     return out
