@@ -132,7 +132,7 @@ func _warp() -> void:
 	_step_to(gone - 0.08)
 	_check(hull.visible and hull.scale.z < 0.95 and view.position == next, "warp-out spools then stretches without moving the hex")
 	_step_to(gone + 0.001)
-	_check(not (hull.get_child(0) as MeshInstance3D).visible and fx.ship("warp").gone, "warp-out hides the hull only when the wake is left behind")
+	_check(not (hull.get_child(0) as MeshInstance3D).visible and fx.ship("warp") == null, "warp-out hides and retires the hull only when the wake is left behind")
 
 	var cancelled := _fixture("cancelled", "voidsworn", old)
 	at = fx.fold("cancelled", 1.0, func unexpected() -> void: transfers += 100)

@@ -147,7 +147,7 @@ uniform float section_scale = 1.0;
 uniform vec3 scorch_tint = vec3(0.20, 0.21, 0.22);
 uniform vec3 cap_albedo = vec3(0.32);
 // R367: the seam's heat in the faction's death colours (defaults for an unstyled hull).
-uniform vec3 heat_cool = vec3(0.38, 0.035, 0.018);
+uniform vec3 heat_cool = vec3(0.12, 0.025, 0.013);
 uniform vec3 heat_hot = vec3(0.95, 0.40, 0.09);
 uniform vec3 heat_white = vec3(0.94, 0.84, 0.64);
 varying vec3 slag_p;
@@ -383,7 +383,7 @@ static func dsmoke(src) -> float:
 static func _style_heat(m: ShaderMaterial, st: Dictionary, prefix: String) -> void:
 	var rim = st.get("rim")
 	if not (rim is Color): return
-	m.set_shader_parameter(prefix + "cool", (rim as Color) * 0.14)
+	m.set_shader_parameter(prefix + "cool", (rim as Color) * 0.12)
 	m.set_shader_parameter(prefix + "hot", rim)
 	m.set_shader_parameter(prefix + "white", (rim as Color).lerp(Color(1, 1, 1), 0.7))
 
@@ -2844,9 +2844,15 @@ static func _wing_death(fx, s) -> float:
 	s.set_meta("death_split", fx.now)
 	if not hit.is_empty():
 		var p: Vector3 = s.to_world(hit["p"])
-		# Birth on the next FX step: a one-frame picture born between steps could expire before its first draw.
-		fx.later(fx.now + 0.000001, _wing_flash.bind(fx, s, p, s.xf()))
-		BEATS.corkscrew(fx, s, p, s.xf())   # issue 1586
+		if s.faction == "chorus":
+			var L: float = s.hull.L
+			fx.spr(p, fx.now, 0.55, s.fac.damage_glow, 1.4, L * 0.08, L * 0.32, 20, Vector3.ZERO, 0.0, 0.0, 0.0, 28.0)
+			for j in 2:
+				BEATS.debris(fx, s, p, fx.now, 1.2, fx.rdir() * L * 0.8, L * 0.04, 0.0)
+		else:
+			# Birth on the next FX step: a one-frame picture born between steps could expire before its first draw.
+			fx.later(fx.now + 0.000001, _wing_flash.bind(fx, s, p, s.xf()))
+			BEATS.corkscrew(fx, s, p, s.xf())   # issue 1586
 	_hide_ship(s)
 	return 1.0 / 60.0
 
@@ -3225,28 +3231,38 @@ static func _tell(fx, s, T: float, tl: DeathTimeline, cause: String, seeds: Pack
 	m.set_shader_parameter("width", maxf(h.L * 0.010, 0.02))
 	if cause == "cut":
 		m.set_shader_parameter("straight", 1.0)
-		m.set_shader_parameter("ember", Vector3(1.0, 0.72, 0.45))
-	elif cause == "melt":
-		m.set_shader_parameter("tip", Vector3(0.62, 0.85, 0.18))
-		m.set_shader_parameter("ember", Vector3(0.45, 0.62, 0.10))
-	elif not dstyle(s).is_empty():
+	if not dstyle(s).is_empty():
 		# R367: the tear and its hairlines glow in the faction's death colour, white at the running tip
 		var rim := dcol(s, "rim", Color(1.0, 0.36, 0.07))
 		var tip := dcol(s, "fire", Color(1.0, 0.94, 0.82))
 		m.set_shader_parameter("ember", Vector3(rim.r, rim.g, rim.b))
 		m.set_shader_parameter("tip", Vector3(tip.r, tip.g, tip.b))
-	for mm in s.meshes:
-		if is_instance_valid(mm):
-			var mi := mm as MeshInstance3D
-			var local: ShaderMaterial = m.duplicate()
-			local.set_shader_parameter("frame", s.root.global_transform.affine_inverse() * mi.global_transform)
-			mi.material_overlay = local
+	elif cause == "cut":
+		m.set_shader_parameter("ember", Vector3(1.0, 0.72, 0.45))
+	_set_death_overlays(s, m)
 	for i in tl.chain.size():
 		fx.later(T + float(tl.chain[i]), _chain_blast.bind(fx, s, i, tl, cause, T))
 	if not strain.is_empty():
 		var groans: Array = strain["groans"]
 		for i in groans.size():
 			fx.later(T + float(groans[i]), _groan.bind(fx, s, i))
+
+
+# A ship may leave the tree before its split or rise. Detach only our overlay, not any restored paint.
+static func _set_death_overlays(s, mat: ShaderMaterial) -> void:
+	for mm in s.meshes:
+		if not is_instance_valid(mm):
+			continue
+		var mi := mm as MeshInstance3D
+		var local: ShaderMaterial = mat.duplicate()
+		local.set_shader_parameter("frame", s.root.global_transform.affine_inverse() * mi.global_transform)
+		mi.material_overlay = local
+		var overlay_id := local.get_instance_id()
+		var detach_overlay := func() -> void:
+			var overlay := mi.material_overlay
+			if overlay != null and overlay.get_instance_id() == overlay_id:
+				mi.material_overlay = null
+		mi.tree_exiting.connect(detach_overlay, CONNECT_ONE_SHOT)
 
 
 # The fracture plan's breaks as [at, normal] lines, the bite's break first; empty for the old seed cut.
@@ -3499,6 +3515,7 @@ const CORE_VEIL_DELAY := 0.45
 
 # Issue 1558 item 2: the big-death gas veil, born after the core's full-heat window, so it never sits over the flash.
 static func _core_gas_veil(fx, s, node_ref: WeakRef, local: Vector3, capital: bool, vel: Vector3) -> void:
+	if dsmoke(s) < 0.02: return
 	# born 0.45 s after the flash: read the piece where it is now (it drifts), and skip the veil if it is already gone
 	var node := node_ref.get_ref() as Node3D
 	if not is_instance_valid(node) or node.is_queued_for_deletion() or not node.is_inside_tree():
@@ -3639,12 +3656,7 @@ static func _melt_glow(fx, s, T: float, tl: DeathTimeline) -> void:
 	m.set_shader_parameter("n_spots", mini(spots.size(), 6))
 	m.set_shader_parameter("rise", Vector2(T - 0.05, T + maxf(tl.cut, 0.3)))
 	s.set_meta("death_melt_spots", spots)
-	for mm in s.meshes:
-		if is_instance_valid(mm):
-			var mi := mm as MeshInstance3D
-			var local: ShaderMaterial = m.duplicate()
-			local.set_shader_parameter("frame", s.root.global_transform.affine_inverse() * mi.global_transform)
-			mi.material_overlay = local
+	_set_death_overlays(s, m)
 
 
 static func _fac_pop(fx, s, p: Vector3, L: float) -> void:
@@ -3887,6 +3899,12 @@ static func _secondary_on(fx, s, node_ref: WeakRef, ship_p: Vector3) -> void:
 
 
 static func _hide_ship(s) -> void:
+	# Eclipse keeps the tear paint on its hidden original hull until ShipView restores the live paint on a rise.
+	# Detach the other tear overlays and all melt overlays before the renderer tears down the hull.
+	if s.has_meta("death_melt_spots") or (s.has_meta("death_grow") and s.faction != "deathless"):
+		for mesh in s.meshes:
+			if is_instance_valid(mesh):
+				(mesh as MeshInstance3D).material_overlay = null
 	s.set_meta("death_hidden", true)
 	s.remove_meta("death_power")
 	s.remove_meta("death_poses")
@@ -4229,7 +4247,8 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 		# without buckets, or a cut job not ready) still throws one pooled physical shard and a visible ember, never light
 		# and smoke alone.
 		_spawn_ship_debris(fx, s, center, xf.basis.x * 2.0, 1, maxf(h.L * 0.15, 0.3), 0.0)
-		fx.spr(center, T, 5.0, tint, 1.2, R * 0.3, R * 0.05, fx.HOT_FLECK_SPRITE, xf.basis.x * 2.0, 0.25, 0.0, 0.0, 12.0)
+		var kind: int = fx.HOT_FLECK_SPRITE if s.faction in ["voidsworn", "corsair"] else SH.TICK_EMBER
+		fx.spr(center, T, 5.0, tint, 1.2, R * 0.3, R * 0.05, kind, xf.basis.x * 2.0, 0.25, 0.0, 0.0, 12.0)
 
 
 # Issue 484: the bite's fragments and the chips along the break, as real pieces of the hull (capped, glowing faces,
@@ -4370,21 +4389,25 @@ static func _core_flash_inner(fx, p: Vector3, R: float, px: float, tint: Color, 
 	# Pixel targets, normal/soft life, then normal/soft size calibration including the battle look's bloom.
 	var row: Array = {"small": [CORE_FLASH_PX["small"], 0.18, 0.55, 2.45, 0.884], "destroyer": [CORE_FLASH_PX["destroyer"], 0.19, 0.575, 2.31, 0.9175], "cruiser": [CORE_FLASH_PX["cruiser"], 0.20, 0.60, 1.97, 0.96], "capital": [CORE_FLASH_PX["capital"], 0.22, 0.65, 1.37, 0.96]}[band]
 	if staged: px = float(row[0])
-	var allowed: bool = fx.flash_ok(fx.now, p, px * STAGING_UNITS_PER_PIXEL if staged else R * 3.0, px, float(row[1]))
+	var bright_divisor := float(row[3])
+	var read_px := float(CORE_READ_PX[band])
+	# The shader applies the readability floor to the pre-bloom card after dividing by bright_divisor.
+	# Book the floor with that bloom margin, without changing the card's size or the soft variant.
+	var booked_px := maxf(px, read_px * bright_divisor) if staged else px
+	var allowed: bool = fx.flash_ok(fx.now, p, px * STAGING_UNITS_PER_PIXEL if staged else R * 3.0, booked_px, float(row[1]))
 	if staged:
 		var soft: bool = fx.reduce_flashing or not allowed
 		var life: float = float(row[2] if soft else row[1])
-		var divisor: float = float(row[4] if soft else row[3])
+		var divisor: float = float(row[4]) if soft else bright_divisor
 		var flash := flipbook(fx, p, Vector3.UP, 0.0, "flash", life, Vector3.ZERO, 1.25 if soft else 6.0, band, src, false, true, frame)
 		var mat := flash.material_override as ShaderMaterial
-		# The approved counted diameter above already bounds this floor, including room for bloom.
 		mat.set_shader_parameter("min_pixels", px)
-		mat.set_shader_parameter("read_pixels", CORE_READ_PX[band])
+		mat.set_shader_parameter("read_pixels", read_px)
 		mat.set_shader_parameter("extent", px * STAGING_UNITS_PER_PIXEL)
 		mat.set_shader_parameter("size_divisor", divisor)
 		mat.set_shader_parameter("soft_flash", 1.0 if soft else 0.0)
 		# This soft front mints no flash token, adds no light and does not touch the faction's fire or break.
-		var ring_px: float = float(CORE_READ_PX[band]) * 1.45
+		var ring_px: float = read_px * 1.45
 		var ring_col := dcol(src, "light", tint)
 		var ring_size := ring_px * STAGING_UNITS_PER_PIXEL
 		var ring_seed := fposmod(p.dot(Vector3(0.173, 0.371, 0.227)), 1.0)
