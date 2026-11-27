@@ -4,6 +4,7 @@
 # First it proves the list is whole: every .gd file under godot/**/test/ is listed once, and every listed file exists.
 # Then two headless checks run at a time, each with its own user dir, log and time limit. A check fails on a non-zero
 # exit, on the time limit, or on any SCRIPT ERROR line in its log. Prints results in list order and exits 1 on any failure.
+# The caller's log keeps the bounded failure excerpts. Each shard removes only its own temporary files after reporting.
 # The list (or the shard's part of it) also has a time budget (GODOT_CHECKS_BUDGET, 1080 s; GitHub sets 600 s per
 # shard. One job took 921 s for 155 checks on Nov 22 2026, up from about 200 s; the budget went from 780 s to 1080 s when
 # PR 1329 tipped it over): a check gets 300 s or what is left of the budget, whichever is less, and a check the budget
@@ -153,9 +154,19 @@ case "$si" in ""|*[!0-9]*) si=x ;; esac
 case "$sn" in ""|*[!0-9]*) si=x ;; esac
 if [ "$si" = x ]; then echo "FAIL: SHARD must be i/n with whole numbers, got '$SHARD'."; exit 2; fi
 if [ "$si" -lt 1 ] || [ "$si" -gt "$sn" ]; then echo "FAIL: SHARD $SHARD is outside 1/$sn to $sn/$sn."; exit 2; fi
+if command -v cygpath > /dev/null 2>&1; then
+  case "${RUNNER_TEMP:-}" in
+    //*) ;;
+    /*) RUNNER_TEMP=$(cygpath -m "$RUNNER_TEMP") || { echo "FAIL: could not resolve RUNNER_TEMP."; exit 1; }
+        export RUNNER_TEMP ;;
+  esac
+fi
 if ! T=$(scratch shard); then
   echo "FAIL: could not prepare Godot check scratch space."; exit 1
 fi
+trap 'code=$?; if ! CHECK_SHARD_SCRATCH="$T" scratch remove-shard; then
+  echo "FAIL: could not remove this shard scratch at $T."; exit 1
+fi; exit "$code"' EXIT
 
 # 0. the shard plan: same on every shard. Lines: shard|class|script|setup|args|reason, in list order.
 # Use ENVIRON so awk does not interpret backslashes in a native Windows path as escapes.
@@ -239,5 +250,5 @@ while IFS='|' read -r name script setup args; do
     F=$((F+1))
   fi
 done < "$T/selected.txt" || exit 1
-echo "Ran $ran headless Godot checks (shard $si of $sn) in $(( $(date +%s) - t_all )) s (logs: $T/logs)."
+echo "Ran $ran headless Godot checks (shard $si of $sn) in $(( $(date +%s) - t_all )) s."
 if [ $F -eq 0 ]; then echo "PASS: every listed headless Godot check passed."; else echo "FAIL: $F Godot check(s) failed."; exit 1; fi
