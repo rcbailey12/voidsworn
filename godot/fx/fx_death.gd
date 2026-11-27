@@ -10,6 +10,7 @@ extends RefCounted
 const SH := preload("res://fx/fx_shaders.gd")
 const POOLS := preload("res://fx/fx_pool.gd")
 const HULL := preload("res://fx/fx_hull.gd")
+const BREACH := preload("res://fx/fx_breach.gd")
 const WOUNDS := preload("res://fx/fx_wounds_flag.gd")
 const FLOOK_W := preload("res://fx/faction_look.gd")
 const DAMAGE_PLUME := preload("res://fx/fx_damage_plume.gd")
@@ -1738,7 +1739,11 @@ static func build_pieces(fx, s, job: Dictionary, deadline: int) -> bool:
 		var i := meshes.size()
 		var pc: Dictionary = pieces[i]
 		pc["dstyle"] = dstyle(s)
-		pc["scorch_tint"] = s.fac.get("fragment_paint", Color(0.20, 0.21, 0.22))
+		var paint: Color = s.fac.get("fragment_paint", Color(0.20, 0.21, 0.22))
+		# Heat only changes the seam. These cold faces take the darker finish of their own scorched hull.
+		if s.faction in ["deathless", "corsair"]:
+			paint = BREACH.wound_col(s.fac.get("wound", {}), "scorch_col", paint)
+		pc["scorch_tint"] = paint
 		meshes.append(_piece_materials(geo[i], pc, false, fx) if i < geo.size() else _piece_mesh(pc, false, fx))
 		if pc.has("hull"): pc["shape"] = safe_convex(pc["hull"])
 		if Time.get_ticks_usec() >= deadline: break
@@ -3057,10 +3062,9 @@ static func _split_vent(fx, s, lp: Vector3, ln: Vector3) -> void:
 	var light_col: Color = dcol(s, "light", fire_col.lerp(Color.WHITE, 0.35))
 	var smoke_k: float = dsmoke(s)
 	var jet_vel: Vector3 = inherited + n * s.hull.L * 0.95
-	# Layer 1: primary directional supersonic vent jet (SH.SPRITE SH.VENT_JET=40; core fades inside 0.22 s, total life 0.30 s).
-	fx.spr(p, fx.now, 0.30, fire_col, 2.2 if ignited else 0.45, s.hull.L * 0.28, s.hull.L * 0.52, SH.VENT_JET, jet_vel, 1.8)
-	# Layer 2: staggered sheared directional gas sheets (k=27) for smoky factions, or pale crystal shards (k=16) for Glasswrights.
+	# Layers 1 and 2: the directional jet and sheared gas sheets contain soot. Glass only vents stored light.
 	if smoke_k > 0.01:
+		fx.spr(p, fx.now, 0.30, fire_col, 2.2 if ignited else 0.45, s.hull.L * 0.28, s.hull.L * 0.52, SH.VENT_JET, jet_vel, 1.8)
 		var soot_col: Color = Color(0.11, 0.08, 0.16) if s.faction == "deathless" else Color(0.16, 0.15, 0.14)
 		for j in 3:
 			var jf := float(j)
@@ -3069,9 +3073,10 @@ static func _split_vent(fx, s, lp: Vector3, ln: Vector3) -> void:
 				clampf(0.45 + 0.35 * smoke_k, 0.22, 0.78) * (1.0 - jf * 0.16), s.hull.L * (0.14 + jf * 0.05),
 				s.hull.L * (0.34 + jf * 0.08), 27, gv, 1.4)
 	else:
+		fx.spr(p, fx.now, 0.30, s.fac.damage_glow, 1.25 if ignited else 0.45, s.hull.L * 0.14, s.hull.L * 0.28, 18, jet_vel, 1.8)
 		for j in 4:
 			var sv: Vector3 = inherited + fx.rcone(n, 0.22) * s.hull.L * (0.55 + float(j) * 0.15)
-			fx.spr(p + n * s.hull.L * 0.04, fx.now + float(j) * 0.025, 0.40, core_col, 1.6 if ignited else 0.8,
+			fx.spr(p + n * s.hull.L * 0.04, fx.now + float(j) * 0.025, 0.40, s.fac.damage_glow, 1.6 if ignited else 0.8,
 				s.hull.L * 0.05, s.hull.L * 0.02, 16, sv, 1.2)
 	# Layer 3: tight breach-mouth ignition ember and faction light when the flash counter permits.
 	if ignited:
@@ -3956,7 +3961,7 @@ static func _hulk(fx, s) -> void:
 	var p: Vector3 = hit.get("p", s.hull.core)   # issue 370: a missed ray falls back to the core, never a box point
 	var n: Vector3 = hit.get("n", Vector3.UP)
 	var vent := DAMAGE_PLUME.build(fx, node, p, (n + Vector3.UP * 0.3).normalized(), maxf(s.hull.L * 0.20, 0.12),
-		DAMAGE_PLUME.Form.HULK, s.fac, 0.12, "fx_hulk_vent")
+		DAMAGE_PLUME.Form.HULK, s.fac, 0.12, "fx_hulk_vent", s._plume_glow(), s._plume_profile())
 	fx.later(fx.now + HULK_VENT_TICK, _thin_hulk_vent.bind(fx, weakref(vent), fx.now))
 	fx.dstate["wrecks"].append(wreck)
 	_cap_wrecks(fx)

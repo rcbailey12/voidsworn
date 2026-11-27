@@ -18,7 +18,7 @@ func _init() -> void:
 	var first_repeat := ""
 	for seed_value in range(1, SECTORS + 1):
 		var sector := 1 + (seed_value - 1) % 3
-		JSM.rnd_seed(seed_value)
+		campaign.rng.rnd_seed(seed_value)
 		var map: Dictionary = campaign.genSector(sector)
 		var problem := layout_problem(map)
 		if not problem.is_empty():
