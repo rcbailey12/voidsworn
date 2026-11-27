@@ -1,7 +1,6 @@
 'use strict';
 // Issue 1430: the headless Godot list runs as parallel shards on GitHub. These checks run the real run_checks.sh in its
-// plan-only mode (no Godot needed) and prove every headless check lands in exactly one shard, for the shard count the
-// workflow uses and for others, with and without recorded times, and that a bad SHARD value fails.
+// plan-only mode to prove coverage and budgets, and with a fake Godot to prove scratch cleanup (no real Godot needed).
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
@@ -20,6 +19,7 @@ const shellPath = file => windows ? file.replace(/\\/g, '/') : file;
 function plan(shard, extra) {
   const env = Object.assign({}, process.env, { SHARD: shard, GODOT_CHECKS_PLAN: '1', RUNNER_TEMP: shellPath(tmp) }, extra || {});
   const r = spawnSync(sh, [SCRIPT], { cwd: ROOT, env, encoding: 'utf8', windowsHide: true, timeout: 60000 });
+  assert.ifError(r.error);
   return { status: r.status, out: (r.stdout || '') + (r.stderr || '') };
 }
 
@@ -39,9 +39,13 @@ assert.ok(new RegExp('SHARD: \\$\\{\\{ matrix\\.shard \\}\\}/' + wfCount).test(w
 
 function cover(n, extra) {
   const seen = new Map();
+  const loads = [];
   for (let i = 1; i <= n; i++) {
     const r = plan(i + '/' + n, extra);
     assert.equal(r.status, 0, 'plan for shard ' + i + '/' + n + ' failed:\n' + r.out);
+    const estimate = /about (\d+) s by the recorded times/.exec(r.out);
+    assert.ok(estimate, r.out);
+    loads.push(Number(estimate[1]));
     const rows = r.out.split(/\r?\n/).filter(l => /^[0-9]+\|headless\|/.test(l));
     assert.equal(rows.length, headless.length, 'shard ' + i + '/' + n + ' printed a plan that is not the whole list');
     rows.forEach(l => {
@@ -58,10 +62,11 @@ function cover(n, extra) {
   });
   stepLines.forEach(s => assert.equal(seen.get(s), '1', s + ' (run in its own step) must sit in shard 1 so it is reported once'));
   assert.equal(seen.size, headless.length);
-  return seen;
+  return loads;
 }
 
-[...new Set([1, 2, 3, wfCount, 5])].forEach(n => cover(n));
+const counts = [...new Set([1, 2, 3, wfCount, 5])];
+const est = new Map(counts.map(n => [n, cover(n)])).get(wfCount);
 const budget = plan('1/3', { GODOT_CHECKS_BUDGET: '600' });
 assert.equal(budget.status, 0, budget.out);
 const raised = /([0-9]+) s planned for a 600 s budget; budget raised to ([0-9]+) s/.exec(budget.out);
@@ -141,12 +146,6 @@ if (wf.includes('git merge-tree --write-tree HEAD origin/main')) {
 cover(wfCount, { GODOT_CHECKS_TIMES: shellPath(path.join(tmp, 'missing_times.txt')) });
 
 // Balance at the workflow's count by the recorded times: no shard more than 25% over the even share.
-const loadsRoot = path.join(tmp, 'loads');
-fs.mkdirSync(loadsRoot);
-const loadsPlan = plan('1/' + wfCount, { RUNNER_TEMP: shellPath(loadsRoot) });
-assert.equal(loadsPlan.status, 0, loadsPlan.out);
-const [loadScratch] = fs.readdirSync(loadsRoot);
-const est = fs.readFileSync(path.join(loadsRoot, loadScratch, 'godot_checks', 'loads.txt'), 'utf8').trim().split(/\r?\n/).map(l => Number(l.split('|')[2]));
 const total = est.reduce((a, b) => a + b, 0);
 assert.ok(est.length === wfCount && total > 0, 'no load estimate was written');
 est.forEach((t, i) => assert.ok(t <= 1.25 * total / wfCount, 'shard ' + (i + 1) + ' is planned for ' + t + ' s of ' + total + ' s'));
@@ -169,33 +168,82 @@ est.forEach((t, i) => assert.ok(t <= 1.25 * total / wfCount, 'shard ' + (i + 1) 
   }
 });
 
-// Overlap two real planners in one temp root. Both must leave an intact plan and their own directories.
-const shared = path.join(tmp, 'shared scratch');
-fs.mkdirSync(shared);
-const sharedEnv = windows ? shared.replace(/\\/g, () => '\\\\') : shared;
+// Issue 2174: make sure Git Bash uses the actual doubled-backslash sandbox path, not just a fallback.
+function assertPlanBase(base, extra) {
+  const r = plan('1/5', extra);
+  assert.equal(r.status, 0, r.out);
+  const scratch = /^  scratch: (.+)$/m.exec(r.out);
+  assert.ok(scratch, r.out);
+  assert.equal(path.dirname(scratch[1]), fs.realpathSync(base), r.out);
+  assert.equal(r.out.split(/\r?\n/).filter(l => /^\d+\|headless\|/.test(l)).length, headless.length);
+  assert.deepEqual(fs.readdirSync(base), [], 'passing plan-only mode must also clean its scratch');
+}
+if (windows) {
+  const base = fs.mkdtempSync(path.join(tmp, 'mangled path '));
+  const mangled = base.replace(/\\/g, () => '\\\\').replace(/\\\\/, '/');
+  assertPlanBase(base, { RUNNER_TEMP: mangled });
+}
+const notDirectory = path.join(tmp, 'not-a-directory');
+fs.writeFileSync(notDirectory, '');
+const fallback = fs.mkdtempSync(path.join(tmp, 'fallback-'));
+const unusable = { RUNNER_TEMP: shellPath(notDirectory), TEMP: shellPath(notDirectory) };
+assertPlanBase(fallback, { ...unusable, TMP: shellPath(fallback) });
+if (windows) {
+  const noScratch = plan('1/5', { ...unusable, TMP: shellPath(notDirectory), USERPROFILE: shellPath(notDirectory) });
+  assert.equal(noScratch.status, 1, noScratch.out);
+  assert.match(noScratch.out, /^FAIL: could not prepare Godot check scratch space\./m);
+  assert.doesNotMatch(noScratch.out, /^PASS/m);
+}
+
+// Share a scratch base and checkout between an overlapping pass and failure. An exit-zero Godot
+// with SCRIPT ERROR still fails and keeps its plan, logs and onboarding data. Only the pass is removed.
+const fixture = path.join(tmp, 'cleanup fixture');
+const shared = path.join(fixture, 'scratch');
+const profiles = path.join(fixture, '.onboarding_checks');
+const fixtureCi = path.join(fixture, 'godot/tools/ci');
+const fixtureRunner = path.join(fixtureCi, 'run_checks.sh');
+for (const dir of [shared, profiles, fixtureCi]) fs.mkdirSync(dir, { recursive: true });
+fs.copyFileSync(SCRIPT, fixtureRunner);
+const userdirLine = headless.find(l => l.split('|')[2] === 'userdir');
+assert.ok(userdirLine, 'need an onboarding check row');
+const onboardingScript = path.join(fixture, 'godot', scriptOf(userdirLine));
+fs.mkdirSync(path.dirname(onboardingScript), { recursive: true });
+fs.writeFileSync(onboardingScript, '');
+fs.writeFileSync(path.join(fixtureCi, 'godot_checks.txt'), userdirLine + '\n');
+const stub = path.join(fixture, 'fake-godot');
+fs.writeFileSync(stub, '#!/bin/sh\nprintf "profile proof\\n" > "$APPDATA/proof.txt" || exit 2\n' +
+  'sleep 1\nif [ "$PROOF_FAIL" = 1 ]; then echo "SCRIPT ERROR: fixture failed"; fi\n', { mode: 0o700 });
+for (const base of [shared, profiles]) {
+  fs.mkdirSync(path.join(base, 'other-run'));
+  fs.writeFileSync(path.join(base, 'other-run', 'keep.txt'), 'unrelated scratch');
+}
 const concurrent = spawnSync(sh, ['-c',
-  'SHARD=1/5 "$1" "$2" & first=$!; SHARD=2/5 "$1" "$2" & second=$!; wait "$first"; a=$?; wait "$second"; b=$?; [ "$a" -eq 0 ] && [ "$b" -eq 0 ]',
-  'sh', windows ? shellPath(sh) : sh, shellPath(SCRIPT)], {
-  cwd: ROOT, env: { ...process.env, GODOT_CHECKS_PLAN: '1', RUNNER_TEMP: sharedEnv },
+  'PROOF_FAIL=0 "$1" "$2" & first=$!; PROOF_FAIL=1 "$1" "$2" & second=$!; wait "$first"; a=$?; wait "$second"; b=$?; [ "$a" -eq 0 ] && [ "$b" -eq 1 ]',
+  'sh', shellPath(sh), shellPath(fixtureRunner)], {
+  cwd: fixture, env: { ...process.env, GODOT_CHECKS_PLAN: '0', GODOT_CHECKS_PLAN_EDIT: '', GODOT_CHECKS_TIMES: '',
+    GODOT_CHECKS_BUDGET: '60', GODOT: shellPath(stub), SHARD: '1/1', RUNNER_TEMP: shellPath(shared) },
   encoding: 'utf8', windowsHide: true, timeout: 60000,
 });
 assert.ifError(concurrent.error);
-assert.equal(concurrent.status, 0, concurrent.stdout + concurrent.stderr);
-const scratchDirs = fs.readdirSync(shared);
-assert.equal(scratchDirs.length, 2, 'each concurrent invocation must have its own scratch');
-const plans = scratchDirs.map(dir => {
-  const root = path.join(shared, dir, 'godot_checks');
-  for (const child of ['logs', 'fixtures', 'xdg']) assert.ok(fs.statSync(path.join(root, child)).isDirectory());
-  return fs.readFileSync(path.join(root, 'plan.txt'), 'utf8');
-});
-assert.equal(plans[0], plans[1]);
-assert.equal(plans[0].trim().split(/\r?\n/).length, headless.length);
-const notDirectory = path.join(tmp, 'not-a-directory');
-fs.writeFileSync(notDirectory, '');
-const noScratch = plan('1/5', { RUNNER_TEMP: shellPath(notDirectory) });
-assert.equal(noScratch.status, 1, noScratch.out);
-assert.match(noScratch.out, /^FAIL: could not prepare Godot check scratch space\./m);
-assert.doesNotMatch(noScratch.out, /^PASS/m);
+const proof = concurrent.stdout + concurrent.stderr;
+assert.equal(concurrent.status, 0, proof);
+assert.match(proof, /^PASS: every listed headless Godot check passed\./m);
+assert.match(proof, /^FAIL: 1 Godot check\(s\) failed\./m);
+const made = [...proof.matchAll(/^  scratch: (.+)$/gm)].map(m => path.basename(m[1]));
+assert.equal(made.length, 2, proof);
+assert.notEqual(made[0], made[1], proof);
+const kept = /^  scratch kept: (.+)$/m.exec(proof);
+assert.ok(kept, proof);
+const failedId = path.basename(kept[1]);
+assert.ok(made.includes(failedId), proof);
+for (const base of [shared, profiles]) {
+  assert.deepEqual(fs.readdirSync(base).sort(), [failedId, 'other-run'], proof);
+  assert.equal(fs.readFileSync(path.join(base, 'other-run', 'keep.txt'), 'utf8'), 'unrelated scratch');
+}
+const failed = path.join(shared, failedId, 'godot_checks');
+assert.equal(fs.readFileSync(path.join(failed, 'plan.txt'), 'utf8').trim(), '1|' + userdirLine);
+assert.match(fs.readFileSync(path.join(failed, 'logs', path.basename(onboardingScript, '.gd') + '.log'), 'utf8'), /SCRIPT ERROR/);
+assert.match(fs.readFileSync(path.join(profiles, failedId, 'xdg', 'proof.txt'), 'utf8'), /profile proof/);
 
 fs.rmSync(tmp, { recursive: true, force: true });
-console.log('PASS godot_shard_tests: ' + headless.length + ' headless checks, including the 5-shard plan and old-branch budget; workflow uses ' + wfCount + ' shards at ' + est.join(', ') + ' s');
+console.log('PASS godot_shard_tests: ' + headless.length + ' headless checks, 5-shard plan, old-branch budget, temp paths and pass-only cleanup; workflow uses ' + wfCount + ' shards at ' + est.join(', ') + ' s');
