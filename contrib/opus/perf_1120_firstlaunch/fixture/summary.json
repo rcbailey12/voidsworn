@@ -1,0 +1,4 @@
+{"note": "fixture", "pid": 4242, "frames": 3, "battles": 1, "title_drawn_engine_ms": 900, "playable_engine_ms": {"1": 5000},
+ "launch_unix_ms": "1000", "viewport": "(3840, 2160)", "adapter": "fixture", "settings": {"quality": "max", "fullscreen": true},
+ "stages": [{"stage": "title", "first_unix_ms": 2000, "last_unix_ms": 5000, "first_ms": 900, "last_ms": 3900, "frames": 3,
+  "worst_dt": 120.5, "over_100ms": 1, "compiles": 7, "vram_mb_peak": 1200, "texture_mb_peak": 800, "buffer_mb_peak": 300}]}
