@@ -757,6 +757,7 @@ static func _has_station(v: Dictionary) -> bool:
 
 func _begin(a) -> void:
 	_gen += 1   # issue 1433: work still awaiting from the last battle on this node is stale now
+	_threat_inputs.clear()
 	_api_join()
 	_join_think()
 	retiring = false
@@ -1864,6 +1865,7 @@ func _retire() -> void:
 	_deployment_api = null
 	_gen += 1
 	_click_q = {}
+	_threat_inputs.clear()
 
 
 func _finish(r: Dictionary) -> void:
@@ -4828,6 +4830,41 @@ func _danger_at(u: Dictionary) -> int:
 
 var _threat_busy := false
 var _threat_next := {}
+var _threat_inputs: Array[Callable] = []
+
+
+# Keep player intents in arrival order without blocking on the rules worker. Use the cached view to remember
+# the ship and round, so a queued order can survive playback but cannot carry over to another activation.
+func _queue_threat_input(action: Callable, ship_order := true) -> bool:
+	if not _threat_busy or busy or thinking or warming or ended or retiring or quitting or api == null or api.phase != "player":
+		return false
+	var intent := _replay_threat_order.bind(action, _threat_order_ship(), int(V.get("round", 0))) if ship_order else action
+	_threat_inputs.append(intent)
+	return true
+
+
+func _threat_order_ship() -> String:
+	var active := _active_id()
+	return sel if active == "" else active
+
+
+func _replay_threat_order(action: Callable, id: String, order_round: int) -> void:
+	if int(V.get("round", 0)) != order_round or _threat_order_ship() != id:
+		return
+	if id != "" and not _usable(VU.get(id, {})):
+		return
+	action.call()
+
+
+func _battle_modal_open() -> bool:
+	return is_instance_valid(hud) and (is_instance_valid(hud.menu) or is_instance_valid(hud.ask_panel) or is_instance_valid(hud.get("endcard")))
+
+
+func _replay_threat_inputs(g: int) -> void:
+	# A replayed order can start playback or open a prompt. Check again before removing the next intent.
+	while not _threat_inputs.is_empty() and not _stale(g) and not quitting and _can_act() and not _battle_modal_open():
+		var action: Callable = _threat_inputs.pop_front()
+		action.call()
 
 
 # polls completion each frame; whoever sees it finished first reaps it once (_threat_reap)
@@ -4843,6 +4880,8 @@ func _threat_wait(tid: int) -> void:
 
 func _threat_done() -> void:
 	_threat_busy = false
+	if not _threat_inputs.is_empty():
+		_replay_threat_inputs.call_deferred(_gen)
 	if not _threat_idle() or _threat_pending_version != int(api.version):
 		_threat_request.call_deferred()
 		return
@@ -4858,7 +4897,6 @@ func _threat_done() -> void:
 	_refresh_ui.call_deferred()
 	_overlay.call_deferred()
 	_ptr_refresh.call_deferred()   # the stationary pointer: tip, panel and target as of this result
-	_click_replay.call_deferred()
 
 
 # issue 1433: after a publish, the pointer reads that answered "pending" are redone where the pointer stands
@@ -5189,6 +5227,12 @@ func _on_key(k: int) -> void:
 		if gfx != null and gfx.has_method("hurry_death"):
 			gfx.hurry_death()
 		return
+	if k in [KEY_SPACE, KEY_ENTER, KEY_KP_ENTER, KEY_Q, KEY_E, KEY_BACKSPACE, KEY_B, KEY_X, KEY_G]:
+		# Keep the handover guard at keypress time, so an early Space never becomes an End after the worker.
+		if k == KEY_SPACE and Time.get_ticks_msec() / 1000.0 - handed_t <= 0.5:
+			return
+		if _queue_threat_input(_on_key.bind(k)):
+			return
 	match k:
 		KEY_K:
 			_skip_current_camera_kind()
@@ -5223,10 +5267,7 @@ func _on_key(k: int) -> void:
 			elif _can_act():
 				hud.toast("Nothing planned. Click a blue hex to plan a move, or an enemy to target it. Space ends the ship.")
 		KEY_SPACE:
-			# F1 (Ryan, Nov 1): Space ends the ship. Not in its first half second, so a Space pressed to hurry the enemy
-			# never ends the ship handed over right after.
-			if Time.get_ticks_msec() / 1000.0 - handed_t > 0.5:
-				_end_ship("space")
+			_end_ship("space")
 		KEY_T:
 			cam.toggle_top()
 		KEY_HOME:
@@ -5430,6 +5471,8 @@ func _active_id() -> String:
 
 # End ship (Space, the card's button, the top bar): the ship that is up stops (it holds position if it did nothing)
 func _end_ship(how: String) -> void:
+	if _queue_threat_input(_end_ship.bind(how)):
+		return
 	if not _can_act():
 		return
 	var active := _active_id()
@@ -5457,6 +5500,8 @@ func _end_activation() -> void:
 # allow it only while nothing else has happened since (no shot, ram, boarding, ability, order, Command or dice: view undo).
 # Each press takes back one; after the first move is undone the ship is free again and another may go first.
 func _undo(how: String) -> void:
+	if _queue_threat_input(_undo.bind(how)):
+		return
 	if not _can_act():
 		return
 	# issue 1589: while a plan is open, Backspace takes back its last step (a target, a turn or a move); nothing reaches the
@@ -5589,6 +5634,7 @@ func _on_click() -> void:
 		# issue 1433: the threat map is still computing; keep this click (once) and play it when the result lands
 		if _click_q.is_empty():
 			_click_q = {"hex": hover, "gen": _gen, "v": int(api.version), "sel": sel, "mode": mode, "plan_k": plan_k, "target": target}
+			_threat_inputs.append(_click_replay)
 		return
 	if not _can_act() or hover.x == 99999 or not _api_join():
 		return
@@ -5833,6 +5879,8 @@ func _cancel(why: String) -> void:
 
 # F1: commit what is planned, once: the move, the attack-move, or the fire on the target
 func _confirm() -> void:
+	if _queue_threat_input(_confirm):
+		return
 	if not _can_act() or not _usable(_sel_unit()) or not _api_join():
 		return
 	if mode == "ram":
@@ -5989,7 +6037,23 @@ func _auto_end(id: String) -> void:
 	ending = true
 	hud.toast("The %s has nothing left to do this round: next ship." % _name(id))
 	_refresh_ui()
+	var g := _gen
+	var order_round := int(V.get("round", 0))
 	await get_tree().create_timer(0.8).timeout
+	if not _stale(g):
+		_auto_end_finish(id, order_round)
+
+
+func _auto_end_finish(id: String, order_round: int) -> void:
+	if int(V.get("round", 0)) != order_round:
+		ending = false
+		return
+	var finish := _auto_end_finish.bind(id, order_round)
+	if _queue_threat_input(finish, false):
+		return
+	if _battle_modal_open():
+		_threat_inputs.append(finish)
+		return
 	ending = false
 	if is_inside_tree() and not ended and _can_act() and _active_id() == id and _nothing_left(id):
 		_end_ship("nothing_left")
@@ -7507,6 +7571,9 @@ func _process(dt: float) -> void:
 		return
 	if not quitting and _show_rules_halt() and not bot:
 		return
+	# The worker may be done already. Retry orders held by playback or a modal as soon as the player can act again.
+	if not _threat_inputs.is_empty():
+		_replay_threat_inputs(_gen)
 	# issue 1451: the rules packed this round's start; save it once its animations have played and the player has the turn
 	if round_save_cb.is_valid() and _can_act() and int(api.round_snap_round) > round_saved:
 		round_saved = int(api.round_snap_round)
