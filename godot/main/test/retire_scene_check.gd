@@ -23,6 +23,7 @@ var failures := 0
 
 class TestMain extends MAIN:
 	var backdrop_wanted := false
+	var hold_title_parts := false
 	var stub: PackedScene
 
 	func _ready() -> void:
@@ -33,6 +34,13 @@ class TestMain extends MAIN:
 
 	func _battle_packed() -> PackedScene:
 		return stub
+
+	func battle_parts_ready() -> bool:
+		if not hold_title_parts:
+			return await super.battle_parts_ready()
+		while hold_title_parts:
+			await get_tree().process_frame
+		return true
 
 
 # stands in for the backdrop battle: notes whether the old battle was still waiting when it was built
@@ -157,6 +165,15 @@ func _run() -> void:
 	if m.showcase != null:
 		m.showcase.free()
 		m.showcase = null
+	m.backdrop_wanted = true
+	m._fx_reading = true
+	m.hold_title_parts = true
+	m._start_showcase()
+	m.backdrop_wanted = false   # like switching to Low while the title is still open
+	m._fx_reading = false
+	m.hold_title_parts = false
+	await process_frame
+	_check(m.showcase == null, "C32 selecting Low during prefetch cancels the pending title backdrop")
 
 	# 3a. the title is left during the slices: the rest goes at once
 	var b2 := _old_battle(m, "B")

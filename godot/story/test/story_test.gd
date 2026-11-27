@@ -543,7 +543,7 @@ func t_campaign(runs: int) -> void:
 			for id in C.ADMIRALS:
 				C.META["admirals"][id] = true
 			var JSM = load("res://rules/jsm.gd")
-			JSM.rnd_seed(seed)
+			C.rng.rnd_seed(seed)
 			if with_story:
 				S = StoryScript.new()
 				S.prompt_rename = false

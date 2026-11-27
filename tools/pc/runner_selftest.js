@@ -948,6 +948,53 @@ async function testClaimFailures() {
     pass(arm + ': failed status-comment claim stops before checkout or model calls and releases only its label');
   });
 }
+async function testFinishReleasesClaimBeforeCleanup() {
+  const home = path.join(root, 'finish-claim');
+  const out = path.join(home, 'out');
+  const repo = path.join(home, 'board', 'repo');
+  const log = path.join(out, 'result.txt');
+  const env = { ...defaults, USERPROFILE: home, PC_RUN_TEMP: home,
+    PC_TEST_GH_DB: path.join(home, 'gh-db.json'), PC_TEST_GH_TRACE: log };
+  // Use one transcript for the fake REST calls and the real cleanup logs. No timing or large checkout needed.
+  write(log, '');
+  write(env.PC_TEST_GH_DB, JSON.stringify(gh.database(2262, base)));
+  write(path.join(path.dirname(repo), 'repo-kept-newest', 'fixture.txt'), 'kept checkout');
+  for (const args of [
+    ['init', out, 'codex/issue-2262'],
+    ['announce', out, '2262', 'codex', repo, '21600', 'fixture resume', 'real'],
+    ['scratch', out]
+  ]) {
+    const step = await ps(args, env);
+    assert.equal(step.code, 0, step.text);
+  }
+  assert.equal(JSON.parse(read(env.PC_TEST_GH_DB)).running, true);
+  write(path.join(out, 'run_commit.txt'), base);
+  write(path.join(out, 'confirmed_commit.txt'), base);
+  const finish = await ps(['finish', out, '0', '', 'real', '1', repo], {
+    ...env, PC_RUN_SCRATCH: read(path.join(out, 'scratch_path.txt')).trim()
+  });
+  assert.equal(finish.code, 0, finish.text);
+  const state = JSON.parse(read(path.join(out, 'status.json')));
+  const db = JSON.parse(read(env.PC_TEST_GH_DB));
+  assert.equal(state.status, 'checked_push');
+  assert.equal(state.confirmed_commit, base);
+  assert.equal(state.github.claimed, false);
+  assert.equal(db.running, false);
+  assert.match(db.comments[0].body, /Runner status: finished/);
+  const lines = read(log).split(/\r?\n/).map(line => line.trim());
+  const call = (method, endpoint) => lines.findIndex(line => {
+    if (!line.startsWith('{')) return false;
+    const entry = JSON.parse(line);
+    return entry.method === method && entry.endpoint === 'repos/rcbailey12/voidsworn/' + endpoint;
+  });
+  const comment = call('PATCH', 'issues/comments/' + state.github.comment);
+  const release = call('DELETE', 'issues/2262/labels/running');
+  const scratch = lines.findIndex(line => line.startsWith('run scratch removed:'));
+  const kept = lines.findIndex(line => line.startsWith('kept checkout retained (newest):'));
+  assert(comment >= 0 && release > comment && scratch > release && kept > release,
+    `expected comment and label release before both cleanups, got lines ${comment}, ${release}, ${scratch}, ${kept}`);
+  pass('finish records the checked push and releases the claim before scratch and kept-checkout cleanup');
+}
 async function testAssignedBranch() {
   await parallel([
     ['codex', 'moved-seat', 'Branch: assigns'],

@@ -47,6 +47,7 @@ const WEAP := preload("res://fx/fx_weapons.gd")
 const SV := preload("res://render/ship_view.gd")
 const HT := preload("res://render/hull_table.gd")
 const LOOK := preload("res://render/look.gd")
+const MM_TRIAL := preload("res://render/mm_trial.gd")
 const CAMRIG := preload("res://render/camera_rig.gd")
 const BL := preload("res://world/board_look.gd")
 const LIVING := preload("res://world/world_living.gd")
@@ -187,7 +188,7 @@ func _run() -> void:
 	var part := str(args.get("part", "all"))
 	if part == "all" or part == "fleet":
 		await _fleet_part()
-	if part == "all" or part == "moments":
+	if not MM_TRIAL.has_missing and (part == "all" or part == "moments"):
 		await _moments_part()
 	if part == "props":   # issue 1767 only (not in "all", so the standing sets do not change)
 		await _props_part()
@@ -214,6 +215,9 @@ func _run() -> void:
 			ff.close()
 		print("LOOK_BENCH_PROPS_FAILED %d" % prop_failures.size())
 		get_tree().quit(4)
+		return
+	if MM_TRIAL.has_missing:
+		await _shutdown(1)
 		return
 	print("LOOK_BENCH_DONE")
 	await _shutdown(0)
@@ -471,6 +475,8 @@ func _ship(id: String, fac: String, cls: String, pos: Vector3, facing: int, code
 		u["code"] = code
 		u["L"] = float(OBJ_LEN.get(code, 10.0))
 	sv.setup(u, pos, true)
+	if MM_TRIAL.has_missing:
+		return null
 	sv.set_process(false)   # its bob and idle jets run on the wall clock (see the header)
 	if not sv.squad_kind.is_empty() and sv.hull != null:
 		sv.hull.set_process(false)

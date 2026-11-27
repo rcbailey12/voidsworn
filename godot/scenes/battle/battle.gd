@@ -4138,7 +4138,7 @@ func _attack_move(t_id: String):
 var fan_root: Node3D
 var fan_for := ""
 var fan_key := ""
-const ARC_SPAN := {"F": [-60.5, 60.5], "R": [119.5, 240.5], "S": [29.5, 150.5], "P": [-150.5, -29.5]}
+const ARC_SPAN := {"F": [-60.5, 60.5], "S": [29.5, 150.5], "P": [-150.5, -29.5]}
 
 
 func _fans(id: String, host: Node3D = null) -> void:
@@ -4969,12 +4969,18 @@ func _input(e: InputEvent) -> void:
 		if skip_key or skip_click:
 			get_viewport().set_input_as_handled()
 			_pick_skill_target("")
+		elif e is InputEventMouseMotion and is_instance_valid(_deploy_grid):
+			_deploy_grid.point_at(e.position)
 		elif e is InputEventMouseButton and e.pressed:
 			# Leave the picker rows, Skip and fleet paging to the ledger's normal GUI handler.
 			var ledger: Control = hud.ledger
 			var local_position: Vector2 = ledger.get_global_transform_with_canvas().affine_inverse() * e.position
 			if not ledger._has_point(local_position):
 				get_viewport().set_input_as_handled()
+				if e.button_index == MOUSE_BUTTON_LEFT and is_instance_valid(_deploy_grid):
+					var cell = _deploy_grid.open_at(e.position)
+					if cell != null and _deployment_api.pick_skill_hex(cell.x, cell.y):
+						_finish_skill_pick(false)
 		elif not e is InputEventMouse:
 			get_viewport().set_input_as_handled()
 		return
@@ -6381,6 +6387,8 @@ func _on_action(name: String, arg) -> void:
 
 var roles_opened := false
 var _deployment_api: API
+const DeployGrid := preload("res://ui/battle/deploy_grid.gd")
+var _deploy_grid: DeployGrid
 
 
 # Deployment uses the fleet list before the board, ship views or effects are built.
@@ -6388,6 +6396,11 @@ func _show_skill_picker() -> void:
 	var v: Dictionary = _deployment_api.view()
 	var picker: Dictionary = v["skill_target"]
 	var first := str(picker["picked"].get("id", ""))
+	if picker.has("hexes"):
+		if not is_instance_valid(_deploy_grid):
+			_deploy_grid = DeployGrid.new()
+			hud.add_child(_deploy_grid)
+		_deploy_grid.show_zone(picker, v)
 	var candidates := {}
 	for t in picker["targets"]:
 		candidates[t["id"]] = true
@@ -6400,19 +6413,27 @@ func _show_skill_picker() -> void:
 				"status": "Selected" if picked else "Ready"})
 	hud.set_roster(rows)
 	hud.show_ask({"kind": "skill_target", "key": picker["key"], "id": first, "n": picker["n"],
-		"q": picker["q"] + " Choose from your fleet below.",
+		"q": picker["q"] if picker.has("hexes") else picker["q"] + " Choose from your fleet below.",
 		"opts": [{"id": "skip_skill_target", "n": "Skip", "d": "Skip this skill with Esc or right-click."}]})
 
 
 func _pick_skill_target(id: String) -> void:
 	if quitting or _deployment_api == null or not _deployment_api.pick_skill_target(id):
 		return
-	sfx.play("ui_cancel" if id == "" else "ui_click")
+	_finish_skill_pick(id == "")
+
+
+func _finish_skill_pick(skipped: bool) -> void:
+	sfx.play("ui_cancel" if skipped else "ui_click")
 	if _deployment_api.phase == "deployment":
 		_show_skill_picker()
 	else:
 		var a := _deployment_api
 		_deployment_api = null
+		if is_instance_valid(_deploy_grid):
+			_deploy_grid.hide()
+			_deploy_grid.queue_free()
+			_deploy_grid = null
 		hud.hide_ask()
 		_begin(a)
 

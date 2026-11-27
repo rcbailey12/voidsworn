@@ -8,7 +8,7 @@ const JSM = preload("res://rules/jsm.gd")
 func snapshot(c) -> Dictionary:
 	var meta = c.META.duplicate(false)
 	meta.erase("tel") # Browser-only telemetry, excluded by campaign parity too.
-	return {"run": c.RUN, "saved": c.SAVED_RUN, "meta": meta, "rng": JSM.rng_s & 0xFFFFFFFF,
+	return {"run": c.RUN, "saved": c.SAVED_RUN, "meta": meta, "rng": c.rng.rng_s & 0xFFFFFFFF,
 		"uid": c.UID, "acts": c.screen_acts()}
 
 func check_stage(c, fixture: Dictionary, stage: String) -> bool:
@@ -44,7 +44,7 @@ func _init() -> void:
 		c.RUN = initial["run"].duplicate(true); c.META = initial["meta"].duplicate(true)
 		c.SAVED_RUN = initial["saved"].duplicate(true); c.UID = int(initial["uid"])
 		c.B = null; c.cur_event = null; c.modal_d = null; c.W = {}
-		JSM.rnd_seed(int(initial["rng"]))
+		c.rng.rnd_seed(int(initial["rng"]))
 		c.act("enterNode", fixture["node"])
 		if c.modal_d == null or c.modal_d["kind"] != "event" or c.cur_event["id"] != fixture["event"]:
 			printerr("FAIL: did not enter ", fixture["name"]); quit(1); return
