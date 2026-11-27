@@ -2367,6 +2367,10 @@ try {
     elseif ($partial) { $status = 'partial'; $reason = $partial }
     elseif ($code -eq '7') { $status = 'no_changes'; $reason = 'no changes pushed' }
     Log "runner status: $status ($reason)"
+    State $status $reason $confirmedPush
+    # State is authoritative. Release the claim before cleanup, which can scan several large checkouts.
+    $s = Get-Content -LiteralPath (Join-Path $out 'status.json') -Raw | ConvertFrom-Json
+    End-Announcement $s
     if ($push -eq 'real') {
       try {
         if (Cleanup-Paused) { Log 'run cleanup skipped during the PC pause' }
@@ -2384,10 +2388,6 @@ try {
         }
       } catch { Log "run cleanup stopped: $($_.Exception.Message)" }
     }
-    State $status $reason $confirmedPush
-    # State is authoritative; reporting errors never change it or the runner exit code.
-    $s = Get-Content -LiteralPath (Join-Path $out 'status.json') -Raw | ConvertFrom-Json
-    End-Announcement $s
     exit 0
   }
   else { throw "unknown runner step $mode" }
