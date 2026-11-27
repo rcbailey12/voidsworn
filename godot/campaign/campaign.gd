@@ -2238,7 +2238,9 @@ func ACT_equip(arg: String) -> void:   # R1 (MOD-3, Codex PR #1): only a well-fo
 	if RUN == null: return
 	var p = arg.split(":")
 	if p.size() != 2 or p[0].length() > 15 or not p[0].is_valid_int() or p[0].begins_with("-") or p[0].begins_with("+") or (p[0].length() > 1 and p[0].begins_with("0")): return
-	if _fit_from_hold(int(p[0]), _ship(p[1])): _fleet_back()
+	if _fit_from_hold(int(p[0]), _ship(p[1])):
+		if page.get("kind") == "shipyard": shipyardScreen(yard_node)
+		else: _fleet_back()
 func _pop_mod(sh, i, got: Array) -> void:
 	if i < sh["mods"].size(): got.append(sh["mods"].pop_at(i))
 func ACT_unequip(arg: String) -> void:
@@ -2494,6 +2496,7 @@ func _apply_preview_op(action: String, key := "", slot := -1) -> Dictionary:
 		for entry in p["entries"]:
 			var live: Dictionary = entry["before"]; var after: Dictionary = entry["after"]
 			live["hp"] = after["hp"]
+			if live.has("yard_sections") and not after.has("yard_sections"): live.erase("yard_sections")
 			if action == "refit" or action == "upgradeMk":
 				live["mk"] = after["mk"]; live["mods"] = after["mods"]
 				if after.has("hpOwed"): live["hpOwed"] = after["hpOwed"]
@@ -4344,6 +4347,10 @@ func finishBattle(result: String) -> void:
 			else: RUN["fallen"].append({"cap": ship["cap"].duplicate(true), "ship": ship["name"], "sector": RUN["sector"]})
 			continue
 		ship["hp"] = clampv(jsround(float(u["hp"])), 1, derive(ship)["maxHp"])
+		# Cosmetic last-battle damage for the yard, never an input to battle setup or derived stats.
+		ship.erase("yard_sections")
+		if u.get("sec") is Dictionary and u["sec"].values().any(func(sec): return jt(sec.get("broken"))):
+			ship["yard_sections"] = u["sec"].duplicate(true)
 		if result == "retreat":
 			ship["hp"] = max(1.0, float(ship["hp"]) - jsround(float(u["maxHp"]) * 0.1)); continue
 		if result == "win":
