@@ -143,6 +143,7 @@ headless|fx/test/damage_surface_check.gd|-|-|R80 damage contracts on box ships: 
 headless|fx/test/damage_plume_check.gd|-|-|issue 2044: faction wound and wisp layers, cavity and local light separation, wing exhaust attachment, hulk smoke thins without expiring, clean faction crits and flash budget
 headless|fx/test/graphics_correctness_check.gd|-|-|issue 1955: missing damage anchors, rim and fog on mesh-surface wrecks, five live point-defense pops, quality downgrade and shader cache teardown
 headless|fx/test/faction_fx_1991_check.gd|-|-|issue 1991: faction fire and light, Eclipse trails and implosion, Chorus wing spores, cold Directorate hits and crits, wreck cap cooling and blocker depth testing
+headless|fx/test/faction_fx_2248_check.gd|-|-|issue 2248: Glasswright split and bay glints without smoke, faction tint and profile on hulk and wing plumes, FX API contract and darker cold wreck caps
 headless|fx/test/death_leap_check.gd|-|-|death sections, tiers, lifetime, cleanup and drift (issue 137)
 headless|fx/test/acid_thorn_check.gd|-|-|issue 1877: the Acid Thorn has its built body, a missed thorn flies on past, a stuck thorn rides the ship it hit when that ship moves and turns, and goes when it dies
 headless|fx/test/death_plane_check.gd|-|-|ShipView and effects together as battle.gd marks a ship dead; box ships
