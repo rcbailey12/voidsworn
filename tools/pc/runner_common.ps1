@@ -1922,7 +1922,7 @@ try {
     switch ($kind) {
       'opencode' { $words = @('run','--auto','--format','json','-m',$model,'--dir',$probe); if ($variant) { $words += @('--variant',($variant -replace '^--variant\s+','')) }; $words += $prompt }
       'kimi' { $words = @('-m',$model,'--output-format','text','-p',$prompt) }
-      'codex' { $words = @('exec','-m',$model,'-c','model_reasoning_effort=low','--ephemeral','--skip-git-repo-check','--color','never','-C',$probe,'-o',(Join-Path $probe 'reply.txt'),$prompt) }
+      'codex' { $words = @('exec','--ignore-user-config','-c','windows.sandbox=unelevated','-m',$model,'-c','model_reasoning_effort=low','--ephemeral','--skip-git-repo-check','--color','never','-C',$probe,'-o',(Join-Path $probe 'reply.txt'),$prompt) }
       default { throw "unknown preflight harness $kind" }
     }
     if ($test -and $env:PC_TEST_PREFLIGHT) { $exe = $env:PC_TEST_PREFLIGHT }
@@ -1931,12 +1931,14 @@ try {
     $psi.FileName = $exe; $psi.Arguments = ($words | ForEach-Object { Quote $_ }) -join ' '
     if ($exe -match '\.(cmd|bat)$') { $psi.FileName = $env:COMSPEC; $psi.Arguments = '/d /s /c ""' + $exe + '" ' + $psi.Arguments + '"' }
     $psi.WorkingDirectory = $probe; $psi.UseShellExecute = $false; $psi.CreateNoWindow = $true
+    $psi.RedirectStandardInput = $true
     $psi.RedirectStandardOutput = $true; $psi.RedirectStandardError = $true
     # The probe must use the same verified kill as an agent, including when taskkill cannot enumerate its tree.
     . (Join-Path $PSScriptRoot 'run_timeout.ps1') -LibraryOnly
     Initialize-RunTree
     $p = New-Object Diagnostics.Process; $p.StartInfo = $psi
-    $null = $p.Start(); $stdout = $p.StandardOutput.ReadToEndAsync(); $stderr = $p.StandardError.ReadToEndAsync()
+    $null = $p.Start(); try { $p.StandardInput.Close() } catch { }
+    $stdout = $p.StandardOutput.ReadToEndAsync(); $stderr = $p.StandardError.ReadToEndAsync()
     $null = $p.Handle
     $tree = @{}; $tree[$p.Id] = $p
     try {

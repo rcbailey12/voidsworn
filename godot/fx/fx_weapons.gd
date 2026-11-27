@@ -752,7 +752,7 @@ static func _weapon_shader(fx, routed := false) -> Shader:
 		code = SH.patch(code, "float frame = mix(age * 15.0, 3.0 + sqrt(age) * 12.0, plasma);",
 			"float frame = hot > 0.5 ? age * 15.0 : mix(age * 15.0, 3.0 + sqrt(age) * 12.0, plasma);")
 		code = SH.patch(code, "vec3 core = mix(vec3(0.65, 0.76, 0.93), vec3(0.9, 0.83, 0.68), age);",
-			"vec3 core = mix(weapon_tint, vec3(0.9, 0.83, 0.68), age * 0.45);")
+			"vec3 core = mix(weapon_tint, vec3(0.9), age * 0.45);")
 		# Issue 281 Cone B: the vent gas cools toward the weapon colour and darkens with age, so the cone reads as hot
 		# exhaust instead of a flat pale blob. The flash keeps its own palette (vent is 0 for every other kind).
 		code = SH.patch(code, "vec3 smoke = mix(vec3(0.12, 0.085, 0.18), vec3(0.42, 0.36, 0.50), lit);",
@@ -2039,7 +2039,8 @@ static func warm_craft_trail(fx, parent: Node3D) -> void:
 # The weapon sets the size, timing and direction. The target sets what comes off the hull (R412).
 const IMPACT_RESPONSE := {
 	"metal": {"fire_body": true, "gas_kind": 7, "debris": "plate", "hot_plate": true},
-	"glass": {"fire_body": false, "gas_kind": 0, "debris": "glass", "tint": Color(1.0, 0.95, 0.78), "prism": 1.0},
+	"hegemony": {"fire_body": true, "gas_kind": 7, "debris": "plate", "faction_glow": true},
+	"glass": {"fire_body": false, "gas_kind": 0, "debris": "glass", "faction_glow": true, "prism": 1.0},
 	"bio": {"fire_body": false, "gas_kind": 20, "debris": "drop", "tint": Color(0.72, 0.86, 0.27),
 		"mist": Color(0.32, 0.38, 0.15)},
 	"obsidian": {"fire_body": true, "gas_kind": 0, "debris": "plate", "faction_glow": true},
@@ -2048,7 +2049,11 @@ const METAL_EMBER := Color(0.42, 0.07, 0.02)
 
 
 static func _impact_response(target) -> Dictionary:
-	return IMPACT_RESPONSE[HULL.target_substance(target.faction)] if target != null else IMPACT_RESPONSE["metal"]
+	return _response_for(target.faction) if target != null else IMPACT_RESPONSE["metal"]
+
+
+static func _response_for(faction: String) -> Dictionary:
+	return IMPACT_RESPONSE[faction if faction == "hegemony" else HULL.target_substance(faction)]
 
 
 static func _impact_color(response: Dictionary, target, fallback: Color) -> Color:
@@ -2076,7 +2081,7 @@ static func _impact_embers(fx, p: Vector3, n: Vector3, T: float, k: float, count
 		response: Dictionary, target, col := METAL_EMBER) -> void:
 	if response.fire_body:
 		var ember: Color = target.fac.damage_glow * 0.35 if response.get("faction_glow", false) else col
-		_embers(fx, p, n, T, k, count, fam, ember)
+		_embers(fx, p, n, T, k, count, fam, ember, SH.TICK_EMBER if response.get("faction_glow", false) else fx.HOT_FLECK_SPRITE)
 
 
 # Issue 461: the weapon family whose hit recipe a look uses (deaths_and_hits.md "The hits, upgraded"). Shell: a spark
@@ -2158,7 +2163,7 @@ static func _throw_sparks(fx, p: Vector3, n: Vector3, axis: Vector3, T: float, k
 # the larger pieces peel off slowly along the surface, with a few loose pieces between them.
 static func _throw_debris(fx, p: Vector3, n: Vector3, axis: Vector3, T: float, k: float, count: int, speed: float, size: float,
 		heat: float, fam: String, faction := "metal", macro := false, target = null) -> void:
-	var response: Dictionary = IMPACT_RESPONSE[HULL.target_substance(faction)]
+	var response := _response_for(faction)
 	if response.debris == "drop":
 		var tissue: Color = response.tint
 		for j in _amount(fx, count):
@@ -2240,12 +2245,12 @@ static func _gas_cloud(fx, p: Vector3, n: Vector3, T: float, k: float, col: Colo
 
 
 # Embers: slow cooling flecks that hang near the plate and cool yellow-white to dark red, with no flicker.
-static func _embers(fx, p: Vector3, n: Vector3, T: float, k: float, count: int, fam: String, col := METAL_EMBER) -> void:
+static func _embers(fx, p: Vector3, n: Vector3, T: float, k: float, count: int, fam: String, col: Color, kind: int) -> void:
 	for j in _amount(fx, int(ceil(count * 1.5))):
 		var d := _outward(n, fx.rcone(n, 0.85), 0.2)
 		var v: Vector3 = d * fx.rng.randf_range(0.6, 3.2) * k * fx.unit
 		var life: float = fx.rng.randf_range(EMBER_LIFE.x, EMBER_LIFE.y)
-		fx.spr(p, T + fx.rng.randf() * 0.12, life, col, 1.6, 0.18 * k, 0.09 * k, fx.HOT_FLECK_SPRITE, v, 0.5, 0.0, 0.0, 6.0)
+		fx.spr(p, T + fx.rng.randf() * 0.12, life, col, 1.6, 0.18 * k, 0.09 * k, kind, v, 0.5, 0.0, 0.0, 6.0)
 		_note(fx, "ember", fam, v, n, life)
 
 
@@ -2262,13 +2267,16 @@ static func _heat_spot(fx, p: Vector3, T: float, k: float, size: float, fam: Str
 		fx.spr(p, T + 0.04, life, Color(1, 0.5, 0.15), i, size * k, size * k * 0.8, 21, Vector3.ZERO, 0.0, 0.0, 0.0, px)
 		return
 	var lp: Vector3 = src.xf().affine_inverse() * p
+	var faction_glow: bool = _impact_response(src).get("faction_glow", false)
+	var col: Color = src.fac.damage_glow if faction_glow else Color(1, 0.5, 0.15)
+	var kind := SH.TICK_EMBER if faction_glow else 21
 	fx.later(T + 0.04, func l_hull_heat() -> void:
 		if src.dead or src.gone or not is_instance_valid(src._dmg_root): return
 		# Issue 1558 item 10: a small ring of heat spots on each hull (fx_pool Pool), written in place, instead of a new
 		# Batch, ArrayMesh and MeshInstance3D for every metal hit. The oldest spot is reused when the ring wraps.
 		var pool = _heat_pool(fx, src)
 		pool.emit(POOLS.pack(Vector4(lp.x, lp.y, lp.z, T + 0.04), Vector4(0, 0, 0, life),
-			Vector4(1, 0.5, 0.15, i), Vector4(size * k * fx.unit, size * k * fx.unit * 0.8, 21, px + 0.31), Vector4.ZERO))
+			Vector4(col.r, col.g, col.b, i), Vector4(size * k * fx.unit, size * k * fx.unit * 0.8, kind, px + 0.31), Vector4.ZERO))
 		pool.flush())
 
 
@@ -2448,6 +2456,7 @@ static func _impact_old(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, co
 	var p: Vector3 = tg["p"]; var n: Vector3 = tg["n"]
 	var size := (3.8 if light else (5.6 if w <= 2 else 7.0)) * k
 	var tint: Color = col if lk in ["las", "prism", "plasma", "pflak", "mflak", "gflak"] else Color(0.94, 0.67, 0.33)
+	tint = _impact_color(_impact_response(Tg), Tg, tint)
 	_burst(fx, p+n*0.35*k, n, T, size, "flash", 0.24 if light else 0.32, tint, 4.2, HIT_PX[clampi(w,1,3)])
 	_vent(fx, p+n*0.5*k, n, T+0.025, size*0.85, 0.38, tint, 0.9, n*4.0*k, 0.55, 1.0, w, Tg, true)
 	_impact_sparks(fx, p + n * 0.15 * k, (n - dir * 0.25).normalized(), T, k, _spark_faction(Tg), 7 if light else 12)
