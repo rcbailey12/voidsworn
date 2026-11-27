@@ -2068,7 +2068,8 @@ func _play_batch(bt: Dictionary) -> void:
 					move_aim[str(e["unit"])] = {"target": str(e2["target"]), "slot": int(e2["weapon"]) if e2.get("weapon") != null else -1,
 						"wid": str(e2.get("weapon_id", "")), "n": maxi((e2.get("shots", []) as Array).size(), 1)}
 					break
-		await _play_event(e, bt["view"])
+		var breaking_hit: bool = e["t"] == "hit" and _standalone_hit_breaks_shield(evs, i)
+		await _play_event(e, bt["view"], breaking_hit)
 		_tip_completed(e)
 		if e["t"] == "round" and not arrivals.is_empty():
 			await _arrive(arrivals)
@@ -2204,7 +2205,7 @@ func _merge_nemesis_opening(lines: Array) -> bool:
 	return true
 
 
-func _play_event(e: Dictionary, batch_view := {}) -> void:
+func _play_event(e: Dictionary, batch_view := {}, breaking_hit := false) -> void:
 	_voice_event(e)
 	match e["t"]:
 		"adaptation":
@@ -2302,7 +2303,7 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			_apply_hit(e)
 			music_hits += 1
 			if e.get("target") != null:
-				_impact(e["target"], e, Color(1, 0.6, 0.3))
+				_standalone_hit_impact(e, breaking_hit)
 				if e.get("float", true):   # issue 1481: counter-fire, ram shockwave and reactor hits already float their boon number
 					_float_hit(e["target"], float(e["shield"]), float(e["hull"]), e["crit"])
 			await wait(160.0)
@@ -3561,12 +3562,35 @@ func _show_regen_lock(id: String, active: bool) -> void:
 			ship.set_regen_lock(active)
 
 
-func _impact(t_id, h: Dictionary, col: Color) -> void:
+static func _standalone_hit_breaks_shield(events: Array, i: int) -> bool:
+	var target = events[i].get("target")
+	# Rules emit the break after the hit, with any section loss and its callouts in between.
+	for j in range(i + 1, events.size()):
+		var e: Dictionary = events[j]
+		if e["t"] == "shield_down":
+			return e.get("unit") == target
+		if not volley_note(e, target) and not (e["t"] == "section_down" and e.get("unit") == target):
+			break
+	return false
+
+
+func _standalone_hit_impact(h: Dictionary, breaking: bool) -> void:
+	var t_id = h["target"]
 	var sv = views.get(t_id)
 	if sv == null:
 		return
-	_flash(sv.visual_position() + Vector3(0, 1.5, 0), 6.0 + sv.L * 0.3, col, 0.3)
-	sfx.hit(sv.visual_position(), h.get("crit", false))
+	var p: Vector3 = sv.visual_position()
+	var fac := str(VU.get(t_id, {}).get("fac", "hegemony"))
+	var hull_hit := float(h["hull"]) > 0.0
+	if gfx != null and gfx.has_method("standalone_hit"):
+		var from := _pos(h.get("unit")) if is_instance_valid(views.get(h.get("unit"))) else Vector3.INF
+		gfx.standalone_hit(str(t_id), h, from, breaking)
+	elif hull_hit:
+		_flash(p + Vector3(0, 1.5, 0), 6.0 + sv.L * 0.3, FLOOK.of(fac).damage_glow, 0.3)
+	if not hull_hit and float(h["shield"]) > 0.0:
+		sfx.shield(p, false, fac)
+	elif hull_hit:
+		sfx.hit(p, bool(h["crit"]))
 
 
 # Issue 521 (audit item 7; R193, Ryan's pick "Hold and slow", which replaces the Board's R123): the cut-in for a kill
