@@ -1,6 +1,9 @@
 extends "res://rules/sim/balance_sim.gd"
 ## Exercise the public run 2 entry point and check the records it prints.
 
+# Seed 3 still reaches both the shipyard and bosses under the symmetric carrier and bot rules.
+const PAIR_SEED := 2
+
 class RunLog extends Logger:
 	var records: Array[Dictionary] = []
 	var footer := ""
@@ -24,7 +27,7 @@ func _initialize() -> void:
 		OS.unset_environment(option)
 	OS.set_environment("PFACTION", "voidsworn")
 	OS.set_environment("AI", "standard")
-	OS.set_environment("PAIRSEED", "0")
+	OS.set_environment("PAIRSEED", str(PAIR_SEED))
 	OS.set_environment("SIM_ARM", "run_smoke")
 	var log := RunLog.new()
 	OS.add_logger(log)
@@ -40,7 +43,7 @@ func _initialize() -> void:
 	for i in range(log.records.size()):
 		var row: Dictionary = log.records[i]
 		if row.faction != "voidsworn" or row.difficulty != "standard" or row.arm != "run_smoke" \
-				or row.seed != i + 1 or row.terminal_reason == "engine_error":
+				or row.seed != PAIR_SEED + i + 1 or row.terminal_reason == "engine_error":
 			_fail("Unexpected campaign run record: " + str(row))
 			return
 		for kind in row.shop_buys:

@@ -75,7 +75,7 @@ func _check(ok: bool, message: String) -> void:
 func _campaign(sector := 1):
 	var c := SaveProbe.new()
 	assert(c.load_tables() == "")
-	API.JSM.rnd_seed(1091)
+	c.rng.rnd_seed(1091)
 	c.fixed_clock = true
 	c.newRun("vex", "voidsworn")
 	if sector > 1:

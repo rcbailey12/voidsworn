@@ -57,7 +57,7 @@ func _statuses() -> void:
 	for faction in FACTIONS:
 		_reset()
 		var ship = _ship("T", faction)
-		var sooty: bool = faction not in ["ithar", "chorus"]
+		var sooty: bool = faction in ["voidsworn", "corsair"]
 		fx.tick("T", "fire")
 		var flame := fx.get_node_or_null("fx_tick_flame") as MeshInstance3D
 		_check(flame != null, "%s: the fire tick takes a baked picture" % faction)
@@ -68,7 +68,7 @@ func _statuses() -> void:
 				and absf(root_at.y) <= 2.01 and ship.hull.box.grow(0.05).has_point(root_at),
 				"%s: the flame is baked, capped and attached" % faction)
 			var tint: Color = m.get_shader_parameter("fac_mid")
-			_check(tint == (ship.fac.weapon if faction == "hegemony" else ship.fac.damage_glow),
+			_check(tint == ship.fac.damage_glow,
 				"%s: fire takes its faction colour" % faction)
 			_check((float(m.get_shader_parameter("fac_smoke")) > 0.0) == sooty,
 				"%s: baked plume keeps only its allowed soot" % faction)
@@ -80,7 +80,7 @@ func _statuses() -> void:
 				_check(not m.shader.code.contains("#define ROUTE_BAKED") and legacy.contains("if (fac_prism > 0.0)")
 					and legacy.contains("core = prism_edge(core,") and fragment.contains("ALBEDO += core *"),
 					"H4: the default Glasswright fire shader applies the prism to its live hot pass")
-		_check(fx.spr_kinds.has(8) == sooty and fx.spr_kinds.has(SH.TICK_EMBER) and not fx._lev.is_empty(),
+		_check(fx.spr_kinds.has(8) == sooty and fx.spr_kinds.has(20 if faction == "chorus" else SH.TICK_EMBER) and not fx._lev.is_empty(),
 			"%s: the plume has faction-appropriate smoke, colour-locked embers and light" % faction)
 
 	_reset()
@@ -100,7 +100,7 @@ func _statuses() -> void:
 	fx.well = Vector3(60, -4, 30)
 	fx.tick("T", "tidal")
 	var streams := _rows("tidal_stream")
-	_check(streams.size() == 3 and fx.spr_kinds.has(SH.TICK_EMBER) and fx.pools.rng.emitted == 1
+	_check(streams.size() == 3 and fx.spr_kinds.has(20) and not fx.spr_kinds.has(SH.TICK_EMBER) and fx.pools.rng.emitted == 1
 		and fx.pools.stk.emitted == 0, "tidal has three streams, rim stress and biological motes on Chorus")
 	for row in streams:
 		var points: PackedVector3Array = row.path
@@ -190,8 +190,8 @@ func _boarding() -> void:
 		_check(is_instance_valid(row.pod) == pods, "%s has the right boarding carrier" % faction)
 		_check(row.start == 0.0 and row.end == hold and cuts[0].start > row.start,
 			"the cutter starts after launch and the crossing ends on the paced hold")
-		_check((cuts[0].node.material_override as ShaderMaterial).get_shader_parameter("tint") == tint,
-			"the boarding party and cut use one palette")
+		_check((cuts[0].node.material_override as ShaderMaterial).get_shader_parameter("tint") == target.fac.damage_glow,
+			"the boarding crossing keeps its recipe while the Directorate cutter contact stays cool")
 		if faction == "deathless":
 			_check(tint.b > tint.r and tint.r > tint.g and fx.pools.stk.emitted == 0,
 				"Eclipse boarding uses violet without warm target sparks")

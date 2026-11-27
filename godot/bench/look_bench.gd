@@ -47,9 +47,11 @@ const WEAP := preload("res://fx/fx_weapons.gd")
 const SV := preload("res://render/ship_view.gd")
 const HT := preload("res://render/hull_table.gd")
 const LOOK := preload("res://render/look.gd")
+const MM_TRIAL := preload("res://render/mm_trial.gd")
 const CAMRIG := preload("res://render/camera_rig.gd")
 const BL := preload("res://world/board_look.gd")
 const LIVING := preload("res://world/world_living.gd")
+const BLOCKERS := preload("res://world/blocker_visuals.gd")
 const WORLD_PATH := "res://world/world.gd"
 const MOMENTS := "res://bench/look_moments.json"
 const HEX_S := 10.0
@@ -90,6 +92,7 @@ var _wound := {}   # issue 1741 (Artoo on 6fbf60fe): a wound-aimed row's open cu
 var cfg := {}
 var steps := 0
 var headless := false
+var moment_deadstar := false
 var failed := ""   # issue 1877 (Artoo on PR 1904): a failed clip or strict row fails the run (no LOOK_BENCH_DONE, exit 4)
 var sfx: Node = null          # --sound only
 var death_audio: Node = null
@@ -185,7 +188,7 @@ func _run() -> void:
 	var part := str(args.get("part", "all"))
 	if part == "all" or part == "fleet":
 		await _fleet_part()
-	if part == "all" or part == "moments":
+	if not MM_TRIAL.has_missing and (part == "all" or part == "moments"):
 		await _moments_part()
 	if part == "props":   # issue 1767 only (not in "all", so the standing sets do not change)
 		await _props_part()
@@ -212,6 +215,9 @@ func _run() -> void:
 			ff.close()
 		print("LOOK_BENCH_PROPS_FAILED %d" % prop_failures.size())
 		get_tree().quit(4)
+		return
+	if MM_TRIAL.has_missing:
+		await _shutdown(1)
 		return
 	print("LOOK_BENCH_DONE")
 	await _shutdown(0)
@@ -362,7 +368,7 @@ func _hex(q: int, r: int) -> Vector3:
 # Build the world twice: the first build bakes the sky and planet (seconds on the PC, cached after); then wait for the
 # frame grid; then the second build reuses the bakes inside one frame, and a fixed 120 frames pass. So the shader clock
 # (TIME) and the world's own clocks (world_living's storm and gas) stand at the same values on every run.
-func _world(biome: Dictionary, terrain: Dictionary, units: Array) -> void:
+func _world(biome: Dictionary, terrain: Dictionary, units: Array, map := {}) -> void:
 	for pass_i in 2:
 		if wld != null and is_instance_valid(wld):
 			world.remove_child(wld)
@@ -376,7 +382,7 @@ func _world(biome: Dictionary, terrain: Dictionary, units: Array) -> void:
 			await _grid()
 		wld = load(WORLD_PATH).new()
 		world.add_child(wld)
-		wld.build({"map": {}, "terrain": terrain, "units": units, "round": 1},
+		wld.build({"map": map, "terrain": terrain, "units": units, "round": 1},
 			{"biome": biome, "fac": "voidsworn", "hex_world": _hex, "camera": cam, "environment": env, "quality": "max", "seed": 7})
 		if pass_i == 0:
 			var t0 := Time.get_ticks_msec()
@@ -393,6 +399,10 @@ func _world(biome: Dictionary, terrain: Dictionary, units: Array) -> void:
 		_warn("world rebuild did not reuse the bake (pending %d): this part's stills may not repeat" % int(wld.pending_bakes))
 	for k in 120:
 		await get_tree().process_frame
+	if map.has("deadstar"):
+		var blockers := BLOCKERS.new()
+		wld.add_child(blockers)
+		blockers.build({"map": map, "terrain": terrain}, _hex)
 
 
 func _grid() -> void:
@@ -465,6 +475,8 @@ func _ship(id: String, fac: String, cls: String, pos: Vector3, facing: int, code
 		u["code"] = code
 		u["L"] = float(OBJ_LEN.get(code, 10.0))
 	sv.setup(u, pos, true)
+	if MM_TRIAL.has_missing:
+		return null
 	sv.set_process(false)   # its bob and idle jets run on the wall clock (see the header)
 	if not sv.squad_kind.is_empty() and sv.hull != null:
 		sv.hull.set_process(false)
@@ -496,6 +508,8 @@ func _cam(focus: Vector3, r: float) -> void:
 
 
 func _grab() -> Image:
+	if headless:
+		return null
 	var img := vp.get_texture().get_image()
 	if img == null or img.is_empty():
 		return null
@@ -573,10 +587,7 @@ func _moments_part() -> void:
 	var only: Array = []
 	if args.has("only"):
 		only = Array(str(args["only"]).split(",", false))
-	var terrain := {"0,-4": "rock", "-5,3": "rock", "4,3": "debris", "-1,5": "rock"}
-	terrain.merge(cfg.get("terrain", {}), true)
-	await _world({"rock": "stone", "planet": 4}, terrain,
-		[{"q": -3, "r": -2}, {"q": 3, "r": 2}])
+	await _moment_world(false)
 	report["parts"]["moments"] = {"region": str(wld.setting.get("region", "")), "start_frame": Engine.get_process_frames()}
 	# warm the effect shaders once (fx.warmup), off the measured moments
 	_clear()
@@ -782,10 +793,24 @@ func _build_d_pop(p: Vector3, c: Color, size: float, life: float) -> void:
 	fx.light(p, fx.now, life, 2.0, c)
 
 
+func _moment_world(deadstar: bool) -> void:
+	moment_deadstar = deadstar
+	var terrain := {"0,-4": "rock", "-5,3": "rock", "4,3": "debris", "-1,5": "rock"} if not deadstar else {}
+	terrain.merge(cfg.get("terrain", {}), true)
+	var map := {}
+	if deadstar:
+		var cells := [[0, 0], [1, 0], [0, 1], [-1, 1], [-1, 0], [0, -1], [1, -1]]
+		map = {"deadstar": {"q": 0, "r": 0}, "holes": [{"kind": "deadstar", "cells": cells}]}
+	await _world({"rock": "stone", "planet": 4}, terrain, [{"q": -3, "r": -2}, {"q": 3, "r": 2}], map)
+
+
 func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: String, keep := true) -> bool:
 	var id := str(row["id"])
 	var strict := bool(row.get("strict", false)) or args.has("strict-moments")
 	_clear()
+	var deadstar := bool(row.get("deadstar", false))
+	if deadstar != moment_deadstar:
+		await _moment_world(deadstar)
 	_make_fx()
 	# Issue 462: a row may set effect switches (for example reduce flashing). Set by
 	# name so a commit without the switch simply ignores it.
@@ -968,10 +993,22 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	elif what == "jets":
 		# every movement jet ShipView fires, at once; the bench keeps ShipView's processing off, so each puff stays where
 		# it started unless step_jets is set (issue 2042: steps puffs and fires repeat bursts so motion strings show)
+		var first_puff: int = A.puffs.size()
 		A._retro_puffs(1.0)
 		A._aft_puffs(1.0)
 		A._side_puffs(1.0, 1.0)
 		A._couple_puffs(1.0, 1.0)
+		# The directional jets read their instance uniforms, not the old sprite tint.
+		if row.get("jet_tint", "") == "damage_glow" and not headless:
+			if A.puffs.size() <= first_puff:
+				return _fail_moment(id, r, "no movement jets to tint")
+			var glow: Color = fx.faction_info(str(att[0])).damage_glow
+			for i in range(first_puff, A.puffs.size()):
+				var puff: Dictionary = A.puffs[i]
+				var jet := puff.n as MeshInstance3D
+				if jet == null or not bool(puff.get("rcs", false)):
+					return _fail_moment(id, r, "movement jet has no directional shader")
+				jet.set_instance_shader_parameter("core_col", Vector3(glow.r, glow.g, glow.b))
 	elif what == "move":
 		# issue 2042: drive A forward along +X so moving nozzle trails build and taper cleanly behind the stern
 		fx.set_engine("A", float(row.get("engine", 1.6)))
@@ -1061,6 +1098,8 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	var brake_at := float(row.get("brake_at", 0.55))
 	var focus_mode := str(row.get("focus", "target"))
 	var track_hulk := bool(row.get("seek_hulk", false))
+	var start_pos: Vector3 = T.global_position
+	var travel: Vector3 = T.global_basis.x.normalized() * 12.0 if what == "drive" else Vector3.ZERO
 	while wi < wins.size() and guard < 900:
 		var w: Dictionary = wins[wi]
 		if step_jets and is_instance_valid(A):
@@ -1150,7 +1189,7 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 							clip_bad.append("f%03d.png (save error %d)" % [ci, se])
 			elif img != null:
 				strip.blit_rect(_crop(img, crop, cell), Rect2i(Vector2i.ZERO, cell), Vector2i(ci * cell.x, 0))
-			elif strict and keep:
+			elif strict and keep and not headless:
 				clip_bad.append("cell %d (no frame grabbed)" % ci)
 			cells.append({"t": snappedf(fx.now - t_ev, 0.0001), "step": steps})
 			ci += 1
@@ -1159,6 +1198,10 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 			if int(w["got"]) >= int(w["n"]):
 				wi += 1
 				continue
+		if travel != Vector3.ZERO:
+			var offset: Vector3 = travel * (fx.now + STEP - t_ev)
+			T.global_position = start_pos + offset
+			_cam(focus + offset, r)
 		await _step()
 		guard += 1
 	if wi < wins.size():

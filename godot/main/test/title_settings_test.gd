@@ -45,14 +45,18 @@ func _run() -> void:
 	var main := TestMain.new()
 	root.add_child(main)
 	main._load_settings()
+	root.msaa_3d = Viewport.MSAA_4X
+	root.use_taa = true
 	main.show_title()
+	var title_aa_ok := root.msaa_3d == Viewport.MSAA_DISABLED and not root.use_taa
+	print(("PASS" if title_aa_ok else "FAIL") + ": C32 title disables MSAA and TAA before its first draw")
 	main.title._settings()
 	for i in 3: await process_frame
 	var sound := _row_button(main.title.settings_panel, "Sound")
 	var quality := _row_button(main.title.settings_panel, "Graphics")
 	var ui_scale := _row_button(main.title.settings_panel, "UI scale")
 	var wake := _row_button(main.title.settings_panel, "Nebula wakes (ships stir the clouds)")
-	var ok := sound != null and quality != null and ui_scale != null and wake != null
+	var ok := title_aa_ok and sound != null and quality != null and ui_scale != null and wake != null
 	# Issue 1504 (R355): the nebula wake is on by default and the player can turn it off; the choice survives a restart
 	ok = ok and wake.text == "On"
 	if ok:

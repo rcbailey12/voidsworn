@@ -19,7 +19,7 @@ func frames(n := 4) -> void:
 	for i in n: await process_frame
 
 func fixture(state: String, fac := "voidsworn", admiral := "vex") -> void:
-	JSM.rnd_seed(805)
+	C.rng.rnd_seed(805)
 	C.META = C.migrateMeta(C.defaultMeta()); C.META["opts"]["playtestAll"] = false
 	C.META["renown"] = 34; C.META["stats"]["losses"] = 0 if state == "first_loss" else 2
 	C.META["stats"]["wins"] = 1
