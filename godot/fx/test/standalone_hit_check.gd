@@ -107,9 +107,7 @@ func _check_faction(faction: String) -> void:
 	_check(not ship._marks.is_empty(), faction + " hull impact leaves a mark")
 	if flash != null:
 		var tint: Color = FLOOK.of(faction).damage_glow
-		if faction == "ithar":
-			tint = WEAP.IMPACT_RESPONSE.glass.tint
-		elif faction == "chorus":
+		if faction == "chorus":
 			tint = WEAP.IMPACT_RESPONSE.bio.tint
 		var mat := flash.material_override as ShaderMaterial
 		var actual: Vector3 = mat.get_shader_parameter("impact_tint")
