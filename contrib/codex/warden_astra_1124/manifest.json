@@ -1,0 +1,449 @@
+{
+  "ship": "voidsworn_S9A",
+  "recipe": "tools/recipe/ships/voidsworn_S9A.json",
+  "source_sha256": {
+    "tools/blender/build_sheets/ships/voidsworn_S9A.py": "401ec4bde69f9ff759119667651e726fe7bf37615aaf78f60ea962f49f1fa31a",
+    "tools/blender/build_sheets/ships/voidsworn_S9A_inv.py": "c3a0cdbfa9bcd9951a30e4b9ee59241953c70016c80c346f0a7ccda03b9bbb7f",
+    "tools/blender/build_sheets/ships/voidsworn_S9A_camera.json": "3c6532f1913e38631e78605f8feb70e78c705f51521c7866ad3f9ac7048399df",
+    "tools/recipe/ships/voidsworn_S9A.json": "b031b56c2621d925d4f6c36e2678685cab022d43ee6b1b62b659a76bfed914fb",
+    "contrib/codex/warden_astra_1124/review_views.py": "ad6522fb3d2caa2ef96e028395d6d27a2a5447d771d77f564164137570b7b602"
+  },
+  "blender": "4.5.14 LTS",
+  "paint": {
+    "cell": "S9A",
+    "route": "build sheet voidsworn_S9A + the voidsworn paint stack (kits/voidsworn/stack.py, kits/shared/paint_stack.py)",
+    "build_seconds": 447.4,
+    "geometry_seconds": 1.4,
+    "res": 2048,
+    "parts_res": 2048,
+    "samples": 8,
+    "paint": {
+      "hull_objects": 29,
+      "part_objects": 101,
+      "glow_objects": 25,
+      "interior_objects": 194,
+      "device": "CPU",
+      "samples": 8,
+      "textures": [
+        {
+          "file": "sunward_trim.png",
+          "source": "own work, drawn by tools/blender/kits/voidsworn/stack.py and dedicated CC0 (no downloaded asset)",
+          "licence": "CC0",
+          "used": "trim sheet: forged rivets, scuffs (rows: rivets, scuffs)"
+        },
+        {
+          "file": "sunward_decals.png",
+          "source": "own work, drawn by tools/blender/kits/voidsworn/stack.py and dedicated CC0 (no downloaded asset)",
+          "licence": "CC0",
+          "used": "decal atlas: half-sun crest, spine line, deck row numbers, heat-shed marks"
+        }
+      ],
+      "decals": [
+        {
+          "rule": "half-sun crest",
+          "side": "top",
+          "placed": true,
+          "pos": [
+            0.2483,
+            0.0,
+            0.0346
+          ],
+          "room": 1.0
+        },
+        {
+          "rule": "spine line",
+          "side": "top",
+          "placed": true,
+          "pos": [
+            0.2669,
+            0.0,
+            0.0337
+          ],
+          "room": 1.0
+        },
+        {
+          "rule": "deck row numbers",
+          "side": "port",
+          "placed": true,
+          "pos": [
+            0.0898,
+            0.0922,
+            -0.0013
+          ],
+          "room": 0.89
+        },
+        {
+          "rule": "deck row numbers",
+          "side": "stbd",
+          "placed": true,
+          "pos": [
+            0.0898,
+            -0.0922,
+            -0.0013
+          ],
+          "room": 0.89
+        },
+        {
+          "rule": "heat-shed marks port",
+          "side": "top",
+          "placed": true,
+          "pos": [
+            -0.078,
+            0.05,
+            0.0427
+          ],
+          "room": 1.0
+        },
+        {
+          "rule": "heat-shed marks starboard",
+          "side": "top",
+          "placed": true,
+          "pos": [
+            -0.078,
+            -0.05,
+            0.0425
+          ],
+          "room": 1.0
+        }
+      ],
+      "bake_H_masks_s": 36.7,
+      "bake_H_albedo_s": 50.6,
+      "bake_H_orm_s": 31.4,
+      "bake_H_normal_s": 193.7,
+      "zones_H": [
+        "siron",
+        "siron2",
+        "sworn"
+      ],
+      "bake_P_masks_s": 33.9,
+      "bake_P_albedo_s": 18.9,
+      "bake_P_orm_s": 6.2,
+      "bake_P_normal_s": 49.7,
+      "zones_P": [
+        "dark",
+        "siron",
+        "siron2",
+        "siron2_engine",
+        "siron2_gun",
+        "siron2_radiator",
+        "siron_engine",
+        "siron_gun",
+        "siron_radiator",
+        "sworn",
+        "sworn_engine",
+        "sworn_gun",
+        "sworn_radiator"
+      ],
+      "bake_engine_glow_s": 1.7,
+      "engine_glow": {
+        "engines": 2,
+        "map": "S9A_engine_emission.png",
+        "res": 1024
+      },
+      "glow_materials": [
+        "p3_frost",
+        "p3_glow",
+        "p3_vent",
+        "p3_window"
+      ],
+      "inside_materials": [
+        "ps_inside_bridge",
+        "ps_inside_core",
+        "ps_inside_crew",
+        "ps_inside_deck",
+        "ps_inside_engroom",
+        "ps_inside_frame",
+        "ps_inside_gallery",
+        "ps_inside_hold",
+        "ps_inside_machinery",
+        "ps_inside_magazine"
+      ],
+      "texel_density": {
+        "hull": {
+          "uv_share": 0.7246,
+          "area": 0.91511,
+          "texels_per_unit2": 3320948.7
+        },
+        "parts": {
+          "uv_share": 0.4618,
+          "area": 0.37912,
+          "texels_per_unit2": 5109506.3
+        }
+      },
+      "stack_seconds": 445.4
+    },
+    "density": {
+      "paint_flags": [],
+      "mesh_flags": [],
+      "hull": {
+        "area": 0.91511,
+        "triangles": 9394,
+        "tris_per_unit2": 10265.4,
+        "edges_per_unit2": 11690.4,
+        "texels_per_unit2": 3320948.7,
+        "atlas": "hull",
+        "paint_detail_share": 0.3
+      },
+      "rule": "R224: a part type more than 25 percent under the hull is flagged",
+      "paint_bar_per_unit": 337.02,
+      "paint_top": 0.3
+    },
+    "contract": {
+      "sheet": "voidsworn_S9A",
+      "game_ship": "warden",
+      "variant": "",
+      "model_length": 6.5,
+      "scale": 0.15384615384615385,
+      "length_world": 6.5,
+      "t_lines": [
+        -0.37385,
+        0.17692
+      ],
+      "l_line": [
+        0.04292307692307693,
+        -0.3676923076923077,
+        -0.13230769230769232
+      ],
+      "l_lines": [
+        [
+          0.04292307692307693,
+          -0.3676923076923077,
+          -0.13230769230769232
+        ],
+        [
+          -0.019230769230769232,
+          -0.3523076923076923,
+          0.16461538461538464
+        ]
+      ],
+      "muzzles": 7,
+      "guns": 3,
+      "engines": 2,
+      "bays": 0,
+      "points": 7,
+      "turrets": [
+        "FP_turret",
+        "FS_turret"
+      ],
+      "interior_objects": 194,
+      "slots": [
+        "0 autocannon F",
+        "1 flak T"
+      ]
+    },
+    "triangles": 30822,
+    "objects": 155,
+    "surfaces": 6,
+    "draw_calls_merged": 6
+  },
+  "packed_proof": {
+    "file": "S9A_painted.blend",
+    "sha256": "b4884df4093706f856c1931e03c703297bd6f76a383feaa49a34beb77c20800a"
+  },
+  "painted_mesh_budget": {
+    "fixed_exterior": {
+      "triangles": 27414,
+      "materials": [
+        "S9A_hull_mat",
+        "S9A_parts_mat",
+        "p3_frost",
+        "p3_glow",
+        "p3_vent",
+        "p3_window"
+      ]
+    },
+    "FP_turret": {
+      "triangles": 1704,
+      "materials": [
+        "S9A_parts_mat"
+      ]
+    },
+    "FS_turret": {
+      "triangles": 1704,
+      "materials": [
+        "S9A_parts_mat"
+      ]
+    },
+    "interior": {
+      "triangles": 2568,
+      "materials": [
+        "ps_inside_bridge",
+        "ps_inside_core",
+        "ps_inside_crew",
+        "ps_inside_deck",
+        "ps_inside_engroom",
+        "ps_inside_frame",
+        "ps_inside_gallery",
+        "ps_inside_hold",
+        "ps_inside_machinery",
+        "ps_inside_magazine"
+      ]
+    }
+  },
+  "checks": {
+    "fit": {
+      "counts": {
+        "CLASH": 0,
+        "MOUNT": 0,
+        "ARC": 0,
+        "SENSOR": 0,
+        "SWEEP": 0,
+        "EXHAUST": 0,
+        "EXIT": 0,
+        "LANE": 0
+      },
+      "tested": {
+        "objects": 155,
+        "parts": 29,
+        "close_pairs": 252,
+        "rays": 266,
+        "guns": 3,
+        "sensor_pairs": 0,
+        "turrets_swept": 2,
+        "cones": 2,
+        "apertures": 3,
+        "lanes": 0
+      },
+      "clashes": []
+    },
+    "weapons": {
+      "code": "voidsworn_S9A",
+      "result": "PASS",
+      "problems": [],
+      "slots": [
+        {
+          "slot": 0,
+          "weapon": "autocannon",
+          "arc": "F",
+          "shots": 3,
+          "mounts": [
+            {
+              "id": "A1",
+              "type": "gun",
+              "mount": "casemate",
+              "barrels": 3,
+              "muzzles": 3
+            }
+          ]
+        },
+        {
+          "slot": 1,
+          "weapon": "flak",
+          "arc": "T",
+          "shots": 3,
+          "mounts": [
+            {
+              "id": "FP",
+              "type": "gun",
+              "mount": "turret",
+              "barrels": 2,
+              "muzzles": 2
+            },
+            {
+              "id": "FS",
+              "type": "gun",
+              "mount": "turret",
+              "barrels": 2,
+              "muzzles": 2
+            }
+          ]
+        }
+      ],
+      "game_ship": "warden",
+      "variant": ""
+    },
+    "inventory": {
+      "rows": 37,
+      "failing": 0
+    },
+    "seams": {
+      "problems": [],
+      "parts": 126,
+      "crossing_break_lines": [],
+      "structure_across_seams": [],
+      "guns_with_normals": 3,
+      "guns_into_ship": 0,
+      "guns": 3,
+      "break_lines": {
+        "t_lines": [
+          -0.3738461538461539,
+          0.17692307692307693
+        ],
+        "l_line": [
+          0.04292307692307693,
+          -0.3676923076923077,
+          -0.13230769230769232
+        ],
+        "l_lines": [
+          [
+            0.04292307692307693,
+            -0.3676923076923077,
+            -0.13230769230769232
+          ],
+          [
+            -0.019230769230769232,
+            -0.3523076923076923,
+            0.16461538461538464
+          ]
+        ]
+      },
+      "result": "PASS"
+    }
+  },
+  "atlas_sha256": {
+    "S9A_engine_emission.png": "cac2050c931f970190d55f5731581a850b42c154069177519892c32b9a84627a",
+    "S9A_hull_albedo.png": "dda00db59be3e1f53d3e739f26df05d5e9191ecab7c5bd6db95f4f51f53216c1",
+    "S9A_hull_normal.png": "1bf432a4bb1cb43f587af293db6076374f69a9ba314c1de2893c977aa1fb0e26",
+    "S9A_hull_orm.png": "7b6bd48d7bed3ced8c4a99ab6a07577c2eaf0073815c742b6e431801c76ca165",
+    "S9A_parts_albedo.png": "660d5d7fcb9e9d8b7cc8169edfff378bd434859aad7b99fff6e3c7208b972a94",
+    "S9A_parts_normal.png": "fd285e1cd76d338783a15b98e8c13a4f2c50999eb944c38ec4fa8b949cee01ef",
+    "S9A_parts_orm.png": "42b71cb58799223f6588c203e5d9a2e9f566e2feb35c1b0e47df8faac845a3c7"
+  },
+  "views": [
+    {
+      "view": "three_quarter",
+      "file": "shots/voidsworn_S9A_three_quarter.png",
+      "pixels": [
+        1280,
+        720
+      ],
+      "sha256": "53c9638b2fe18e24c7c7d48f82df8207dd8b29099febb7b5471d8f744bf139b1"
+    },
+    {
+      "view": "side",
+      "file": "shots/voidsworn_S9A_side.png",
+      "pixels": [
+        1280,
+        720
+      ],
+      "sha256": "19c953f6ca6c69300c3719af08aa999d32b557a1d5ded97e123e291b5b85a140"
+    },
+    {
+      "view": "top",
+      "file": "shots/voidsworn_S9A_top.png",
+      "pixels": [
+        1280,
+        720
+      ],
+      "sha256": "5513f8a72eaebd358c51abc76735a14ff2f50dbb6fb773a613800a6644c2e5cb"
+    },
+    {
+      "view": "underside",
+      "file": "shots/voidsworn_S9A_underside.png",
+      "pixels": [
+        1280,
+        720
+      ],
+      "sha256": "1393dea12dc265c7bb74b3a972c68ba0de4bff9283fb0d9aa4a0d9b300029436"
+    },
+    {
+      "view": "battle_170",
+      "file": "shots/voidsworn_S9A_battle_170.png",
+      "pixels": [
+        960,
+        540
+      ],
+      "sha256": "39734c1c2eba94fa97a4889edcf5533a2fb24b32868d1326672c58a4ffe7db2f"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "ship": "voidsworn_S9A",
+  "name": "Warden, Astra build",
+  "faction": "voidsworn",
+  "game_ship": "warden",
+  "game_code": "V14_23",
+  "sheet": "voidsworn_S9A",
+  "concept": "docs/ship_pipeline/build_sheets/voidsworn_S9/concept_beauty.jpg",
+  "shape_ref_yaw": null,
+  "concept_camera": "",
+  "hull": "sheet_hull",
+  "tune": "",
+  "bake": "stack",
+  "cell": "S9A",
+  "outline_gate": 0.9,
+  "outline_third_slack": 5,
+  "lights": {},
+  "light_min_px": 2,
+  "parts": []
+}
