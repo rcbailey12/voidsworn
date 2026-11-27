@@ -99,6 +99,7 @@ headless|rules/test/boss_1885_test.gd|-|-|issue 1885: half-hull escorts flee bel
 headless|rules/test/rules_1650_test.gd|-|-|issue 1650: the three Mastery III signatures the bot battles rarely reach (stern torpedo, double kill chain, pack bite on the prey)
 headless|rules/test/rules_2205_test.gd|-|-|issue 2205: live battle and campaign audit regressions
 headless|rules/test/rules_2204_test.gd|-|-|issue 2204: first rear hits, one-round acid aim, a lasting private wing, the escort wall, and limited reserve carrier launches
+headless|rules/test/rules_2206_test.gd|-|-|issue 2206: struck shields, fade, cap-funded elites, retired boon, deployment choices and Glasswright hull CP
 headless|rules/test/rules_1481_test.gd|-|-|issue 1481: every shield drop sends the break (storm, flare, mid section, ram, ion pulse, nova), rams use the shared spend, counter-fire, ram shockwave and reactor hits send a hit, a bad blink or nova hex is refused before it counts; twin of contrib/opus/tools/rules_1481_tests.js
 headless|rules/test/rules_1479_test.gd|-|-|issue 1479: overrunning the Nemesis flagship, a hunt target or a convoy transport destroys it (R383), a captured carrier's wings lose their carrier, and an Eclipse wreck rising next round keeps the fight open (browser twin contrib/opus/tools/rules_1479_tests.js)
 headless|rules/test/rules_1653_test.gd|-|-|issue 1653: the twelve salvage relics and four refits each do what their card says, checked on rules.gd directly
@@ -223,7 +224,7 @@ headless|render/test/camera_zoom_pointer_check.gd|-|-|issue 2029 item 6: the whe
 headless|scenes/battle/test/wing_cancel_test.gd|-|-|UI-5 (issue 387): the battle screen clears its armed wing on a ship pick, the roster, Escape and Cancel
 headless|scenes/battle/test/forecast_1444_test.gd|-|-|issue 1444: Ram arms on the first press and shows target, damage and a lethal-recoil warning; Board odds on hover and card; the Nova blast names friendly ships in red; Hollow Sun bands in the move tip; Brood flagships get wing stances
 headless|scenes/battle/test/targeted_ability_test.gd|-|-|issue 1124: marked Nova and Blink clicks reach the rules; unmarked clicks do not
-headless|scenes/battle/test/skill_target_picker_test.gd|-|-|issue 1870: Iteration Swap offers eligible fleet rows, builds the battle once after picking or skipping, and restores the chosen deployment
+headless|scenes/battle/test/skill_target_picker_test.gd|-|-|issues 1870 and 2206: deployment picker handles ship swaps, skip, open hex clicks and round-one saves
 headless|scenes/battle/test/click_after_camera_move_test.gd|-|-|issue 1124: releases pick the current camera ray; HUD clicks and drags do not pick
 headless|scenes/battle/test/armed_preview_test.gd|-|-|issue 1747: arming flak keeps the planned Burn and fire preview and Enter fires the planned gun
 headless|scenes/battle/test/volley_preview_test.gd|-|-|issue 1144: target preview against actual seeded volleys, including the planned hex, shared shield routing and low-odds landed-hit routing

@@ -365,6 +365,9 @@ func repairRunIds(r) -> Variant:
 	for b in r["boons"]:
 		if b is Dictionary: bs.append(b)
 	r["boons"] = _keep(bs, BOONS, "boon", rep, func(b): return b.get("id"))
+	var reward = r.get("reward")
+	if reward is Dictionary and reward.get("boonOffer") is Array:
+		reward["boonOffer"] = reward["boonOffer"].filter(func(o): return o is Dictionary and BOONS.has(o.get("id")))
 	r["patrons"] = _keep(r["patrons"], PATRONS, "patron", rep)
 	if r.get("aspect") != null and not ASPECTS.has(r["aspect"]): rep.append("aspect " + str(r["aspect"])); r["aspect"] = null
 	if r.get("giftBoon") != null and not BOONS.has(r["giftBoon"]): r["giftBoon"] = null
@@ -1151,14 +1154,7 @@ func rollEncounter(kind, col) -> Dictionary:
 	var enc = "rout" if float(col) == 0 else pick(ENC_POOL)
 	return {"enc": enc, "shape": pick(ENCOUNTERS[enc]["shapes"])}
 func effArch(arch, fac) -> Variant:
-	if arch == "carrier":
-		var F = FACTIONS.get(fac)
-		var has_car = false
-		if F != null:
-			for id in F["roster"]:
-				if HULLS.has(id) and HULLS[id].get("ab") == "launch": has_car = true
-		if not has_car: return "heavy"
-	return arch if jt(arch) else null
+	return BattleAPI.RulesScript.enemy_archetype(arch, fac, FACTIONS, HULLS)
 
 # ---------------- sector map generation ----------------
 func _is(n, types: Array) -> bool: return types.has(n["type"])

@@ -412,7 +412,7 @@
       "sha256": "e56286b7db8d3c2d5fc84efc95db7215d8867e24f5f73da264997515cba9324c",
       "bytes": 3844619,
       "archive": "t_flakskip.jsonl.br",
-      "records": 106,
+      "records": 111,
       "scenario_sha256": "aa7359e35502d5fbeb7fc37e13ecfe79aadf034bc157eaa5c8f8a9cb40519d3d"
     },
     "t_lensaloft": {
@@ -482,7 +482,7 @@
       "sha256": "8579275a1819a5a729fc6ae07ce475e53b95a76c89e0ab2103898b11e94910ff",
       "bytes": 1057665,
       "archive": "t_mirrorturns.jsonl.br",
-      "records": 57,
+      "records": 58,
       "scenario_sha256": "75f5dce0720a8e18acf8bc6407bfa6f44264763bdd9c8fec22b5d52a4d69f7a2"
     },
     "t_falsehulls": {
@@ -503,7 +503,7 @@
       "sha256": "3a0434a084d4a15fc835d09fbbc71f59ac8ef40fdbe5882b108d56460240a17b",
       "bytes": 2353027,
       "archive": "t_glasscorrected.jsonl.br",
-      "records": 112,
+      "records": 106,
       "scenario_sha256": "2840d121538436ddbe2c09db3bf4c253b60e024240878b86fc81a371b803d5c5"
     },
     "t_hardlight": {
@@ -1616,21 +1616,21 @@
       "sha256": "6e81d375b1fc7a173c0f21b36db7952138028f8c0aa0178ee5cacb2e6f350320",
       "bytes": 2968552,
       "archive": "t7a_flightpaths.jsonl.br",
-      "records": 89,
+      "records": 93,
       "scenario_sha256": "b2c9601686c23e8cf07972ffa27954c8ca5ac7b4ee49221e3bee07186fee4e41"
     },
     "t7a_replay": {
       "sha256": "450245960c755a8226682839b2b2754cf8748cc17a7f42391ba583dfb018f08c",
       "bytes": 3858705,
       "archive": "t7a_replay.jsonl.br",
-      "records": 110,
+      "records": 93,
       "scenario_sha256": "dfa19648b207e493f98f97f5cf97b87e6bce216742090801f1d79bdb7fc64b89"
     },
     "t7a_starlings": {
       "sha256": "12645b7caf85aab13d55e5544fd4dc5f241aa96a9597607745b8bb747f9c6259",
       "bytes": 3646992,
       "archive": "t7a_starlings.jsonl.br",
-      "records": 104,
+      "records": 103,
       "scenario_sha256": "1f00b677842be48f47784bf6aedf6ec3519990930597b30f6919b23c939cc358"
     },
     "t7a_flightcast": {
@@ -2596,7 +2596,7 @@
       "sha256": "92b37269b2c3f97ec16f9a3f131080c1d98e05e4d00decda342ff67ff2db4196",
       "bytes": 2738899,
       "archive": "r1651_aelith.jsonl.br",
-      "records": 91,
+      "records": 103,
       "scenario_sha256": "018b7e31025272d8ff1962663dbb5893cc6b879efbbcca9aa6dbfa5dd9fe9c0c"
     },
     "r1651_vaelen": {

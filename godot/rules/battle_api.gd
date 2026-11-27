@@ -246,6 +246,14 @@ func _finish_setup(start: Dictionary) -> void:
 func pick_skill_target(id: String) -> bool:
 	_enter()
 	var accepted: bool = halted == "" and phase == "deployment" and R.pickSkillTarget(id)
+	return _resolve_skill_pick(accepted)
+
+func pick_skill_hex(q: int, r: int) -> bool:
+	_enter()
+	var accepted: bool = halted == "" and phase == "deployment" and R.pickSkillHex(q, r)
+	return _resolve_skill_pick(accepted)
+
+func _resolve_skill_pick(accepted: bool) -> bool:
 	if accepted and not R.B.has("skillTarget"):
 		_finish_setup(_pending_start)
 		_pending_start = {}

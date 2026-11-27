@@ -27,7 +27,10 @@ func _run() -> void:
 		printerr("FAIL: ", error)
 		quit(1)
 		return
-	api.new_battle_scenario("s1")
+	# Native Glasswright fade leaves movement after firing, so hatching stays visible.
+	api.new_battle_scenario({"seed": 1001, "sector": 1, "admiral": "aelith", "fac_player": "ithar",
+		"fleet": ["i_blade", "i_wisp", "i_wisp"], "fac": "hegemony", "enemies": ["h_interdictor", "h_picket", "h_picket"],
+		"obj": "rout", "shape": "open", "map": "open", "dep": "line", "kind": "battle"})
 	var shot: Dictionary = api.R.alive("player")[1]
 	var foe: Dictionary = api.R.alive("enemy")[0]
 	var other: Dictionary = api.R.alive("enemy")[1]
@@ -42,7 +45,6 @@ func _run() -> void:
 	gun.merge({"off": 0, "cdLeft": 0, "arc": "F", "r": 5}, true)
 	other["weapons"][0].merge({"off": 0, "cdLeft": 0, "arc": "T", "r": 5}, true)
 	shot["weapons"][0]["shots"] = 8
-	shot["fx"]["fade"] = 0.5  # Keep movement left after firing, so the hatching should still be visible.
 	var b := TestBattle.new()
 	b.api = api
 	b.V = api.view()

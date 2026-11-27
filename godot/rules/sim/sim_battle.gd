@@ -63,6 +63,17 @@ func launchWing(u, h, kind) -> void:
 		abilities[key] = abilities.get(key, 0) + 1
 
 
+func fadeMove(u) -> bool:
+	var count: bool = matrix and u != null and canFade(u) and not jt(u.get("dead")) \
+		and not jt(u.get("isSq")) and jt(u.get("postFire")) and postFireMp(u) >= 1
+	var moved := super.fadeMove(u)
+	if count:
+		var side: Dictionary = fades.get_or_add(u.fac, {}).get_or_add(u.side, {"chances": 0, "moved": 0})
+		side.chances += 1
+		side.moved += int(moved)
+	return moved
+
+
 func player_abilities_fired() -> Dictionary:
 	return B.usage.ab.duplicate()
 
