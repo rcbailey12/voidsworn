@@ -22,7 +22,7 @@ func _init() -> void:
 	for row in fx.cov:
 		var got = R.shieldCov(row.fac, row.cls)
 		if JSM.canon(got) != JSM.canon(row.cov):
-			printerr("coverage ", row.tpl, ": got ", got, ", browser ", row.cov); bad += 1
+			printerr("coverage ", row.tpl, ": got ", got, ", expected ", row.cov); bad += 1
 	for q in fx.seqs:
 		api.new_battle_scenario({"seed": 7, "admiral": "vex", "fac_player": q.pfac, "fleet": [q.p], "fac": q.efac, "enemies": [q.e],
 			"obj": "rout", "shape": "open", "map": "open", "dep": "line", "kind": "battle", "sector": 1})
@@ -34,7 +34,7 @@ func _init() -> void:
 			if u["side"] == "enemy" and a == null: a = u
 		var start = {"shMax": t["shMax"], "regen": t["regen"], "cov": t["cov"]}
 		if JSM.canon(start) != JSM.canon(q.start):
-			printerr(q.note, ": start ", start, ", browser ", q.start); bad += 1; continue
+			printerr(q.note, ": start ", start, ", expected ", q.start); bad += 1; continue
 		var want: Array = q.steps
 		for i in range(want.size()):
 			if i > 0:
@@ -45,6 +45,6 @@ func _init() -> void:
 			var snap = {"shp": t["shp"], "sh": t["sh"], "route": t["route"] if t.get("route") != null else [0, 0, 0, 0]}
 			steps += 1
 			if JSM.canon(snap) != JSM.canon(want[i]):
-				printerr(q.note, ": step ", i, " ", (q.ops[i - 1] if i > 0 else "start"), ": got ", snap, ", browser ", want[i]); bad += 1; break
-	print("Shield pool twin: ", fx.cov.size(), " coverage rows and ", fx.seqs.size(), " sequences (", steps, " steps) against the saved cases; failures: ", bad)
+				printerr(q.note, ": step ", i, " ", (q.ops[i - 1] if i > 0 else "start"), ": got ", snap, ", expected ", want[i]); bad += 1; break
+	print("Shield pool: ", fx.cov.size(), " coverage rows and ", fx.seqs.size(), " sequences (", steps, " steps) against the saved cases; failures: ", bad)
 	quit(1 if bad > 0 else 0)

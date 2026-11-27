@@ -20,7 +20,7 @@ func check(ok: bool, what: String) -> void:
 		fails += 1; printerr("FAIL  " + what)
 
 func _start(admiral: String, fac: String, bio: float, cred: float) -> Dictionary:
-	JSM.rnd_seed(1484)
+	C.rng.rnd_seed(1484)
 	C.META["admirals"][admiral] = true
 	C.newRun(admiral, fac)
 	var R = C.RUN; R["sector"] = 3.0; R["map"]["cond"] = null; R["bio"] = bio; R["credits"] = cred

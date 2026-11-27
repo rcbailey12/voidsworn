@@ -112,6 +112,9 @@ func _setup() -> Array:
 	b.follow = false
 	root.add_child(b)
 	await b._begin(api)
+	# The synthetic volleys are not part of the opening batch. Let its view publish first.
+	while b.opening or b.busy:
+		await process_frame
 	b.cam.t = b._pos(me["id"])
 	b.cam.r = 120.0
 	b.cam.snap()

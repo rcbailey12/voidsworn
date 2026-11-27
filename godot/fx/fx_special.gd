@@ -222,7 +222,7 @@ static func jump(fx, ship, pace: float) -> float:
 		if fx.ship(ship.id) == ship and not ship.dead and not ship.gone and is_instance_valid(ship.root):
 			ship.clear_rift_pose()
 			ship.hide_live_hull()
-			ship.teardown(fx, false))
+			fx.remove_ship(ship.id, false))
 	return t + depart
 
 
@@ -264,7 +264,11 @@ static func bay(fx, ship, mouth: Vector3, normal: Vector3, toward: Vector3, t: f
 	for rail in [-1.0, 1.0]:
 		var lip: Vector3 = mouth + normal * k * 0.14 + side * rail * 0.65 * k
 		fx.stk(lip, t + 0.18, 0.39, c, 1.3, k * 4.9, k * 0.42, 0, axis * 5.0, 0.0, 0.0, 3.0, 18.0)
-		fx.spr(lip, t + 0.2, 0.65, c, 0.43, k * 0.6, k * 3.2, 20 if ship.faction == "chorus" else 27, axis * 3.1 + side * rail, 1.8)
+		var vel: Vector3 = axis * 3.1 + side * rail
+		if ship.faction == "ithar":
+			fx.spr(lip, t + 0.2, 0.65, ship.fac.damage_glow, 0.43, k * 0.45, k * 0.25, 16, vel, 1.8)
+		else:
+			fx.spr(lip, t + 0.2, 0.65, c, 0.43, k * 0.6, k * 3.2, 20 if ship.faction == "chorus" else 27, vel, 1.8)
 	fx.light(mouth, t, 0.75, 2.8, c, 1, 9.0 * k)
 
 
