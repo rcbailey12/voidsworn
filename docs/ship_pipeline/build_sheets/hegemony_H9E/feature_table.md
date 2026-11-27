@@ -7,17 +7,17 @@ Length 14.5 u. Stations below run from the bow tip. The saddle is 5.04 u wide at
 | Mass | Route | Role |
 |---|---|---|
 | Armoured saddle | hand-built | Continuous faceted shell, pinched waist, worked belly, solid stern |
-| Spinal jacket | hand-built | Low octagonal casing, partly sunk into the deck |
-| Bow collar | hand-built | Blunt octagonal frame around the recessed bore |
+| Spinal jacket | hand-built | Raised octagonal casing, machined plates and longitudinal rails, tapered into the saddle |
+| Bow collar | hand-built | Heavy chamfered octagon with stepped concentric bore and a deeply recessed lens |
 
 ## Feature table
 
 | ID | Fitting | Count | Route | Station and aim |
 |---|---|---|---|---|
-| I1 | Recessed ion accelerator | 1 | kit | 6%, centreline, forward, rules slot 3 |
+| I1 | Recessed ion accelerator | 1 | kit | Mount at 6%, centreline, forward, rules slot 3, hand-built liner |
 | T1 | Port twin Plasma lance | 1 | kit | 33%, 1.92 u port, rests forward, rules slot 1 |
 | T2 | Starboard twin Plasma lance | 1 | kit | 33%, 1.92 u starboard, rests forward, rules slot 2 |
-| C | Capacitor hoops | 4 | hand-built | 18%, 34%, 53%, 66%, centreline, low over the barrel jacket |
+| C | Capacitor hoops | 4 | hand-built | 18%, 41%, 53%, 66%, centreline, raised over the jacket with recessed contacts |
 | E | Rectangular nozzles | 4 | kit | 100%, offsets 0.50 and 1.50 u each side, aft |
 | A1 | Sensor fin | 1 | kit | 87%, centreline, points forward |
 | D | Flush drone doors | 2 | kit | 87%, one per flank, exit outward, serve one rules hangar |

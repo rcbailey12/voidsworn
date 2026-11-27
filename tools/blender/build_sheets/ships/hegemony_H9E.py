@@ -1,7 +1,6 @@
 """Spineguard, the Directorate cruiser. +X bow, +Y port, +Z deck."""
 
 from ships.hegemony_H8 import offset_loop, tube
-from ships.hegemony_H10 import ion_trench
 
 CODE = 'hegemony_H9E'
 NAME = 'H9E Spineguard | Vanguard cruiser'
@@ -14,17 +13,21 @@ BEAUTY = 'docs/ship_pipeline/build_sheets/hegemony_H9E/concept_beauty.png'
 CONCEPT_SHEET = 'docs/shots/issue-2094-codex/vanguard_sheet_e.png'
 CONCEPT_VIEWS = dict(top=dict(box=(114, 187, 565, 354), largest=True, flip=False),
                      side=dict(box=(114, 418, 565, 549), largest=True, flip=False))
-SHEET = dict(version=1, round='2094 run 4', date='2026-11-27', blend='generated from recipe sheet')
+SHEET = dict(version=2, round='2094 run 5', date='2026-11-27', blend='built from recipe sheet')
 
 BOW = LENGTH / 2
 STERN = -LENGTH / 2
 TRANSOM = STERN + 0.41
 JOINTS = (0.55, -3.35)
-HOOPS = (4.65, 2.35, -0.42, -2.32)
+HOOPS = (4.65, 1.27, -0.42, -2.32)  # The second clamp sits aft of the lance sweep envelope.
 SHELL = 0.15
 BORE_ROOT = 6.40
 BORE_Z = 0.74
-BORE_HALF = (0.53, 0.35)
+BORE_HALF = (0.78, 0.66)
+JACKET_Z = 0.73
+JACKET_SECTION = (0.85, 0.70, 0.32)
+HOOP_HALF_LENGTH = 0.30
+SADDLE_SEAT = 0.62  # Compress the buried half so neither clamp nor jacket cuts into the rooms.
 
 # Station, half beam, deck, belly. One saddle closes the space below the gun.
 KEYS = (
@@ -63,46 +66,125 @@ def stations(hi, lo):
     return sorted({hi, lo, *(row[0] for row in KEYS if lo < row[0] < hi)}, reverse=True)
 
 
+def octagon(HP, x, w, h, chamfer, z, lower_scale=1):
+    return [(x, y, z + (p * lower_scale if p < 0 else p)) for y, p in HP.octa(w, h, chamfer)]
+
+
+def annulus(HP, profiles, z=0, lower_scale=1):
+    """A closed swept octagon. Profiles go along the exterior, then back through the bore."""
+    verts = [v for profile in profiles for v in octagon(HP, *profile, z, lower_scale)]
+    faces = []
+    for i in range(len(profiles)):
+        a, b = 8 * i, 8 * ((i + 1) % len(profiles))
+        faces.extend((a + j, a + (j + 1) % 8, b + (j + 1) % 8, b + j) for j in range(8))
+    return verts, faces
+
+
 def collar(K, HP):
+    from mathutils import Vector
+
     hw, hh = BORE_HALF
-    # The outside is chamfered, but the bore walls meet the standard trench liner.
-    profiles = ((BORE_ROOT, 0.85, 0.67), (6.54, 0.99, 0.74),
-                (7.10, 0.99, 0.74), (BOW, 0.87, 0.64))
-    outer = [HP.octa(w, h, 0.20) for _, w, h in profiles]
-    # Follow the octagon's vertex order on the inside so each annulus is closed.
-    inner = [(y / max(abs(y) / hw, abs(z) / hh),
-              z / max(abs(y) / hw, abs(z) / hh)) for y, z in outer[-1]]
-    loops = [(x, loop) for (x, _, _), loop in zip(profiles, outer)]
-    loops += [(BOW, inner), (BORE_ROOT, inner)]
-    verts = [(x, y, z + BORE_Z) for x, loop in loops for y, z in loop]
-    faces = [(8 * k + i, 8 * k + (i + 1) % 8, 8 * ((k + 1) % len(loops)) + (i + 1) % 8,
-              8 * ((k + 1) % len(loops)) + i) for k in range(len(loops)) for i in range(8)]
-    ob = K._obj('H9E_bow_collar', verts, faces, 'hgrey', grp='hull')
-    K.mass('Bow collar', ob, 'pale plate', note='chamfered external frame, recessed kit accelerator')
-    ion_trench(K, (BORE_ROOT, 0, BORE_Z), BOW - BORE_ROOT, 2 * hw, 2 * hh, coils=2, r=0.29)
+    shell = ((6.18, 0.84, 0.69, 0.32), (6.29, 1.02, 0.87, 0.43),
+             (6.49, 1.17, 0.98, 0.46), (7.06, 1.17, 0.98, 0.46),
+             (BOW, 1.04, 0.85, 0.40), (BOW, hw, hh, 0.34),
+             (7.13, 0.72, 0.60, 0.31), (6.48, 0.67, 0.54, 0.26), (6.18, 0.65, 0.52, 0.26))
+    v, f = annulus(HP, shell, BORE_Z)
+    ob = K._obj('H9E_bow_collar', v, f, 'hgrey', grp='hull')
+    K.mass('Bow collar', ob, 'pale plate', note='heavy chamfered octagon around a deep concentric bore')
+
+    # Retain the kit's emitter, lens, and I1 attachment and aim contract. The kit's
+    # rectangular trench walls and coils give way to closed octagonal liner rings.
+    root = (BORE_ROOT, 0, BORE_Z)
+    depth = BOW - BORE_ROOT
+    part = HP.spinal(depth, 0.29, w=2 * hw, h=2 * hh, coils=0)
+    part.comps = [c for c in part.comps if c['name'].startswith(('emitter', 'lens'))]
+
+    def liner(name, role, material, profiles):
+        part.add(name, role, material, annulus(HP, [(x - BORE_ROOT, w, h, ch) for x, w, h, ch in profiles]))
+
+    liner('liner', 'mount', 'hgrey2', (
+        (6.57, 0.70, 0.57, 0.27), (7.17, 0.75, 0.63, 0.32),
+        (7.17, 0.69, 0.57, 0.30), (7.09, 0.65, 0.53, 0.29),
+        (6.57, 0.50, 0.40, 0.21)))
+    for i, (x, w, h) in enumerate(((6.72, 0.57, 0.46), (6.84, 0.60, 0.49),
+                                   (6.96, 0.63, 0.52), (7.06, 0.66, 0.55))):
+        liner(f'coil{i}', 'body', 'htrim', (
+            (x - 0.04, w + 0.03, h + 0.03, 0.29), (x + 0.03, w + 0.03, h + 0.03, 0.29),
+            (x + 0.038, w - 0.035, h - 0.035, 0.25), (x - 0.04, w - 0.055, h - 0.055, 0.23)))
+        if i < 3:
+            liner(f'coilglow{i}', 'body', 'hblue' if i == 1 else 'hlining', (
+                (x - 0.025, w - 0.048, h - 0.048, 0.24), (x - 0.01, w - 0.039, h - 0.039, 0.24),
+                (x - 0.01, w - 0.057, h - 0.057, 0.23), (x - 0.025, w - 0.062, h - 0.062, 0.23)))
+
+    part = K.emit('I1', part, HP.frame(Vector(root), (1, 0, 0), (0, 0, 1)), 'ion_trench', keep=False)
+    fd = part.fit
+    for ob in K.coll.objects:
+        if ob.get('grp') == 'I1' and ob.get('role') != 'mount':
+            ob['gun_fixed'] = 1
+            ob['turret'] = 0
+    muzzles = [tuple(m[1]) for m in fd['muzzles']]
+    lane = dict(apex=tuple(fd['lane_from'][1]), dir=(1, 0, 0), u=(0, 1, 0), w=(0, 0, 1),
+                hu=hw, hw=hh, half=4.0, length=K.length * 0.8, what='firing lane')
+    K.fitdata.append(dict(id='I1', kind='gun', slot='F', pivot=tuple(fd['pivot'][1]), up=(0, 0, 1), mount='spinal',
+                         ring=root, rest_yaw=0.0, reach=fd['reach'], band=(-10, 0, 10, 20), muzzles=muzzles,
+                         cal=0.29, hous_r=fd['radius'], rest_pitch=0.0, lanes=[lane], aim=tuple(fd['aim'][1]), bore=fd['bore']))
+    K.features.append(dict(id='I1', kind='gun', what='ion cannon, concentric recessed accelerator', count=1,
+                           pos=root, aim=(0.0, 0.0), slot='F', weapon='ion', src='picture',
+                           note='shared emitter and lens behind a stepped octagonal liner', muzzle=muzzles,
+                           normal=(1, 0, 0), fixed=True, inv=['ion_trench']))
 
 
 def spine(K, HP):
-    def profile(x, w, h, z):
-        return [(x, y, p + z) for y, p in HP.octa(w, h, 0.18)]
+    from mathutils import Vector
 
-    ob = K.loft_rings('H9E_spinal_jacket', [
-        profile(6.46, 0.78, 0.51, 0.69), profile(6.13, 0.82, 0.55, 0.69),
-        profile(-2.91, 0.82, 0.55, 0.69), profile(-3.32, 0.81, 0.49, 0.65),
-        profile(-3.95, 0.76, 0.30, 0.70),
-    ], 'hgrey', grp='hull')
-    K.mass('Spinal jacket', ob, 'pale plate', note='a low, continuous jacket seated in the armour')
+    def profile(x):
+        return octagon(HP, x, *JACKET_SECTION, JACKET_Z, SADDLE_SEAT)
+
+    aft = [octagon(HP, -3.38, 0.77, 0.49, 0.25, 0.65),
+           octagon(HP, -3.95, 0.66, 0.14, 0.12, 0.65)]
+    ob = K.loft_rings('H9E_spinal_jacket', [profile(6.44), profile(-2.84), *aft], 'hgrey2', grp='hull')
+    K.mass('Spinal jacket', ob, 'pale plate', note='faceted panelled jacket that tapers down into the saddle')
+
+    # The jacket uses the same two-size machined plate relief as the saddle, on five
+    # exposed facets. The structural hoop seats interrupt the plate rows.
+    ends = [(6.28, HOOPS[0] + HOOP_HALF_LENGTH)]
+    ends += [(hi - HOOP_HALF_LENGTH, lo + HOOP_HALF_LENGTH) for hi, lo in zip(HOOPS, HOOPS[1:])]
+    ends += [(HOOPS[-1] - HOOP_HALF_LENGTH, -2.84)]
+    for i, (hi, lo) in enumerate(ends):
+        n = max(1, round((hi - lo) / 0.65))
+        rings = [profile(hi + (lo - hi) * j / n) for j in range(n + 1)]
+        if i == len(ends) - 1:
+            rings.extend(aft)
+        acc, _ = HP.module_panels(rings, (0, 1, 2, 3, 7), pv=0.49, gap=0.022, t_big=0.047, t_small=0.031)
+        for material, (v, f) in acc.items():
+            if v:
+                K._obj(f'H9E_jacket_panels_{i}_{material}', v, f, material, grp='hull')
+        for j in (1, 2):
+            x0, y, z = profile(hi)[j]
+            normal = Vector((0, y, z - JACKET_Z)).normalized()
+            K.strip(f'H9E_jacket_rail_{i}_{j}', [(x0, y, z), (lo, y, z)], w=0.07, t=0.045,
+                    normals=[normal] * 2, m='htrim', grp='hull')
+
+    # Each hoop is one octagonal clamp with a recessed race between its bevelled
+    # shoulders. Keep the lit contacts below the rim and off the edge breaks.
+    rim = (1.12, 1.00, 0.40)
+    race = (1.065, 0.94, 0.37)
     for i, x in enumerate(HOOPS, 1):
-        ob = K.loft_rings(f'H9E_capacitor_hoop_{i}', [
-            profile(x + 0.19, 0.89, 0.57, 0.69), profile(x + 0.11, 0.99, 0.65, 0.69),
-            profile(x - 0.11, 0.99, 0.65, 0.69), profile(x - 0.19, 0.89, 0.57, 0.69),
-        ], 'htrim', grp='hull')
-        K.fitting(f'C{i}', 'armoured capacitor hoop', (x, 0, 1.34), note='one low raised clamp over the jacket')
-        K.box(f'H9E_hoop_contact_{i}', x - 0.073, x + 0.073, -0.24, 0.24, 1.329, 1.347,
-              'hblue', ch=0.009, grp='hull')
-        for side in (1, -1):
-            K.strip(f'H9E_hoop_side_{i}_{side}', [(x, side * 0.986, 1.02), (x, side * 0.986, 1.11)],
-                    w=0.07, t=0.014, normals=[(0, side, 0)] * 2, m='hblue', grp='hull')
+        end, inner = (0.96, 0.83, 0.35), (0.80, 0.66, 0.30)
+        half_profile = ((HOOP_HALF_LENGTH, end), (0.22, rim), (0.09, rim), (0.061, race))
+        profiles = [(x + d, *p) for d, p in half_profile]
+        profiles += [(x - d, *p) for d, p in reversed(half_profile)]
+        profiles += [(x - HOOP_HALF_LENGTH, *inner), (x + HOOP_HALF_LENGTH, *inner)]
+        v, f = annulus(HP, profiles, JACKET_Z, SADDLE_SEAT)
+        K._obj(f'H9E_capacitor_hoop_{i}', v, f, 'htrim', grp='hull')
+        K.fitting(f'C{i}', 'armoured capacitor hoop', (x, 0, JACKET_Z + rim[1]), note='raised clamp with recessed contacts')
+        loop = [Vector(p) for p in octagon(HP, x, *race, JACKET_Z, SADDLE_SEAT)]
+        for j, t0, t1 in ((0, 0.18, 0.82), (1, 0.31, 0.69), (2, 0.18, 0.82),
+                          (3, 0.62, 0.94), (7, 0.06, 0.38)):
+            a, b = loop[j], loop[(j + 1) % 8]
+            normal = (b - a).cross(Vector((1, 0, 0))).normalized()
+            K.strip(f'H9E_hoop_contact_{i}_{j}', [a.lerp(b, t0) - normal * 0.004, a.lerp(b, t1) - normal * 0.004],
+                    w=0.07, t=0.014, normals=[normal] * 2, m='hblue', grp='hull')
 
 
 def fittings(K, HP):
@@ -234,6 +316,6 @@ def build(K):
     K.colour('Pale steel-grey', BOW, STERN, 'even hull panel grid')
     K.colour('Steel-blue trim', BOW, STERN, 'joint rings, capacitor hoops and drive lips')
     K.colour('Implant-blue', BOW, STERN, 'interrupted flank line, recessed contacts and drive throats')
-    K.change('Lower the bow collar and run its gun into the solid saddle.', 'Use the family accelerator and keep the four low hoops.')
+    K.change('Seat the octagonal cannon in the solid saddle.', 'Keep a clear muzzle and four distinct hoops in the Directorate trim.')
     K.change('Flatten the deep keel and segment the light line.', 'Picket and Cordon set the faceted belly and panel language.')
     K.change('Add launch origins to the two flush flank doors.', 'Both serve the one hangar already in the Vanguard rules.')

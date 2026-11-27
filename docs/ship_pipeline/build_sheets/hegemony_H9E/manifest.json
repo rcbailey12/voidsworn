@@ -1,8 +1,8 @@
 {
  "code": "hegemony_H9E",
- "sheet_version": 1,
+ "sheet_version": 2,
  "kit": "tools/blender/kits/hegemony/parts.py",
- "routes_note": "Kit parts use the shared Directorate builders. The saddle, jacket, collar, hoops, module rings and flank strips are authored for H9E.",
+ "routes_note": "Kit parts use the shared Directorate builders. The saddle, jacket, collar, octagonal bore liner, hoops, module rings and flank strips are authored for H9E.",
  "turret_marking": "T1 and T2 pivot at their kit rings with parented turning meshes. I1 is a fixed accelerator.",
  "parts": [
   {

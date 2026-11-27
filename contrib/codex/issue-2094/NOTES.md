@@ -1,5 +1,17 @@
 # Vanguard cruiser redraw, issue 2094
 
+## Run 5
+
+The H9E now leads with a heavy octagonal collar and a stepped bore around the recessed Directorate emitter. The octagonal jacket has raised machined plate courses and longitudinal rails that run into the saddle. All four raised steel-blue hoops have recessed blue contacts. The second hoop moved aft to preserve both lances' full sweeps. The original saddle, blue flank line, drive row, interior layout and paint stack are unchanged.
+
+[Same-length family comparison](../../../docs/shots/issue-2094-codex/vanguard_family_lineup_r5.png) | [Orthographic build sheet and cutaway](../../../docs/shots/issue-2094-codex/vanguard_build_sheet_r5.png) | [Build sheet and method](../../../docs/ship_pipeline/build_sheets/hegemony_H9E/README.md) | [Manifest](../../../docs/ship_pipeline/build_sheets/hegemony_H9E/manifest.json)
+
+The CPU lineup gives all three models the same 350 px bow-to-stern scale and matched cameras and lighting. The orthographic sheet adds a straight-on view of the bore and a centreline cutaway. Both sheets have verified provenance. The cannon is more prominent than in Run 4, but its housing still sits deeper in the saddle than in the approved concept. The bright lens and blue contact strips are preview materials, not a baked finish.
+
+Concept import, weapon match, sheet conversion, recipe part audit, CPU LOD export and unpainted GLB readback passed. The fit report is clear in all eight categories. The export has 54,060 triangles across 15 primitives, both original module seams and 20 hard points. No GPU shape reference, paint bake, installed measurements or publish in this run. Paint waits for Ryan's review of the new lineup.
+
+The full local standing run did not go green. The manifest mismatch was fixed, and that check plus six other rows passed on individual reruns. Across the full run and reruns, 125 checks passed, two had known baseline results, and only `pc_jobs_1194_tests` still failed. Its Windows tool probe fixture did not stop its child process. No runner code changed. Both Run 5 picture and sidecar pairs passed direct verification in the checkout and the runner's shots folder.
+
 ## Run 4
 
 H9E Spineguard keeps its four capacitor hoops, pinched waist and solid stern. The cruiser now uses the Cordon-style recessed accelerator, the shared Directorate Plasma lance turrets and rectangular drive kit, and the same steel-blue module rings, flush panel courses and blue flank strips as Picket and Cordon. The lower collar and worked flat belly are deliberate departures from the approved concept.
