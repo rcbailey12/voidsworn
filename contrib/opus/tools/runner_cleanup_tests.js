@@ -17,7 +17,8 @@ const janitorTimeout = windows ? 240000 : childTimeout;
 const temp = path.join(root, 'temp'), board = path.join(root, 'board');
 const mirror = path.join(root, 'mirror.git'), repo = path.join(board, 'repo');
 const profile = path.join(root, 'profile'), flag = path.join(profile, 'Downloads', 'voidsworn_test', 'gpu_go.txt');
-const env = { ...process.env, USERPROFILE: profile, PC_RUNNER_TEST: '1', PC_RUN_TEMP: temp, PC_TEST_MIRROR: mirror, PC_TEST_GIT: '' };
+const env = { ...process.env, USERPROFILE: profile, PC_RUNNER_TEST: '1', PC_RUN_TEMP: temp, PC_TEST_MIRROR: mirror,
+  PC_TEST_SOURCE: mirror, PC_TEST_GIT: '' };
 const fixtureNow = new Date();
 function write(file, value) {
   fs.mkdirSync(path.dirname(file), { recursive: true });

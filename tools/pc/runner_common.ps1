@@ -2033,7 +2033,9 @@ try {
   elseif ($mode -eq 'hashwrite') {
     # The Board runs this right after copying the runner files to a PC tools folder; hashcheck then guards the copies.
     $tools = $args[1]; $hashf = $args[2]
-    $names = @('codex_issue.bat','codex_issue.ps1','runner_common.ps1','work_issue.bat','work_issue.ps1','review_evidence.ps1','run_timeout.ps1','tmo.bat','gpu_slots.js','janitor.ps1','janitor_salvage.ps1','janitor.bat')
+    $names = @('codex_issue.bat','codex_issue.ps1','runner_common.ps1','work_issue.bat','work_issue.ps1','review_evidence.ps1',
+      'run_timeout.ps1','tmo.bat','gpu_slots.js','janitor.ps1','janitor_salvage.ps1','janitor_neon.ps1','janitor_relay.ps1',
+      'neon_idle_threads.js','janitor.bat')
     $lines = @()
     foreach ($n in $names) {
       $p = Join-Path $tools $n

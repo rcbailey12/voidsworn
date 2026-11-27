@@ -6,16 +6,34 @@ function Assert-NotPaidTakes($dir) {
     throw "ElevenLabs take folder is kept: $($dir.FullName)"
   }
 }
-function Read-OriginRelayRefs($pattern) {
-  $url = 'https://github.com/rcbailey12/voidsworn-relay'
-  if ($test -and $env:PC_TEST_RELAY_SOURCE) { $url = $env:PC_TEST_RELAY_SOURCE }
+function Read-OriginRelayRefs($pattern, [switch]$Legacy) {
+  $url = if ($Legacy) { 'https://github.com/rcbailey12/voidsworn' } else { 'https://github.com/rcbailey12/voidsworn-relay' }
+  $namespace = if ($Legacy) { 'refs/heads/board/pc-out-' } else { 'refs/heads/pc-out-' }
+  if ($test) {
+    $url = if ($Legacy) { $env:PC_TEST_SOURCE } else { $env:PC_TEST_RELAY_SOURCE }
+    if (-not $url) { throw 'fixture origin is not set; no live network' }
+  }
   $refs = Invoke-BoundedMirrorGit @('ls-remote','--heads',$url,$pattern) 60 'current relay branches' -NativeGit
   if ($refs.Code -ne 0) { throw 'relay branches could not be checked on origin' }
   $tips = [Collections.Generic.Dictionary[string,string]]::new([StringComparer]::Ordinal)
   foreach ($line in (($refs.Lines -join "`n") -split "`r?`n")) {
-    if ($line -cmatch '\A([0-9a-f]{40})\t(refs/heads/pc-out-.+)\z') { $tips[$Matches[2]] = $Matches[1] }
+    if ($line -cmatch '\A([0-9a-f]{40})\t(\S+)\z' -and
+        $Matches[2].StartsWith($namespace, [StringComparison]::Ordinal)) { $tips[$Matches[2]] = $Matches[1] }
   }
   return ,$tips
+}
+function Select-ConfirmedRelayRefs($refs, $live) {
+  foreach ($entry in $refs) {
+    $sha, $ref = $entry -split ' ', 2
+    if ($live[$ref] -ceq $sha) { $entry }
+  }
+}
+function Add-RelayReceiptObjects($set, $mirror, $refs) {
+  if (-not $refs.Count) { return }
+  $tips = [string[]]@($refs | ForEach-Object { ($_ -split ' ', 2)[0] } | Select-Object -Unique)
+  foreach ($line in @(Salvage-Git @('--git-dir',$mirror,'rev-list','--objects','--stdin') $tips)) {
+    $null = $set.Add(($line -split ' ', 2)[0])
+  }
 }
 function Get-DirectRelayTree($branch, $leaf, $relayMirror, $dryRun) {
   if (-not (Test-Path -LiteralPath (Join-Path $relayMirror 'HEAD') -PathType Leaf)) { throw 'relay mirror is not present' }
@@ -81,6 +99,7 @@ function Assert-DirectRelayProof($dir, $branch, $relayMirror, $dryRun, [switch]$
 }
 function Assert-CleanupSnapshot($dir, $stats) {
   $current = Measure-CleanupDirectory (Get-Item -LiteralPath $dir.FullName -Force) -Snapshot
+  if ($null -eq $stats.EntriesByPath -or $null -eq $current.EntriesByPath) { throw 'relay cleanup snapshot unavailable' }
   if ($current.EntriesByPath.Count -ne $stats.EntriesByPath.Count) { throw 'results changed during relay proof' }
   foreach ($rel in $stats.EntriesByPath.Keys) {
     if ($current.EntriesByPath[$rel] -cne $stats.EntriesByPath[$rel]) { throw 'results changed during relay proof' }

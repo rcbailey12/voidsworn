@@ -206,11 +206,15 @@ function Assert-NoProcessUses($dir, $processes = $script:commandLines) {
 # manifest_merge.py mkdtemp (8 characters). Agent-chosen names never match; they go to Ryan as a one-off list.
 $legacyScratch = '\A(?:voidsworn-run-(?:(?<issue>[1-9][0-9]*)-)?[0-9a-f]{32}|voidsworn-parity-[A-Za-z0-9]{6}|stage7-checked-[A-Za-z0-9_][A-Za-z0-9_-]*-[a-z0-9_]{8})\z'
 function Get-RelayReceipts($mirror, $dryRun) {
-  # Objects reachable from the relay branches (board/pc-out-* here, pc-out-* in the relay repo's mirror): a committed receipt, not a loose blob (Artoo, PR 1266).
+  # Receipts are committed blobs, not loose objects. Live cleanup counts only tips still advertised by their origin.
   # Read again whenever the relay refs differ from the last read (review of PR 1592: the relay sweep's child or another
   # runner can fetch and prune the mirror between two folders).
   $refs = @(Read-CleanupGit @('--git-dir',$mirror,'for-each-ref','--format=%(objectname) %(refname)','refs/heads/board/pc-out-*'))
   if ($gitExit -ne 0) { throw 'relay branches could not be read' }
+  if ($refs.Count -and -not $dryRun) {
+    $live = Read-OriginRelayRefs 'refs/heads/board/pc-out-*' -Legacy
+    $refs = @(Select-ConfirmedRelayRefs $refs $live)
+  }
   # Issue 1657: the private relay repo's own mirror (relay-mirror.git beside the shared one), branches pc-out-*.
   $relayMirror = Join-Path (Split-Path -Parent $mirror) 'relay-mirror.git'
   $relayRefs = @()
@@ -221,27 +225,14 @@ function Get-RelayReceipts($mirror, $dryRun) {
     if ($relayRefs.Count -and -not $dryRun) {
       # Confirm every local ref against one fresh origin advertisement under the private relay writers' lock.
       $live = Read-OriginRelayRefs 'refs/heads/pc-out-*'
-      $relayRefs = @($relayRefs | Where-Object {
-        $sha, $ref = $_ -split ' ', 2
-        $live[$ref] -ceq $sha
-      })
+      $relayRefs = @(Select-ConfirmedRelayRefs $relayRefs $live)
     }
   }
   $key = ($refs + @('relay') + $relayRefs) -join "`n"
   if ($null -ne $script:relayReceipts -and $script:relayReceiptsKey -ceq $key) { return ,$script:relayReceipts }
   $set = New-Object 'Collections.Generic.HashSet[string]'
-  if ($refs.Count) {
-    foreach ($line in @(Read-CleanupGit @('--git-dir',$mirror,'rev-list','--objects','--glob=refs/heads/board/pc-out-*'))) {
-      $null = $set.Add(($line -split ' ', 2)[0])
-    }
-    if ($gitExit -ne 0) { throw 'relay branches could not be read' }
-  }
-  if ($relayRefs.Count) {
-    $tips = [string[]]@($relayRefs | ForEach-Object { ($_ -split ' ', 2)[0] } | Select-Object -Unique)
-    foreach ($line in @(Salvage-Git @('--git-dir',$relayMirror,'rev-list','--objects','--stdin') $tips)) {
-      $null = $set.Add(($line -split ' ', 2)[0])
-    }
-  }
+  Add-RelayReceiptObjects $set $mirror $refs
+  Add-RelayReceiptObjects $set $relayMirror $relayRefs
   $script:relayReceipts = $set; $script:relayReceiptsKey = $key
   return ,$set
 }
@@ -411,6 +402,8 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
       if (-not $dryRun) {
         $mirrorLock = Open-MirrorWriterLock $mirror
         $relayLock = Open-CleanupLock (Join-Path $root 'relay-mirror.git.lock')
+        # Include the lease if this pass created it, and check the files again after relay proof.
+        $helperSnapshot = Measure-CleanupDirectory (Get-Item -LiteralPath $dir.FullName -Force) -Snapshot
       }
       Test-RelayedResults $dir $mirror $finishedHelper $dryRun
     }
@@ -452,6 +445,7 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
       } elseif ($helper) {
         Assert-NoProcessUses $dir (Get-CommandLines)
         Assert-GpuQuiet
+        Assert-CleanupSnapshot $dir $helperSnapshot
         Remove-HelperFolder $dir $helperLease; $helperLease = $null; $action = 'removed'
       }
       else { Remove-CleanupDirectory $dir; $action = 'removed' }

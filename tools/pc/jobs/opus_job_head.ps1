@@ -158,7 +158,8 @@ function Get-KeptWork($repo, $src, $rec, $codeDir, $export, [switch]$Slot) {
   #  - a file under $codeDir (godot/assets/ships/<code>/, ship clones only) byte for byte the same as the file of that
   #    name in the job's collected export ($export), tracked or not;
   #  - a byte copy of a file the pin tracks (the probe copies in godot/bench);
-  #  - a .import or .uid sidecar whose own file is tracked or proven above.
+  #  - outside slot resets, a .import or .uid sidecar whose own file is tracked or proven above.
+  # Slot resets require proof for each ship scene, resource and sidecar they can remove, not proof for a sibling GLB.
   # Anything else, such as a new or changed ship file a job wrote, is listed (Artoo, PR 1326); the caller saves it
   # before any removal (Save-Leftovers) or keeps the checkout.
   $ErrorActionPreference = 'Continue'
@@ -211,10 +212,9 @@ function Get-KeptWork($repo, $src, $rec, $codeDir, $export, [switch]$Slot) {
         }
       }
     }
-    if ($rel -cmatch '\.(?:import|uid)\z') { $sidecars += $rel; continue }
-    # gen is the generated ship cache, not a source directory. Elsewhere a .scn or .res can be unique work.
-    if ($Slot -and $rel -cmatch '\Agodot/gen/.+\.(?:scn|res)\z' -and (& $mineFile)) { continue }
-    if ($Slot -and $rel -cmatch '\Agodot/assets/ships/.+\.(?:scn|res)\z') { $sidecars += $rel; continue }
+    # The warm reset keeps .import files outside the ship trees. It can remove the ship tree sidecars and .uid files.
+    if ($Slot -and -not $shipCopy -and $rel -cmatch '\.import\z') { $sidecars += $rel; continue }
+    if ($Slot -and -not (& $mineFile)) { $keep += "new: $rel"; continue }
     if ($code -eq '??') { $copies += $rel } else { $keep += "new: $rel" }
   }
   $tracked = @{}; $paths = @{}
@@ -229,7 +229,6 @@ function Get-KeptWork($repo, $src, $rec, $codeDir, $export, [switch]$Slot) {
   }
   foreach ($rel in $sidecars) {
     $own = $rel -replace '\.(import|uid)\z', ''
-    if ($Slot -and $rel -cmatch '\.(?:scn|res)\z') { $own = ($rel -replace '\.(?:scn|res)\z', '') + '.glb' }
     if (-not ($paths.ContainsKey($own) -or $proven.ContainsKey($own))) { $keep += "new: $rel" }
   }
   return $keep

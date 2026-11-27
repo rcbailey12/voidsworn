@@ -124,6 +124,24 @@ try {
   put(path.join(staleWholeJob, 'out', 'picture.png'), 'only on the stale relay tip');
   publish('opus464', staleWholeJob);
   git('--git-dir', relay, 'update-ref', '-d', 'refs/heads/pc-out-opus464');
+  function legacyJob(issue) {
+    const dir = path.join(root, `opus${issue}`);
+    put(path.join(dir, 'done.txt'), 'PASS\n');
+    const picture = put(path.join(dir, 'out', 'picture.png'), `legacy picture ${issue}`);
+    const entries = [path.join(dir, 'done.txt'), picture].map((file, i) =>
+      `100644 blob ${git('--git-dir', source, 'hash-object', '-w', '--no-filters', file)}\tf${i}`).join('\n') + '\n';
+    const tree = run('git', ['--git-dir', source, 'mktree'], entries);
+    const commit = git('--git-dir', source, 'commit-tree', tree, '-m', 'legacy proof');
+    const ref = `refs/heads/board/pc-out-opus${issue}`;
+    git('--git-dir', source, 'update-ref', ref, commit);
+    git('--git-dir', mirror, 'fetch', '-q', 'origin', `+${ref}:${ref}`);
+    return { dir, ref, commit, picture };
+  }
+  const liveLegacy = legacyJob(465);
+  const staleLegacy = legacyJob(466);
+  const movedLegacy = legacyJob(467);
+  git('--git-dir', source, 'update-ref', '-d', staleLegacy.ref);
+  git('--git-dir', source, 'update-ref', movedLegacy.ref, liveLegacy.commit);
   const takes = attempt(461, 1);
   put(path.join(takes, 'out_audio', 'manifest.jsonl'), '{}\n');
   put(path.join(takes, 'out_audio', 'receipts.jsonl'), '{}\n');
@@ -141,7 +159,8 @@ try {
   put(path.join(bench, 'capture.png'), 'bench picture');
   publish('look-bench-runs', bench);
 
-  function heldSlot(n, unique) {
+  const sceneFiles = ['assets/ships/proof/proof.scn', 'gen/proof.res'];
+  function heldSlot(n, edited) {
     const slot = path.join(root, 'slots', `slot_gpu_${n}`);
     const repo = path.join(slot, 'repo');
     fs.mkdirSync(slot, { recursive: true });
@@ -149,21 +168,20 @@ try {
     const use = attempt(468, n);
     const ship = 'assets/ships/proof/proof.glb';
     const shipSource = path.join(root, 'build', 'godot');
-    const bytes = Buffer.alloc(4096, 23);
-    put(path.join(shipSource, ship), bytes);
-    put(path.join(repo, 'godot', ship), bytes);
+    const record = [ship, ship + '.uid', ship + '.import', ...sceneFiles].map((rel, i) => {
+      const bytes = Buffer.alloc(4096, 23 + i);
+      put(path.join(shipSource, rel), bytes);
+      const dest = put(path.join(repo, 'godot', rel), bytes);
+      if (edited && sceneFiles.includes(rel)) put(dest, Buffer.alloc(bytes.length, 42));
+      return `${createHash('sha256').update(bytes).digest('hex')} ${bytes.length} godot/${rel}\n`;
+    }).join('');
     // Old held slots have the issue 1497 receipt in the attempt, but no receipt in the slot itself.
-    put(path.join(use, 'new_ships_copied.txt'), `${createHash('sha256').update(bytes).digest('hex')} ${bytes.length} godot/${ship}\n`);
-    put(path.join(repo, 'godot', ship + '.uid'), 'uid://fixture');
-    put(path.join(repo, 'godot', ship + '.import'), 'generated import sidecar');
-    put(path.join(repo, 'godot', 'assets', 'ships', 'proof', 'proof.scn'), 'generated scene');
-    put(path.join(repo, 'godot', 'gen', 'proof.res'), 'generated cache');
-    if (unique) put(path.join(repo, 'godot', 'unique.res'), 'not a cache');
+    put(path.join(use, 'new_ships_copied.txt'), record);
     put(path.join(slot, 'last_use.txt'), `attempt ${use}\nname new\n`);
     return put(path.join(slot, 'hold.txt'), `the last job's leftovers in ${repo} could not be saved (over the cap); the slot is kept as it is\nlast use: ${use} new\nThe Board removes this file once it has looked.\n`);
   }
   const safeHold = heldSlot(1, false);
-  const uniqueHold = heldSlot(2, true);
+  const editedHold = heldSlot(2, true);
   put(path.join(root, 'build', 'godot', 'assets', 'ships', 'proof', 'proof.glb'), 'shared build changed');
 
   const eligible = thread(455, 'completed', old);
@@ -222,10 +240,13 @@ try {
   const janitorArgs = ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(tools, 'janitor.ps1')];
   let log = run(shell, [...janitorArgs, '--low-space'], undefined, active);
   assert.match(log, /Neon pass kept: T3 is open/);
-  for (const removed of [saved, scratch, codexShots, wholeJob, safeHold]) assert(!fs.existsSync(removed), `expected low-space removal ${removed}\n${log}`);
-  for (const kept of [bench, big, changed, activeJob, keptJob, takes, eligible.local, staleWholeJob, uniqueHold]) assert(fs.existsSync(kept), `expected low-space keep ${kept}\n${log}`);
+  for (const removed of [saved, scratch, codexShots, wholeJob, safeHold, liveLegacy.dir]) assert(!fs.existsSync(removed), `expected low-space removal ${removed}\n${log}`);
+  for (const kept of [bench, big, changed, activeJob, keptJob, takes, eligible.local, staleWholeJob, staleLegacy.picture, movedLegacy.picture, editedHold]) {
+    assert(fs.existsSync(kept), `expected low-space keep ${kept}\n${log}`);
+  }
   assert.match(log, /GPU slot hold released: slot_gpu_1/);
-  assert.match(log, /GPU slot hold kept: slot_gpu_2 .*not proven rebuildable/);
+  assert.match(log, /GPU slot hold kept: slot_gpu_2 .*2 leftover\(s\) not proven rebuildable/);
+  for (const rel of sceneFiles) assert.deepEqual(fs.readFileSync(path.join(path.dirname(editedHold), 'repo', 'godot', rel)), Buffer.alloc(4096, 42));
   assert.match(log, /ElevenLabs take folder is kept/);
 
   const resetAttempt = attempt(469, 1);
@@ -249,8 +270,11 @@ try {
     assert.match(fs.readFileSync(path.join(path.dirname(slotRepo), 'ships_copied.txt'), 'utf8'), /^last use [0-9a-f]{64}/);
     fs.unlinkSync(attemptRecord); // The per-attempt copy can go with relayed results while the warm slot stays.
     put(path.join(shipSource, newGlb), 'repainted after the install');
-    run(shell, [...slotHead, 'slot', resetAttempt, 'next', pin], undefined, slotEnv);
+    const unproved = put(path.join(slotGodot, 'gen', 'job-edit.scn'), 'unique scene');
+    const reset = run(shell, [...slotHead, 'slot', resetAttempt, 'next', pin], undefined, slotEnv);
     assert(!fs.existsSync(installed), 'the slot receipt proves the old copy after the attempt receipt is gone');
+    assert(!fs.existsSync(unproved), 'the slot is reusable once its unproved scene is saved');
+    assert.equal(fs.readFileSync(path.join(resetAttempt, 'out_new', 'slot_leftovers', 'files', 'godot', 'gen', 'job-edit.scn'), 'utf8'), 'unique scene', reset);
   } finally {
     if (fs.existsSync(path.join(resetAttempt, 'slot.txt'))) run(shell, [...slotHead, 'slotrelease', resetAttempt]);
   }
@@ -274,6 +298,10 @@ try {
   put(path.join(raceResult, 'done.txt'), 'PASS\n');
   put(path.join(raceResult, 'proof.png'), 'race picture');
   publish('race-fixture', raceResult);
+  const raceHelper = path.join(root, 'opus470');
+  put(path.join(raceHelper, 'done.txt'), 'PASS\n');
+  put(path.join(raceHelper, 'out', 'proof.png'), 'helper race picture');
+  publish('opus470', raceHelper);
   const harness = put(path.join(fixture, 'relay-races.ps1'), `
 $source = [IO.File]::ReadAllText((Join-Path $env:R455_TOOLS 'janitor.ps1'))
 $definitions = $source.Substring(0, $source.IndexOf("\`n" + '$trigger = $args[0]')).Replace('$PSScriptRoot', '$env:R455_TOOLS')
@@ -307,12 +335,28 @@ $gitExe = (Get-Command git -CommandType Application | Select-Object -First 1).So
 & $gitExe --git-dir $env:PC_TEST_RELAY_SOURCE update-ref -d refs/heads/pc-out-race-fixture
 if ($LASTEXITCODE -ne 0) { throw 'could not remove fixture ref' }
 Clear-DirectRelayResult $dir $guard 'race-fixture' '\\APASS\\z' '' $false @() $env:PC_RUN_TEMP
+
+$helper = Get-Item -LiteralPath (Join-Path $root 'opus470')
+$mirror = Join-Path $root 'repo-mirror.git'
+$originalHelperProof = (Get-Command Test-RelayedResults -CommandType Function).ScriptBlock
+function Test-RelayedResults($dir, $mirror, $finishedHelper, $dryRun) {
+  & $originalHelperProof $dir $mirror $finishedHelper $dryRun
+  $out = Get-Item -LiteralPath (Join-Path $dir.FullName 'out')
+  $stamp = $out.LastWriteTimeUtc
+  $added = Join-Path $out.FullName 'unproved-empty.png'
+  [IO.File]::WriteAllBytes($added, [byte[]]@())
+  [IO.File]::SetLastWriteTimeUtc($added, $stamp.AddDays(-1))
+  [IO.Directory]::SetLastWriteTimeUtc($out.FullName, $stamp)
+}
+Clear-ScratchFolder $helper '' 'fixture' 24 $env:PC_RUN_TEMP ([DateTime]::UtcNow) $false @() -Helper -Mirror $mirror
 `);
   const races = run(shell, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', harness], undefined, { R455_TOOLS: tools });
   assert.match(races, /relayed results kept: .*results changed during relay proof/);
   assert.match(races, /relayed results kept: .*a running process names this folder/);
   assert.match(races, /relayed results kept: .*origin does not confirm this relay tip/);
   assert(fs.existsSync(path.join(raceResult, 'proof.png')), races);
+  assert.match(races, /kept .*opus470 .*results changed during relay proof/);
+  assert(fs.existsSync(path.join(raceHelper, 'out', 'unproved-empty.png')), races);
 
   const totals = fs.readFileSync(path.join(root, 'board1119', 'janitor_log.txt'), 'utf8');
   for (const kind of ['relayed jobs and pictures', 'Neon T3', 'Codex sandbox']) {
