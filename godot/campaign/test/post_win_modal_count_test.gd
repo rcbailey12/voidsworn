@@ -32,7 +32,7 @@ func _count(seed: int) -> Array[String]:
 		printerr(err)
 		return []
 	c.fixed_clock = true
-	JSM.rnd_seed(seed)
+	c.rng.rnd_seed(seed)
 	c.newRun("vex", "voidsworn")
 	c.mapScreen()
 	c.act("enterNode", c.availableNodes()[0])
@@ -69,7 +69,7 @@ func _check_repairs() -> bool:
 	var failures := 0
 	for kind in ["drydock", "field"]:
 		for choice in ["service", "stipend"]:
-			JSM.rnd_seed(1177)
+			c.rng.rnd_seed(1177)
 			c.newRun("vex", "voidsworn")
 			var n = c.RUN["map"]["cols"][0][0]
 			n["type"] = kind

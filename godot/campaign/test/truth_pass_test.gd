@@ -197,7 +197,7 @@ func _battle_tips(c: Campaign) -> void:
 
 
 func _new_run(c: Campaign, fac: String) -> void:
-	API.JSM.rnd_seed(1144)
+	c.rng.rnd_seed(1144)
 	c.META = c.defaultMeta()
 	for id in c.ADMIRALS:
 		if c.ADMIRALS[id]["fac"] == fac:

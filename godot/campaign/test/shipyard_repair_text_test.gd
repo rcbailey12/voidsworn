@@ -27,7 +27,7 @@ func _repair_line(fac: String) -> String:
 	ui.set_process(false); ui.use_3d_map = false
 	var adm := _admiral_for(campaign, fac)
 	if adm == "": ui.queue_free(); return "ERR no admiral for " + fac
-	JSM.rnd_seed(1551)
+	campaign.rng.rnd_seed(1551)
 	campaign.META["admirals"][adm] = true
 	campaign.newRun(adm, fac)
 	ui.map3d.intel = MapIntel.new(campaign)

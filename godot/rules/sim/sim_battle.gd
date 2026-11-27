@@ -18,7 +18,6 @@ var hulls := {}
 var weapons := {}
 var abilities := {}
 var fades := {}
-var _player_launches := 0
 var _identity := {}
 var _speed := 1.0
 var _enemy_animation := false
@@ -29,11 +28,6 @@ func reset_timing() -> void:
 	clock = {"old": 0.0, "neu": 0.0, "real": 0.0, "rounds": 0, "max_round": 0.0}
 	tempo = {"player": 0, "enemy": 0, "fire": 0, "first_loss": 0, "first_count": 0}
 	categories = {}
-
-
-func startBattle(cfg: Dictionary, pick_skills := false) -> void:
-	_player_launches = 0
-	super.startBattle(cfg, pick_skills)
 
 
 func start_campaign(run: Dictionary, cfg: Dictionary) -> Dictionary:
@@ -65,9 +59,9 @@ func start_campaign(run: Dictionary, cfg: Dictionary) -> Dictionary:
 
 func launchWing(u, h, kind) -> void:
 	super.launchWing(u, h, kind)
-	# Replacement wings use this path without calling useAbility. Initial wings use makeWing.
-	if u.side == "player":
-		_player_launches += 1
+	if matrix:
+		var key: String = u.side + ":launch"
+		abilities[key] = abilities.get(key, 0) + 1
 
 
 func fadeMove(u) -> bool:
@@ -82,10 +76,7 @@ func fadeMove(u) -> bool:
 
 
 func player_abilities_fired() -> Dictionary:
-	var fired: Dictionary = B.usage.ab.duplicate()
-	if _player_launches > 0:
-		fired["launch"] = _player_launches
-	return fired
+	return B.usage.ab.duplicate()
 
 
 func fight(bot: Bot, alternating: bool) -> void:
@@ -358,29 +349,26 @@ func fireWeapon(u, wi: int, t, opts: Dictionary = {}) -> bool:
 
 
 func _shield_total(unit: Dictionary) -> float:
-	var total := 0.0
-	for shield in unit.sh:
-		total += shield
-	return total
+	return float(unit.get("shp", 0.0))
 
 
 func applyHit(att, w, t, dmg: float, quad: int, combat_origin: Dictionary = {}) -> Dictionary:
 	if not matrix or t.isSq:
 		return super.applyHit(att, w, t, dmg, quad, combat_origin)
-	var absorbed := minf(dmg * (1.0 - z0(w.get("pierce"))), t.sh[quad] / ionOf(att, w))
 	var result := super.applyHit(att, w, t, dmg, quad, combat_origin)
 	var faction := _faction(t.fac)
 	faction.raw += dmg
-	faction.shield += absorbed
+	faction.shield += result.shield
 	faction.hull += result.hull
 	return result
 
 
 func useAbility(u, arg = null) -> bool:
-	if matrix:
+	var used := super.useAbility(u, arg)
+	if used and matrix:
 		var key: String = u.side + ":" + str(u.ab)
 		abilities[key] = abilities.get(key, 0) + 1
-	return super.useAbility(u, arg)
+	return used
 
 
 func startSideTurn(side) -> int:

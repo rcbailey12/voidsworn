@@ -149,7 +149,7 @@ func check_cards(c: CampaignScript, cards: Dictionary) -> void:
 		c.META = c.defaultMeta()
 		c.UID = 1
 		c.fixed_clock = true
-		Seed.rnd_seed(1)
+		c.seed_rng(1)
 		c.newRun("vex", faction)
 		var eligible := {}
 		for id in cards:
@@ -204,7 +204,7 @@ func play(faction: String, seed: int, rows: Dictionary, total: Dictionary) -> vo
 		return
 	c.META = c.defaultMeta()
 	c.fixed_clock = true
-	Seed.rnd_seed(seed)
+	c.seed_rng(seed)
 	c.newRun("vex", faction)
 	c.mapScreen()
 

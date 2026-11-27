@@ -23,10 +23,10 @@ func _init() -> void:
 	quit(code)
 
 func prng(seed: int, n: int, out: String) -> int:
-	JSM.rnd_seed(seed)
+	var rng := JSM.RandomStream.new(); rng.rnd_seed(seed)
 	var lines := PackedStringArray()
 	for i in range(n):
-		var d := JSM.rnd(); lines.append(str(JSM.rng_u32()) + " " + JSM.hex64(d))
+		var d := rng.rnd(); lines.append(str(rng.rng_u32()) + " " + JSM.hex64(d))
 	var f := FileAccess.open(out, FileAccess.WRITE); f.store_string("\n".join(lines) + "\n"); f.close()
 	print("prng ", seed, " ", n, " -> ", out); return 0
 
@@ -62,7 +62,7 @@ func snap(turn: int, actor: String) -> Dictionary:
 	if R.SOLID != null:
 		var so = R.SOLID.keys(); so.sort(); gl["solid"] = so
 	var s := "{\"b\":" + JSM.canon(B, "b", SKIP_B) + ",\"g\":" + JSM.canon(gl, "g") + ",\"units\":[" + ",".join(parts) + "]}"
-	return {"turn": turn, "round": int(B["round"]), "actor": actor, "rng": JSM.rng_u32(), "hash": JSM.sha256(s), "state": s}
+	return {"turn": turn, "round": int(B["round"]), "actor": actor, "rng": R.rng.rng_u32(), "hash": JSM.sha256(s), "state": s}
 
 # your side's bot, through the same API calls the scene uses (golden.js pBotF)
 var api
@@ -201,6 +201,29 @@ func scenario(name: String, out: String, seed_override: int = -1, file: String =
 				printerr("invalid skill target slot ", value, " in ", name); return 1
 		if api.phase != "player":
 			printerr("skill targets did not finish deployment in ", name); return 1
+	var fractions: Array = S.get("fleet_hull_fraction", [])
+	if not fractions.is_empty():
+		var ships: Array = R.caps("player")
+		if fractions.size() > ships.size():
+			printerr("Too many starting hull fractions in ", name)
+			return 1
+		for i in range(fractions.size()):
+			var fraction := float(fractions[i])
+			if fraction <= 0.0 or fraction > 1.0:
+				printerr("Invalid starting hull fraction in ", name)
+				return 1
+			ships[i]["hp"] = maxi(1, floori(ships[i]["maxHp"] * fraction))
+		R.treeRoundStart()
+		R.hook("damaged fleet fixture")
+	if S.get("require_player_ram") == true:
+		# Put a light escort three hexes ahead of the rammer on an open run-up.
+		var rammer: Dictionary = R.caps("player")[0]
+		var escort: Dictionary = R.caps("enemy")[-1]
+		var q := 7; var r := 8
+		rammer.merge({"q": q, "r": r, "facing": 0}, true)
+		escort.merge({"q": q + 3, "r": r, "facing": 0}, true)
+		for step in range(4): R.B["terrain"].erase(R.hkey(q + step, r))
+		R.hook("ram fixture deployment")
 	UNDO_FIX = S.get("undo") == true
 	var g := 0
 	var full: bool = S.get("bot") == "full"
@@ -224,6 +247,9 @@ func scenario(name: String, out: String, seed_override: int = -1, file: String =
 				bot(u, S)
 			if not R.jt(R.B.get("over")):
 				api.end_turn(); run_enemy()
+	if S.get("require_player_ram") == true and R.z0(R.B["usage"].get("ram")) <= 0:
+		printerr("FAIL: expected a player ram in ", name)
+		return 1
 	R.hook("end " + (str(R.B["over"]) if R.jt(R.B.get("over")) else "none"))
 	R.hook_cb = null
 	var f := FileAccess.open(out, FileAccess.WRITE)

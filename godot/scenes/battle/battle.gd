@@ -4138,7 +4138,7 @@ func _attack_move(t_id: String):
 var fan_root: Node3D
 var fan_for := ""
 var fan_key := ""
-const ARC_SPAN := {"F": [-60.5, 60.5], "R": [119.5, 240.5], "S": [29.5, 150.5], "P": [-150.5, -29.5]}
+const ARC_SPAN := {"F": [-60.5, 60.5], "S": [29.5, 150.5], "P": [-150.5, -29.5]}
 
 
 func _fans(id: String, host: Node3D = null) -> void:

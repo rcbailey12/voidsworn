@@ -67,7 +67,10 @@ func _initialize() -> void:
 	if (not seed.is_empty() and not seed.is_valid_int()) or (not pair_seed.is_empty() and not pair_seed.is_valid_int()):
 		_fail("SEED and PAIRSEED must be integers.")
 		return
-	JSM.rnd_seed(int(seed) if not seed.is_empty() else randi())
+	var initial_seed := int(seed) if not seed.is_empty() else 1
+	battle.rng.rnd_seed(initial_seed)
+	campaign.seed_rng(initial_seed)
+	print("SEED ", initial_seed)
 	var ai := OS.get_environment("AI")
 	if not ai.is_empty():
 		if ai not in ["standard", "veteran"]:
@@ -155,7 +158,8 @@ func _full_runs(count: int, ai: String, seed_base: int) -> void:
 func _next_pair() -> void:
 	if not pair_seed.is_empty():
 		pair_index += 1
-		JSM.rnd_seed(int(pair_seed) + pair_index)
+		battle.rng.rnd_seed(int(pair_seed) + pair_index)
+		campaign.seed_rng(int(pair_seed) + pair_index)
 
 
 func _new_run(admiral: String, faction: String, sector: int, credits: int, cp_cap: int) -> void:
@@ -205,6 +209,8 @@ func _apply_build() -> bool:
 				run[field] = build[field]
 		if build.has("lineage"):
 			run.lineage = build.lineage.duplicate(true)
+		if build.has("mastery") and run.get("lineage", {}).get("capstone") != null:
+			run.lineage.mastery = build.mastery
 		for relic in build.get("relics", []):
 			if not run.relics.has(relic):
 				run.relics.append(relic)
@@ -260,7 +266,7 @@ func _campaign_cell(player_faction: String, cell: Array, count: int, carry_rewar
 	battle.reset_timing()
 	for trial in range(count):
 		_next_pair()
-		var seed := JSM.rng_u32()
+		var seed := battle.rng.rng_u32()
 		var previous_battle: Variant = battle.B
 		var errors := TrialErrors.new()
 		OS.add_logger(errors)
@@ -333,7 +339,7 @@ func _campaign_trial(player_faction: String, cell: Array, carry_rewards: bool) -
 	var faction: String = battle.pick(campaign.SECTOR_POOL[sector - 1])
 	var objective: String = "rout" if kind == "boss" else battle.pick(["rout", "rout", "flagship", "hold"])
 	var deployment: String = "line" if kind == "boss" else battle.pick(["line", "line", "flank", "ambush"])
-	battle.startBattle({"kind": kind, "fac": faction, "col": column, "obj": objective, "dep": deployment})
+	battle.startBattle({"seed": int(floor(battle.rnd() * 4294967296.0)), "kind": kind, "fac": faction, "col": column, "obj": objective, "dep": deployment})
 	for unit in battle.B.units:
 		if not unit.isSq:
 			stats[unit.side] += 1
@@ -445,7 +451,7 @@ func _fmatrix(count: int) -> void:
 				if not _apply_build():
 					return
 				var shape: String = battle.pick(battle.SHAPES.keys())
-				battle.startBattle({"kind": "battle", "fac": enemy, "col": 3, "dep": "line", "obj": "rout",
+				battle.startBattle({"seed": int(floor(battle.rnd() * 4294967296.0)), "kind": "battle", "fac": enemy, "col": 3, "dep": "line", "obj": "rout",
 					"shape": shape, "map": "random", "enemies": enemies.map(func(tpl): return {"tpl": tpl})})
 				battle.fight(bot, alternating)
 				battle.collect_matrix()

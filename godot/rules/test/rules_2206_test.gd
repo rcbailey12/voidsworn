@@ -4,7 +4,6 @@ extends SceneTree
 
 const API := preload("res://rules/battle_api.gd")
 const Campaign := preload("res://campaign/campaign.gd")
-const JSM := preload("res://rules/jsm.gd")
 const FIXTURE := {"seed": 2206, "fac": "hegemony", "enemies": ["h_picket"],
 	"kind": "battle", "obj": "rout", "shape": "open", "map": "open", "dep": "line", "sector": 1}
 var api := API.new()
@@ -194,9 +193,9 @@ func _roster() -> void:
 		"H4 Glasswright light hulls cost elite-tier CP, including the Wisp variant")
 	_check(rules.effArch("swarm", "ithar") == "heavy" and rules.effArch("swarm", "chorus") == "swarm",
 		"H4 the Glasswrights do not use the swarm roster filter")
-	JSM.rnd_seed(2206)
+	rules.rng.rnd_seed(2206)
 	var fleet: Array = rules.genEnemyFleet("ithar", 2, 4, "battle", "swarm", null)
-	JSM.rnd_seed(2206)
+	rules.rng.rnd_seed(2206)
 	var swarm: Array = rules.genEnemyFleet("chorus", 2, 4, "battle", "swarm", null)
 	_check(not fleet.is_empty() and rules.HULLS[fleet[0].tpl].cp >= 4 and fleet.size() < swarm.size(),
 		"H4 generated Glasswright line leads with a strong ship and fields fewer ships than a swarm")

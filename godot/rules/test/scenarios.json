@@ -2632,7 +2632,7 @@
   "kind": "battle",
   "rounds": 6,
   "bot": "full",
-  "seed": 31503,
+  "seed": 31504,
   "admiral": "vex",
   "fleet": [
    "penitent"
@@ -3257,7 +3257,7 @@
   "kind": "battle",
   "rounds": 5,
   "bot": "full",
-  "seed": 37101,
+  "seed": 37104,
   "admiral": "thale",
   "fleet": [
    "warden",
@@ -3968,7 +3968,7 @@
   "dep": "line",
   "kind": "battle",
   "bot": "full",
-  "seed": 31823,
+  "seed": 31824,
   "admiral": "khepra",
   "fleet": [
    "d_harvester",
@@ -4068,7 +4068,7 @@
   "dep": "line",
   "kind": "battle",
   "bot": "full",
-  "seed": 37113,
+  "seed": 37116,
   "admiral": "khepra",
   "fleet": [
    "d_harvester",
@@ -4480,7 +4480,7 @@
   "obj": "rout",
   "shape": "compact",
   "map": "open",
-  "dep": "line",
+  "dep": "ambush",
   "kind": "battle",
   "rounds": 9,
   "bot": "full",
@@ -4498,7 +4498,7 @@
    "h_dominion",
    "h_picket"
   ],
-  "cmdRound": 5,
+  "cmdRound": 3,
   "lineage": {
    "id": "razormaw",
    "picks": [
@@ -4790,7 +4790,7 @@
   "kind": "battle",
   "rounds": 10,
   "bot": "full",
-  "seed": 37104,
+  "seed": 37102,
   "admiral": "voice",
   "fleet": [
    "b_brood"
@@ -4881,7 +4881,7 @@
   "kind": "battle",
   "rounds": 6,
   "bot": "full",
-  "seed": 31721,
+  "seed": 31720,
   "admiral": "voice",
   "fleet": [
    "b_spitter",
@@ -4893,7 +4893,7 @@
   "enemies": [
    "h_dominion"
   ],
-  "cmdRound": 3,
+  "cmdRound": 5,
   "lineage": {
    "id": "voice",
    "picks": [
@@ -5321,7 +5321,7 @@
   "kind": "battle",
   "rounds": 7,
   "bot": "full",
-  "seed": 37102,
+  "seed": 37103,
   "admiral": "sable",
   "fleet": [
    "c_reaver",
@@ -5640,7 +5640,7 @@
   "kind": "battle",
   "rounds": 8,
   "bot": "full",
-  "seed": 37107,
+  "seed": 37105,
   "admiral": "mott",
   "fleet": [
    "c_hulk",
@@ -5886,7 +5886,7 @@
   "kind": "battle",
   "rounds": 9,
   "bot": "full",
-  "seed": 33027,
+  "seed": 33026,
   "admiral": "vesh",
   "fleet": [
    "c_hulk",
@@ -6010,7 +6010,7 @@
   "kind": "battle",
   "rounds": 10,
   "bot": "full",
-  "seed": 37102,
+  "seed": 37103,
   "admiral": "vesh",
   "fleet": [
    "c_reaver",
@@ -7847,7 +7847,7 @@
   "enemies": [
    "d_scythe_s"
   ],
-  "cmdRound": 1,
+  "cmdRound": 2,
   "note": "Tree fixture: Brin The Lens Rotates (mirelle:A:1:1) gives evasion on a facing change",
   "seed": 37118,
   "lineage": {
@@ -7999,7 +7999,7 @@
   ],
   "cmdRound": 3,
   "note": "Tree fixture: Vex The Last Account (vex:cap:1) fires again on a kill",
-  "seed": 37112,
+  "seed": 37113,
   "lineage": {
    "id": "vex",
    "picks": [],
@@ -8625,8 +8625,9 @@
    "h_dominion",
    "h_dominion"
   ],
-  "cmdRound": 2,
+  "cmdRound": 1,
   "rounds": 5,
+  "fleet_hull_fraction": [0.3],
   "seed": 38234,
   "lineage": {
    "id": "mending",
@@ -8954,7 +8955,7 @@
   ],
   "rounds": 6,
   "cmdRound": 2,
-  "seed": 37102,
+  "seed": 37107,
   "note": "Issue 529: Razormaw Scent in the Dark (razormaw:A:1:1): after a kill in the frenzy the ship's next shot at a new target gains +10 aim",
   "lineage": {
    "id": "razormaw",
@@ -9467,6 +9468,7 @@
   ]
  },
  "r1653_ram": {
+  "require_player_ram": true,
   "sector": 1,
   "fac_player": "corsair",
   "obj": "rout",
