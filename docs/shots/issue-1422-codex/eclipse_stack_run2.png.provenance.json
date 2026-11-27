@@ -1,0 +1,68 @@
+{
+  "source_commit": "2ce021d13e148c3a6918aa4ab691642521ac3f38",
+  "source_dirty": true,
+  "source_diff_sha256": "7290cb2927ec86a1179cdc61a4edbf9b4a6a2e07ec620712d2450642f3a4632c",
+  "source_dirty_files": {
+    "tools/blender/kits/eclipse/stack.py": "d1ef00875c6e166d0fe47618688028771721bb60"
+  },
+  "stage": "paint proof",
+  "schema": 1,
+  "picture_name": "eclipse_stack_run2.png",
+  "date": "2026-11-27T12:50:45Z",
+  "sources": [
+    {
+      "source_commit": "2ce021d13e148c3a6918aa4ab691642521ac3f38",
+      "source_dirty": true,
+      "source_diff_sha256": "7290cb2927ec86a1179cdc61a4edbf9b4a6a2e07ec620712d2450642f3a4632c",
+      "source_dirty_files": {
+        "tools/blender/kits/eclipse/stack.py": "d1ef00875c6e166d0fe47618688028771721bb60"
+      },
+      "stage": "paint proof"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    622,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "61302529bb1ffa12bc31059b1a8d5efe4978d4df7a169d6b3d2e7991bb407072"
+  ],
+  "stamp_template_sha256": "61302529bb1ffa12bc31059b1a8d5efe4978d4df7a169d6b3d2e7991bb407072",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABkUlEQVR4nO3VIQEAIQDAQPgICDT9U76nABN3CeY21z4DAEq+1wEAcDMnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAGDU/Ah8BDLjtayoAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "60097622f8b6db9e555ff80bdf96a8c9ec08b3dc9fe6da8cebab22787a4c1abf",
+  "proof": {
+    "baseline_commit": "e23fe088f9b659037efc860db1eed072ed8417f4",
+    "baseline_stack_sha256": "c0c056c1e65caa29c34e413f04594d4177b3040af3fd93cc07d7a5f731c2ae59",
+    "working_stack_sha256": "fa76f364467a4ebed716baa37bd02f52bfd86f73bfeda61e554e54f8a97f3b45",
+    "blender": "4.5.14 LTS Cycles CPU",
+    "geometry": "deathless_E12 sheet, D21_23",
+    "previews": [
+      "camera 170, native pixels",
+      "close rim and reactor"
+    ],
+    "modes": "before/after live glow nodes against the same opaque plate swatches; no bakes",
+    "glow_pixel_counts": {
+      "camera170": {
+        "before_green": 210,
+        "after_green": 0,
+        "before_violet": 0,
+        "after_violet": 297
+      },
+      "close": {
+        "before_green": 1956,
+        "after_green": 0,
+        "before_violet": 2,
+        "after_violet": 2500
+      }
+    }
+  }
+}

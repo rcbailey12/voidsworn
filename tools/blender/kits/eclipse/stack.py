@@ -8,7 +8,7 @@
 # never projected onto the ship. No downloaded asset: the trim sheet and the decal atlas are drawn by this file (own work
 # dedicated CC0, written into the job's textures folder with their licence lines, RULEBOOK 5.13).
 #
-# The faction (docs/playbooks/factions.md, Eclipse): "a black shade with a thin ring of violet-white fire at its edge". Dark
+# The faction (docs/playbooks/factions.md, Eclipse): a black shade with a thin ring of violet fire at its edge. Dark
 # violet-black plates, a thin corona along the rim of every shade plate (the sheet's corona strips), and a small bright core
 # seen through gaps. No green on the hull and no light pooled in hollows, ribs or sockets.
 # never flame: engines are an eclipse ring of pale light. Machine bodies in a system they made dark: clean machined plate,
@@ -187,9 +187,9 @@ def panel_nodes(c, col, amount, families=None, cells=None):
 #   the corona line (round 3, R243): the faint ring of a real eclipse. Thin at rest: brightest along the middle of the strip and
 #     falling softly to its edges and sides (into the plate edge, never a hard band), and the bright core of it widens only in the
 #     brighter arcs. Its brightness varies along its length (brighter arcs, dimmer stretches, a few short breaks where plates
-#     overlap); violet-white with white-gold at the brightest arcs, deeper violet where dim. R243: the soft profile and extra brightness
+#     overlap); violet even at the brightest arcs, deeper violet where dim. R243: the soft profile and extra brightness
 #     keep the same thin strip readable at camera 170; brighter arcs cross the game's glow threshold.
-#   the core and the lens: hotter violet-white only at the centre, grading to violet at the edge, never a white blob (PR 643).
+#   the core and the lens: violet with a slightly lighter centre, never a white blob (PR 643, issue 1422 run 2).
 #   the engine ring: as below.
 # Only the hull's corona trim material is marked hull_surface (GLOW_HULL). Engine rings, core and lens use an unmarked
 # material sharing the map, so every part surface still participates in breach clearance.
@@ -198,7 +198,7 @@ GLOW_STRENGTH = dict(corona=1.05, ecore=1.35, lens=1.25)     # only for a glow s
 GLOW_HULL = ('corona',)
 CORONA = dict(base=1.0, arc=1.1, arc_scale=9.0, arc_band=(.48, .78), breaks_scale=26.0, breaks=(.20, .25), rest_width=.75,
               arc_width=.50, hot=1.25)
-CORE = dict(edge=1.0, falloff=2.0, hot_radius=.18)
+CORE = dict(edge=.9, falloff=2.0, hot_radius=.18)
 
 
 def faction_look():
@@ -208,11 +208,16 @@ def faction_look():
     return d.get(FACTION) or d.get('factions', {}).get(FACTION)
 
 
+def core_hot_colour(f):
+    # A small step toward the damage glow lifts the centre without washing out the rim violet.
+    return tuple(rim + .25 * (glow - rim) for rim, glow in zip(f['death']['rim'], f['damage_glow']))
+
+
 def glow_material(zone, hull=False):
     m = bpy.data.materials.new(f'p3_{zone}_hull' if hull else f'p3_{zone}'); m.use_nodes = True
     b = m.node_tree.nodes['Principled BSDF']
     # Fallback for a surface not on the emission map. Faction colours are already linear RGB.
-    col = faction_look()['damage_glow' if zone in ('ecore', 'lens') else 'weapon']
+    col = faction_look()['death']['rim']
     b.inputs['Base Color'].default_value = (col[0] * .05, col[1] * .05, col[2] * .05, 1); b.inputs['Roughness'].default_value = .6
     b.inputs['Emission Color'].default_value = (*col, 1); b.inputs['Emission Strength'].default_value = GLOW_STRENGTH.get(zone, 1.0)
     m['ps_glow'] = 1; m['rim_soft'] = 1
@@ -310,11 +315,11 @@ def engine_glow_nodes(nt, r, e, d, a, tc, H):
     width = math_(nt, 'ADD', C['rest_width'], math_(nt, 'MULTIPLY', arc, C['arc_width'] - C['rest_width']))
     prof = math_(nt, 'POWER', math_(nt, 'MAXIMUM', across, 0.0), width)
     lh = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', math_(nt, 'ADD', C['base'], math_(nt, 'MULTIPLY', arc, C['arc'])), prof), brk)
-    # Keep the gold at the bright arc centres, not the centre of every strip, including dim stretches.
+    # Cap intensity before scaling RGB so the emission map cannot clip the blue first and bleach the rim.
     arc_colour = math_(nt, 'MULTIPLY', arc, prof)
-    line = mulc(nt, mixc(nt, tuple(f['weapon']), tuple(f['accent']), arc_colour), math_(nt, 'MULTIPLY', lh, C['hot']))
-    # The core grades from a hot violet-white centre to the violet damage glow at the edge.
-    core_edge, core_hot = tuple(f['damage_glow']), tuple(f['death']['fire'])
+    line = mulc(nt, mixc(nt, tuple(f['death']['fire_mid']), tuple(f['death']['rim']), arc_colour),
+                math_(nt, 'MULTIPLY', lh, C['hot'], clamp=True))
+    core_edge, core_hot = tuple(f['death']['rim']), core_hot_colour(f)
     k = math_(nt, 'POWER', ramp(nt, d, CORE['hot_radius'], 0.0), CORE['falloff'])
     core = mulc(nt, mixc(nt, core_edge, core_hot, k), math_(nt, 'ADD', CORE['edge'], math_(nt, 'MULTIPLY', k, 1 - CORE['edge'])))
     kd = H['kind']
@@ -322,7 +327,7 @@ def engine_glow_nodes(nt, r, e, d, a, tc, H):
     out = mixc(nt, out, core, math_(nt, 'GREATER_THAN', kd, 1.5))
     heat = math_(nt, 'POWER', r, 2.5)
     reactor = mulc(nt, mixc(nt, core_edge, core_hot, heat),
-                   math_(nt, 'ADD', .28, math_(nt, 'MULTIPLY', heat, .92)))
+                   math_(nt, 'ADD', .28, math_(nt, 'MULTIPLY', heat, .72)))
     return mixc(nt, out, reactor, math_(nt, 'GREATER_THAN', kd, 2.5))
 
 
@@ -333,7 +338,7 @@ INSIDE_BASE = (.010, .008, .014)
 INSIDE_TINT = .20
 # Interior Kit V2 (issue 1743, R416 Layer 3) under R420 (Ryan, Nov 22; contrib/opus/plans/global_cohesion_standard.md 3):
 # deep obsidian-violet monolithic vaults in satin dark alloy, hairline violet-white bus rails from faction_looks.json
-# (deathless death.fire), the core in the same violet-white; zero green from archive or ecore, zero rust (factions.md, Eclipse:
+# (deathless death.fire), the core in the same violet as outside; zero green from archive or ecore, zero rust (factions.md, Eclipse:
 # archive vaults, dark decks). Each zone takes its role's colour here, inside the shared budgets of
 # tools/blender/kits/shared/interior_trim.py; the values match the 1741 breach interior.
 FAC_KEY = 'eclipse'
@@ -356,7 +361,7 @@ def inside_trims():
 def CORE_LIGHT():
     import interior_trim
     t = interior_trim.faction_interior(FAC_KEY)
-    return (tuple(t.get('core_rgb') or tuple(float(c) for c in faction_look()['death']['fire'])), t['core_strength'])
+    return (tuple(t.get('core_rgb') or core_hot_colour(faction_look())), t['core_strength'])
 
 
 def inside_material(room, trim=False):
@@ -371,9 +376,9 @@ def inside_material(room, trim=False):
     if src is not None and src.use_nodes and src.node_tree.nodes.get('Principled BSDF'):
         sb = src.node_tree.nodes['Principled BSDF']; rgb = tuple(sb.inputs['Base Color'].default_value)[:3]
         em = sb.inputs['Emission Strength'].default_value
-        if em > 0:      # the core: its own light stays (the bright bite when the ship breaks), in violet-white
+        if em > 0:      # the core: its own violet light stays (the bright bite when the ship breaks)
             # Match the baked core's hot colour from faction_looks.json (R416, issues 1743 and 1422).
-            col = tuple(float(c) for c in faction_look()['death']['fire'])
+            col = core_hot_colour(faction_look())
             b.inputs['Emission Color'].default_value = (*col, 1); b.inputs['Emission Strength'].default_value = em
     mx = max(rgb) or 1
     b.inputs['Base Color'].default_value = tuple(INSIDE_BASE[i] * (1 - INSIDE_TINT + INSIDE_TINT * rgb[i] / mx) for i in range(3)) + (1,)
@@ -385,7 +390,7 @@ def inside_material(room, trim=False):
 # ------------------------------------------------------------------------------------------------------------ running lights
 # The builder's call (issue 642; R207, R233: the Board reviews it): the Eclipse carry NO added running lamps. The red lamps are a
 # Hullbreaker rule (R228 item 4); a row of coloured points along the flanks reads as a navy's or a pirate's ship, and the Eclipse
-# are machines in a system they made dark (lore 7.1): their only lights are the corona (the thin violet-white line on every shade
+# are machines in a system they made dark (lore 7.1): their only lights are the corona (the thin violet line on every shade
 # rim, which already marks the outline and the heading at the battle camera), the core seen through its port, the pale engine
 # rings, and the sheet's own corona strip lights over the belts (the kit's lamp, a short strip of the same corona light, never a
 # point). So RUNNING_LIGHTS is None: the shared stack adds no lamps and writes no lights.json; the standing light check has no
