@@ -5,8 +5,8 @@ setlocal EnableExtensions
 set "PIN_NEW=%~1"
 if not defined PIN_NEW (echo Usage: round_2_compile_1843.bat REVIEWED_SHA & exit /b 2)
 if not "%~2"=="" (echo FAILED: the main control pin is fixed in this job & exit /b 2)
-rem Main parent of the run 3 integration, including the current load path.
-set "PIN_CONTROL=2956a56782581718f12e9000064159b5615455fe"
+rem Main parent of the run 5 integration, with the same load path and no warm outline.
+set "PIN_CONTROL=4a6c1c18b2b1a84991ac48bf9cceb97220179faa"
 set "OJ_SLOTS=1"
 set "OJ_SLOT_KIND=gpu"
 set "OJ_NEED_HULLS=V14_23 V15_37 V16_37 C13s_23 C14s_23 C15s_23 I14_23"
@@ -19,10 +19,24 @@ if not exist "%HEAD%" (echo FAILED: missing job head & exit /b 2)
 call "%HEAD%" init codex1843 1843 godot
 if errorlevel 1 exit /b %ERRORLEVEL%
 
+set "REPLAY_MISSED="
+for %%P in (new control) do for %%R in (1 2) do set "REPLAY_%%P_%%R=NOT_RUN"
 call :one new "%PIN_NEW%"
 if not defined JW_STOP call :one control "%PIN_CONTROL%"
+set "ACCEPTANCE=PASS"
+if defined REPLAY_MISSED set "ACCEPTANCE=FAIL"
+for %%S in (%REPLAY_new_1% %REPLAY_new_2% %REPLAY_control_1% %REPLAY_control_2%) do (
+  if "%%S"=="NOT_RUN" set "ACCEPTANCE=INCOMPLETE"
+  if "%%S"=="ERROR" set "ACCEPTANCE=INCOMPLETE"
+)
+set "SUMMARY=%OJ_OUT%\round_2_acceptance.txt"
+> "%SUMMARY%" echo ROUND_2_ACCEPTANCE %ACCEPTANCE% new_1=%REPLAY_new_1% new_2=%REPLAY_new_2% control_1=%REPLAY_control_1% control_2=%REPLAY_control_2% candidate_pin=%PIN_NEW% control_pin=%PIN_CONTROL% || call "%JW%" fail "could not write the round 2 acceptance summary"
+if exist "%SUMMARY%" type "%SUMMARY%"
 call "%HEAD%" tail
-exit /b %ERRORLEVEL%
+set "TAIL_RC=%ERRORLEVEL%"
+if "%ACCEPTANCE%"=="FAIL" exit /b 3
+if "%ACCEPTANCE%"=="INCOMPLETE" exit /b 1
+exit /b %TAIL_RC%
 
 :one
 call "%HEAD%" checkout %1 "%~2"
@@ -60,12 +74,23 @@ call "%JW%" run 900 "%JW_GODOT%" --path "%OJ_REPO%\godot" --rendering-method for
 set "REPLAY_RC=%ERRORLEVEL%"
 if not "%REPLAY_RC%"=="0" if not "%REPLAY_RC%"=="3" goto replay_bad
 if not exist "%O%\frames_%~2.json" goto replay_bad
+for %%F in ("%O%\frames_%~2.json") do if "%%~zF"=="0" goto replay_bad
 findstr /b /c:"SCRIPT ERROR" "%O%\replay_%~2.txt" >nul && goto replay_bad
 findstr /b /c:"KILL_FRAME round_2_frames=" "%O%\replay_%~2.txt"
 if errorlevel 1 goto replay_bad
+if "%REPLAY_RC%"=="3" (
+  rem The wrapper also uses exit 3 for missing output. Only a probe verdict may continue.
+  findstr /b /c:"KILL_FRAME VERDICT_FAILED " "%O%\replay_%~2.txt"
+  if errorlevel 1 goto replay_bad
+  set "REPLAY_%~1_%~2=VERDICT_FAILED"
+  set "REPLAY_MISSED=1"
+) else (
+  set "REPLAY_%~1_%~2=PASS"
+)
 exit /b 0
 
 :replay_bad
+set "REPLAY_%~1_%~2=ERROR"
 call "%JW%" fail "%~1 Corsair run %~2 did not produce a valid replay"
 exit /b 1
 

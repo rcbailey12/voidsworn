@@ -7,7 +7,7 @@ extends SceneTree
 class TimedBattle extends "res://scenes/battle/battle.gd":
 	const FRAME_BUDGET_MS := 1000.0 / 60.0
 	const CONTROL_HITCH_MS := 100.0   # Allow variation around the original 150 to 190 ms, not a small frame-budget miss.
-	const VERDICT_FAILED := 3   # The Board's batch keeps measuring after a valid replay misses its gate.
+	const VERDICT_FAILED := 3   # Valid trace, failed acceptance. The launcher records the miss and keeps measuring.
 
 	var _last_frame := 0
 	var _last_pipes := 0
@@ -40,7 +40,6 @@ class TimedBattle extends "res://scenes/battle/battle.gd":
 		# the original torpedo windows run with the screenshot directory empty.
 		args["torp-shots"] = true
 		args["torp-ft"] = true
-		RenderingServer.frame_pre_draw.connect(_mark_draw_round)
 
 	func _mark_draw_round() -> void:
 		_draw_round = int(V.get("round", 0))
@@ -235,12 +234,13 @@ class TimedBattle extends "res://scenes/battle/battle.gd":
 				push_error("KILL_FRAME round 2 check needs a windowed Forward+ replay")
 				_quit(1)
 				return
+		var verdict_miss := ""
 		if expect_hitch and not _has_round_2_hitch():
-			push_error("KILL_FRAME control did not reproduce a round 2 compile hitch of at least %.0f ms" % CONTROL_HITCH_MS)
-			_quit(VERDICT_FAILED)
-			return
-		if expect_no_compiles and not _round_2_compile_frames.is_empty():
-			push_error("KILL_FRAME round 2 compiled pipelines after the load cover")
+			verdict_miss = "control did not reproduce a round 2 compile hitch of at least %.0f ms" % CONTROL_HITCH_MS
+		elif expect_no_compiles and not _round_2_compile_frames.is_empty():
+			verdict_miss = "candidate compiled pipelines in round 2 after the load cover"
+		if not verdict_miss.is_empty():
+			print("KILL_FRAME VERDICT_FAILED ", verdict_miss)
 			_quit(VERDICT_FAILED)
 			return
 		super._quit_report()

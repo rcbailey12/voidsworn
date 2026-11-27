@@ -4273,7 +4273,7 @@ var fan_root: Node3D
 var fan_for := ""
 var fan_key := ""
 var _fan_edge_mat: StandardMaterial3D   # vertex colours vary by arc, and the material keeps the warm pipeline alive
-const ARC_SPAN := {"F": [-60.5, 60.5], "R": [119.5, 240.5], "S": [29.5, 150.5], "P": [-150.5, -29.5]}
+const ARC_SPAN := {"F": [-60.5, 60.5], "S": [29.5, 150.5], "P": [-150.5, -29.5]}
 
 
 func _make_warm_fan_edge() -> MeshInstance3D:
