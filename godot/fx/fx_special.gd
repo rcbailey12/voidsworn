@@ -200,6 +200,7 @@ static func fold(fx, ship, pace: float, transfer: Callable) -> float:
 		ship.clear_rift_pose()
 		if blink:
 			transfer.call()
+			ship.break_trails_at_teleport()
 		var dest: Vector3 = ship.to_world(ship.hull.core)
 		_rift(fx, ship, dest, bow, t + depart, reveal * 0.30, true)
 		ship.start_rift_pose(t + depart, reveal, true, fx.reduce_motion))
