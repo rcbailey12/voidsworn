@@ -1,25 +1,21 @@
 {
-  "source_commit": "b36f4ce8d77ecd3fb0fe40330e55e9cc7429c75e",
+  "source_commit": "beb89846ee9d62874126643761c60853f509e463",
   "source_dirty": true,
-  "source_diff_sha256": "2f05d4a1539f3a43fc1c5e3d9b73681dbf1f8480c742b88fa79d1f25f2f26c1e",
+  "source_diff_sha256": "3c0135203ad70cddd9c74d9e4611451d34a16461e04b028cc4794185a26867ac",
   "source_dirty_files": {
-    "tools/blender/build_sheets/ships/hegemony_H7.py": "2825a276bac25d50d5685f2777257b50bce34438",
-    "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4cd7b9e8c83fa91f1ca6e775e09f7b4e7111b065",
-    "tools/blender/build_sheets/ships/hegemony_H8_inv.py": "9e674b3d0a96b30273781a73c9753e2b78bd172b"
+    "tools/blender/build_sheets/ships/hegemony_H7.py": "2f76a109845b26f983d8d00242ea06ca12c83db8"
   },
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "weapon_laser.jpg",
-  "date": "2026-11-22T17:25:28Z",
+  "date": "2026-11-23T22:27:50Z",
   "sources": [
     {
-      "source_commit": "b36f4ce8d77ecd3fb0fe40330e55e9cc7429c75e",
+      "source_commit": "beb89846ee9d62874126643761c60853f509e463",
       "source_dirty": true,
-      "source_diff_sha256": "2f05d4a1539f3a43fc1c5e3d9b73681dbf1f8480c742b88fa79d1f25f2f26c1e",
+      "source_diff_sha256": "3c0135203ad70cddd9c74d9e4611451d34a16461e04b028cc4794185a26867ac",
       "source_dirty_files": {
-        "tools/blender/build_sheets/ships/hegemony_H7.py": "2825a276bac25d50d5685f2777257b50bce34438",
-        "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4cd7b9e8c83fa91f1ca6e775e09f7b4e7111b065",
-        "tools/blender/build_sheets/ships/hegemony_H8_inv.py": "9e674b3d0a96b30273781a73c9753e2b78bd172b"
+        "tools/blender/build_sheets/ships/hegemony_H7.py": "2f76a109845b26f983d8d00242ea06ca12c83db8"
       },
       "stage": "sheet built"
     }
@@ -27,21 +23,19 @@
   "inputs": [
     {
       "picture_name": "weapon_laser.png",
-      "source_commit": "b36f4ce8d77ecd3fb0fe40330e55e9cc7429c75e",
+      "source_commit": "beb89846ee9d62874126643761c60853f509e463",
       "source_dirty": true,
-      "source_diff_sha256": "2f05d4a1539f3a43fc1c5e3d9b73681dbf1f8480c742b88fa79d1f25f2f26c1e",
+      "source_diff_sha256": "3c0135203ad70cddd9c74d9e4611451d34a16461e04b028cc4794185a26867ac",
       "stage": "sheet built",
-      "date": "2026-11-22T17:25:18Z",
-      "image_sha256": "f0ff876d7e11baa51d9afd96c24dd9130fe2f681cd185b7ef5f162a54bbb1abf",
+      "date": "2026-11-23T22:27:29Z",
+      "image_sha256": "daa8f41c959a1df0e51a8022f7f6f309d99037323cd445d96cf68d9e1835b69b",
       "sources": [
         {
-          "source_commit": "b36f4ce8d77ecd3fb0fe40330e55e9cc7429c75e",
+          "source_commit": "beb89846ee9d62874126643761c60853f509e463",
           "source_dirty": true,
-          "source_diff_sha256": "2f05d4a1539f3a43fc1c5e3d9b73681dbf1f8480c742b88fa79d1f25f2f26c1e",
+          "source_diff_sha256": "3c0135203ad70cddd9c74d9e4611451d34a16461e04b028cc4794185a26867ac",
           "source_dirty_files": {
-            "tools/blender/build_sheets/ships/hegemony_H7.py": "2825a276bac25d50d5685f2777257b50bce34438",
-            "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4cd7b9e8c83fa91f1ca6e775e09f7b4e7111b065",
-            "tools/blender/build_sheets/ships/hegemony_H8_inv.py": "9e674b3d0a96b30273781a73c9753e2b78bd172b"
+            "tools/blender/build_sheets/ships/hegemony_H7.py": "2f76a109845b26f983d8d00242ea06ca12c83db8"
           },
           "stage": "sheet built"
         }
@@ -59,11 +53,11 @@
     49
   ],
   "strip_sha256": [
-    "d9c35212faef43c314d0e6f1f8cfecb16f2caf75f236d180cfa807ec52056544"
+    "a3f0566766285581004e2a83aa064ff45e0643e91b9467d7a0d21708847b60ca"
   ],
-  "stamp_template_sha256": "9a669ad07dc599bee2a9455fa88199d80324169d1528862236c99d80b8f3bf1d",
+  "stamp_template_sha256": "fc8c1b1f9d0cd94513d49ff89d09b501c91fef0a31b6a33320b4109beddea71d",
   "covered_pixels": [
     "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAAp0lEQVR4nO3TQQkAIADAQDWW2D+XJQaC3CXYZ3PvM4DCeh0A/7ATZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QeYCJl0BEnO1+r0AAAAASUVORK5CYII="
   ],
-  "image_sha256": "2333cb96d5797b8591e040946cf6641adb2e7db6596590fd037fddc4862ce0b4"
+  "image_sha256": "c482b6ed8892084edecacd2d5954870a31e3f84f97504f9e4d1ad2028b53a582"
 }

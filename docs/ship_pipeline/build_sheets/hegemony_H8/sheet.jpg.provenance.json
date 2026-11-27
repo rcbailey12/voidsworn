@@ -1,0 +1,57 @@
+{
+  "source_commit": "6c46cd03dc58e64a02e5e3a9b825990fe47b8ef7",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "source_dirty_files": {},
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "sheet.jpg",
+  "date": "2026-11-22T17:30:54Z",
+  "sources": [
+    {
+      "source_commit": "6c46cd03dc58e64a02e5e3a9b825990fe47b8ef7",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "source_dirty_files": {},
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "sheet.jpg",
+      "source_commit": "6c46cd03dc58e64a02e5e3a9b825990fe47b8ef7",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built",
+      "date": "2026-11-22T17:30:50Z",
+      "image_sha256": "15a77cca65792535a19c78956cf4e294b4021b063603edfa7074f47e13e865e8",
+      "sources": [
+        {
+          "source_commit": "6c46cd03dc58e64a02e5e3a9b825990fe47b8ef7",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "source_dirty_files": {},
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    10723,
+    432,
+    10821
+  ],
+  "strip_size": [
+    432,
+    98
+  ],
+  "strip_sha256": [
+    "c58dc682c36aab252fb85c93d99a008e4e6529d1513dab6520758e7005a8252c"
+  ],
+  "stamp_template_sha256": "2d709797008ac52fb41f21da407816e4abe62b941a7786b349c01bc9a57e0029",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAbAAAABiCAIAAAC+rRHtAAABXUlEQVR4nO3YsQkCURRFwb/2sWgBi61tYGoPxoJtLViOgaeHLzhTwY0Oj7ds23XA33s9H5fzOsY4jvd+u8+ewxyn2QMAfoUgAkQQAbL4IQJ8uRABIogAEUSACCJABBEggggQQQSIIAJEEAEiiAARRIAIIkAEESCCCBBBBIggAkQQASKIABFEgAgiQAQRIIIIEEEEiCACRBABIogAEUSACCJABBEggggQQQSIIAJEEAEiiAARRIAIIkAEESCCCBBBBIggAkQQASKIABFEgAgiQAQRIIIIEEEEiCACRBABIogAEUSACCJABBEggggQQQSIIAJEEAEiiAARRIAIIkAEESCCCBBBBIggAkQQASKIABFEgAgiQAQRIIIIEEEEiCACRBABIogAEUSACCJABBEggggQQQSIIAJEEAEiiAARRIAIIkAEESCCCBBBBIggAkQQASKIABFEgAgiQAQRIB/I0gfPvqBlqgAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "771a51706c386f526ac08a0c14ed8047b9a9fda1cc6ab64209df94f4c4b0ae62"
+}

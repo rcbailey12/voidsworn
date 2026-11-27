@@ -1,0 +1,57 @@
+{
+  "source_commit": "6c46cd03dc58e64a02e5e3a9b825990fe47b8ef7",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "source_dirty_files": {},
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "threequarter.jpg",
+  "date": "2026-11-22T17:30:52Z",
+  "sources": [
+    {
+      "source_commit": "6c46cd03dc58e64a02e5e3a9b825990fe47b8ef7",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "source_dirty_files": {},
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "threequarter.png",
+      "source_commit": "6c46cd03dc58e64a02e5e3a9b825990fe47b8ef7",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built",
+      "date": "2026-11-22T17:30:49Z",
+      "image_sha256": "5b03cdc51a7893745565ed294155d1213ed9bc2079598d1f3b4559990469f8af",
+      "sources": [
+        {
+          "source_commit": "6c46cd03dc58e64a02e5e3a9b825990fe47b8ef7",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "source_dirty_files": {},
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    902,
+    432,
+    1000
+  ],
+  "strip_size": [
+    432,
+    98
+  ],
+  "strip_sha256": [
+    "c45d5b6c810dc5a9e375a4e0973417e9435689a85b4bc7f0f18931b50f8199ed"
+  ],
+  "stamp_template_sha256": "08dd3bffc7b71dfb9263bf3e5f64fb03ea7430b14796d1674ca9215e0e866533",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAbAAAABiCAIAAAC+rRHtAAACmElEQVR4nO3XzU7kRhSG4XPcZoBkckOjuf/byQANA3S3Txb98aMMUpYhyvMsLLmqbMubV1X97dv3Avgcunu3Xlxd/b5bL3brWt01VVVTM1PL0jMzU0v36XS6u7u539/NbFU1M1XVVVPV3e9v62Wku6uqZuptQU9Nd5+fX/+lvwb4wMwcD8/3x0Pv1i8XV1e/fe3dMtt0v1aru+bp6fHm5s+nx5/1mr+Z6prqeo3jS/WqarbzTHpZVV1dXVXdb8kURODzmZk5Hh6Ph+fDz+vrP9Yvl7vdum2z9LJt235/e7+/PRwOVdO9VFV36jY1NUnh25YwnayZWZY+R7KXfKvPra2ZTRCBT2w7Hh/2P9aLy6vrr72up227vfnx8LCvmq6aqXMT57zxO6ewq6t2u113vQSx0sy3g3POy5X9Yggi8KnNzOH58Xh4XtZ1TrMdD5cX68z0ct4Wztvx9/VU3O8rl5e8jL2//p0gAv8BM9vp8FxVy1JVy7uZX9P2Qex+KeTHln9eAvD/IIgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgAIYgA8Rd9FbyF5HzfowAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "2a2cf07d63da2149fc03d87c6c010d2664f4a79139aa1f443abc9758e79d1f77"
+}

@@ -1,4 +1,4 @@
-# hegemony_H7 fit report (first sheet; RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
+# hegemony_H7 fit report (merged build, fittings on the structure (R442); RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
 
 Made by `tools/blender/build_sheets/clash.py` on the built blockout (it runs inside every `build.py ... render` and on its own
 with `build.py <code> <out> fit`). What it tests, on every part of every type:
@@ -29,27 +29,22 @@ also `turret=1`); its fixed ring and bolt ring `<id>_mount_<material>` stay on t
 (`turret=0`, `gun_fixed=1`).
 
 
-## How first sheet fixed them
+## How merged build, fittings on the structure (R442) fixed them
 
 | Clash (before) | Fix |
 |---|---|
-| Nozzle pods E1 and E2: their inner walls inside the stern block (the exits 0.16 aft of the transom) | the exits moved to 0.25 aft of the transom; the housings still sit in the stern block |
-| Drone doors D1 inside the upper facet, which tapers in plan | the doors 0.4 long and set 0.025 proud of the facet |
-| Deck louvres V2 inside the stern chamfer; belly louvres V3 inside the belly armour step | V2 tilted to the chamfer's slope; V3 and V4 seated on the step's face |
-| Stern thrusters Q3 against the windows W2, then against the nozzle pods and firing into the hull at the transom | Q3 forward to 2.8 aft of middle, the windows to 2.25 and 2.5, the doors to 1.85 |
-| Deck louvres V1 against the deck hatch H1 | V1 aft to 2.05, H1 forward to 2.47 |
 
 The table above is every finding, in the order the check made them.
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 174 objects, 39 parts, 229 close pairs, 222 rays, 2 guns, 12 sensor pairs, 1 turrets swept, 8 cones, 20 apertures, 0 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 191 objects, 36 parts, 235 close pairs, 219 rays, 2 guns, 12 sensor pairs, 1 turrets swept, 8 cones, 17 apertures, 0 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 
 | Turret | Slot | Arc (bearings) | Sweep steps clear | Rest | Reach to port | Stopped by | Reach to starboard | Stopped by | Under 60 |
 |---|---|---|---:|---:|---:|---|---:|---|---|
-| F1 | T | -180 to 180 | 73 | 0 | all round | - | all round | - | no |
+| dorsal | T | -180 to 180 | 73 | 0 | all round | - | all round | - | no |
 
 Reach is measured from the rest bearing, in degrees, turning toward port (bearings rising) and toward starboard; "all round" means nothing stops it within 180. Every turret clears its whole data.js slot arc (sweep steps above). Under 60 degrees either way: none.
 

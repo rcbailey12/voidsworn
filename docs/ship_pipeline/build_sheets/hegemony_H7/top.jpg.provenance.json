@@ -1,25 +1,21 @@
 {
-  "source_commit": "b36f4ce8d77ecd3fb0fe40330e55e9cc7429c75e",
+  "source_commit": "beb89846ee9d62874126643761c60853f509e463",
   "source_dirty": true,
-  "source_diff_sha256": "2f05d4a1539f3a43fc1c5e3d9b73681dbf1f8480c742b88fa79d1f25f2f26c1e",
+  "source_diff_sha256": "3c0135203ad70cddd9c74d9e4611451d34a16461e04b028cc4794185a26867ac",
   "source_dirty_files": {
-    "tools/blender/build_sheets/ships/hegemony_H7.py": "2825a276bac25d50d5685f2777257b50bce34438",
-    "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4cd7b9e8c83fa91f1ca6e775e09f7b4e7111b065",
-    "tools/blender/build_sheets/ships/hegemony_H8_inv.py": "9e674b3d0a96b30273781a73c9753e2b78bd172b"
+    "tools/blender/build_sheets/ships/hegemony_H7.py": "2f76a109845b26f983d8d00242ea06ca12c83db8"
   },
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "top.jpg",
-  "date": "2026-11-22T17:25:25Z",
+  "date": "2026-11-23T22:27:45Z",
   "sources": [
     {
-      "source_commit": "b36f4ce8d77ecd3fb0fe40330e55e9cc7429c75e",
+      "source_commit": "beb89846ee9d62874126643761c60853f509e463",
       "source_dirty": true,
-      "source_diff_sha256": "2f05d4a1539f3a43fc1c5e3d9b73681dbf1f8480c742b88fa79d1f25f2f26c1e",
+      "source_diff_sha256": "3c0135203ad70cddd9c74d9e4611451d34a16461e04b028cc4794185a26867ac",
       "source_dirty_files": {
-        "tools/blender/build_sheets/ships/hegemony_H7.py": "2825a276bac25d50d5685f2777257b50bce34438",
-        "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4cd7b9e8c83fa91f1ca6e775e09f7b4e7111b065",
-        "tools/blender/build_sheets/ships/hegemony_H8_inv.py": "9e674b3d0a96b30273781a73c9753e2b78bd172b"
+        "tools/blender/build_sheets/ships/hegemony_H7.py": "2f76a109845b26f983d8d00242ea06ca12c83db8"
       },
       "stage": "sheet built"
     }
@@ -27,21 +23,19 @@
   "inputs": [
     {
       "picture_name": "top.png",
-      "source_commit": "b36f4ce8d77ecd3fb0fe40330e55e9cc7429c75e",
+      "source_commit": "beb89846ee9d62874126643761c60853f509e463",
       "source_dirty": true,
-      "source_diff_sha256": "2f05d4a1539f3a43fc1c5e3d9b73681dbf1f8480c742b88fa79d1f25f2f26c1e",
+      "source_diff_sha256": "3c0135203ad70cddd9c74d9e4611451d34a16461e04b028cc4794185a26867ac",
       "stage": "sheet built",
-      "date": "2026-11-22T17:25:22Z",
-      "image_sha256": "342a3bc9f6b41f6743634a6752f42d0947a557ee865226c33de6d77c40f68201",
+      "date": "2026-11-23T22:27:42Z",
+      "image_sha256": "73fec255f8e19ff0a5f1ba4f9a646aaa1ea776220277986843fb1d7d4fb14b63",
       "sources": [
         {
-          "source_commit": "b36f4ce8d77ecd3fb0fe40330e55e9cc7429c75e",
+          "source_commit": "beb89846ee9d62874126643761c60853f509e463",
           "source_dirty": true,
-          "source_diff_sha256": "2f05d4a1539f3a43fc1c5e3d9b73681dbf1f8480c742b88fa79d1f25f2f26c1e",
+          "source_diff_sha256": "3c0135203ad70cddd9c74d9e4611451d34a16461e04b028cc4794185a26867ac",
           "source_dirty_files": {
-            "tools/blender/build_sheets/ships/hegemony_H7.py": "2825a276bac25d50d5685f2777257b50bce34438",
-            "tools/blender/build_sheets/ships/hegemony_H7_inv.py": "4cd7b9e8c83fa91f1ca6e775e09f7b4e7111b065",
-            "tools/blender/build_sheets/ships/hegemony_H8_inv.py": "9e674b3d0a96b30273781a73c9753e2b78bd172b"
+            "tools/blender/build_sheets/ships/hegemony_H7.py": "2f76a109845b26f983d8d00242ea06ca12c83db8"
           },
           "stage": "sheet built"
         }
@@ -50,20 +44,20 @@
   ],
   "stamp_box": [
     0,
-    998,
+    973,
     282,
-    1047
+    1022
   ],
   "strip_size": [
     282,
     49
   ],
   "strip_sha256": [
-    "1ae9278a01c412f0aa2185019049e0e4fcccd1ebb3436970d53c20996b1fcf53"
+    "6b43e4d0d1682015c68535f553e325b21509e892079f88d76656b5782bb56b2b"
   ],
-  "stamp_template_sha256": "825b3dbca4980365becd1508047f9bc65105346da63921d0ab04c39deb704c1e",
+  "stamp_template_sha256": "79b18448191c9fd6e12c26162ad67b93417c030fe4f581cae54dd348d2ba5d6b",
   "covered_pixels": [
     "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAACpUlEQVR4nO3aS0gUARjA8Z1wZ7NsZ9a0WEwvkfQgiUAkdyEzKCKiU9Khx0EIigijS8V2ioQOQQepUx2DpIi61CWJpCTLMjpkL9DUpk13RXswu2J2GJgW253t8M04wv93+pb9hv0u/8MuqzQ2xgOA/8S21J86edSaux496bhyzXm/prrq8qXz1jzw7uPZc+3u3pfPIu8/EvgfZiZjzyE1WHRfVdW/z5oZh033kBN8KjeJ3FQKUXOSM03TlZuKISf41I+fv+xZ08JF9yO6lvdZL5ETfMowkrOzs9ZcWbG86H5Fzo5hfHXrLEfkBJ/KZrPfxlLWrOvhJaWlzvvR6Ep7Hh754uJlhZET/Gtw6LM1KIpSW7vaeXnd2jU5D464eFZh5AT/6ut7bc+b6jY4bJaXR1ZVRa15cGh4fDzl7mUFkBP8q/dFv/31qWlrY0lJSaHN7dviiqJY87Pel14clw85wb+mpr4/7XluzeHwsj27d+Rd07Ww/db09PTDrm6P7vsHOcHXbty8MzPz25r3t+yt27h+zsLiUKjtxJGysqXWy/sPusZTaU9PzEFO8DXDSHbeumvNwWAwcabt8MGWmuoqVVUjES0ea7jYnrAbGx01Om/fm79jAwr/2YP/HT/W2twUc96ZnJw6nbiQTI55c1Je5IQFQFGUXTubDx3YV+jfRq/633RcvT4xMenxYXOQExYMXQvH4w0N9ZtXVFboumaaZjo9MfD+0+PunrcDH+b7ukCAnABB/BQBiCEnQAw5AWLICRBDToAYcgLEkBMghpwAMeQEiCEnQAw5AWLICRBDToAYcgLEkBMghpwAMeQEiCEnQAw5AWLICRBDToAYcgLEkBMghpwAMeQEiCEnQAw5AWLICRBDToAYcgLEkBMghpwAMeQEiPkDXTWVsEGk+H0AAAAASUVORK5CYII="
   ],
-  "image_sha256": "407a16665ef001fd7baf781c53b3ab030efe9e9e11228873bd52a3cc74dbcb6c"
+  "image_sha256": "384c542f73ac20ad3512080b73f8d16b39d4a2057e38105fcb0e0c0e442e161f"
 }

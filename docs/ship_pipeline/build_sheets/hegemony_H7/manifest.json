@@ -1,11 +1,11 @@
 {
  "code": "hegemony_H7",
- "sheet_version": 1,
+ "sheet_version": 3,
  "routes_note": "kit = the Hegemony parts kit (tools/blender/kits/hegemony/parts.py, the same builders the build uses); hand-built = modelled for this hull; generated = from a reviewed part-library entry",
  "turret_marking": "R219: a turret is an empty <id>_turret at the ring centre (local +Z = mount normal) with custom properties turret=1, slot, weapon, arc_lo, arc_hi, arc_deg (bearings from the bow, + to port, core.js inArc), rest_yaw, rest_pitch; its turning meshes <id>_turn_<material> are its children; the ring <id>_mount_<material> stays on the hull. Casemates are single fixed parts (turret=0, gun_fixed=1).",
  "parts": [
   {
-   "id": "L1",
+   "id": "bow",
    "kind": "gun",
    "what": "plasma cannon, twin casemate in the bow face (fixed)",
    "count": 2,
@@ -17,7 +17,7 @@
    "turret": false
   },
   {
-   "id": "F1",
+   "id": "dorsal",
    "kind": "gun",
    "what": "picket lasers, triple turret",
    "count": 3,
@@ -27,14 +27,14 @@
     "barbette"
    ],
    "turret": true,
-   "pivot_object": "F1_turret",
+   "pivot_object": "dorsal_turret",
    "arc_lo": -180.0,
    "arc_hi": 180.0
   },
   {
-   "id": "A1",
+   "id": "receiver",
    "kind": "antenna",
-   "what": "sensor fin, 0.17 tall, 1.0 long",
+   "what": "low swept sensor",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -43,9 +43,9 @@
    ]
   },
   {
-   "id": "E1",
+   "id": "drive0",
    "kind": "engine",
-   "what": "engine, rectangular nozzle 0.46 x 0.36",
+   "what": "engine, rectangular nozzle 0.50 x 0.49",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -54,86 +54,9 @@
    ]
   },
   {
-   "id": "E2",
-   "kind": "engine",
-   "what": "engine, rectangular nozzle 0.46 x 0.36",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "engines"
-   ]
-  },
-  {
-   "id": "Q1p",
-   "kind": "thruster",
-   "what": "retro thruster, two rectangular nozzles",
-   "count": 1,
-   "route": "kit",
-   "source": "designed",
-   "inventory": [
-    "thrusters"
-   ]
-  },
-  {
-   "id": "Q2p",
-   "kind": "thruster",
-   "what": "attitude thruster, two rectangular nozzles",
-   "count": 1,
-   "route": "kit",
-   "source": "designed",
-   "inventory": [
-    "thrusters"
-   ]
-  },
-  {
-   "id": "Q3p",
-   "kind": "thruster",
-   "what": "attitude thruster, two rectangular nozzles",
-   "count": 1,
-   "route": "kit",
-   "source": "designed",
-   "inventory": [
-    "thrusters"
-   ]
-  },
-  {
-   "id": "D1p",
-   "kind": "bay",
-   "what": "flush drone doors 0.4 x 0.16",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "drone_doors"
-   ]
-  },
-  {
-   "id": "W1p",
-   "kind": "slit",
-   "what": "vision slit 0.2 x 0.05",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "windows"
-   ]
-  },
-  {
-   "id": "W2p",
-   "kind": "slit",
-   "what": "vision slit 0.2 x 0.05",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "windows"
-   ]
-  },
-  {
-   "id": "V1p",
+   "id": "intake0",
    "kind": "vent",
-   "what": "louvre panel 0.1 x 0.4",
+   "what": "louvre panel 0.3 x 0.5",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -142,91 +65,69 @@
    ]
   },
   {
-   "id": "V2p",
-   "kind": "vent",
-   "what": "louvre panel 0.2 x 0.5",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "vents"
-   ]
-  },
-  {
-   "id": "V3p",
-   "kind": "vent",
-   "what": "louvre panel 0.2 x 0.5",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "vents"
-   ]
-  },
-  {
-   "id": "V4p",
-   "kind": "vent",
-   "what": "louvre panel 0.1 x 0.4",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "vents"
-   ]
-  },
-  {
-   "id": "LW0pf",
-   "kind": "latch",
-   "what": "module latch row (3 clamps)",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "latches"
-   ]
-  },
-  {
-   "id": "LW0pa",
-   "kind": "latch",
-   "what": "module latch row (3 clamps)",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "latches"
-   ]
-  },
-  {
-   "id": "LW1pf",
-   "kind": "latch",
-   "what": "module latch row (3 clamps)",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "latches"
-   ]
-  },
-  {
-   "id": "LW1pa",
-   "kind": "latch",
-   "what": "module latch row (3 clamps)",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "latches"
-   ]
-  },
-  {
-   "id": "H5p",
+   "id": "transfer0",
    "kind": "hatch",
-   "what": "square hatch 0.3",
+   "what": "square hatch 0.2",
    "count": 1,
    "route": "kit",
    "source": "picture",
    "inventory": [
     "hatches"
+   ]
+  },
+  {
+   "id": "cooler0_0",
+   "kind": "vent",
+   "what": "louvre panel 0.2 x 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "coolers"
+   ]
+  },
+  {
+   "id": "cooler0_1",
+   "kind": "vent",
+   "what": "louvre panel 0.2 x 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "coolers"
+   ]
+  },
+  {
+   "id": "cooler0_2",
+   "kind": "vent",
+   "what": "louvre panel 0.2 x 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "coolers"
+   ]
+  },
+  {
+   "id": "cooler0_3",
+   "kind": "vent",
+   "what": "louvre panel 0.2 x 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "coolers"
+   ]
+  },
+  {
+   "id": "cooler0_4",
+   "kind": "vent",
+   "what": "louvre panel 0.2 x 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "coolers"
    ]
   },
   {
@@ -260,83 +161,6 @@
    "source": "designed",
    "inventory": [
     "thrusters"
-   ]
-  },
-  {
-   "id": "D1s",
-   "kind": "bay",
-   "what": "flush drone doors 0.4 x 0.16",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "drone_doors"
-   ]
-  },
-  {
-   "id": "W1s",
-   "kind": "slit",
-   "what": "vision slit 0.2 x 0.05",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "windows"
-   ]
-  },
-  {
-   "id": "W2s",
-   "kind": "slit",
-   "what": "vision slit 0.2 x 0.05",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "windows"
-   ]
-  },
-  {
-   "id": "V1s",
-   "kind": "vent",
-   "what": "louvre panel 0.1 x 0.4",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "vents"
-   ]
-  },
-  {
-   "id": "V2s",
-   "kind": "vent",
-   "what": "louvre panel 0.2 x 0.5",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "vents"
-   ]
-  },
-  {
-   "id": "V3s",
-   "kind": "vent",
-   "what": "louvre panel 0.2 x 0.5",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "vents"
-   ]
-  },
-  {
-   "id": "V4s",
-   "kind": "vent",
-   "what": "louvre panel 0.1 x 0.4",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "vents"
    ]
   },
   {
@@ -384,14 +208,168 @@
    ]
   },
   {
-   "id": "H5s",
+   "id": "drive1",
+   "kind": "engine",
+   "what": "engine, rectangular nozzle 0.50 x 0.49",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "engines"
+   ]
+  },
+  {
+   "id": "intake1",
+   "kind": "vent",
+   "what": "louvre panel 0.3 x 0.5",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "transfer1",
    "kind": "hatch",
-   "what": "square hatch 0.3",
+   "what": "square hatch 0.2",
    "count": 1,
    "route": "kit",
    "source": "picture",
    "inventory": [
     "hatches"
+   ]
+  },
+  {
+   "id": "cooler1_0",
+   "kind": "vent",
+   "what": "louvre panel 0.2 x 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "coolers"
+   ]
+  },
+  {
+   "id": "cooler1_1",
+   "kind": "vent",
+   "what": "louvre panel 0.2 x 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "coolers"
+   ]
+  },
+  {
+   "id": "cooler1_2",
+   "kind": "vent",
+   "what": "louvre panel 0.2 x 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "coolers"
+   ]
+  },
+  {
+   "id": "cooler1_3",
+   "kind": "vent",
+   "what": "louvre panel 0.2 x 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "coolers"
+   ]
+  },
+  {
+   "id": "cooler1_4",
+   "kind": "vent",
+   "what": "louvre panel 0.2 x 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "coolers"
+   ]
+  },
+  {
+   "id": "Q1p",
+   "kind": "thruster",
+   "what": "retro thruster, two rectangular nozzles",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "Q2p",
+   "kind": "thruster",
+   "what": "attitude thruster, two rectangular nozzles",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "Q3p",
+   "kind": "thruster",
+   "what": "attitude thruster, two rectangular nozzles",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "LW0pf",
+   "kind": "latch",
+   "what": "module latch row (3 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "latches"
+   ]
+  },
+  {
+   "id": "LW0pa",
+   "kind": "latch",
+   "what": "module latch row (3 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "latches"
+   ]
+  },
+  {
+   "id": "LW1pf",
+   "kind": "latch",
+   "what": "module latch row (3 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "latches"
+   ]
+  },
+  {
+   "id": "LW1pa",
+   "kind": "latch",
+   "what": "module latch row (3 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "latches"
    ]
   },
   {
@@ -426,60 +404,53 @@
    "inventory": [
     "hatches"
    ]
-  },
-  {
-   "id": "H4",
-   "kind": "hatch",
-   "what": "square hatch 0.4",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "hatches"
-   ]
   }
  ],
  "masses": [
   {
-   "name": "Hull: the dart",
+   "name": "Dart: drive module",
    "route": "hand-built"
   },
   {
-   "name": "Bow face round the casemate",
+   "name": "Hull: the dart, mission module",
+   "route": "hand-built"
+  },
+  {
+   "name": "Dart: fore module",
+   "route": "hand-built"
+  },
+  {
+   "name": "Dart: casemate module",
    "route": "hand-built"
   },
   {
    "name": "Flak barbette plinth",
-   "route": "hand-built"
-  },
-  {
-   "name": "Belly armour step",
    "route": "hand-built"
   }
  ],
  "break_pieces": [
   {
    "name": "bow piece",
-   "stations": "0.0 to 34.6 percent",
+   "stations": "0.0 to 25.8 percent",
    "bounded_by": [
-    "B-1"
+    "ring1"
    ],
    "full_interior": true
   },
   {
    "name": "midships piece 1",
-   "stations": "34.6 to 67.5 percent",
+   "stations": "25.8 to 76.9 percent",
    "bounded_by": [
-    "B-1",
-    "B-2"
+    "ring1",
+    "ring0"
    ],
    "full_interior": true
   },
   {
    "name": "stern piece",
-   "stations": "67.5 to 100.0 percent",
+   "stations": "76.9 to 100.0 percent",
    "bounded_by": [
-    "B-2"
+    "ring0"
    ],
    "full_interior": true
   }

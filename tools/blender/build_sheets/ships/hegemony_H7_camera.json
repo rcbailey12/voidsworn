@@ -1,21 +1,20 @@
 {
- "az": 40.33081871039969,
- "el": 27.132563982387396,
- "roll": 2.0592205670507093,
- "dist": 72.07513017638055,
- "mm": 264.49626354695494,
+ "az": 49.445835866222986,
+ "el": 36.2529584945554,
+ "roll": 2.477982802848439,
+ "dist": 40.32713354699344,
+ "mm": 138.0841796451492,
  "target": [
-  0.0,
-  0.0,
-  0.0
+  0,
+  0,
+  0
  ],
- "sx": -0.002053312840833254,
- "sy": -0.005280756171890663,
+ "sx": -0.0018222890179512498,
+ "sy": -0.01209453468423025,
  "res": [
   1920,
   1200
  ],
- "iou": 0.9334,
- "body_iou": 0.934,
- "note": "Picket beauty (issue 1412): grid.py over the blockout outline first landed bow for stern (az 212, a mirror of the near-symmetric outline); fit.py refined all seven camera numbers (never the ship) from a bow-first start (az 40, el 30); concept mask: contrib/opus/tools/issue738/mask.py"
+ "iou": 0.9285,
+ "body_iou": 0.9313
 }

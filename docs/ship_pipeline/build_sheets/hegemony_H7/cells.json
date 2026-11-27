@@ -66,8 +66,8 @@
   {
    "cell": "bow/top",
    "id": "vents",
-   "built": 8,
-   "listed": 8,
+   "built": 2,
+   "listed": 2,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -75,8 +75,8 @@
   {
    "cell": "bow/top",
    "id": "hatches",
-   "built": 6,
-   "listed": 6,
+   "built": 5,
+   "listed": 5,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -201,8 +201,8 @@
   {
    "cell": "mid/top",
    "id": "vents",
-   "built": 8,
-   "listed": 8,
+   "built": 2,
+   "listed": 2,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -210,8 +210,8 @@
   {
    "cell": "mid/top",
    "id": "hatches",
-   "built": 6,
-   "listed": 6,
+   "built": 5,
+   "listed": 5,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -227,7 +227,7 @@
   },
   {
    "cell": "mid/side",
-   "id": "belly_step",
+   "id": "belly_floor",
    "built": 1,
    "listed": 1,
    "present": true,
@@ -264,7 +264,7 @@
   {
    "cell": "mid/side",
    "id": "belly_panels",
-   "built": 2,
+   "built": 1,
    "listed": 1,
    "present": true,
    "shaped": true,
@@ -272,9 +272,9 @@
   },
   {
    "cell": "mid/side",
-   "id": "vents",
-   "built": 8,
-   "listed": 8,
+   "id": "coolers",
+   "built": 10,
+   "listed": 10,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -282,8 +282,8 @@
   {
    "cell": "mid/side",
    "id": "hatches",
-   "built": 6,
-   "listed": 6,
+   "built": 5,
+   "listed": 5,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -336,8 +336,8 @@
   {
    "cell": "stern/top",
    "id": "vents",
-   "built": 8,
-   "listed": 8,
+   "built": 2,
+   "listed": 2,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -345,8 +345,8 @@
   {
    "cell": "stern/top",
    "id": "hatches",
-   "built": 6,
-   "listed": 6,
+   "built": 5,
+   "listed": 5,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -404,24 +404,6 @@
    "present": true,
    "shaped": true,
    "detailed": true
-  },
-  {
-   "cell": "stern/side",
-   "id": "drone_doors",
-   "built": 2,
-   "listed": 2,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "stern/side",
-   "id": "windows",
-   "built": 4,
-   "listed": 4,
-   "present": true,
-   "shaped": true,
-   "detailed": true
   }
  ],
  "failing": 0,
@@ -444,12 +426,12 @@
   {
    "cell": "mid/top",
    "concept": 3,
-   "build": 3
+   "build": 2
   },
   {
    "cell": "mid/side",
    "concept": 2,
-   "build": 3
+   "build": 2
   },
   {
    "cell": "mid/below",
@@ -459,17 +441,17 @@
   {
    "cell": "stern/top",
    "concept": 2,
-   "build": 2
+   "build": 3
   },
   {
    "cell": "stern/side",
    "concept": 2,
-   "build": 2
+   "build": 3
   },
   {
    "cell": "stern/below",
    "concept": null,
-   "build": 2
+   "build": 3
   }
  ],
  "ratios": {
@@ -480,10 +462,10 @@
    "hull_LH": 6.59
   },
   "build": {
-   "env_LB": 3.08,
-   "env_LH": 4.72,
-   "hull_LB": 3.28,
-   "hull_LH": 6.52
+   "env_LB": 2.71,
+   "env_LH": 5.62,
+   "hull_LB": 2.83,
+   "hull_LH": 8.3
   }
  }
 }

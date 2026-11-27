@@ -1,0 +1,57 @@
+{
+  "source_commit": "6c46cd03dc58e64a02e5e3a9b825990fe47b8ef7",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "source_dirty_files": {},
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "underside.jpg",
+  "date": "2026-11-22T17:30:52Z",
+  "sources": [
+    {
+      "source_commit": "6c46cd03dc58e64a02e5e3a9b825990fe47b8ef7",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "source_dirty_files": {},
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "underside.png",
+      "source_commit": "6c46cd03dc58e64a02e5e3a9b825990fe47b8ef7",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built",
+      "date": "2026-11-22T17:30:49Z",
+      "image_sha256": "be7b8442251529755bcaf6a3441ccb277f96f74caa7e8df0bd9bf6434df0cb29",
+      "sources": [
+        {
+          "source_commit": "6c46cd03dc58e64a02e5e3a9b825990fe47b8ef7",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "source_dirty_files": {},
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    1250,
+    216,
+    1299
+  ],
+  "strip_size": [
+    216,
+    49
+  ],
+  "strip_sha256": [
+    "0c43a96dda667e88b870d5bfe38afe0069cc97b74317fe904f7ae2e6293414bf"
+  ],
+  "stamp_template_sha256": "36ddb25191cc7efe548a26c693a6feb52c390c98893a282b12b842fad1350bfc",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAANgAAAAxCAIAAAA3CfDwAAACo0lEQVR4nO3ZPWgTcRjH8TtJLlbr3aWmSojtIhZfsIhQgknAWkERESeLgy+DICgiFReVOIkFB8Gh6KSjYFFEF10MYtFitVpxML5Ba1vP2LyQ+MIlocbhD2eQ5pIL3OX5h99nekKeg2f4DgknhkIRgU/hLT2nTx1jc+zx06Gr1833OzsCVy5fYHP8/adz5wftvQ+sWNToA+qn5/PG7JHcVfclSfr3rJ432QTn8RxiWUzlkVUilcWq67otN0G9OA7x56/fxqwoctV9r6os+CxQwHGImpYolUpsbvctr7rvK9vRtG92nQV14TjEQqHwfS7FZlWVl7S0mO/7/SuNeXrmq42XgXUchygIwuTUFzaIotjVtdp8ed3aNWUPzth4FljHd4jj42+MeVP3BpPNtjbvqoCfzZNT08lkyt7LwCK+Qxx7OWH8TOzdGnK5XJU2t2+LiKLI5udjr5w4DqzgO8Rc7sez0RdsluVle3bvWHBNVWTjq2Kx+Cg24tB9UDO+QxQE4eatu/Pzf9i8v39v98b1/y0s9ngGTh5tbV3KPj54GEum0o6eCDXgPkRNSwzfvsdmt9sdPTtw+GB/Z0dAkiSvV4mEg5cGo0ads7Pa8J37jTsWKhL5fddc7sTxI329YfOdbDZ3JnoxkZhz5iSwpElCFEVx186+Qwf2VXrX93ri7dC1G5lM1uHDoEZNEiKjKnIkEgz2bF7R7lNVRdf1dDoT//D5ycjou/jHRl8HZpoqROAX939WoDkgRCABIQIJCBFIQIhAAkIEEhAikIAQgQSECCQgRCABIQIJCBFIQIhAAkIEEhAikIAQgQSECCQgRCABIQIJCBFIQIhAAkIEEhAikIAQgQSECCQgRCABIQIJCBFIQIhAAkIEEhAikIAQgQSECCT8BUKIlbCmcjTfAAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "0844709e0715290b7584be2d852e3ef74355ee73479553dc30ee51de83fbc133"
+}
