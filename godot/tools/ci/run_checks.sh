@@ -18,8 +18,61 @@ P=$(pwd)            # godot/
 ROOT=$(cd .. && pwd)
 G="${GODOT:-godot}"
 LIST="$P/tools/ci/godot_checks.txt"
-T="${RUNNER_TEMP:-/tmp}/godot_checks"
-rm -rf "$T"; mkdir -p "$T/logs" "$T/fixtures" "$T/xdg"
+# Issue 2174: use native paths and try the next temp base if one is unusable. Git Bash mkdir could not use the
+# sandbox's doubled Windows separators. Each invocation owns its scratch and never removes a shared path.
+if command -v cygpath > /dev/null 2>&1; then
+  case "${RUNNER_TEMP:-}" in
+    //*) ;;
+    /*) RUNNER_TEMP=$(cygpath -m "$RUNNER_TEMP") || RUNNER_TEMP=
+        export RUNNER_TEMP ;;
+  esac
+fi
+SCRATCH=$(node -e '
+  const fs = require("node:fs"), path = require("node:path");
+  const win = process.platform === "win32";
+  const { RUNNER_TEMP, TEMP, TMP, USERPROFILE } = process.env;
+  const bases = [RUNNER_TEMP, TEMP, TMP, win && USERPROFILE && path.join(USERPROFILE, "AppData", "Local", "Temp"), !win && "/tmp"];
+  let dir;
+  for (const base of new Set(bases)) {
+    if (!base || !(win ? /^(?:[a-z]:[\\/]|[\\/]{2})/i.test(base) : path.isAbsolute(base))) continue;
+    try {
+      dir = fs.mkdtempSync(path.join(fs.realpathSync(path.resolve(base)), "godot_checks-"));
+      break;
+    } catch (error) {
+      console.error(`  scratch fallback: could not use ${base} (${error.code})`);
+    }
+  }
+  if (!dir) process.exit(1);
+  console.error(`  scratch: ${dir}`);
+  // Save and settings checks require the /godot_checks/xdg/ profile marker.
+  const work = path.join(dir, "godot_checks");
+  fs.mkdirSync(work);
+  for (const child of ["logs", "fixtures", "xdg"]) fs.mkdirSync(path.join(work, child));
+  process.stdout.write(win ? dir.replace(/\\/g, "/") : dir);
+') || { echo "FAIL: could not prepare Godot check scratch space."; exit 1; }
+T="$SCRATCH/godot_checks"
+ONBOARDING=""
+trap 'if [ "$?" -ne 0 ]; then
+  echo "  scratch kept: $SCRATCH"
+  if [ -n "$ONBOARDING" ]; then echo "  onboarding scratch kept: $ONBOARDING"; fi
+fi' 0
+
+clean_passing_scratch() {
+  node -e '
+    const fs = require("node:fs"), path = require("node:path");
+    const [scratch, onboarding] = process.argv.slice(1);
+    const id = path.basename(scratch);
+    const safe = (base, dir) => path.isAbsolute(dir) && path.relative(base, dir) === id &&
+      fs.lstatSync(dir).isDirectory() && path.relative(dir, fs.realpathSync(dir)) === "";
+    const profiles = path.join(path.dirname(fs.realpathSync(process.cwd())), ".onboarding_checks");
+    if (!/^godot_checks-[a-z0-9]{6}$/i.test(id) || !safe(path.dirname(scratch), scratch) ||
+        (onboarding && !safe(profiles, onboarding))) throw new Error("scratch directory does not match this run");
+    const remove = dir => fs.rmSync(dir, { recursive: true, maxRetries: 3 });
+    if (onboarding) remove(onboarding);
+    remove(scratch);
+  ' "$SCRATCH" "$ONBOARDING" || echo "WARN: could not clean all passing Godot check scratch space."
+}
+
 F=0
 BUDGET="${GODOT_CHECKS_BUDGET:-1080}"
 TIMES="${GODOT_CHECKS_TIMES:-$P/tools/ci/godot_check_times.txt}"
@@ -51,12 +104,26 @@ if ! cmp -s "$T/plan_want.txt" "$T/plan_got.txt" || [ -n "$badshard" ] || [ ! -s
   echo "  shard: FAIL, the shard plan does not hold every headless line exactly once:"
   diff "$T/plan_want.txt" "$T/plan_got.txt" | head -8 | sed 's/^/    /'
   [ -n "$badshard" ] && echo "$badshard" | sed 's/^/    bad shard: /'
-  echo "FAIL: the shard plan is broken; no check was run."; exit 1
+  echo "FAIL: the shard plan is broken; this shard failed before running Godot."; exit 1
 fi
 mine=$(awk -F'|' -v i="$si" '$1 == i' "$T/plan.txt" | grep -vc '|step:')
 est=$(awk -F'|' -v i="$si" '$2 == i {print $3}' "$T/loads.txt")
 echo "  shard: $si of $sn, $mine checks, about $est s by the recorded times"
-if [ "${GODOT_CHECKS_PLAN:-0}" = 1 ]; then cat "$T/plan.txt"; exit 0; fi
+# A branch can still use an older shard count after CI merges in main's longer check list.
+# Add 15 percent headroom to the plan without exceeding the normal single-job cap.
+need=$(( (${est:-0} * 115 + 99) / 100 ))
+[ "$need" -gt 1080 ] && need=1080
+if [ "$need" -gt "$BUDGET" ]; then
+  echo "  shard: WARN, $est s planned for a $BUDGET s budget; budget raised to $need s. Update the branch's shard count."
+  BUDGET=$need
+elif [ $(( ${est:-0} * 100 )) -gt $(( BUDGET * 80 )) ]; then
+  echo "  shard: WARN, $est s planned is over 80 percent of the $BUDGET s budget."
+fi
+if [ "${GODOT_CHECKS_PLAN:-0}" = 1 ]; then
+  cat "$T/plan.txt" || exit 1
+  clean_passing_scratch
+  exit 0
+fi
 
 # 1. the list is whole (shard 1 only: the list and the plan are the same on every shard)
 if [ "$si" -eq 1 ]; then
@@ -95,14 +162,30 @@ while IFS='|' read -r cls script setup args reason; do
       if ! node "$ROOT/contrib/opus/tools/${setup#fixture:}" "$fx" > "$T/logs/$name.fixture.log" 2>&1 < /dev/null; then
         echo "  $name: FAIL (fixtures: node contrib/opus/tools/${setup#fixture:})"; tail -5 "$T/logs/$name.fixture.log" | sed 's/^/    /'; F=$((F+1)); continue
       fi ;;
-    userdir) xdg="$ROOT/.onboarding_checks/xdg"; mkdir -p "$xdg" ;;
+    userdir)
+      # The onboarding test checks that this profile lives under the checkout's .onboarding_checks.
+      if [ -z "$ONBOARDING" ]; then
+        ONBOARDING=$(node -e '
+          const fs = require("node:fs"), path = require("node:path");
+          const base = path.join(path.dirname(fs.realpathSync(process.cwd())), ".onboarding_checks");
+          fs.mkdirSync(base, { recursive: true });
+          if (!fs.lstatSync(base).isDirectory()) throw new Error("onboarding scratch root is not a directory");
+          const dir = path.join(base, process.argv[1]);
+          fs.mkdirSync(dir); // Exclusive: never use a profile left by another run.
+          process.stdout.write(process.platform === "win32" ? dir.replace(/\\/g, "/") : dir);
+          fs.mkdirSync(path.join(dir, "xdg"));
+        ' "${SCRATCH##*/}") || {
+          echo "  $name: FAIL (could not make isolated user directory)"; F=$((F+1)); continue;
+        }
+      fi
+      xdg="$ONBOARDING/xdg" ;;
     -) ;;
     *) echo "  $name: FAIL (unknown setup $setup)"; F=$((F+1)); continue ;;
   esac
   [ "$args" != "-" ] && a=$(printf '%s' "$args" | sed "s|{fixture}|$T/fixtures/$name.json|g; s|{repo}|$ROOT|g")
   t0=$(date +%s)
   # shellcheck disable=SC2086
-  XDG_DATA_HOME="$xdg" timeout -k 10 $lim "$G" --headless --path "$P" --script "res://$script" ${a:+--} $a > "$T/logs/$name.log" 2>&1 < /dev/null
+  XDG_DATA_HOME="$xdg" APPDATA="$xdg" timeout -k 10 $lim "$G" --headless --path "$P" --script "res://$script" ${a:+--} $a > "$T/logs/$name.log" 2>&1 < /dev/null
   code=$?
   se=$(grep -c 'SCRIPT ERROR' "$T/logs/$name.log")
   s=$(( $(date +%s) - t0 )); ran=$((ran+1))
@@ -115,5 +198,11 @@ while IFS='|' read -r cls script setup args reason; do
     F=$((F+1))
   fi
 done < "$T/headless.txt"
-echo "Ran $ran headless Godot checks (shard $si of $sn) in $(( $(date +%s) - t_all )) s (logs: $T/logs)."
-if [ $F -eq 0 ]; then echo "PASS: every listed headless Godot check passed."; else echo "FAIL: $F Godot check(s) failed."; exit 1; fi
+echo "Ran $ran headless Godot checks (shard $si of $sn) in $(( $(date +%s) - t_all )) s."
+if [ $F -eq 0 ]; then
+  clean_passing_scratch
+  echo "PASS: every listed headless Godot check passed."
+else
+  echo "FAIL: $F Godot check(s) failed."
+  exit 1
+fi

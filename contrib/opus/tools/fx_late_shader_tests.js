@@ -77,7 +77,7 @@ function findGodot() {
 
 const godot = findGodot();
 if (!godot) {
-  console.log('SKIP: behaviour check needs Godot (run godot/fx/test/late_shader_check.gd on the PC)');
+  console.log('NOTE: wiring only here. The headless Godot game checks run godot/fx/test/late_shader_check.gd.');
   process.exit(0);
 }
 const run = spawnSync(godot, ['--headless', '--path', 'godot', '--script', 'res://fx/test/late_shader_check.gd'],

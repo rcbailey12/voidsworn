@@ -1,7 +1,7 @@
 # Issue 1487 (audit GH-04, GH-11): one place for the Godot version every checks.yml job uses. The download is cached:
 # cache_warm.yml saves it on main, and every branch can read main's cache. Branches only read (actions/cache/restore), so
 # they never store a copy of their own; on a miss they download as before. Sets GODOT for the steps after it.
-# Upgrading Godot: change the version in the three lines below, nothing else.
+# Upgrading Godot: update the version and the Linux x86_64 archive's release digest.
 name: Get Godot (headless)
 description: Restore Godot from main's cache or download it, and set GODOT.
 runs:
@@ -12,12 +12,13 @@ runs:
       uses: actions/cache/restore@v4
       with:
         path: ~/godot-4.7.2
-        key: godot-4.7.2-stable-linux-x86_64
+        key: godot-4.7.2-stable-linux-x86_64-verified
     - name: Download Godot 4.7.2 (cache miss)
       if: steps.cache.outputs.cache-hit != 'true'
       shell: bash
       run: |
-        curl -sSL --retry 3 --retry-all-errors -o "$RUNNER_TEMP/godot.zip" https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+        curl -fsSL --retry 3 --retry-all-errors -o "$RUNNER_TEMP/godot.zip" https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+        printf '%s  %s\n' cadd3204e728a35d3f13adb7fd0d7902636b79f6b95c40c265eb73b6c35329e4 "$RUNNER_TEMP/godot.zip" | sha256sum --check -
         unzip -q "$RUNNER_TEMP/godot.zip" -d ~/godot-4.7.2
         rm -f "$RUNNER_TEMP/godot.zip"
     - name: Save Godot to the cache (main only)
@@ -25,7 +26,7 @@ runs:
       uses: actions/cache/save@v4
       with:
         path: ~/godot-4.7.2
-        key: godot-4.7.2-stable-linux-x86_64
+        key: godot-4.7.2-stable-linux-x86_64-verified
     - name: Set GODOT
       shell: bash
       run: |
