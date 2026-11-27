@@ -1,0 +1,333 @@
+{
+  "type": "graph",
+  "name": "graph",
+  "label": "Volcanic | ropy basalt, ash and scree",
+  "nodes": [
+    {
+      "name": "Domain_warp",
+      "type": "fbm4",
+      "parameters": {
+        "noise": 0,
+        "scale_x": 5,
+        "scale_y": 5,
+        "iterations": 3,
+        "folds": 0,
+        "offset": 0,
+        "persistence": 0.55,
+        "lacunarity": 2
+      },
+      "node_position": {
+        "x": 0,
+        "y": -440
+      },
+      "seed_int": 30269
+    },
+    {
+      "name": "Low_relief",
+      "type": "fbm4",
+      "parameters": {
+        "noise": 1,
+        "scale_x": 9,
+        "scale_y": 9,
+        "iterations": 4,
+        "folds": 0,
+        "offset": 0,
+        "persistence": 0.55,
+        "lacunarity": 2
+      },
+      "node_position": {
+        "x": 0,
+        "y": -205
+      },
+      "seed_int": 30316
+    },
+    {
+      "name": "Fine_relief",
+      "type": "fbm4",
+      "parameters": {
+        "noise": 1,
+        "scale_x": 19,
+        "scale_y": 19,
+        "iterations": 4,
+        "folds": 0,
+        "offset": 0,
+        "persistence": 0.55,
+        "lacunarity": 2
+      },
+      "node_position": {
+        "x": 0,
+        "y": 30
+      },
+      "seed_int": 30363
+    },
+    {
+      "name": "Dry_surface_grain",
+      "type": "fbm4",
+      "parameters": {
+        "noise": 0,
+        "scale_x": 32,
+        "scale_y": 32,
+        "iterations": 4,
+        "folds": 0,
+        "offset": 0,
+        "persistence": 0.55,
+        "lacunarity": 2
+      },
+      "node_position": {
+        "x": 0,
+        "y": 265
+      },
+      "seed_int": 30410
+    },
+    {
+      "name": "Surface",
+      "type": "shader",
+      "parameters": {},
+      "node_position": {
+        "x": 570,
+        "y": -100
+      },
+      "shader_model": {
+        "name": "Packed live relief and dry surface grain",
+        "shortdesc": "Packed live relief and dry surface grain",
+        "longdesc": "Packed live relief and dry surface grain",
+        "instance": "",
+        "code": [
+          "vec2 warp = vec2($bend($uv + vec2(0.29, 0.33)), $bend($uv.yx + vec2(0.71, 0.18))) - 0.5;",
+          "float flow = $land($uv + 0.31 * warp);",
+          "float grit = $fine($uv - 0.12 * warp);",
+          "float ash = $grain($uv);",
+          "float lobe = smoothstep(0.29, 0.60, flow);",
+          "float lip = sin(6.2831853 * (flow * 2.75 + 0.28 * grit));",
+          "float hollow = 1.0 - smoothstep(0.26, 0.53, flow);",
+          "float coarse_h = 0.451 + 0.44 * (lobe - 0.5) + 0.095 * lip * lobe;",
+          "float fine_h = 0.5 + 1.49 * (grit - 0.5) + 0.035 * lip;",
+          "float cavity = 1.0 - 0.15 * hollow;",
+          "float albedo = 0.522 + 1.48 * (ash - 0.5) - 0.10 * hollow;",
+          "float roughness = mix(0.49, 0.92, clamp(0.56 * hollow + 0.44 * grit, 0.0, 1.0));"
+        ],
+        "global": "",
+        "inputs": [
+          {
+            "name": "bend",
+            "label": "Bend",
+            "type": "f",
+            "default": "0.5"
+          },
+          {
+            "name": "land",
+            "label": "Land",
+            "type": "f",
+            "default": "0.5",
+            "function": true
+          },
+          {
+            "name": "fine",
+            "label": "Fine",
+            "type": "f",
+            "default": "0.5",
+            "function": true
+          },
+          {
+            "name": "grain",
+            "label": "Grain",
+            "type": "f",
+            "default": "0.5"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "rgba",
+            "shortdesc": "Game RGBA",
+            "rgba": "clamp(vec4(coarse_h, cavity, fine_h, albedo), 0.0, 1.0)"
+          },
+          {
+            "type": "f",
+            "shortdesc": "Height preview",
+            "f": "coarse_h"
+          },
+          {
+            "type": "f",
+            "shortdesc": "Roughness",
+            "f": "roughness"
+          },
+          {
+            "type": "f",
+            "shortdesc": "Color grain preview",
+            "f": "albedo"
+          }
+        ],
+        "parameters": []
+      }
+    },
+    {
+      "name": "Normal_from_relief",
+      "type": "normal_map",
+      "parameters": {
+        "param0": 10,
+        "param1": 0.86,
+        "param2": 1,
+        "param4": 1
+      },
+      "node_position": {
+        "x": 940,
+        "y": 70
+      }
+    },
+    {
+      "name": "Material",
+      "type": "material",
+      "parameters": {
+        "size": 10,
+        "flags_transparent": false,
+        "albedo_color": {
+          "type": "Color",
+          "r": 1,
+          "g": 1,
+          "b": 1,
+          "a": 1
+        },
+        "roughness": 1,
+        "normal": 1,
+        "ao": 1,
+        "depth_scale": 0,
+        "metallic": 0,
+        "sss": 0,
+        "emission_energy": 1
+      },
+      "node_position": {
+        "x": 1540,
+        "y": -390
+      }
+    },
+    {
+      "name": "Preview_normal_format",
+      "type": "normal_map_convert",
+      "parameters": {
+        "op": 0
+      },
+      "node_position": {
+        "x": 1220,
+        "y": -390
+      }
+    },
+    {
+      "name": "Save_volcanic",
+      "type": "export",
+      "parameters": {
+        "size": 10,
+        "format": 0,
+        "suffix": "volcanic"
+      },
+      "node_position": {
+        "x": 1250,
+        "y": -100
+      }
+    },
+    {
+      "name": "Save_volcanic_n",
+      "type": "export",
+      "parameters": {
+        "size": 10,
+        "format": 0,
+        "suffix": "volcanic_n"
+      },
+      "node_position": {
+        "x": 1250,
+        "y": 135
+      }
+    },
+    {
+      "name": "Save_volcanic_roughness",
+      "type": "export",
+      "parameters": {
+        "size": 10,
+        "format": 0,
+        "suffix": "volcanic_roughness"
+      },
+      "node_position": {
+        "x": 1250,
+        "y": 370
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "Domain_warp",
+      "from_port": 0,
+      "to": "Surface",
+      "to_port": 0
+    },
+    {
+      "from": "Low_relief",
+      "from_port": 0,
+      "to": "Surface",
+      "to_port": 1
+    },
+    {
+      "from": "Fine_relief",
+      "from_port": 0,
+      "to": "Surface",
+      "to_port": 2
+    },
+    {
+      "from": "Dry_surface_grain",
+      "from_port": 0,
+      "to": "Surface",
+      "to_port": 3
+    },
+    {
+      "from": "Surface",
+      "from_port": 1,
+      "to": "Normal_from_relief",
+      "to_port": 0
+    },
+    {
+      "from": "Normal_from_relief",
+      "from_port": 0,
+      "to": "Preview_normal_format",
+      "to_port": 0
+    },
+    {
+      "from": "Surface",
+      "from_port": 3,
+      "to": "Material",
+      "to_port": 0
+    },
+    {
+      "from": "Preview_normal_format",
+      "from_port": 0,
+      "to": "Material",
+      "to_port": 4
+    },
+    {
+      "from": "Surface",
+      "from_port": 2,
+      "to": "Material",
+      "to_port": 2
+    },
+    {
+      "from": "Surface",
+      "from_port": 0,
+      "to": "Save_volcanic",
+      "to_port": 0
+    },
+    {
+      "from": "Normal_from_relief",
+      "from_port": 0,
+      "to": "Save_volcanic_n",
+      "to_port": 0
+    },
+    {
+      "from": "Surface",
+      "from_port": 2,
+      "to": "Save_volcanic_roughness",
+      "to_port": 0
+    }
+  ],
+  "node_position": {
+    "x": 0,
+    "y": 0
+  },
+  "parameters": {}
+}

@@ -63,9 +63,9 @@ func _case(api: API, guns: int, pool: float, planned: bool) -> void:
 						scene.plan = state
 						break
 			var before := API.JSM.canon([ship, foe])
-			var rng := API.JSM.rng_s
+			var rng: int = scene.api.R.rng.rng_s
 			var target := scene._target_info()
-			if (planned and scene.plan == null) or target.get("bearing") != guns or API.JSM.rng_s != rng or API.JSM.canon([ship, foe]) != before:
+			if (planned and scene.plan == null) or target.get("bearing") != guns or scene.api.R.rng.rng_s != rng or API.JSM.canon([ship, foe]) != before:
 				_fail(label + ": preview used the wrong guns or touched the battle")
 				scene.free()
 				return
@@ -74,7 +74,7 @@ func _case(api: API, guns: int, pool: float, planned: bool) -> void:
 			_fail(label + ": planned move did not execute")
 			scene.free()
 			return
-		API.JSM.rnd_seed((sample + 1) * 7919)
+		api.R.rng.rnd_seed((sample + 1) * 7919)
 		api.take_events()
 		for i in guns:
 			if not api.fire(sid, i, tid):
@@ -134,14 +134,14 @@ func _routing_case(api: API) -> void:
 			scene.sel = sid
 			scene.target = tid
 			var before := API.JSM.canon([ship, foe])
-			var rng := API.JSM.rng_s
+			var rng: int = scene.api.R.rng.rng_s
 			var target := scene._target_info()
-			if target.get("bearing") != 1 or int(target.get("hit", 0)) != 30 or API.JSM.rng_s != rng or API.JSM.canon([ship, foe]) != before:
+			if target.get("bearing") != 1 or int(target.get("hit", 0)) != 30 or scene.api.R.rng.rng_s != rng or API.JSM.canon([ship, foe]) != before:
 				_fail(label + ": preview used the wrong gun or odds, or touched the battle")
 				scene.free()
 				return
 			preview = Vector2(target.exp_shields, target.exp_hull)
-		API.JSM.rnd_seed((sample + 1) * 7919)
+		api.R.rng.rnd_seed((sample + 1) * 7919)
 		api.take_events()
 		if not api.fire(sid, 0, tid):
 			_fail(label + ": gun did not fire")

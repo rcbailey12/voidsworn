@@ -60,7 +60,7 @@ func _run() -> void:
 	var fx = JSON.parse_string(FileAccess.get_file_as_string("res://campaign/test/fixtures/issue_1449/relic_trade.json"))
 	if fx == null: _fail("cannot read the relic trade fixture"); return
 	for cs in fx["cases"]:
-		JSM.rnd_seed(1449)
+		campaign.seed_rng(1449)
 		campaign.META["admirals"][fx["admiral"]] = true
 		campaign.newRun(fx["admiral"], fx["fac"])
 		ui.map3d.intel = MapIntel.new(campaign)
@@ -87,7 +87,7 @@ func _run() -> void:
 		print("PASS: " + name)
 
 	# 2. The shipyard's Full specs drawer: same lines as the fleet sheet, closed until asked, on shop, captured and regrown hulls
-	JSM.rnd_seed(1450)
+	campaign.seed_rng(1450)
 	campaign.META["admirals"]["vex"] = true
 	campaign.newRun("vex", "voidsworn")
 	ui.map3d.intel = MapIntel.new(campaign)

@@ -1,0 +1,175 @@
+Issue 2205 map trial pins
+
+H1 uses the same fighter or bomber choice on both sides of a faction.
+The records below changed their wing kit. No map trial input changed.
+
+rout seed 1000 - enemy fighter -> bomber
+rout seed 1001 - enemy fighter -> bomber
+rout seed 1004 - enemy fighter -> bomber
+rout seed 1006 - enemy fighter -> bomber
+rout seed 1009 - enemy fighter -> bomber
+rout seed 1011 - enemy fighter -> bomber
+rout seed 1014 - enemy fighter -> bomber
+rout seed 1016 - enemy fighter -> bomber
+rout seed 1017 - enemy fighter -> bomber
+rout seed 1019 - enemy fighter -> bomber
+rout seed 1021 - enemy fighter -> bomber
+rout seed 1022 - enemy fighter -> bomber
+ambush seed 1000 - enemy fighter -> bomber
+ambush seed 1001 - enemy fighter -> bomber
+ambush seed 1004 - enemy fighter -> bomber
+ambush seed 1006 - enemy fighter -> bomber
+ambush seed 1009 - enemy fighter -> bomber
+ambush seed 1011 - enemy fighter -> bomber
+ambush seed 1014 - enemy fighter -> bomber
+ambush seed 1016 - enemy fighter -> bomber
+ambush seed 1017 - enemy fighter -> bomber
+ambush seed 1019 - enemy fighter -> bomber
+ambush seed 1021 - enemy fighter -> bomber
+ambush seed 1022 - enemy fighter -> bomber
+defend seed 1000 - enemy fighter -> bomber
+defend seed 1001 - enemy fighter -> bomber
+defend seed 1004 - enemy fighter -> bomber
+defend seed 1006 - enemy fighter -> bomber
+defend seed 1009 - enemy fighter -> bomber
+defend seed 1011 - enemy fighter -> bomber
+defend seed 1014 - enemy fighter -> bomber
+defend seed 1016 - enemy fighter -> bomber
+defend seed 1017 - enemy fighter -> bomber
+defend seed 1019 - enemy fighter -> bomber
+defend seed 1021 - enemy fighter -> bomber
+defend seed 1022 - enemy fighter -> bomber
+hunt seed 1000 - enemy fighter -> bomber
+hunt seed 1001 - enemy fighter -> bomber
+hunt seed 1004 - enemy fighter -> bomber
+hunt seed 1006 - enemy fighter -> bomber
+hunt seed 1009 - enemy fighter -> bomber
+hunt seed 1011 - enemy fighter -> bomber
+hunt seed 1014 - enemy fighter -> bomber
+hunt seed 1016 - enemy fighter -> bomber
+hunt seed 1017 - enemy fighter -> bomber
+hunt seed 1019 - enemy fighter -> bomber
+hunt seed 1021 - enemy fighter -> bomber
+hunt seed 1022 - enemy fighter -> bomber
+intercept seed 1000 - enemy fighter -> bomber
+intercept seed 1001 - enemy fighter -> bomber
+intercept seed 1004 - enemy fighter -> bomber
+intercept seed 1006 - enemy fighter -> bomber
+intercept seed 1009 - enemy fighter -> bomber
+intercept seed 1011 - enemy fighter -> bomber
+intercept seed 1014 - enemy fighter -> bomber
+intercept seed 1016 - enemy fighter -> bomber
+intercept seed 1017 - enemy fighter -> bomber
+intercept seed 1019 - enemy fighter -> bomber
+intercept seed 1021 - enemy fighter -> bomber
+intercept seed 1022 - enemy fighter -> bomber
+break seed 1000 - enemy fighter -> bomber
+break seed 1001 - enemy fighter -> bomber
+break seed 1004 - enemy fighter -> bomber
+break seed 1006 - enemy fighter -> bomber
+break seed 1009 - enemy fighter -> bomber
+break seed 1011 - enemy fighter -> bomber
+break seed 1014 - enemy fighter -> bomber
+break seed 1016 - enemy fighter -> bomber
+break seed 1017 - enemy fighter -> bomber
+break seed 1019 - enemy fighter -> bomber
+break seed 1021 - enemy fighter -> bomber
+break seed 1022 - enemy fighter -> bomber
+hold seed 1000 - enemy fighter -> bomber
+hold seed 1001 - enemy fighter -> bomber
+hold seed 1004 - enemy fighter -> bomber
+hold seed 1006 - enemy fighter -> bomber
+hold seed 1009 - enemy fighter -> bomber
+hold seed 1011 - enemy fighter -> bomber
+hold seed 1014 - enemy fighter -> bomber
+hold seed 1016 - enemy fighter -> bomber
+hold seed 1017 - enemy fighter -> bomber
+hold seed 1019 - enemy fighter -> bomber
+hold seed 1021 - enemy fighter -> bomber
+hold seed 1022 - enemy fighter -> bomber
+flagship seed 1000 - enemy fighter -> bomber
+flagship seed 1001 - enemy fighter -> bomber
+flagship seed 1004 - enemy fighter -> bomber
+flagship seed 1006 - enemy fighter -> bomber
+flagship seed 1009 - enemy fighter -> bomber
+flagship seed 1011 - enemy fighter -> bomber
+flagship seed 1014 - enemy fighter -> bomber
+flagship seed 1016 - enemy fighter -> bomber
+flagship seed 1017 - enemy fighter -> bomber
+flagship seed 1019 - enemy fighter -> bomber
+flagship seed 1021 - enemy fighter -> bomber
+flagship seed 1022 - enemy fighter -> bomber
+boss1_rout seed 1001 - enemy c_boss -> c_boss, enemy c_marauder -> c_marauder, enemy c_reaver -> c_reaver, enemy bomber -> bomber, enemy fighter -> fighter
+boss1_rout seed 1007 - player h_vanguard -> h_vanguard, enemy h_interdictor -> h_interdictor, enemy h_picket -> h_picket, player bomber -> bomber
+boss1_rout seed 1014 - player c_marauder -> c_marauder, player c_reaver -> c_reaver, player c_raider -> c_raider
+boss1_rout seed 1016 - enemy c_boss -> c_boss, enemy c_reaver -> c_reaver, enemy c_raider -> c_raider, enemy bomber -> bomber
+boss1_rout seed 1018 - enemy c_boss -> c_boss, enemy c_marauder -> c_marauder, enemy c_reaver -> c_reaver, enemy bomber -> bomber
+boss1_rout seed 1019 - enemy c_raider -> c_raider
+boss1_rout seed 1020 - enemy fighter -> bomber
+boss1_ambush seed 1008 - player c_marauder -> c_marauder, player c_reaver -> c_reaver, player c_raider -> c_raider
+boss1_ambush seed 1012 - player reliquary -> reliquary, player penitent -> penitent, player harrow -> harrow, player warden -> warden, enemy h_interdictor -> h_interdictor, enemy h_picket -> h_picket, player bomber -> bomber
+boss1_ambush seed 1014 - player c_marauder -> c_marauder, player c_reaver -> c_reaver, player c_raider -> c_raider
+boss1_ambush seed 1017 - player d_harvester -> d_harvester, player d_jackal -> d_jackal, player d_scythe -> d_scythe, enemy c_hulk -> c_hulk, enemy bomber -> bomber
+boss1_ambush seed 1019 - enemy c_boss -> c_boss, enemy c_raider -> c_raider, enemy bomber -> bomber
+boss1_ambush seed 1022 - player i_song -> i_song, player i_blade -> i_blade, player i_wisp -> i_wisp
+boss2_rout seed 1000 - enemy fighter -> bomber
+boss2_rout seed 1001 - enemy fighter -> bomber
+boss2_rout seed 1003 - enemy b_boss -> b_boss, enemy b_drone -> b_drone, enemy b_spitter -> b_spitter, player spore -> spore, enemy spore -> spore
+boss2_rout seed 1004 - enemy fighter -> bomber
+boss2_rout seed 1005 - player d_harvester -> d_harvester, player d_jackal -> d_jackal, player d_scythe -> d_scythe, enemy spore -> spore
+boss2_rout seed 1013 - enemy fighter -> bomber
+boss2_rout seed 1014 - enemy fighter -> bomber
+boss2_rout seed 1016 - enemy b_boss -> b_boss, enemy b_drone -> b_drone, enemy b_spitter -> b_spitter, player fighter -> fighter, enemy spore -> spore
+boss2_rout seed 1018 - player reliquary -> reliquary, player penitent -> penitent, player cathedral -> cathedral, player harrow -> harrow, player warden -> warden, player bomber -> bomber, player fighter -> fighter, enemy spore -> spore
+boss2_rout seed 1022 - enemy b_boss -> b_boss, enemy b_drone -> b_drone, player fighter -> fighter, enemy spore -> spore
+boss2_rout seed 1023 - enemy fighter -> bomber
+boss2_ambush seed 1000 - enemy fighter -> bomber
+boss2_ambush seed 1001 - enemy fighter -> bomber
+boss2_ambush seed 1002 - enemy fighter -> bomber
+boss2_ambush seed 1006 - enemy i_blade -> i_blade
+boss2_ambush seed 1010 - enemy h_boss -> h_boss, enemy h_interdictor -> h_interdictor, enemy h_picket -> h_picket, enemy fighter -> bomber
+boss2_ambush seed 1011 - enemy fighter -> bomber
+boss2_ambush seed 1014 - enemy b_boss -> b_boss, enemy b_razor -> b_razor, enemy b_spitter -> b_spitter, enemy spore -> spore
+boss2_ambush seed 1016 - player i_song -> i_song, player i_wisp -> i_wisp
+boss2_ambush seed 1019 - enemy fighter -> bomber
+boss2_ambush seed 1020 - player c_marauder -> c_marauder, player c_reaver -> c_reaver, player c_raider -> c_raider, enemy h_picket -> h_picket, enemy fighter -> bomber
+boss2_ambush seed 1021 - enemy fighter -> bomber
+boss2_ambush seed 1022 - enemy b_boss -> b_boss, enemy b_spitter -> b_spitter, enemy b_drone -> b_drone, enemy spore -> spore
+boss3_rout seed 1000 - player reliquary -> reliquary, player penitent -> penitent, player harrow -> harrow, player warden -> warden, enemy i_blade -> i_blade, enemy i_wisp -> i_wisp, player bomber -> bomber
+boss3_rout seed 1007 - enemy d_scythe -> d_scythe, enemy d_jackal -> d_jackal
+boss3_rout seed 1010 - enemy fighter -> bomber
+boss3_rout seed 1012 - enemy fighter -> bomber
+boss3_rout seed 1015 - enemy fighter -> bomber
+boss3_rout seed 1016 - player i_song -> i_song, player i_blade -> i_blade, player i_wisp -> i_wisp, enemy d_jackal -> d_jackal, enemy d_scythe -> d_scythe
+boss3_rout seed 1019 - enemy i_blade -> i_blade, enemy i_wisp -> i_wisp, enemy fighter -> bomber
+boss3_rout seed 1020 - enemy i_wisp -> i_wisp, enemy i_blade -> i_blade
+boss3_rout seed 1021 - enemy b_boss -> b_boss, enemy b_spitter -> b_spitter, enemy b_drone -> b_drone, player spore -> spore, enemy spore -> spore
+boss3_rout seed 1022 - enemy i_blade -> i_blade, enemy i_wisp -> i_wisp, enemy i_song -> i_song, player bomber -> bomber
+boss3_rout seed 1023 - enemy i_boss -> i_boss, enemy i_wisp -> i_wisp, enemy i_blade -> i_blade
+boss3_ambush seed 1001 - enemy fighter -> bomber
+boss3_ambush seed 1002 - enemy fighter -> bomber
+boss3_ambush seed 1005 - player d_harvester -> d_harvester, player d_jackal -> d_jackal, player d_scythe -> d_scythe, enemy d_boss -> d_boss, enemy d_jackal -> d_jackal, enemy d_harvester -> d_harvester, enemy d_scythe -> d_scythe
+boss3_ambush seed 1006 - enemy b_spitter -> b_spitter, enemy b_drone -> b_drone
+boss3_ambush seed 1007 - enemy fighter -> bomber
+boss3_ambush seed 1008 - player c_marauder -> c_marauder, player c_reaver -> c_reaver, player c_raider -> c_raider, enemy i_boss -> i_boss, enemy i_blade -> i_blade
+boss3_ambush seed 1010 - player i_song -> i_song, player i_blade -> i_blade, enemy d_boss -> d_boss, enemy d_jackal -> d_jackal, enemy d_harvester -> d_harvester, enemy d_scythe -> d_scythe
+boss3_ambush seed 1012 - player reliquary -> reliquary, player penitent -> penitent, player harrow -> harrow, player warden -> warden, enemy b_brood -> b_brood, player bomber -> bomber, player fighter -> fighter, enemy spore -> spore
+boss3_ambush seed 1013 - player h_vanguard -> h_vanguard, player h_interdictor -> h_interdictor, player h_picket -> h_picket, enemy d_scythe -> d_scythe, enemy d_jackal -> d_jackal, player bomber -> bomber
+boss3_ambush seed 1014 - enemy b_boss -> b_boss, enemy b_spitter -> b_spitter, enemy b_drone -> b_drone, enemy spore -> spore
+boss3_ambush seed 1018 - player reliquary -> reliquary, player penitent -> penitent, player harrow -> harrow, player warden -> warden, player bomber -> bomber, player fighter -> fighter, enemy fighter -> bomber
+boss3_ambush seed 1019 - enemy i_boss -> i_boss, enemy i_song -> i_song, enemy fighter -> bomber, enemy fighter -> fighter
+boss3_ambush seed 1020 - player c_marauder -> c_marauder, player c_reaver -> c_reaver, player c_raider -> c_raider, enemy b_boss -> b_boss, enemy b_razor -> b_razor, enemy b_drone -> b_drone, enemy b_spitter -> b_spitter, enemy spore -> spore
+boss3_ambush seed 1022 - enemy fighter -> bomber
+boss3_ambush seed 1023 - player d_harvester -> d_harvester, player d_jackal -> d_jackal, player d_scythe -> d_scythe, enemy d_boss -> d_boss, enemy d_scythe -> d_scythe, enemy d_jackal -> d_jackal
+
+Run 4: combined with R460 (#2206)
+
+R460 increases the Glasswright Sliver, its lancer variant, and the Lancet by one CP.
+The 43 affected Sector 2 and 3 boss encounters have different generated lineups
+or different ship and wing placement after those lineups change. No input, map
+shape or arena changed compared with the earlier #2205 baseline.
+
+boss2_rout (11): 1000, 1001, 1002, 1010, 1011, 1012, 1016, 1017, 1020, 1021, 1022
+boss2_ambush (9): 1001, 1002, 1004, 1006, 1007, 1009, 1011, 1017, 1018
+boss3_rout (12): 1000, 1004, 1010, 1011, 1012, 1015, 1016, 1017, 1019, 1020, 1022, 1023
+boss3_ambush (11): 1001, 1002, 1004, 1007, 1008, 1010, 1011, 1016, 1018, 1019, 1022

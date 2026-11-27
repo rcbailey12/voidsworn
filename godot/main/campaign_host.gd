@@ -107,10 +107,7 @@ func start(m: Node, o: Dictionary) -> void:
 
 
 func _seed_campaign(s: int) -> void:
-	if C.has_method("seed_rng"):
-		C.seed_rng(s & 0xFFFFFFFF)
-	else:
-		load("res://rules/jsm.gd").rnd_seed(s & 0xFFFFFFFF)  # fallback until campaign.seed_rng() lands (G3)
+	C.seed_rng(s & 0xFFFFFFFF)
 
 
 static func has_save(path: String = Campaign.SAVE_PATH) -> bool:

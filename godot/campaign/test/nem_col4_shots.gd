@@ -17,7 +17,7 @@ func _run() -> void:
 	dir = a[0] if a.size() > 0 else "user://nem_col4_shots"
 	DirAccess.make_dir_recursive_absolute(dir)
 	var C = CampaignScript.new(); C.load_tables(); C.fixed_clock = true; C.persist_on = false
-	JSM.rnd_seed(1175)
+	C.rng.rnd_seed(1175)
 	C.newRun("vex", "voidsworn")
 	var ui := CampaignUI.new(); root.add_child(ui); ui.set_process(false); ui.C = C
 	var cols: Array = C.RUN["map"]["cols"]

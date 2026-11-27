@@ -60,7 +60,7 @@ func _run() -> void:
 	t.queue_free(); await process_frame
 	# The map toggle is checked in its real campaign column. This checkout omits the battle art bundle.
 	var c = Campaign.new(); c.load_tables(); c.fixed_clock = true
-	c.JSM.rnd_seed(1234); c.titleScreen(); c.act("newRunScreen"); c.act("startRun"); c.act("pickAspect", c.W["aspOffer"][0]); c.close_modal(); c.mapScreen()
+	c.rng.rnd_seed(1234); c.titleScreen(); c.act("newRunScreen"); c.act("startRun"); c.act("pickAspect", c.W["aspOffer"][0]); c.close_modal(); c.mapScreen()
 	var ui = CampaignUI.new(); root.add_child(ui); ui.use_3d_map = false; ui.bind(c)
 	ui.teaching.disabled = true
 	await _shot("campaign_map_toggle_1080")
