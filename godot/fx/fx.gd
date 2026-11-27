@@ -22,7 +22,7 @@ const SHIP_VIEW := preload("res://render/ship_view.gd")
 # Shared effect kind registry (issue 2176). Numbers are unique within each family, not across families.
 # These IDs are packed into particle or mesh data. Keep shipped assignments stable and use named IDs in new emitters.
 # PR reservations do not add a shader branch or turn on an effect. The headless registry check reads the shader
-# selectors and the existing fx_breach.gd S_* constants against this registry.
+# selectors and legacy emitter constants against these assignments.
 enum SpriteKind {
 	FLASH = 0,
 	FLAME = 1,
@@ -50,8 +50,8 @@ enum SpriteKind {
 	DEATH_FIRE = 25,
 	PLASMA_FIRE = 26, # Existing faction-coloured fire, including Eclipse damage.
 	HIT_GAS = 27,
-	PALETTE_EMBER = 28, # PR 2007: palette-coloured embers and spores.
-	BIO_CONTACT_GLOB = 29, # PR 2021
+	# 28 is unused on main.
+	BIO_CONTACT_GLOB = 29, # Reserved for PR 2021 (#1693).
 	BOLT_PLASMA = 30, # PR 2133
 	BOLT_BIO = 31,
 	BOLT_BOMB = 32,
@@ -62,11 +62,8 @@ enum SpriteKind {
 	ROCKET_SMOKE = 37,
 	TICK_EMBER = 38, # PR 2132
 	TICK_DROPLET = 39,
-	HULL_RUPTURE_JET = 40, # PR 2084
-	NOVA_SHELL = 41, # PR 2069
-	FACTION_VENT_GAS = 42, # PR 2007: new tinted vents, separate from 7.
-	ECLIPSE_DEATH_SMOKE = 43, # PR 2007: new violet smoke emitters, separate from 8.
-	PALETTE_PLASMA_FIRE = 44, # PR 2007: its retuned plasma fire mask, separate from 26.
+	VENT_JET = 40, # Directional hull rupture (PR 2084).
+	NOVA_LEGACY = 41, # Legacy Nova Cannon shell (PR 2069).
 }
 
 enum StreakKind {
@@ -78,12 +75,11 @@ enum StreakKind {
 	NULL_SLUG = 5, # Own pool and shader.
 	BIO_DROPLET = 6,
 	MOLTEN_DRIP = 7,
-	HULL_HIT_SPARK = 8,
+	SPARK_KIND = 8, # Shared spark pool (PR 2049), also used by hull hits.
 	BOLT_SHELL = 9, # PR 2133
 	BOLT_ENERGY = 10,
 	BOLT_CRYSTAL = 11,
 	BOLT_SCRAP = 12,
-	SHARED_SPARK = 13, # PR 2049: own spark pool and shader.
 }
 
 enum RingKind {
@@ -94,12 +90,12 @@ enum RingKind {
 	HEX_CELL = 4,
 	DEATH_FRONT = 5, # PR 2128
 	HARMONIC = 6, # PR 2136
-	RIFT_ARCH = 7, # PR 2069
-	RIFT_SCAN = 8,
-	RIFT_VENT = 9,
-	RIFT_BLOOM = 10,
-	RIFT_FACET = 11,
-	RIFT_FOLD = 12,
+	RIFT_VENT = 7,
+	RIFT_BLOOM = 8,
+	RIFT_FACET = 9,
+	RIFT_FOLD = 10,
+	RIFT_ARCH = 11, # PR 2069
+	RIFT_SCAN = 12,
 }
 
 enum RibbonKind {
@@ -915,8 +911,7 @@ func _p(a0: Vector4, a1: Vector4, a2: Vector4, a3: Vector4, a4: Vector4) -> Pack
 	return POOLS.pack(a0, a1, a2, a3, a4)
 
 
-const SMOKY := {SpriteKind.SMOKE: true, SpriteKind.VENT_GAS: true, SpriteKind.SOOT: true,
-	SpriteKind.BIO_GLOB: true, SpriteKind.ACID_FUME: true, SpriteKind.CRAFT: true, SpriteKind.HIT_GAS: true}
+const SMOKY := {3: true, 7: true, 8: true, 15: true, 20: true, 23: true, 27: true, SH.TICK_DROPLET: true}
 
 
 # `px` (F3 round 2): this sprite's own minimum size on screen, in pixels on a 1080-line screen (0: the kind's floor).
@@ -927,9 +922,9 @@ func spr(p: Vector3, t: float, life: float, col: Color, i: float, s0: float, s1:
 	# contact, secondary pops, death flames): refused or in reduce-flashing mode it becomes a soft lift with no peak
 	# Issue 504: the counter adds this sprite's lit area to the bright ones around it (flash_at).
 	if i >= FLASH_I and life <= 0.6 and SH.FLASH_SPRITE_FLOORS.has(kind):
-		var size := s0 if kind == SpriteKind.BEAM_IMPACT else maxf(s0, s1) # The crackle does not grow.
+		var size := s0 if kind == 13 else maxf(s0, s1) # The crackle does not grow.
 		if not flash_at(p, t, size, SH.flash_sprite_floor(kind, px), life):
-			kind = SpriteKind.SOFT_LIFT
+			kind = 18
 			i = minf(i, 3.0) * 0.4
 			life = maxf(life * 3.0, 0.4)
 	_emit_spr(p, t, life, col, i, s0, s1, kind, vel, drag, spin, acc, px)
@@ -959,7 +954,8 @@ func sprx(px: float, p: Vector3, t: float, life: float, col: Color, i: float, s0
 # `wpx`, `lpx` (F3 round 2): this streak's own minimum width and length on screen (pixels at 1080 lines; 0: the kind's).
 func flight_streak(p: Vector3, t: float, life: float, col: Color, i: float, length: float, w: float, kind: int, vel: Vector3,
 		drag := 0.0, acc := 0.0, wpx := 0.0, lpx := 0.0) -> void:
-	var pool: POOLS.Pool = pools["null"] if kind == StreakKind.NULL_SLUG else pools["stk"]
+	assert(kind not in [1, 7, SPARK_KIND], "Sparks must use fx.spark")
+	var pool: POOLS.Pool = pools["null"] if kind == 5 else pools["stk"]
 	pool.emit(POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(vel.x, vel.y, vel.z, life),
 		Vector4(col.r, col.g, col.b, i), Vector4(length, w * unit, drag, kind), Vector4(0.0, acc, wpx, lpx)))
 
@@ -1068,7 +1064,8 @@ func ring(p: Vector3, n: Vector3, t: float, life: float, col: Color, i: float, s
 func rib(p: Vector3, dir: Vector3, length: float, t: float, life: float, col: Color, i: float, w0: float, w1: float, kind: int) -> void:
 	if rib_log != null:
 		rib_log.append([t, col])
-	var pool: POOLS.Pool = pools["arc"] if kind == RibbonKind.ECLIPSE_ARC else pools["rib"]
+	var pool_key := "arc" if kind == 10 else ("nlance" if kind == SH.RIB_NULL_LANCE else "rib")
+	var pool: POOLS.Pool = pools[pool_key]
 	pool.emit(POOLS.pack(Vector4(p.x, p.y, p.z, kind), Vector4(dir.x, dir.y, dir.z, length),
 		Vector4(col.r, col.g, col.b, i), Vector4(w0 * unit, w1 * unit, rng.randf(), 0.0), Vector4(t, life, 0.0, 0.0)))
 
@@ -2423,24 +2420,20 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	var at = cam.global_transform * Vector3(0, 0, -30.0 * unit)
 	var T = now
 	var c = Color(1, 0.6, 0.3)
-	for k in [SpriteKind.FLASH, SpriteKind.FLAME, SpriteKind.FIREBALL_CORE, SpriteKind.SMOKE, SpriteKind.ENGINE_CORE,
-			SpriteKind.SQUIB, SpriteKind.VENT_GAS, SpriteKind.SOOT, SpriteKind.SPUTTER_CORE, SpriteKind.BEAM_CHARGE,
-			SpriteKind.BEAM_IMPACT, SpriteKind.PLASMA_BOLT, SpriteKind.BIO_GLOB, SpriteKind.PRISM_GLINT,
-			SpriteKind.STAR_BALL, SpriteKind.SOFT_LIFT, SpriteKind.EMBER, SpriteKind.ACID_FUME, SpriteKind.HEAT_GLOW,
-			SpriteKind.COIL_GLOW, SpriteKind.CRAFT]:
+	for k in [0, 1, 2, 3, 4, 5, 7, 8, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]:
 		spr(at + rdir(), T, 0.5, c, 0.02, 0.5, 0.5, k)
-	for k in [StreakKind.SHELL, StreakKind.SPARK, StreakKind.FLAME_TONGUE, StreakKind.LAS_DART, StreakKind.NULL_SLUG,
-			StreakKind.BIO_DROPLET, StreakKind.MOLTEN_DRIP]:
-		stk(at, T, 0.5, c, 0.02, 1.0, 0.1, k, Vector3(1, 0, 0))
-	for k in [RingKind.SMOKE, RingKind.SHOCKWAVE, RingKind.SOFT_POP, RingKind.THIN_PALE, RingKind.HEX_CELL]:
+	for k in [0, 3, 4, 5, 6, WEAP.BOLT_SHELL, WEAP.BOLT_ENERGY, WEAP.BOLT_CRYSTAL, WEAP.BOLT_SCRAP]:
+		flight_streak(at, T, 0.5, c, 0.02, 1.0, 0.1, k, Vector3(1, 0, 0))
+	spark(at, T, 0.5, "voidsworn", 0.02, 0.06, 0.1, Vector3.RIGHT)
+	spark(at, T, 0.5, "ithar", 0.02, 0.06, 0.1, Vector3.RIGHT)
+	for k in [0, 1, 2, 3, 4, SH.RING_HARMONIC]:
 		ring(at, Vector3.UP, T, 0.5, c, 0.02, 0.5, 1.0, k)
-	for k in [RibbonKind.PLUME, RibbonKind.TRAIL, RibbonKind.LANCE, RibbonKind.SPUTTER_PLUME, RibbonKind.ION,
-			RibbonKind.DOOM_LIGHTNING, RibbonKind.PULSAR, RibbonKind.NEEDLE, RibbonKind.TENDRIL, RibbonKind.ECLIPSE_ARC]:
+	for k in [0, 1, 2, 3, 5, 6, 7, 8, 9, 10, SH.RIB_NULL_LANCE]:
 		rib(at, Vector3(1, 0, 0), 2.0, T, 0.5, c, 0.02, 0.2, 0.2, k)
 	shd(at, T, 0.5, Vector3.ZERO, 0.2, 1.0)
 	_warm_fragment_finish(at, T, c)
-	dst(at, T, 0.5, 0.5, 1.0, DistortKind.RING, 0.1)
-	dst(at, T, 0.5, 0.5, 1.0, DistortKind.HAZE, 0.1)
+	dst(at, T, 0.5, 0.5, 1.0, 0, 0.1)
+	dst(at, T, 0.5, 0.5, 1.0, 1, 0.1)
 	if warmup_batch > 0:   # issue 1434: the sliced load spreads the warm-up's setup
 		await get_tree().process_frame
 		if _parked(): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
