@@ -216,8 +216,14 @@ func _run() -> void:
 		print("LOOK_BENCH_PROPS_FAILED %d" % prop_failures.size())
 		get_tree().quit(4)
 		return
-	if not MM_TRIAL.has_missing:
-		print("LOOK_BENCH_DONE")
+	if MM_TRIAL.has_missing:
+		await _shutdown(1)
+		return
+	print("LOOK_BENCH_DONE")
+	await _shutdown(0)
+
+
+func _shutdown(code: int) -> void:
 	# a clean exit: drop the static caches and the effects' GPU resources while the rendering server is alive (the
 	# first PC run ended with an access violation after its last line)
 	_clear()
@@ -227,7 +233,7 @@ func _run() -> void:
 	FX.clear_static()
 	SV.clear_static()
 	await get_tree().process_frame
-	get_tree().quit(1 if MM_TRIAL.has_missing else 0)
+	get_tree().quit(code)
 
 
 func _pipelines() -> int:

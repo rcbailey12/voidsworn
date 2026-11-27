@@ -19,17 +19,36 @@ func _check_tile(tile: Texture2D, path: String) -> void:
 		printerr("MM_TRIAL CHECK FAIL: expected " + path)
 
 
-func _run() -> void:
-	OS.set_environment("VS_MM_TRIAL", "1")
-	LOOK.v2_force = 1
+func _check_ships(dir: String) -> void:
 	for faction in LOOK.DETAIL_FACTIONS:
 		var material := LOOK.hull(StandardMaterial3D.new(), faction) as BaseMaterial3D
-		var prefix: String = LOOK.MM_DETAIL_DIR + faction
+		var prefix: String = dir + faction
 		_check_tile(material.detail_albedo, prefix + "_grain.png")
 		_check_tile(material.detail_normal, prefix + "_n.png")
+
+
+func _check_planets(trial: bool) -> void:
 	for kind in PLANET.MM_DETAIL_TILES:
+		var tile := PLANET.trial_detail_tile(kind)
 		var path := "res://world/detail/mm_trial/%s.png" % PLANET.MM_DETAIL_TILES[kind]
-		_check_tile(PLANET.trial_detail_tile(kind), path)
+		if trial:
+			_check_tile(tile, path)
+		elif tile != null:
+			failures += 1
+			printerr("MM_TRIAL CHECK FAIL: loaded while off: " + path)
+
+
+func _run() -> void:
+	LOOK.v2_force = 1
+	OS.unset_environment("VS_MM_TRIAL")
+	_check_ships(LOOK.DETAIL_DIR)
+	_check_planets(false)
+	OS.set_environment("VS_MM_TRIAL", "1")
+	_check_ships(LOOK.MM_DETAIL_DIR)
+	_check_planets(true)
+	OS.set_environment("VS_MM_TRIAL", "0")
+	_check_ships(LOOK.DETAIL_DIR)
+	_check_planets(false)
 	if failures == 0:
 		print("MM_TRIAL CHECK PASS")
 	quit(0 if failures == 0 else 1)

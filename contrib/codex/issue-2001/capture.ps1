@@ -25,7 +25,7 @@ if ($Plan) {
 
 $pc = Join-Path $env:USERPROFILE 'Downloads\voidsworn_test'
 $repo = (Resolve-Path (Join-Path $PSScriptRoot '..\..\..')).Path
-if ($repo -match '[\\/]board_[cd][\\/]') { throw 'Use a GPU lane checkout for the comparison.' }
+if ($repo -match '[\\/]board_[c-f][\\/]') { throw 'Use a GPU lane checkout for the comparison.' }
 if ((Get-Content -LiteralPath (Join-Path $pc 'gpu_go.txt') -TotalCount 1) -notmatch '^GPU cleared(?:\s*:.*)?$') {
     throw 'gpu_go.txt must say GPU cleared.'
 }
@@ -49,7 +49,7 @@ function Get-CleanCommit {
     return $revision
 }
 
-function Invoke-GodotStep($name, $seconds, [string[]]$options, $marker, [string[]]$trialLoads = @()) {
+function Invoke-GodotStep($name, $seconds, [string[]]$options, $marker, [string[]]$trialLoads = @(), [switch]$AllowBandMiss) {
     $log = Join-Path $work "$name.log"
     $env:TMO_STEP = "issue 2001 $name"
     # Windows PowerShell treats native stderr redirected to a file as an error record.
@@ -58,8 +58,11 @@ function Invoke-GodotStep($name, $seconds, [string[]]$options, $marker, [string[
     $code = $LASTEXITCODE
     $ErrorActionPreference = 'Stop'
     $output = Get-Content -LiteralPath $log -Raw
-    if ($code -ne 0 -or $output -notmatch $marker -or
-            $output -match 'SCRIPT ERROR|SHADER ERROR|LOOK_BENCH placeholder hull|LOOK_BENCH CODE MISMATCH|Error importing|MM_TRIAL MISSING') {
+    $bandMiss = $AllowBandMiss -and $code -eq 5 -and
+        $output -cmatch '(?m)^planet v2 shots: done in \d+ s\r?$' -and
+        $output -cmatch '(?m)^planet v2 shots: band 2 MISS: .+\r?$'
+    if ((-not $bandMiss -and ($code -ne 0 -or $output -notmatch $marker)) -or
+            $output -match 'SCRIPT ERROR|SHADER ERROR|LOOK_BENCH placeholder hull|LOOK_BENCH CODE MISMATCH|Error importing|MM_TRIAL MISSING|planet v2 shots: FAILED to save') {
         throw "$name failed. See $log"
     }
     if ($env:VS_MM_TRIAL -eq '1') {
@@ -69,6 +72,7 @@ function Invoke-GodotStep($name, $seconds, [string[]]$options, $marker, [string[
             }
         }
     }
+    if ($bandMiss) { return $true }
 }
 
 function Confirm-Picture($path) {
@@ -106,6 +110,8 @@ $planets = 'terran', 'volcanic'
 $planetTrialLoads = foreach ($planet in $planets) { "$planet res://world/detail/mm_trial/$planet.png" }
 
 $pictures = @()
+$bandSummary = @("Material Maker comparison at $commit")
+$failedGrade = $false
 foreach ($side in $trialModes.Keys) {
     $env:VS_MM_TRIAL = $trialModes[$side]
     $dir = Join-Path $work $side
@@ -141,10 +147,11 @@ foreach ($side in $trialModes.Keys) {
         '(?m)^planet v2 shots: band 2 PASS\r?$'
     }
     $planetStep = "planets-$side"
-    Invoke-GodotStep $planetStep 1200 (Get-PlanetCaptureOptions $dir $side) $planetMarker $planetTrialLoads
-    Write-Host "Planet band 2 summary ($side)"
-    Select-String -LiteralPath (Join-Path $work "$planetStep.log") -Pattern '^planet v2 shots: band(2 | 2 (PASS|MISS)\b)' |
-        ForEach-Object { Write-Host $_.Line }
+    $failedGrade = Invoke-GodotStep $planetStep 1200 (Get-PlanetCaptureOptions $dir $side) $planetMarker $planetTrialLoads -AllowBandMiss:($side -eq 'after')
+    $summary = @("Planet band 2 summary ($side)") + @(Select-String -LiteralPath (Join-Path $work "$planetStep.log") `
+        -Pattern '^planet v2 shots: band(2 | 2 (PASS|MISS)\b)' | ForEach-Object { $_.Line })
+    $summary | ForEach-Object { Write-Host $_ }
+    $bandSummary += $summary
     foreach ($planet in $planets) {
         foreach ($camera in 'c170', 'c26') {
             $pictures += Join-Path $dir ('{0}_{1}_{2}.png' -f $planet, $camera, $side)
@@ -153,15 +160,21 @@ foreach ($side in $trialModes.Keys) {
 }
 
 if ((Get-CleanCommit) -ne $commit) { throw 'The checkout changed during the comparison.' }
+$destinationDir = if ($failedGrade) { Join-Path $Shots 'failed-band-2' } else { $Shots }
 foreach ($picture in $pictures) {
     Confirm-Picture $picture
-    $destination = Join-Path $Shots (Split-Path $picture -Leaf)
+    $destination = Join-Path $destinationDir (Split-Path $picture -Leaf)
     if ((Test-Path -LiteralPath $destination) -or (Test-Path -LiteralPath "$destination.provenance.json")) {
-        throw "Review files already exist in $Shots. Pass a fresh output directory to capture.bat."
+        throw "Review files already exist in $destinationDir. Pass a fresh output directory to capture.bat."
     }
 }
-New-Item -ItemType Directory -Path $Shots -Force | Out-Null
+New-Item -ItemType Directory -Path $destinationDir -Force | Out-Null
 foreach ($picture in $pictures) {
-    Copy-Item -LiteralPath $picture,"$picture.provenance.json" -Destination $Shots
+    Copy-Item -LiteralPath $picture,"$picture.provenance.json" -Destination $destinationDir
+}
+if ($failedGrade) {
+    (@('FAILED: diagnostic evidence only') + $bandSummary) |
+        Set-Content -LiteralPath (Join-Path $destinationDir 'band-summary.txt') -Encoding Ascii
+    throw "Trial band 2 failed. $($pictures.Count) verified diagnostic pictures and the band summary are in $destinationDir."
 }
 Write-Host "PASS: $($pictures.Count) stamped comparisons in $Shots"

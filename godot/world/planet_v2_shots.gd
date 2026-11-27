@@ -205,6 +205,9 @@ func _run() -> void:
 		print("planet v2 shots: band 2 PASS")
 	else:
 		print("planet v2 shots: band 2 MISS: ", ", ".join(band_misses))
+		if mm_trial and tag == "after":
+			quit(5)   # a completed trial with a failed grade, for the capture launcher's diagnostics
+			return
 	quit(0 if band_misses.is_empty() or tag == "before" else 1)
 
 func _board(k: int, new_board: bool) -> bool:
@@ -284,7 +287,7 @@ func _board(k: int, new_board: bool) -> bool:
 		await _time_frames("board_%d_c170" % k)
 	if mm_trial:
 		# At the stock limb distance the full-size bake's fine detail is already faded out.
-		var direction := _trial_ground_direction(material)
+		var direction := _trial_ground_direction(material, k)
 		var focus := mi.position + direction * (rad - 8.0)
 		cam.position = focus + direction * 26.0
 		cam.look_at(focus, Vector3.UP)
@@ -299,7 +302,7 @@ func _board(k: int, new_board: bool) -> bool:
 
 
 # Use the baked sea and cloud masks to frame clear, lit ground on the same face in both passes.
-func _trial_ground_direction(material: ShaderMaterial) -> Vector3:
+func _trial_ground_direction(material: ShaderMaterial, kind: int) -> Vector3:
 	var albedo := (material.get_shader_parameter("tex_a") as Texture2D).get_image()
 	var weather := (material.get_shader_parameter("tex_b") as Texture2D).get_image()
 	var tilt := float(material.get_shader_parameter("tilt"))
@@ -309,15 +312,22 @@ func _trial_ground_direction(material: ShaderMaterial) -> Vector3:
 	var up := side.cross(sun)
 	var best := sun
 	var best_score := INF
-	for y in range(-2, 3):
-		for x in range(-2, 3):
+	# Side light shows Terran relief without filling the close view with the high-sun patch that missed on both legs.
+	# Keep Volcanic's proven seed-5 framing. Pick from the same baked masks in both legs, never from rendered brightness.
+	var terran: bool = PL.MM_DETAIL_TILES[kind] == "terran"
+	var extent := 4 if terran else 2
+	for y in range(-extent, extent + 1):
+		for x in range(-extent, extent + 1):
 			var n := (sun + (side * x + up * y) * 0.26).normalized()
+			var sun_incidence := sun.dot(n)
+			if terran and sun_incidence > 0.70:
+				continue
 			var tipped := n.rotated(Vector3.RIGHT, tilt)
 			var d := tipped.rotated(Vector3.UP, turn)
 			var u := fposmod(atan2(d.x, -d.z) / TAU + 0.5, 1.0)
 			var v := acos(clampf(d.y, -1.0, 1.0)) / PI
 			var px := Vector2i(int(u * albedo.get_width()), mini(int(v * albedo.get_height()), albedo.get_height() - 1))
-			var score := albedo.get_pixelv(px).a * 3.0 + weather.get_pixelv(px).r + (1.0 - sun.dot(n)) * 0.3
+			var score := albedo.get_pixelv(px).a * 3.0 + weather.get_pixelv(px).r + (1.0 - sun_incidence) * 0.3
 			if score < best_score:
 				best_score = score
 				best = n
