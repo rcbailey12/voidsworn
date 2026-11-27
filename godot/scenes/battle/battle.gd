@@ -589,6 +589,7 @@ var _build_gen := 0
 func stop_build() -> void:
 	_build_gen += 1
 	_drop_staged_ship()
+	_drop_warm_arc()
 	stage.stop()
 	if not _vp_saved.is_empty():
 		var vp := get_viewport()
@@ -771,6 +772,7 @@ func _begin(a) -> void:
 	_threat_one_ver = -1
 	api = a
 	_build_gen += 1
+	_drop_warm_arc()
 	var gen := _build_gen
 	load_phase = "start"
 	warming = true
@@ -1123,12 +1125,20 @@ var arrival_warm = null   # issue 1289: the hidden copies of the hulls that arri
 var load_phase := ""
 var stage := StageIn.new()   # issue 1434 (LOAD22): holds each new mesh's first draw until the load gives it back
 var _staged_ship: ShipView   # title only: not owned by the tree until its final surface materials are warm
+var _warm_arc: MeshInstance3D
 
 
 func _drop_staged_ship() -> void:
 	if is_instance_valid(_staged_ship):
 		_staged_ship.free()
 	_staged_ship = null
+
+
+func _drop_warm_arc() -> void:
+	if is_instance_valid(_warm_arc):
+		_warm_arc.hide()
+		_warm_arc.queue_free()
+	_warm_arc = null
 
 
 # --sliced-load: the windowed path in a headless check (main/test/showcase_quiet_check.gd)
@@ -1195,10 +1205,20 @@ func _warmup(gen: int) -> void:
 			if _left(gen): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
 		if arrival_warm != null:
 			arrival_warm.park()
+	# The firing-arc outline first drew at the round 2 handoff in KILLFT (issue 1843).
+	# Use the camera's two held frames under the cover to draw its exact material and mesh format.
+	if not title_backdrop:
+		_warm_arc = _make_warm_fan_edge()
+		add_child(_warm_arc)
 	load_phase = "camera_back"
 	for i in 2:
 		await get_tree().process_frame
-		if _left(gen): return   # issues 1434 and 1519: a left battle stops here (parked in the tree, or out of it)
+		if _left(gen):
+			# A new build, stop_build(), or _exit_tree() already dropped this arc on a generation change.
+			if gen == _build_gen:
+				_drop_warm_arc()
+			return
+	_drop_warm_arc()
 	cam.a = keep["a"]
 	cam.b = keep["b"]
 	cam.r = keep["r"]
@@ -1880,6 +1900,7 @@ static var last_exit_id := 0   # which battle the two above belong to (the bench
 func _exit_tree() -> void:
 	var t_exit := Time.get_ticks_usec()
 	_drop_staged_ship()
+	_drop_warm_arc()
 	stage.stop()
 	_build_gen += 1   # issue 1518: a build still awaiting stops at its next step (quit or leave mid-load)
 	last_exit_mid_build = not _inst_tasks.is_empty() or _preload.values().has(null)
@@ -4251,7 +4272,18 @@ func _attack_move(t_id: String):
 var fan_root: Node3D
 var fan_for := ""
 var fan_key := ""
+var _fan_edge_mat: StandardMaterial3D   # vertex colours vary by arc, and the material keeps the warm pipeline alive
 const ARC_SPAN := {"F": [-60.5, 60.5], "S": [29.5, 150.5], "P": [-150.5, -29.5]}
+
+
+func _make_warm_fan_edge() -> MeshInstance3D:
+	var radius: float = board.HW * 4.0 + 0.5
+	var span: Array = ARC_SPAN["F"]
+	var edge := _fan_edge(span[0], span[1], radius, Color.WHITE)
+	edge.name = "WarmFiringArc"
+	edge.scale = Vector3.ONE / radius
+	edge.position = to_local(cam.to_global(Vector3(0.0, 0.0, -30.0)))
+	return edge
 
 
 func _fans(id: String, host: Node3D = null) -> void:
@@ -4438,13 +4470,14 @@ func _fan_edge(a0: float, a1: float, rad: float, col: Color, w := 0.55, alpha :=
 				st.add_vertex(v[0])
 	var mi := MeshInstance3D.new()
 	mi.mesh = st.commit()
-	var m := StandardMaterial3D.new()
-	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	m.vertex_color_use_as_albedo = true
-	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	m.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-	m.cull_mode = BaseMaterial3D.CULL_DISABLED
-	mi.material_override = m
+	if _fan_edge_mat == null:
+		_fan_edge_mat = StandardMaterial3D.new()
+		_fan_edge_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		_fan_edge_mat.vertex_color_use_as_albedo = true
+		_fan_edge_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		_fan_edge_mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+		_fan_edge_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mi.material_override = _fan_edge_mat
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	return mi
 

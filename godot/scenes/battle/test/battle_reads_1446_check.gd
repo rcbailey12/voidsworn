@@ -1,6 +1,7 @@
 extends SceneTree
 # Issue 1446 (Neon player audit Nov 21, findings 2 and 3): three battle reads the board and the sheet never showed.
 # Test battle s1 in the real battle scene, at the player's turn:
+#   ARC-0:   the load cover draws one firing arc outline in view, using the same material and format as the live arcs.
 #   ROUTE-1: an enemy whose shield power the rules routed (R246: a struck side catches more and drains the pool 30%
 #            faster) shows it: the view exports route and cov, the ship tip and the attack tip say so, the KEEL readout
 #            names the routed side, and that ship's bubble stays up with a rim pulse on that side only;
@@ -19,6 +20,8 @@ var b
 var fails := 0
 var shots := ""
 var label: Label
+var warm_arc: WeakRef
+var warm_arc_key: Array = []
 
 
 func _init() -> void:
@@ -29,6 +32,22 @@ func _check(ok: bool, what: String) -> void:
 	print(("PASS " if ok else "FAIL ") + what)
 	if not ok:
 		fails += 1
+
+
+func _arc_draw_key(arc: MeshInstance3D) -> Array:
+	var mesh := arc.mesh as ArrayMesh
+	return [arc.material_override.get_instance_id(), mesh.surface_get_format(0),
+		mesh.surface_get_primitive_type(0), arc.cast_shadow]
+
+
+func _note_warm_arc(node: Node) -> void:
+	if node.get_parent() != b or node.name != &"WarmFiringArc":
+		return
+	var arc := node as MeshInstance3D
+	warm_arc = weakref(arc)
+	warm_arc_key = _arc_draw_key(arc)
+	_check(b.warming and arc.is_visible_in_tree() and b.cam.is_position_in_frustum(arc.global_position),
+		"ARC-0: the warm outline is in the camera's view under the load cover")
 
 
 func _idle() -> bool:
@@ -47,6 +66,24 @@ func _wait_idle(ms: int) -> void:
 func _frames(n: int) -> void:
 	for i in n:
 		await process_frame
+
+
+func _check_arc_cancel(detach: bool) -> void:
+	b._warmup(b._build_gen)
+	var deadline := Time.get_ticks_msec() + 10000
+	while b.load_phase != "camera_back" and Time.get_ticks_msec() < deadline:
+		await process_frame
+	var arc := b.get_node_or_null("WarmFiringArc") as MeshInstance3D
+	var path := "tree exit" if detach else "stop_build while still in the tree"
+	var found := arc != null
+	_check(found, "ARC-0: cancel during the covered draw for " + path)
+	if detach:
+		root.remove_child(b)
+	else:
+		b.stop_build()
+	await _frames(3)
+	_check(found and not is_instance_valid(arc) and b.warming and b.load_phase == "camera_back",
+		"ARC-0: %s frees the outline and never resumes the old warm-up" % path)
 
 
 # the rules moved under the scene: bump the version, take the new view and redraw
@@ -86,12 +123,15 @@ func _run() -> void:
 	root.add_child(b)
 	b.args["scenario"] = "s1"
 	b.args["seed"] = 1001
+	node_added.connect(_note_warm_arc)
 	b.start_default()
 	await _wait_idle(120000)
+	node_added.disconnect(_note_warm_arc)
 	if not _idle():
 		_check(false, "the battle reached the player's turn")
 		quit(1)
 		return
+	_check(warm_arc != null and warm_arc.get_ref() == null, "ARC-0: the warm outline is removed before play")
 	var layer := CanvasLayer.new()
 	layer.layer = 60
 	label = Label.new()
@@ -193,6 +233,8 @@ func _run() -> void:
 			want["%s%d" % [str(w["arc"]), int(float(w["range"]) * b.board.HW + 0.5)]] = true
 	var n_arcs: int = b.efan_root.get_child_count() if b.efan_root != null and is_instance_valid(b.efan_root) else 0
 	_check(n_arcs > 0 and n_arcs == want.size() and b.efan_root.get_parent() == b.views[foe], "ARC-1: the inspected enemy draws one quiet fan per gun arc and range under it (%d of %d)" % [n_arcs, want.size()])
+	_check(n_arcs > 0 and warm_arc_key == _arc_draw_key(b.efan_root.get_child(0)),
+		"ARC-0: the warm outline and the live arc share the material, vertex format and draw flags")
 	var t0 := Time.get_ticks_msec()
 	while not b._one_current() and Time.get_ticks_msec() - t0 < 30000:
 		b._overlay()
@@ -229,5 +271,11 @@ func _run() -> void:
 	_check(b.board.arrival_edge == null, "REINF-1: no strip before the warning round")
 	R.B["event"] = null
 	_resync()
+	if DisplayServer.get_name() == "headless":
+		await _check_arc_cancel(false)
+		# Wait for the next generation's covered draw, not the cancelled one's phase.
+		b.load_phase = ""
+		await _check_arc_cancel(true)
+		b.free()
 	print("BATTLE_READS_1446 fails=%d" % fails)
 	quit(1 if fails else 0)
