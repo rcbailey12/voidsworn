@@ -1,0 +1,56 @@
+# Leg: Qwen (Qwen4-Max, the gate as of Ryan's Nov 25, 2026 ruling), issue 2156
+
+Gate record: New chat on chat.qwen.ai. Gate check one PASSED: the selector offered Qwen4-Max, it was selected, and the header showed Qwen4-Max before pasting. Gate check two PASSED: the header still showed Qwen4-Max after generation. Brief pasted as a single plain-text copy, no file chip. Single response (not comparison mode). Chat: "Godot Space Sky Art Review", https://chat.qwen.ai/c/36153a09-6018-464c-86aa-90b200e212b3
+
+Response verbatim:
+
+Q1. Findings, most important first
+godot/world/world_sky.gd, SKY shader star_layer line. Quote: "roughly 6,800 to 11,600 inside one 45-degree battle frame". OBSERVED. This is 17 to 29 times the 400-star target, and the brightness line "gain * (0.15 + 2.6 * m)" plus blob size "sig = px * (0.65 + 0.9 * m)" mean every kept star is a soft, fairly bright smudge. At battle camera height the void stops being Band 1 negative space and becomes wall-to-wall static, so hex lines, hull silhouettes, and weapon fire lose their clean dark backing. Fix: land the 1766 field, about 400 pinpoints with a zero-floor steep curve (for example pow(m, 3.0)) and subpixel cores, a handful of hero stars only.
+world_sky.gd star transmission and world.gd default. Quote: "15 percent of the starfield punches through even opaque dust". OBSERVED. Dust lanes currently read as grey gauze with stars glittering through them, which destroys the one structure that makes a galactic band look real: opaque black rifts. Fix: default star_floor to 0.0 in both the shader and world.gd as 1766 scopes, keep VS_STAR_FLOOR only for tuning sheets.
+godot/fx/faction_looks.json chorus and deathless palettes versus RULEBOOK 10.11. Quote: "No mustard fog and no purple Eclipse nebula". OBSERVED. Chorus mid [0.55, 0.38, 0.12] with bright [0.8, 0.9, 0.35] is mustard fog, and deathless mid [0.34, 0.14, 0.52] is exactly the purple Eclipse nebula the rule bans, so two of six faction skies break the governing look even though faction-coloured gas is otherwise allowed. Fix: re-anchor chorus to ember amber and deathless to near-black rose with its existing gold bright as corona accent, keeping faction identity in lamp stars and accents.
+world_sky.gd BAKE_BODY output encoding. Quote: "gamma-encoded into an 8-bit image". OBSERVED. The pack states dark gradients band at 8-bit, and a half-step dither cannot hide contouring across the slow, mostly Band 1 gradients that will dominate once the star snow is removed; after foreground V2 the eye has clean hull gradients to compare against. Fix: ship 1502 with 1766, 16-bit half float, linear, 2048x1024, no mipmaps, and re-check the dither term.
+world_sky.gd galaxy_band return. Quote: "col * lum * band * 0.06". OBSERVED. The whole band tops out near 0.06, the bottom of Band 2, so the sky's one big landmark is a whisper behind now-brighter V2 foreground; also the rift term only dims band emission, and whether bake dust lanes actually black out stars along the rift is not enough info. Fix: raise the core toward 0.10 to 0.18 linear with a steep falloff and a low skirt, and verify rift-to-alpha alignment.
+Fight-stop moods plus bake saturation and gain. Quote: "boss multiplies neb by 1.6 and cover by 1.25". INFERRED. Nebula region neb 1.0 times 1.6, on top of the 1.45 saturation push and gain up to 1.4, can drive gas into the 0.04 to 0.30 hull band, so boss fights get a glowing backdrop exactly when HDR weapons need black behind them. Fix: clamp post-mood gas luminance into Band 2 (cap about 0.25) and express boss intensity through coverage and contrast, not raw gain.
+Baked far galaxies versus the 1502 downsize. Quote: "sizes 0.004 to 0.012 radians". INFERRED. At 2048 texels around the equator one texel is about 0.176 degrees, so the smallest galaxy (about 0.23 degrees) spans roughly 1.3 texels and spiral-arm shading becomes mush or pops; even at 4096 it is marginal. Fix: move the five galaxies into the frame shader like the lamp stars, or keep a high-resolution pass for them, before dropping the gas bake to 2048.
+world_sky.gd setting() complement push. Quote: "c2 = c2.lerp(Vector3(c1.z, c1.x * 0.8, c1.y) * 0.6, 0.55)". INFERRED. For blue factions whose c1 and c2 sit close in hue (hegemony, ithar) the channel swap drags the shadow colour toward magenta-purple, manufacturing off-palette gas that muddies faction read and flirts with the no-purple rule. Fix: replace the swap with a fixed cool shadow tone or a hue rotation inside a sanctioned ramp.
+world_sky.gd band_n seeding. Quote: "The band plane's tilt (band_n) is seeded per setting". INFERRED. A fully random tilt can lay the band parallel to the hex rows or run it vertically through board centre, where it competes with the grid instead of framing it. Fix: constrain tilt to a consistent diagonal language (roughly 20 to 40 degrees) with the seed choosing variation inside that range.
+Dead Star board painted panorama. Quote: "a painted 8K panorama under the gas". INFERRED. A painted 8K asset is a separate authoring path from the ray-marched bake, so it risks a style and value-band mismatch with V2, and its bit depth and colour space are not enough info; the black hole itself is the right single HDR hero. Fix: regrade the panorama through the same linear palette and band caps, keep gas dim around the hole, and confirm its encoding matches the 1502 pipeline.
+Q2. Is the 1766 direction still right
+Yes, and the foreground V2 upgrades make it more right, not less. The foreground got denser, brighter, and more detailed, so the sky must subtract: about 400 pinpoints, a steep curve, star_floor 0.0, a stronger band with true dark rifts, and the Dead Star seam fix all still serve 10.11 and the value bands. The temperature star colours, the bright feature parked below the board, the six lamp stars, and the 3D parallax dust are grounded instincts worth keeping.
+Adjustments I would make:
+Sequencing: land 1502 before or in the same change as the star retune. Removing star snow makes dark gradients the main content, so banding gets more visible, not less. Move the galaxies out of the bake before the 2048 downsize.
+Values: treat 400 as a frame average scaled by the region stars column (deep about 260, nebula about 360), keep only 5 to 12 hero stars gleaming, core sigma at or below about 0.6 px. Band core 0.10 to 0.18, skirt under 0.03, tilt constrained to a diagonal. Boss gas capped at about 0.25.
+Scope: add the chorus and deathless palette fixes, the complement-swap replacement, and the mood luminance cap to 1766 or a fast follow; the pack does not show these are in scope. After the star cut, 3D dust becomes the main particulate, so re-check the salvage 2.6x dust multiplier (up to about 6,760 specks in belts) so foreground dust does not recreate star snow; speck brightness is not enough info.
+Disagreements:
+The 1502 downsize as a blanket change is wrong for baked galaxies and any high-frequency detail; split the passes.
+Do not read the 10.9 rose rule as repainting all sky gas rose; the pack explicitly says sky gas is faction-coloured. The fix is banning mustard and purple and capping luminance, not one hue.
+Do not raise the star count for cinematic feel. For a tactical board, 400 is the cinematic choice; density is what television space gets wrong.
+The 0.0 floor must land in world.gd too, not just the shader default, or the override path keeps reintroducing 0.15.
+Q3. Top 5 upgrades, ranked
+The 1766 star field itself: about 400 steep-curve pinpoints, zero floor, opaque rifts. Player sees the black void return, hex lines and hulls pop, a few hero stars gleam, and dust lanes cut true black through the band.
+The 16-bit linear bake shipped with it, galaxies moved to the frame shader. Player sees smooth dark gradients with no contour rings, and small crisp galaxies instead of smudges.
+The stronger band, tilt-constrained and Band 2 capped, rifts aligned to star blackout. Player sees one readable Milky Way landmark per sector in a consistent diagonal composition, with a dark rift slicing it.
+Palette and luminance governance: chorus ember, deathless black-rose and gold, no channel swap, boss gas clamp. Player sees every faction sky feel like the same universe, and boss fights keep dark space behind weapon fire.
+Depth and hero pass: tune lamp-star halos and the below-board feature, keep dust as the parallax cue, regrade the Dead Star panorama into the pipeline. Player sees gentle depth on camera moves, one motivated glow below the board edge, and a Dead Star board that matches the rest of the game.
+Q4. References
+2001: A Space Odyssey: take the courage of near-black negative space with pinpoint stars and no wallpaper.
+The Expanse: take motivated light and empty void, stars sparse enough that ships own the frame.
+Interstellar: take the single HDR hero landmark (the black hole) against disciplined black, exactly the Dead Star model.
+Elite Dangerous: take the Milky Way band with dark rifts as the one big landmark and region-varying density, not its full star count.
+Homeworld Remastered: take the painterly backdrop kept dim behind a tactical board, strong value separation between stage and sky.
+EVE Online: take faction-coloured gas as region identity, but cap its brightness so hulls read; treat its brightest nebulae as the cautionary ceiling.
+Nebulous: Fleet Command: take the hard-edged tactical readability, dark space so sensors, grid, and fire are the bright things.
+Strongest objection to the chair's likely synthesis
+The likely synthesis is "1766 direction confirmed, land it with 1502." My objection: confirming the direction is not confirming the scope. The pack never shows that 1766's palette fixes touch the faction gas palettes, the complement swap, or the boss gain stack, so even at 400 stars the chorus and deathless skies and boss moods can still ship mustard fog, purple gas, and hull-band backdrop brightness in direct violation of 10.11 and the value bands. Unless palette and luminance governance are explicitly added, the council would be approving a star-count fix while the sky's colour and brightness pipeline keeps breaking the rules.
+Not checked:
+- The actual 1766 build diff: not enough info on new thresholds, curve shape, band values, or which palettes it fixes.
+- Any renders or captures at battle camera height: not enough info, so all player-visible claims here are inferred from code values.
+- Camera pitch, FOV, and board framing: not enough info on where the y about -0.42 feature lands relative to the board edge.
+- Alignment of bake dust-lane alpha with the galaxy_band rift: not enough info.
+- Dust speck brightness, size, and shader: not enough info on the visual weight of the salvage 2.6x multiplier.
+- Dead Star panorama bit depth, colour space, and authoring palette: not enough info.
+- Nebula texture sampling and filtering with mipmaps disabled: not enough info on shimmer risk during camera moves.
+- Foreground V2 actual rendered luminance: not enough info beyond the quoted band ranges.
+- Whether VS_STAR_FLOOR is set in any shipping or tuning configuration: not enough info.
+- How "about 400" is measured in the 1766 build, frame average versus hard cap: not enough info.
+- Performance and memory cost of the per-pixel star layers and the 16-bit bake: not enough info.
