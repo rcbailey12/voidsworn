@@ -10,7 +10,7 @@
 
     "hegemony|Frigate": {"ship": "Picket", "concept": "contrib/muse/design/class_family_hegemony_2026_11/picket_sheet.webp", "picked": true, "ruling": "R369", "job": 1412, "note": "Ryan, Nov 22 16:58 UTC: run 3 dart (PR 1707) picked, 'Agree with picket changes': keep the dart outline, flatten the speedboat keel into a space hull in the build."},
     "hegemony|Destroyer": {"ship": "Cordon", "concept": "contrib/muse/design/class_family_hegemony_2026_11/cordon_sheet.webp", "picked": true, "ruling": "R369", "job": 1412, "note": "Ryan, Nov 22 16:58 UTC: run 3 anvil (PR 1707) taken; he named only Vanguard and Picket as needing work."},
-    "hegemony|Cruiser": {"ship": "Vanguard", "concept": null, "ruling": "R369", "job": 1146, "note": "Run 3 catamaran (PR 1707) sent back, Ryan Nov 22 16:58 UTC: 'just wide open and doesn't really make sense as a cruiser class'. Muse redraws; its 1412 build waits."},
+    "hegemony|Cruiser": {"ship": "Vanguard", "concept": "docs/shots/issue-2094-codex/vanguard_sheet_e.png", "picked": true, "ruling": "issue 2094", "job": 2094, "note": "Ryan picked H9E Spineguard on Nov 26 19:03 UTC (PR 2124 concepts) with the condition that it fit the other Directorate ships. The GPU build waits on the family comparison."},
     "hegemony|Battleship": {"ship": "Dominion", "concept": "docs/ship_pipeline/build_sheets/hegemony_H10/beauty_vs_blockout.jpg", "ruling": "R256", "accepted": "Finish: Ryan, Nov 18 (R319, R320; PRs 1040, 1041, 1043)"},
     "hegemony|Super-dreadnought": {"ship": "Iron Mandate (flagship)", "concept": "contrib/muse/design/iron_mandate_2026_11/round_2/IM5.jpg", "ruling": "R256", "accepted": "Finish: Ryan, Nov 18 (R319, R320; PRs 1040, 1041, 1043)"},
 

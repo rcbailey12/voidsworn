@@ -1,0 +1,227 @@
+{
+ "code": "hegemony_H9E",
+ "sheet_version": 1,
+ "kit": "tools/blender/kits/hegemony/parts.py",
+ "routes_note": "Kit parts use the shared Directorate builders. The saddle, jacket, collar, hoops, module rings and flank strips are authored for H9E.",
+ "turret_marking": "T1 and T2 pivot at their kit rings with parented turning meshes. I1 is a fixed accelerator.",
+ "parts": [
+  {
+   "id": "I1",
+   "what": "Recessed ion accelerator",
+   "count": 1,
+   "route": "kit",
+   "kind": "ion_trench",
+   "source": "picture",
+   "inventory": [
+    "ion_trench"
+   ],
+   "turret": false
+  },
+  {
+   "id": "T1",
+   "what": "Port twin Plasma lance",
+   "count": 1,
+   "route": "kit",
+   "kind": "gun",
+   "source": "picture",
+   "inventory": [
+    "lance"
+   ],
+   "turret": true,
+   "pivot_object": "T1_turret",
+   "arc_lo": -180.0,
+   "arc_hi": 180.0
+  },
+  {
+   "id": "T2",
+   "what": "Starboard twin Plasma lance",
+   "count": 1,
+   "route": "kit",
+   "kind": "gun",
+   "source": "picture",
+   "inventory": [
+    "lance"
+   ],
+   "turret": true,
+   "pivot_object": "T2_turret",
+   "arc_lo": -180.0,
+   "arc_hi": 180.0
+  },
+  {
+   "id": "C",
+   "what": "Capacitor hoops",
+   "count": 4,
+   "route": "hand-built",
+   "kind": "band",
+   "source": "picture",
+   "inventory": [
+    "hoops"
+   ]
+  },
+  {
+   "id": "E",
+   "what": "Rectangular nozzles",
+   "count": 4,
+   "route": "kit",
+   "kind": "engine",
+   "source": "picture",
+   "inventory": [
+    "engines"
+   ]
+  },
+  {
+   "id": "A1",
+   "what": "Sensor fin",
+   "count": 1,
+   "route": "kit",
+   "kind": "antenna",
+   "source": "picture",
+   "inventory": [
+    "sensor_fin"
+   ]
+  },
+  {
+   "id": "D",
+   "what": "Flush drone doors",
+   "count": 2,
+   "route": "kit",
+   "kind": "bay",
+   "source": "picture",
+   "inventory": [
+    "drone_doors"
+   ]
+  },
+  {
+   "id": "Q",
+   "what": "Retro thrusters",
+   "count": 2,
+   "route": "kit",
+   "kind": "thruster",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "W",
+   "what": "Crew window slits",
+   "count": 4,
+   "route": "kit",
+   "kind": "slit",
+   "source": "designed",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "V",
+   "what": "Cooling louvres",
+   "count": 4,
+   "route": "kit",
+   "kind": "vent",
+   "source": "designed",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "H",
+   "what": "Access hatches",
+   "count": 2,
+   "route": "kit",
+   "kind": "hatch",
+   "source": "designed",
+   "inventory": [
+    "hatches"
+   ]
+  },
+  {
+   "id": "L",
+   "what": "Module latch rows",
+   "count": 4,
+   "route": "kit",
+   "kind": "latch",
+   "source": "designed",
+   "inventory": [
+    "latches"
+   ]
+  },
+  {
+   "id": "M",
+   "what": "Bulkhead seam bands",
+   "count": 2,
+   "route": "hand-built",
+   "kind": "band",
+   "source": "designed",
+   "inventory": [
+    "module_bands"
+   ]
+  },
+  {
+   "id": "S",
+   "what": "Flank light runs",
+   "count": 6,
+   "route": "hand-built",
+   "kind": "band",
+   "source": "picture",
+   "inventory": [
+    "blue_line"
+   ]
+  },
+  {
+   "id": "P",
+   "what": "Flush panel courses",
+   "count": 3,
+   "route": "kit",
+   "kind": "plate",
+   "source": "designed",
+   "inventory": [
+    "deck_panels",
+    "flank_panels",
+    "belly_panels"
+   ]
+  }
+ ],
+ "masses": [
+  {
+   "name": "Armoured saddle",
+   "route": "hand-built"
+  },
+  {
+   "name": "Spinal jacket",
+   "route": "hand-built"
+  },
+  {
+   "name": "Bow collar",
+   "route": "hand-built"
+  }
+ ],
+ "break_pieces": [
+  {
+   "name": "bow piece",
+   "stations": "0 to 46.2 percent",
+   "bounded_by": [
+    "B-1"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "midships piece 1",
+   "stations": "46.2 to 73.1 percent",
+   "bounded_by": [
+    "B-1",
+    "B-2"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "stern piece",
+   "stations": "73.1 to 100 percent",
+   "bounded_by": [
+    "B-2"
+   ],
+   "full_interior": true
+  }
+ ],
+ "insides": "Each module carries its own decks, frames, corridors, racks and machinery. The shared Directorate Interior Kit V2 dresses the volumes."
+}
