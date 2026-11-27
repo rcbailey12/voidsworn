@@ -25,6 +25,7 @@ headless|render/test/battle_post_fx_check.gd|-|-|issue 1779: regional Texture3D 
 headless|render/test/big_moments_check.gd|-|-|issue 2032: cut-in framing, eased return, overlay fade, and counted screen-size death effects
 headless|campaign/test/aaa_ui_data_test.gd|-|-|issue 2078: CaptainData migration, indexed faces, applied hits, killmail by value and shipyard preview equals commit
 headless|fx/test/terrain_polish_2048_check.gd|-|-|issue 2048: terrain polish for Dead Star INFALL_SHADER stretched tidal embers, terrain_scorch.gd 256px crater albedo/normal/ORM/light-blue plasma decals, and layered glinting DUST_SHADERs
+headless|render/test/mm_trial_check.gd|-|-|issue 2001: the game loaders select stock ship maps and no trial planet tiles by default, and load all six trial ship pairs and both planet tiles when opted in
 headless|campaign/test/arc_hook_test.gd|-|-|story arc hook: arcs off or empty change nothing, test cards pay, flag and end; whole seeded runs, no window
 headless|campaign/test/boon_fleet_test.gd|-|-|issues 1075 and 1147: protocol cards explain fleet fit, caps, refits and Brace eligibility without changing offers, RNG or saves
 headless|campaign/test/capstone_mastery_test.gd|-|-|capstone mastery opens at 320, 440 and 600 XP; campaign data only
@@ -91,16 +92,19 @@ headless|rules/test/effect_caps_test.gd|-|res://rules/test/effect_caps_cases.jso
 headless|rules/test/map_trial_test.gd|-|-|issues 1050 and 1160: compare every map-trial encounter with saved results and the approved fleet pin
 headless|rules/test/shield_pool_test.gd|-|res://rules/test/shield_pool_cases.json|R246 shield pool (issue 371): replay saved results for every shielded hull and for scripted hits and turns
 headless|rules/test/ion_pulse_ai_test.gd|-|-|issue 1447: when the enemy AI fires the ion pulse (real pools, after moving, log count); twin of contrib/opus/tools/ion_pulse_ai_tests.js
-headless|rules/test/balance_sim_abilities_test.gd|-|-|issue 1705: campaign, campaignrewards and boss cells field the selected player fleet and count phase and frenzy uses on a fixed seed
+headless|rules/test/balance_sim_abilities_test.gd|-|-|issue 1705: campaign, campaignrewards and boss cells field the selected player fleet and count phase and frenzy uses on a fixed seed, plus both sides for every active ability
 headless|rules/test/balance_sim_run_test.gd|-|run 2|issue 1705: two seeded full runs report completion, shop purchases and boss fights
 headless|rules/test/balance_sim_refit_test.gd|-|-|issue 1992: the Chorus sim buys and fits a refit using biomass and keeps its shop reserve
 headless|rules/test/rules_1560_test.gd|-|-|issue 1560 and R396: battle rules audit fixes (no turn or ram after firing, hits never heal, fleeing escorts stay gone, AI and forecast fixes); twin of contrib/opus/tools/rules_1560_tests.js
 headless|rules/test/boss_1885_test.gd|-|-|issue 1885: half-hull escorts flee below the rout threshold and only the boss's death wins the fight
 headless|rules/test/rules_1650_test.gd|-|-|issue 1650: the three Mastery III signatures the bot battles rarely reach (stern torpedo, double kill chain, pack bite on the prey)
+headless|rules/test/rules_2205_test.gd|-|-|issue 2205: live battle and campaign audit regressions
 headless|rules/test/rules_2204_test.gd|-|-|issue 2204: first rear hits, one-round acid aim, a lasting private wing, the escort wall, and limited reserve carrier launches
+headless|rules/test/rules_2206_test.gd|-|-|issue 2206: struck shields, fade, cap-funded elites, retired boon, deployment choices and Glasswright hull CP
 headless|rules/test/rules_1481_test.gd|-|-|issue 1481: every shield drop sends the break (storm, flare, mid section, ram, ion pulse, nova), rams use the shared spend, counter-fire, ram shockwave and reactor hits send a hit, a bad blink or nova hex is refused before it counts; twin of contrib/opus/tools/rules_1481_tests.js
 headless|rules/test/rules_1479_test.gd|-|-|issue 1479: overrunning the Nemesis flagship, a hunt target or a convoy transport destroys it (R383), a captured carrier's wings lose their carrier, and an Eclipse wreck rising next round keeps the fight open (browser twin contrib/opus/tools/rules_1479_tests.js)
 headless|rules/test/rules_1653_test.gd|-|-|issue 1653: the twelve salvage relics and four refits each do what their card says, checked on rules.gd directly
+headless|rules/test/swivel_flanks_2170_check.gd|-|-|issue 2170: Swivel Arc Mounts widen both flanks toward the bow without adding an aft band, on all six headings
 headless|rules/test/rules_1651_test.gd|-|-|issue 1651: the 24 Command riders each do what their line says, key coverage, and a swapped Command brings its own rider
 headless|rules/test/rules_1649_test.gd|-|-|issue 1649 follow-up: Fold skip and Blood frenzy end when the ship's next turn starts, and frenzy regrowth shares the Chorus feed cap
 headless|rules/test/parity_main.gd|step:Rules parity against the browser game|-|parity and saved Godot results share one batch; saved/check.js reports changed battles and whole-step time (issue 990)
@@ -111,9 +115,11 @@ headless|scenes/battle/test/undo_scene_check.gd|-|-|issue 1450: Backspace in the
 headless|scenes/battle/test/plan_commit_check.gd|-|-|issue 1589: a planned turn in the live battle scene: one click plans the move (the ghost with its outline), enemies are aimed from the ghost (a second takes the free guns), Backspace steps back one pick then the move, Esc clears, and the commit sends the move and every volley as one batch, move first
 headless|scenes/battle/test/hud_overlap_check.gd|-|-|issue 1559 items 10, 11, 12, 17, 19, 20, 21, 29: the battle HUD's parts do not cover each other or let clicks through: the log's Close clear of the tip card, the toast below the banner and inside the band between the corners, no mouse on the faded sheet during cut-ins, the tip card hidden under the end card and cut-ins, corner words take their clicks, the Controls page names Backspace and Z; a rebuild keeps the banner's size and a new toast starts at its own spot
 headless|scenes/battle/test/battle_reads_1446_check.gd|-|-|issue 1446: a routed shield side shows in the ship and attack tips, the KEEL readout and a rim pulse; an inspected enemy draws its gun arcs and its reach next turn (from the threat worker); the board marks where warned reinforcements come in
+headless|scenes/battle/test/threat_input_2170_check.gd|-|-|issue 2170: queued orders wait for safe playback, stop at handoff or rules halt, and auto-end retries
 headless|scenes/battle/test/menu_modal_check.gd|-|-|issues 1559 and 1402: the battle Esc menu is modal and fits at every UI scale; the end card keeps the keyboard, names the result and next screen, and clears the inspected ship; a restart drops the old card
 headless|scenes/battle/test/bot_round_boundary_check.gd|-|-|issue 1499 (Artoo, issue 906): the scene bot passes a ship the rules AI left idle in the same round, but never spends a ship's first move of the next round when the AI's own action ended the round
 headless|scenes/battle/test/hit_timing_check.gd|-|-|issue 1211: a [miss, miss, hit] volley lands its sound, HP drop and number on the hitting shot on the effect clock; a second-of-three hit breaks the shield there; the enemy target is ringed and named
+headless|scenes/battle/test/ship_state_plates_check.gd|-|-|issue 2079: seed 10, Battle 2 round 3 places the packed fleet's plates without overlap and suppresses crossing footprints
 headless|scenes/battle/test/brisk_camera_check.gd|-|-|issue 1871: brisk off matches the saved cut list, brisk keeps flagship beats and kill cuts, and K skips one routine camera kind until the next battle
 headless|scenes/battle/test/shield_overlap_check.gd|-|-|issue 1211: two overlapping volleys on the fitted and the egg shield, reduced flashing off and on; the clean collapse starts once, on the draining hit
 headless|scenes/battle/test/shield_handoff_check.gd|-|-|issue 1239: the clean collapse aims at the breaking shot, lays no extra ripple on its flash, finishes on a lethal volley, plays on a storm drop; every torpedo warhead lands; ripples keep their slots; fitted and egg
@@ -135,14 +141,18 @@ headless|audio/test/smoke_lifetime_check.gd|-|-|sound and debris lifetimes leave
 headless|audio/test/sound_weight_check.gd|-|-|issue 771: death bed length from the death beats, tail, sub-bass, core-flash duck, capital near-silence, heavy hit and shield tails, lance and torpedo charge, seeded death pitch, dry guns
 headless|audio/test/faction_death_check.gd|-|-|issue 1238: Chorus cruiser and Bio-Titan rupture at their class time with the kill beat and Chorus sounds only; a Glasswright breaks with a glass shatter, no steel; prints the cue timing trace
 headless|fx/test/attach_check.gd|-|-|issue 370: every attach point (authored, surface ray) lies on the hull within 0.012 of its length; stand-in slab, ring and tower here, every ship file present on the PC; skips counted
+headless|fx/test/fixed_t_bearing_2170_check.gd|-|-|issue 2170: a fixed arc-T muzzle bears ahead but is rejected astern
 headless|fx/test/damage_surface_check.gd|-|-|R80 damage contracts on box ships: stages, emitters and their caps, marks
 headless|fx/test/damage_worker_flicker_2199_check.gd|-|-|issue 2199: death precomputes from the last drawn hull during a real rebuild, and flicker makes no per-material writes
 headless|fx/test/damage_plume_check.gd|-|-|issue 2044: faction wound and wisp layers, cavity and local light separation, wing exhaust attachment, hulk smoke thins without expiring, clean faction crits and flash budget
 headless|fx/test/graphics_correctness_check.gd|-|-|issue 1955: missing damage anchors, rim and fog on mesh-surface wrecks, five live point-defense pops, quality downgrade and shader cache teardown
+headless|fx/test/faction_fx_1991_check.gd|-|-|issue 1991: faction fire and light, Eclipse trails and implosion, Chorus wing spores, cold Directorate hits and crits, wreck cap cooling and blocker depth testing
+headless|fx/test/faction_fx_2248_check.gd|-|-|issue 2248: Glasswright split and bay glints without smoke, faction tint and profile on hulk and wing plumes, FX API contract and darker cold wreck caps
 headless|fx/test/death_leap_check.gd|-|-|death sections, tiers, lifetime, cleanup and drift (issue 137)
 headless|fx/test/acid_thorn_check.gd|-|-|issue 1877: the Acid Thorn has its built body, a missed thorn flies on past, a stuck thorn rides the ship it hit when that ship moves and turns, and goes when it dies
 headless|fx/test/death_plane_check.gd|-|-|ShipView and effects together as battle.gd marks a ship dead; box ships
 headless|fx/test/death_retirement_check.gd|-|-|issue 2198: settled wrecks skip motion and lights while hulk smoke reaches its exact floor at 60s and still emits at 120s, death keeps existing fires until the split and drains trails, and deferred effects pop only what is due
+headless|fx/test/death_damage_2170_check.gd|-|-|issue 2170: a death skips stale pieces and cuts the final hull geometry after the pending and queued damage rebuilds
 headless|fx/test/destruction_staging_check.gd|-|-|staged deaths, class gating, flash limits and the hurry key
 headless|fx/test/kill_slowmo_check.gd|-|-|issue 521: the kill slow-motion beat starts at the core flash of cruiser and capital kills, never for small hulls or under reduce motion, and a key or click ends it
 headless|fx/test/effect_clock_1970_check.gd|-|-|issue 1970: hit pause and kill slow-mo keep the volley wait, late wreck check and camera shake on the effect clock
@@ -179,6 +189,7 @@ headless|fx/test/weapon_layers_check.gd|-|-|issue 2043: live volleys route layer
 headless|fx/test/wave_1a_check.gd|-|-|issue 1690: board-locked marker and ring, cohesive heel, mass-scaled drift, paused bob, faction corrections, impact power, shooter and turret recoil, and a fading miss with a shield graze and pass-by cue
 headless|fx/test/approved_effects_check.gd|-|-|battle effects audit (Nov 21): every approved effect in fx/test/approved_effects.json is the default with no switch set; test battle s1 plays shield_down, tick, ability, command, ram, board and fled through its own _play_event into a recording fx stand-in and each must make its fx/API.md section 11 call (other rows: source inventory); listed unwired calls carry their job and fail once wired
 headless|fx/test/close_action_fx_check.gd|-|-|issue 1524: a ram plays the ram volley (crumple, shove, punch), a boarding plays the breach, a command pulses the flagship; the generic pop only when the fx layer drew nothing
+headless|fx/test/standalone_hit_check.gd|-|-|issue 1974: a standalone shield block stays quiet, a shield break keeps its reaction, and a hull hit uses the Glasswright, Chorus or Eclipse impact tint
 headless|fx/test/close_action_moments_check.gd|-|-|issues 1524, 1461 and 2039: in test battle s1 a ram, a boarding and the admiral's command fire their effects at their battle moment with their approved sound (evt_ram_impact at 0.8, board_grapple by faction, ui_command_issue for the player) and keep their holds. A torpedo shot down plays evt_torp_intercept at the destroy point. A turn in place or slide uses the thruster puff
 headless|fx/test/broadside_mount_check.gd|-|-|issue 1117: every muzzle tier checks fixed gun bearing and turret reach, a broadside leaves from the facing flank, and missing muzzles use plating or skip the effect
 headless|fx/test/fx_smoke.gd|-|-|every weapon look, the damage ladder, shield breaks and every death cause on box ships
@@ -222,7 +233,7 @@ headless|render/test/camera_zoom_pointer_check.gd|-|-|issue 2029 item 6: the whe
 headless|scenes/battle/test/wing_cancel_test.gd|-|-|UI-5 (issue 387): the battle screen clears its armed wing on a ship pick, the roster, Escape and Cancel
 headless|scenes/battle/test/forecast_1444_test.gd|-|-|issue 1444: Ram arms on the first press and shows target, damage and a lethal-recoil warning; Board odds on hover and card; the Nova blast names friendly ships in red; Hollow Sun bands in the move tip; Brood flagships get wing stances
 headless|scenes/battle/test/targeted_ability_test.gd|-|-|issue 1124: marked Nova and Blink clicks reach the rules; unmarked clicks do not
-headless|scenes/battle/test/skill_target_picker_test.gd|-|-|issue 1870: Iteration Swap offers eligible fleet rows, builds the battle once after picking or skipping, and restores the chosen deployment
+headless|scenes/battle/test/skill_target_picker_test.gd|-|-|issues 1870 and 2206: deployment picker handles ship swaps, skip, open hex clicks and round-one saves
 headless|scenes/battle/test/click_after_camera_move_test.gd|-|-|issue 1124: releases pick the current camera ray; HUD clicks and drags do not pick
 headless|scenes/battle/test/armed_preview_test.gd|-|-|issue 1747: arming flak keeps the planned Burn and fire preview and Enter fires the planned gun
 headless|scenes/battle/test/volley_preview_test.gd|-|-|issue 1144: target preview against actual seeded volleys, including the planned hex, shared shield routing and low-odds landed-hit routing
@@ -231,7 +242,7 @@ headless|scenes/battle/test/hover_wait_check.gd|-|-|issue 1433: mouse handlers n
 headless|main/test/title_settings_test.gd|-|-|issue 1124: title settings buttons update their labels, persist and apply each press in the isolated user folder; a volume drag saves once when it ends (issue 1559 item 23)
 headless|main/test/background_work_1437_check.gd|-|-|issue 1437: the hidden campaign map stops during battle, Low and AA settings stay whole, new Display settings default to today's game
 headless|main/test/title_continue_test.gd|-|-|issue 1124: real title and host hide Continue without a run and resume an old save in the isolated user folder
-headless|main/test/showcase_quiet_check.gd|-|-|issue 1434: the title backdrop loads no sound bank and leaves the shared sfx bus alone at 0.25 and muted, is capped at High and gives the menu its MSAA back; the sliced battle build makes every ship and stops when told
+headless|main/test/showcase_quiet_check.gd|-|-|issues 1434 and 1405: the High title backdrop is silent and leaves the menu's MSAA alone, and the sliced battle build updates the ship count across frames, builds every ship and stops when told
 headless|main/test/finale_runs_check.gd|-|-|issue 1271: the dawn finale flag is off on run 4 and on for runs 5, 6 and 9, and battle.gd lights dawn only for the sector 3 boss
 headless|main/test/retire_scene_check.gd|-|-|issue 1519: a battle left for the title is freed after the title draws in slices, children first and the battle node last, while it stays in the tree switched off; the title backdrop waits for it; leaving the title frees the rest at once, a close stops the slices, and a parked battle's world, board and fx waits stop in the tree
 headless|main/test/quit_route_check.gd|-|-|issue 1435: the window close and Alt-F4 run main.quit_clean once (auto accept off), leaving the battle does not wait for its cut, and every retired job drains before the process ends

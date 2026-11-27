@@ -23,7 +23,7 @@ func _initialize() -> void:
 
 
 func _check_shop(credits: float, reserve_adjustment: float, should_buy: bool) -> bool:
-	Campaign.JSM.rnd_seed(1992)
+	campaign.rng.rnd_seed(1992)
 	campaign.fixed_clock = true
 	campaign.META.admirals.matriarch = true
 	campaign.newRun("matriarch", "chorus")

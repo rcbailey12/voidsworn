@@ -17,6 +17,7 @@ const DEATH := preload("res://fx/fx_death.gd")
 const BOARDING := preload("res://fx/fx_boarding.gd")
 const EVENT_PATHS := preload("res://fx/fx_event_paths.gd")
 const DAMAGE_PLUME := preload("res://fx/fx_damage_plume.gd")
+const SHIP_VIEW := preload("res://render/ship_view.gd")
 
 signal torpedo_shot_down(pos: Vector3)
 
@@ -1932,12 +1933,18 @@ func attach_report(say := false, only := "") -> Dictionary:
 	return out
 
 
-func remove_ship(id: String) -> void:
+func remove_ship(id: String, wait_for_damage := true) -> void:
 	if not ships.has(id):
 		return
 	attach_report(true, id)
-	_clear_thrust_spark_sink(ships[id].root)
-	(ships[id] as SHIP).teardown(self)
+	var s: SHIP = ships[id]
+	_clear_thrust_spark_sink(s.root)
+	if not wait_for_damage and s._dmg_task >= 0:
+		# The reaper holds the inputs and result holder until the worker ends. The old damage poll becomes a no-op.
+		_retire([s._dmg_task], [s._dmg_job])
+		s._dmg_task = -1
+		s._dmg_job = {}
+	s.teardown(self, wait_for_damage)
 	ships.erase(id)
 
 
@@ -2038,6 +2045,12 @@ func volley(attacker_id: String, kind: String, target_id: String, opts := {}) ->
 # Fire at a point in space (gallery, misses, station guns with no attacker ship): from and to in world space.
 func volley_at(from: Vector3, kind: String, to: Vector3, opts := {}) -> Dictionary:
 	return WEAP.volley_points(self, from, kind, to, opts)
+
+
+func standalone_hit(id: String, hit: Dictionary, from: Vector3, breaking: bool) -> void:
+	var target: SHIP = ships.get(id)
+	if target != null and not target.dead and not target.gone:
+		WEAP.standalone_hit(self, target, hit, from, breaking)
 
 
 # hit_lp (issue 1239): the breaking hit's point on the shield, in the shield's frame (a volley's "hit_pts"); INF aims
@@ -2209,8 +2222,9 @@ func board(attacker_id: String, target_id: String, _result := "", pace := 1.0) -
 			var hi: Dictionary = s.hull.surface(s.hull.core + Vector3(s.hull.L * 0.05 + dx, 0, 0), side) if dx != 0.0 else h
 			ends.append(hi["p"] if not hi.is_empty() else lp)
 		BOARDING.crossing(self, a, launch, s, ends, hold, recipe)
-		var launch_col: Color = recipe.core
-		sprx(18.0, toward, now + hold * 0.12, minf(0.3, hold * 0.2), launch_col, 2.0, 0.3 * k, 0.8 * k, 18)
+		var organic: bool = a.faction == "chorus"
+		var launch_col: Color = a.fac.damage_glow if organic else recipe.core
+		sprx(18.0, toward, now + hold * 0.12, minf(0.3, hold * 0.2), launch_col, 2.0, 0.3 * k, 0.8 * k, 20 if organic else 18)
 		board_lines_s = hold
 	return maxf(3.2, hold)
 
@@ -2314,7 +2328,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	box.size = Vector3.ONE * 2.0
 	var mats: Array = [mat(SH.SHIELD, 2), mat(SH.SHARD, 0), mat(SH.SPRITE, 1), mat(SH.STREAK, 1),
 		mat(SH.RIBBON, 1), mat(SH.ECLIPSE_ARC, 0), pools["nlance"].mi.material_override,
-		mat(SH.NULL_SLUG, 1), mat(SH.TRAIL, 1), mat(SH.RCS_JET, 1), mat(DEATH.SLAG, 0)]
+		mat(SH.NULL_SLUG, 1), mat(SH.TRAIL, 1), mat(DEATH.SLAG, 0)]
 	mats.append(mat(SPECIAL.GHOST, -2))
 	mats.append(DAMAGE_PLUME.material(self))
 	# Warm the PBR fallbacks for late arrivals and generated pieces as well as the
@@ -2388,6 +2402,9 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		mi.material_override = mats[i]
 		mi.position = Vector3((i % 4 - 1.5) * 2.5, (i / 4 - 1.0) * 2.5, 0) * unit
 		tmp.add_child(mi)
+	# Use the same indexed strip and material setup as the live thrusters, not the box vertex format.
+	var jet := SHIP_VIEW.build_rcs_jet("voidsworn", Vector3.RIGHT, 1.0, 0.2, 0.5, 0.01, 0.5)
+	tmp.add_child(jet)
 	# Warm the boarding and tick current shader in its indexed tube format, not the primitive box format.
 	var conduit := EVENT_PATHS.TUBE.make(self, PackedVector3Array([Vector3.LEFT, Vector3.RIGHT]),
 		PackedFloat32Array([0.1, 0.1]), Color.WHITE, Color.WHITE, 0, 0.0)

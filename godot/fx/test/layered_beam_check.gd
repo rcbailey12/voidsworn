@@ -54,6 +54,13 @@ func _position(row: PackedFloat32Array) -> Vector3:
 	return Vector3(row[4], row[5], row[6])
 
 
+func _staging_diameter(row: PackedFloat32Array, age: float, scales_floor: bool) -> float:
+	# Headless cannot draw the shader. Apply its cubic easing and floor to the live ring's packed sizes.
+	var size := lerpf(row[16], row[17], 1.0 - pow(1.0 - age, 3.0))
+	var profile := size / maxf(maxf(row[16], row[17]), 0.0001) if scales_floor else 1.0
+	return maxf(size / FX.DEATH.STAGING_UNITS_PER_PIXEL, 36.0 * profile)
+
+
 func _advance(seconds: float) -> void:
 	for i in ceili(seconds * 60):
 		fx.step(1.0 / 60.0)
@@ -93,15 +100,23 @@ func _beam(weapon: String, faction: String, kind: int, expected_lenses: int, cal
 				label + " uses the firing faction palette")
 	var glass := faction == "ithar"
 	var rings := _rows("rng", 18, SH.RING_HARMONIC if glass else 3)
+	var harmonic := SH.RING.get_slice("if (rk == 6)", 1).get_slice("}", 0)
+	var scales_floor := (harmonic.contains("size / max(max(a3.x, a3.y), 1e-4)")
+		and harmonic.contains("px_world(36.0 * profile, dv, PROJECTION_MATRIX)"))
 	var charge := 0
 	var travel := 0
 	for ring in rings:
 		if ring[7] < fire - 0.0001 and _position(ring).distance_to(SOURCE) < 2.0 and ring[1] < 0.0:
 			charge += 1
+			if glass:
+				_check(_staging_diameter(ring, 0.75, scales_floor) < _staging_diameter(ring, 0.0, scales_floor) * 0.5,
+					"H3: " + label + " charge converges at camera 170 even when floored")
 		elif ring[7] >= fire - 0.0001 and ring[1] > 0.0:
 			travel += 1
 			_check(is_equal_approx(ring[1] * ring[11], SOURCE.distance_to(TARGET)),
 				label + " harmonic does not overshoot the contact")
+			_check(_staging_diameter(ring, 0.15, scales_floor) > _staging_diameter(ring, 0.0, scales_floor),
+				"H3: " + label + " travelling wavefront grows from launch at camera 170")
 	_check(charge > 0, label + " gathers at the emitter before firing")
 	_check(travel == (3 if weapon == "pulsar" else 0), label + " only Pulsar sends three faceted wavefronts down the beam")
 	var lenses := _rows("dst", 18, SH.DISTORT_BEAM)
@@ -178,7 +193,7 @@ func _run() -> void:
 	var ring_fragment: String = SH.RING.get_slice("void fragment()", 1)
 	_check(ring_vertex.contains("if (rk == 6)") and ring_fragment.contains("if (k == 6)"),
 		"both ring shader stages use the harmonic ID")
-	_check(ring_vertex.contains("px_world(36.0, dv, PROJECTION_MATRIX)"),
+	_check(ring_vertex.contains("px_world(36.0") and SH.COMMON.contains("return px * fx_px"),
 		"the harmonic ring floor follows fx_px and turns off with the other floors")
 	for calm in [false, true]:
 		await _beam("lance", "voidsworn", SH.RIB_LANCE, 3, calm)

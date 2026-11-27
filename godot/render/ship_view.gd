@@ -35,7 +35,11 @@ var ring: MeshInstance3D
 var engines: Array = []
 var speed_k := 1.0          # the battle's SPEED (Enter or Space hurries a burn already under way)
 var cur_yaw := 0.0
-var dead := false
+var dead := false:
+	set(value):
+		dead = value
+		if dead:
+			clear_rcs_puffs()
 var bob_seed := 0.0
 var meshes: Array = []
 var fade := 1.0
@@ -734,11 +738,19 @@ static func _glow_tex() -> Texture2D:
 	return _gt
 
 
+func _highlight_inner_radius() -> float:
+	return maxf(8.6, L * 0.56)
+
+
+func _footprint_radius() -> float:
+	return maxf(7.4, L * 0.5)
+
+
 func _ring() -> void:
 	ring = MeshInstance3D.new()
 	ring.name = "fx_ring"  # fx_* names keep G4's mesh walk (fx_ship._find_meshes, A4 ships) off the footprint and marker
 	var tm := TorusMesh.new()
-	var rr := maxf(8.6, L * 0.56)
+	var rr := _highlight_inner_radius()
 	tm.inner_radius = rr
 	tm.outer_radius = rr + 0.6
 	tm.rings = 64
@@ -773,7 +785,7 @@ func set_marker(friend: bool) -> void:
 	marker.name = "fx_marker"
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var r0 := maxf(7.4, L * 0.5)
+	var r0 := _footprint_radius()
 	var w := 0.5
 	if friend:
 		for i in 48:
@@ -925,6 +937,24 @@ func set_selected(on: bool, col := EMBER) -> void:   # the ship that is up: embe
 	_ring_col = col
 	_color_ring(ring.material_override)
 	ring.rotation.y = -rotation.y
+
+
+func has_highlight() -> bool:
+	return _drop_sel
+
+
+# Battle owns arbitration between neighbours. Keep the requested highlight so
+# a suppressed mark comes back as soon as the ships move clear of one another.
+func set_mark_visibility(footprint: bool, highlight: bool) -> void:
+	marker.visible = footprint
+	ring.visible = highlight
+
+
+func mark_radius(highlight: bool) -> float:
+	var mark := ring if highlight else marker
+	var radius := (ring.mesh as TorusMesh).outer_radius if highlight else _footprint_radius()
+	var basis := mark.global_basis
+	return radius * maxf(basis.x.length(), basis.z.length())
 
 
 # One continuous burn along a path (fx3d.js animPath): position keys on a Hermite curve over the path length, facing keys
@@ -2274,6 +2304,16 @@ static func _puff_mat() -> StandardMaterial3D:
 	_pm.no_depth_test = false
 	_pm.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_DISABLED
 	return _pm
+
+
+func clear_rcs_puffs() -> void:
+	for puff in puffs:
+		var node := puff.n as Node3D
+		if is_instance_valid(node):
+			# These jets are top-level. Hide them now rather than waiting for the queued free.
+			node.hide()
+			node.queue_free()
+	puffs.clear()
 
 
 func _puffs_step(dt: float) -> void:

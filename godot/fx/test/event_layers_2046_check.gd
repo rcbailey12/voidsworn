@@ -4,6 +4,7 @@ const GUARD := preload("res://tools/ci/check_guard.gd")
 const FX := preload("res://fx/fx.gd")
 const STATUS := preload("res://fx/fx_status_tick.gd")
 const SH := preload("res://fx/fx_shaders.gd")
+const POOLS := preload("res://fx/fx_pool.gd")
 const FACTIONS := {"voidsworn": "assault", "hegemony": "precision", "corsair": "salvage",
 	"deathless": "phase", "ithar": "prism", "chorus": "umbilical"}
 
@@ -56,7 +57,7 @@ func _statuses() -> void:
 	for faction in FACTIONS:
 		_reset()
 		var ship = _ship("T", faction)
-		var sooty: bool = faction not in ["ithar", "chorus"]
+		var sooty: bool = faction in ["voidsworn", "corsair"]
 		fx.tick("T", "fire")
 		var flame := fx.get_node_or_null("fx_tick_flame") as MeshInstance3D
 		_check(flame != null, "%s: the fire tick takes a baked picture" % faction)
@@ -67,13 +68,19 @@ func _statuses() -> void:
 				and absf(root_at.y) <= 2.01 and ship.hull.box.grow(0.05).has_point(root_at),
 				"%s: the flame is baked, capped and attached" % faction)
 			var tint: Color = m.get_shader_parameter("fac_mid")
-			_check(tint == (ship.fac.weapon if faction == "hegemony" else ship.fac.damage_glow),
+			_check(tint == ship.fac.damage_glow,
 				"%s: fire takes its faction colour" % faction)
 			_check((float(m.get_shader_parameter("fac_smoke")) > 0.0) == sooty,
 				"%s: baked plume keeps only its allowed soot" % faction)
 			_check(float(m.get_shader_parameter("fac_prism")) == (1.0 if faction == "ithar" else 0.0),
 				"%s: only the Glasswright plume has a prismatic edge" % faction)
-		_check(fx.spr_kinds.has(8) == sooty and fx.spr_kinds.has(SH.TICK_EMBER) and not fx._lev.is_empty(),
+			if faction == "ithar":
+				var fragment := m.shader.code.get_slice("void fragment()", 1)
+				var legacy := fragment.get_slice("#ifndef ROUTE_BAKED", 1).get_slice("#endif", 0)
+				_check(not m.shader.code.contains("#define ROUTE_BAKED") and legacy.contains("if (fac_prism > 0.0)")
+					and legacy.contains("core = prism_edge(core,") and fragment.contains("ALBEDO += core *"),
+					"H4: the default Glasswright fire shader applies the prism to its live hot pass")
+		_check(fx.spr_kinds.has(8) == sooty and fx.spr_kinds.has(20 if faction == "chorus" else SH.TICK_EMBER) and not fx._lev.is_empty(),
 			"%s: the plume has faction-appropriate smoke, colour-locked embers and light" % faction)
 
 	_reset()
@@ -93,7 +100,7 @@ func _statuses() -> void:
 	fx.well = Vector3(60, -4, 30)
 	fx.tick("T", "tidal")
 	var streams := _rows("tidal_stream")
-	_check(streams.size() == 3 and fx.spr_kinds.has(SH.TICK_EMBER) and fx.pools.rng.emitted == 1
+	_check(streams.size() == 3 and fx.spr_kinds.has(20) and not fx.spr_kinds.has(SH.TICK_EMBER) and fx.pools.rng.emitted == 1
 		and fx.pools.stk.emitted == 0, "tidal has three streams, rim stress and biological motes on Chorus")
 	for row in streams:
 		var points: PackedVector3Array = row.path
@@ -101,6 +108,23 @@ func _statuses() -> void:
 			"tidal stream pulls from the well-facing plating toward the actual well")
 	fx.step(0.90)
 	_check(fx.event_paths.live.is_empty(), "the tidal stream clears on the effect clock")
+	for faction in ["ithar", "deathless", "hegemony"]:
+		_reset()
+		ship = _ship("T", faction)
+		fx.well = Vector3(60, -4, 30)
+		fx.tick("T", "tidal")
+		var sparks: int = fx.pools.stk.n_pending
+		_check(_rows("tidal_stream").size() == 3 and sparks == (0 if faction == "ithar" else 20),
+			"M2: %s keeps its tidal streams without adding forbidden metal sparks" % faction)
+		if faction == "deathless":
+			var pool: POOLS.Pool = fx.pools.stk
+			var colour: Color = ship.fac.damage_glow
+			var tint := Vector3(colour.r, colour.g, colour.b)
+			var violet := sparks > 0 and tint.z > tint.x and tint.x > tint.y
+			for i in sparks:
+				var off: int = i * pool.vpp * POOLS.STRIDE + 12
+				violet = violet and Vector3(pool.pending[off], pool.pending[off + 1], pool.pending[off + 2]).is_equal_approx(tint)
+			_check(violet, "M2: every Eclipse tidal spark takes the hull's violet tint")
 
 
 func _storm() -> void:
@@ -154,13 +178,20 @@ func _boarding() -> void:
 			continue
 		var row := ways[0]
 		var mat := row.node.material_override as ShaderMaterial
+		if faction == "voidsworn":
+			var shader := mat.shader.code
+			_check(shader.contains("global uniform float fx_gain;") and shader.contains("global uniform float fx_px;")
+				and shader.get_slice("void vertex()", 1).contains("floor_r = px_world(pixels, -centre.z, PROJECTION_MATRIX)")
+				and shader.get_slice("void fragment()", 1).contains("ALBEDO = mix(hue * .68, core.rgb * 1.65, axial) * fx_gain"),
+				"H2: the live conduit uses shared FX gain and the shared pixel floor")
+			_check(fx.spr_kinds.has(7), "H4: boarding still vents grey smoke from a metal hull")
 		var tint: Color = mat.get_shader_parameter("tint")
 		var pods: bool = faction in ["voidsworn", "hegemony", "corsair"]
 		_check(is_instance_valid(row.pod) == pods, "%s has the right boarding carrier" % faction)
 		_check(row.start == 0.0 and row.end == hold and cuts[0].start > row.start,
 			"the cutter starts after launch and the crossing ends on the paced hold")
-		_check((cuts[0].node.material_override as ShaderMaterial).get_shader_parameter("tint") == tint,
-			"the boarding party and cut use one palette")
+		_check((cuts[0].node.material_override as ShaderMaterial).get_shader_parameter("tint") == target.fac.damage_glow,
+			"the boarding crossing keeps its recipe while the Directorate cutter contact stays cool")
 		if faction == "deathless":
 			_check(tint.b > tint.r and tint.r > tint.g and fx.pools.stk.emitted == 0,
 				"Eclipse boarding uses violet without warm target sparks")
@@ -183,10 +214,22 @@ func _boarding() -> void:
 		_check(_rows("board_" + look).is_empty(), "the crossing is gone once the battle can resume")
 		fx.release()
 		_check(fx.event_paths.live.is_empty(), "release clears all outstanding event paths")
+	for faction in ["voidsworn", "ithar", "chorus"]:
+		_reset()
+		_ship("A", faction, Vector3(-8, 0, 20))
+		_ship("T", "ithar")
+		fx.board("A", "T")
+		_check(_rows("board_cutter").size() == 1 and not fx.spr_kinds.has(7),
+			"H4: the %s party cuts a Glasswright hull without grey vent smoke" % faction)
 
 
 func _run() -> void:
 	_check(SH.TICK_EMBER == 38 and SH.TICK_DROPLET == 39, "status sprites use the shared 38 and 39 slots")
+	var vertex := SH.SPRITE.get_slice("void vertex()", 1).get_slice("void fragment()", 0)
+	_check(vertex.contains("glob = k == 15 || k == 39") and vertex.contains("boost = (glob || k == 23) ? 1.0"),
+		"M4: acid droplets keep the bio glob's full brightness when enlarged by their floor")
+	_check(vertex.contains("if (k == 14 || glob || k == 23") and vertex.contains("else if (k >= 30 && k <= 37)"),
+		"M4: acid droplets use the bio glob's velocity stretch, not spin or fixed bolt stretch")
 	_statuses()
 	_storm()
 	_boarding()

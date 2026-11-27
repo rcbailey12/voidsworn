@@ -20,7 +20,7 @@ func _ready() -> void:
 	var ui = UIScript.new(); add_child(ui); ui.bind(C)
 	var done = {}
 	for seed in [4242, 7, 11, 23, 31, 47, 59, 71, 83, 97]:
-		JSM.rnd_seed(seed); C.titleScreen(); C.act("newRunScreen"); C.act("startRun"); C.act("pickAspect", C.W["aspOffer"][0]); C.act("closeModal")
+		C.rng.rnd_seed(seed); C.titleScreen(); C.act("newRunScreen"); C.act("startRun"); C.act("pickAspect", C.W["aspOffer"][0]); C.act("closeModal")
 		for i in 20: await get_tree().process_frame
 		await get_tree().create_timer(2.0).timeout
 		var m = ui.map3d

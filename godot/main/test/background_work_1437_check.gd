@@ -7,7 +7,7 @@ extends SceneTree
 #  4. the new Display settings default to today's game (full render scale, no frame cap, V-Sync on) and are listed
 #  5. (review on PR 1607) the real map _process holds its arrival tween and its animation while hidden and resumes both
 #  6. (review on PR 1607) the three rows press, save and reload; job launches never apply them; render scale covers a
-#     viewport the way the map's is set; Graphics and TAA rebuild the title's battle at once
+#     viewport the way the map's is set; C32 keeps TAA changes from rebuilding the title's High backdrop
 
 const Map = preload("res://ui/campaign/map3d.gd")
 const BATTLE := preload("res://scenes/battle/battle.gd")
@@ -174,7 +174,7 @@ func _run() -> void:
 			var low_starts: int = tm.starts - two
 			rows["quality"].pressed.emit()   # Low to Max
 			tm.fire()
-			_check(one == 1 and two == 2, "6: a new Graphics or TAA setting rebuilds the battle behind the menu (%d, %d)" % [one, two])
+			_check(one == 1 and two == 1, "6: Graphics can start a missing backdrop, while TAA never rebuilds it (%d, %d)" % [one, two])
 			_check(low_starts == 0 and str(tm.settings["quality"]) == "max" and tm.starts == two + 1, "6: a quick switch to Low cancels every pending rebuild; Max again builds one (%d during Low, %d after)" % [low_starts, tm.starts - two])
 		else:
 			_check(false, "6: the Graphics and TAA rows are on the panel")

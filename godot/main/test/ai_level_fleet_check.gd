@@ -40,7 +40,7 @@ func _first_battle(level: String, seed: int) -> Array:
 	C.battle_mode = "external"; C.battle_setup = h._setup_battle
 	var asked := [false]
 	C.battle_requested.connect(func(): asked[0] = true)
-	JSM.rnd_seed(seed)
+	C.rng.rnd_seed(seed)
 	C.titleScreen(); C.act("newRunScreen")
 	var clicks := 0
 	while not asked[0] and clicks < 200:

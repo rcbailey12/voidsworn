@@ -420,7 +420,9 @@ func _stand_ins() -> void:
 
 	# behaviour proofs, before the walk adds its own counts
 	# 1. an authored muzzle wins, and more shots than points cycle them (contract: "When shots outnumber points" 3)
-	var g: Array = S.hull.guns(0, "hbattery", Vector3(0, 0, 40), 5)
+	# The two fixed barrels face the bow, so test cycling against a target both can bear on.
+	var ahead := Vector3(40, 0, 0)
+	var g: Array = S.hull.guns(0, "hbattery", ahead, 5)
 	var srcs := {}
 	var at := {}
 	for m in g:
@@ -428,7 +430,7 @@ func _stand_ins() -> void:
 		at["%.2f" % (m["p"] as Vector3).z] = int(at.get("%.2f" % (m["p"] as Vector3).z, 0)) + 1
 	check(srcs.keys() == ["hp"], "slab slot 0 fires from its authored muzzles (got %s)" % str(srcs.keys()))
 	check(at.size() == 2 and absi(int(at.values()[0]) - int(at.values()[1])) == 1, "five shots over two muzzles cycle them 3 and 2 (got %s)" % str(at))
-	var g2: Array = S.hull.guns(0, "hbattery", Vector3(0, 0, 40), 5)
+	var g2: Array = S.hull.guns(0, "hbattery", ahead, 5)
 	check((g2[0]["p"] as Vector3) != (g[0]["p"] as Vector3), "the next volley starts at the other muzzle (the rotating offset)")
 	# 2. a weapon with no authored point falls back to the surface ray, never a box point
 	var gr: Array = T.hull.guns(0, "hbattery", Vector3(0, 0, 40), 3)

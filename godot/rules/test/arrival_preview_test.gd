@@ -30,7 +30,7 @@ func _check(ok: bool, why: String) -> void:
 
 
 func _case(c: Campaign, force: String) -> void:
-	API.JSM.rnd_seed(1289)
+	c.seed_rng(1289)
 	c.META = c.defaultMeta()
 	for id in c.ADMIRALS:
 		if c.ADMIRALS[id]["fac"] == "voidsworn":
@@ -45,10 +45,10 @@ func _case(c: Campaign, force: String) -> void:
 		cfg["campaign"] = true
 		cfg["event_force"] = force
 	api.new_battle(c.RUN, cfg)
-	var rng0: int = API.JSM.rng_s
+	var rng0: int = api.R.rng.rng_s
 	var view0 := JSON.stringify(api.view())
 	var prev: Array = api.arrival_previews()
-	_check(API.JSM.rng_s == rng0 and JSON.stringify(api.view()) == view0, "%s: arrival_previews changed the battle" % force)
+	_check(api.R.rng.rng_s == rng0 and JSON.stringify(api.view()) == view0, "%s: arrival_previews changed the battle" % force)
 	if force == "":
 		_check(prev.is_empty(), "no event, yet a preview: %s" % [prev])
 		return

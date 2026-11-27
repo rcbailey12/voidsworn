@@ -56,7 +56,7 @@ func _run() -> void:
 		return
 	C.fixed_clock = true
 	C.persist_on = false
-	JSM.rnd_seed(SEED)
+	C.rng.rnd_seed(SEED)
 	C.newRun("vex", "voidsworn")
 	C.battle_mode = "external"
 	C.battle_setup = func(run, cfg):

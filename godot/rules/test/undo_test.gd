@@ -30,7 +30,7 @@ func fresh(name: String) -> Variant:
 func state(api) -> String:
 	var R = api.R; var parts := PackedStringArray()
 	for u in R.B["units"]: parts.append(JSM.canon(u, "u", {"t": 1, "ship": 1}))
-	return JSM.canon(R.B, "b", {"units": 1, "cfg": 1, "prog": 1}) + "|" + ",".join(parts) + "|" + str(R.UID) + "|rng " + str(JSM.rng_u32())
+	return JSM.canon(R.B, "b", {"units": 1, "cfg": 1, "prog": 1}) + "|" + ",".join(parts) + "|" + str(R.UID) + "|rng " + str(R.rng.rng_u32())
 
 func first_ready(api) -> Variant:
 	for u in api.R.alive("player"):
@@ -167,9 +167,9 @@ func refusals(name: String, seen: Dictionary) -> void:
 			var es = R.alive("enemy").filter(func(x): return not R.jt(x.get("isSq")))
 			if es.size() > 0 and api.attack_plan(u["id"], es[0]["id"]) != null:
 				var am = api.attack_plan(u["id"], es[0]["id"])
-				var rng0 := JSM.rng_u32()
+				var rng0: int = R.rng.rng_u32()
 				api.attack_move(u["id"], es[0]["id"])
-				if JSM.rng_u32() != rng0 and not R.jt(u.get("dead")): tally.call("attack_move", u)
+				if R.rng.rng_u32() != rng0 and not R.jt(u.get("dead")): tally.call("attack_move", u)
 				if api.phase == "player" and not R.jt(u.get("activated")): api.end_activation(u["id"])
 				continue
 		var rm = a_ram_move(api, u)

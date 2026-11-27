@@ -2,6 +2,7 @@ extends SceneTree
 
 const RIG := preload("res://render/camera_rig.gd")
 const BATTLE := preload("res://scenes/battle/battle.tscn")
+const API := preload("res://rules/battle_api.gd")
 const SHIP := preload("res://render/ship_view.gd")
 const FX := preload("res://fx/fx.gd")
 const DEATH := preload("res://fx/fx_death.gd")
@@ -22,6 +23,7 @@ func _check(ok: bool, detail: String) -> void:
 
 
 func _run() -> void:
+	root.size = Vector2i(1920, 1080)
 	var viewport := SubViewport.new()
 	viewport.size = Vector2i(1920, 1080)
 	root.add_child(viewport)
@@ -34,8 +36,9 @@ func _run() -> void:
 	_flash_checks(viewport, cam)
 	viewport.free()
 	await _overlay_checks()
+	await _cut_in_checks()
 	if failures == 0:
-		print("PASS: shot framing, eased return, overlay restoration and counted death readability at camera 170")
+		print("PASS: shot framing, eased return, overlay restoration, cut-in callouts, skip clicks and counted death readability at camera 170")
 	quit(0 if failures == 0 else 1)
 
 
@@ -54,14 +57,17 @@ func _camera_checks(cam: Camera3D) -> void:
 	for pose in [chase, broad]:
 		cam.enter_cut(pose)
 		cam.snap()
-		_check(cam.sees(source, 0.08) and cam.sees(target, 0.08), "keep both shot subjects inside the letterbox")
+		# The letterbox bars cover the top and bottom 9 percent of the screen.
+		_check(cam.sees(source, 0.09) and cam.sees(target, 0.09), "keep both shot subjects inside the letterbox")
 		var eye: Vector3 = cam.position - cam.t
 		var shoulder := Vector3(eye.x, 0, eye.z).normalized().dot(shot_dir)
 		_check(shoulder < (-0.75 if pose == chase else -0.30), "look from the attacker's shoulder")
-	cam.return_from_cut(board_pose)
+	# Read the drawn pose before asking the camera to return (issue 2194).
 	var cut_radius: float = cam._cr
 	var cut_target: Vector3 = cam._ct
-	_check(cam._cr == cut_radius and cam.t == board_pose["t"], "return changes the desired pose before changing the drawn pose")
+	cam.return_from_cut(board_pose)
+	_check(cam._cr == cut_radius and cam._ct == cut_target and cam.t == board_pose["t"],
+		"return changes the desired pose before changing the drawn pose")
 	cam._process(RIG.CUT_RETURN_S * 0.25)
 	var early: float = cam._cr
 	cam._process(RIG.CUT_RETURN_S * 0.5)
@@ -121,17 +127,30 @@ func _flash_checks(viewport: SubViewport, cam: Camera3D) -> void:
 		var bright := float(mat.get_shader_parameter("soft_flash")) == 0.0
 		_check(floor_px >= float(DEATH.CORE_READ_PX["small"]) - 0.01 and life <= 0.70, "post-calibration core floor and flame cap")
 		_check(bright == (i < 3) and (not bright or life <= 0.25), "refusal softens the core, bright phase stays short")
-	_check(float(fx.flash_area_log[0][3]) >= float(DEATH.CORE_READ_PX["small"]), "the flash counter accounts for the enlarged core")
+	for band in DEATH.CORE_READ_PX:
+		fx.now += 1.0
+		var first: int = fx.flash_area_log.size()
+		DEATH._core_flash(fx, p, 2.0, 70.0, tint, null, Vector3.ZERO, null, band)
+		var mat := _core_cards(fx).back() as ShaderMaterial
+		var px := float(mat.get_shader_parameter("min_pixels"))
+		var extent := float(mat.get_shader_parameter("extent"))
+		var read_px := float(mat.get_shader_parameter("read_pixels"))
+		var divisor := float(mat.get_shader_parameter("size_divisor"))
+		var expected: float = fx._flash_disc(p, extent, maxf(px, read_px * divisor))[2]
+		_check(fx.flash_area_log[first][6] == 1 and is_equal_approx(float(fx.flash_area_log[first][3]), expected),
+			"M1: the %s bright core books its full screen diameter, including bloom on the read floor" % band)
 	# One instance uses five packed vec4s. Verify the new ring is the sub-flash, bounded kind with a screen floor.
 	_check(rings.pending.size() >= 20 and is_equal_approx(rings.pending[11], DEATH.CORE_RING_S)
 		and rings.pending[15] <= 0.30 and rings.pending[18] == SH.RING_DEATH_FRONT
 		and rings.pending[3] > float(DEATH.CORE_READ_PX["small"]),
 		"the core emits a short, low-contrast screen-sized front")
 	fx.reduce_flashing = true
-	fx.now = 2.0
+	fx.now += 1.0
+	var counted := fx.flash_log.size()
+	var ring_count: int = rings.emitted
 	DEATH._core_flash(fx, p, 2.0, 70.0, tint, null, Vector3.ZERO, null, "capital")
 	cards = _core_cards(fx)
-	_check(fx.flash_log.size() == 3 and rings.emitted == 5 and cards.back().get_shader_parameter("soft_flash") == 1.0,
+	_check(fx.flash_log.size() == counted and rings.emitted == ring_count + 1 and cards.back().get_shader_parameter("soft_flash") == 1.0,
 		"reduce flashing keeps the soft read without counting an extra flash")
 	FX.clear_static()
 
@@ -184,5 +203,69 @@ func _overlay_checks() -> void:
 	_check(ship.drop.visible and ship.drop_dot.visible and blockers.visible
 		and is_equal_approx(ship.drop_dot.material_override.albedo_color.a, drop_alpha), "the board brings back the live drop and blocker overlays")
 	_check(ring_mat.transparency == BaseMaterial3D.TRANSPARENCY_ALPHA, "the ring stays on the same pipeline after the cut")
+	battle.queue_free()
+	await process_frame
+
+
+# The 2194 callout and skip regressions do not depend on how ST-A draws its plates.
+func _cut_in_checks() -> void:
+	var battle = BATTLE.instantiate()
+	battle.external = true
+	root.add_child(battle)
+	battle.set_process(false)
+	battle.cam.set_process(false)
+	for id in ["att", "tgt"]:
+		var ship := SHIP.new()
+		ship.position = Vector3(-24.0 if id == "att" else 24.0, 0.0, 0.0)
+		battle.add_child(ship)
+		ship.set_process(false)
+		battle.views[id] = ship
+	battle.cam.snap()
+	for kind in ["lance", "torp"]:
+		battle._cine_frame("att", "tgt", kind)
+		battle.cam.snap()
+		battle._step_cut_overlays(0.20)
+		var labels: Array[Label] = []
+		for caption in ["Miss", "Critical", "-8 shield"]:
+			battle._float("tgt", caption, Color.WHITE)
+			labels.append(battle.floats[-1]["lbl"])
+		battle._float_step(0.0)
+		for lbl in labels:
+			_check(lbl.get_parent() == battle.hud.floats_root and lbl.is_visible_in_tree()
+				and is_equal_approx(lbl.modulate.a, 1.0), "%s stays readable during %s" % [lbl.text, kind])
+		battle._float_step(1.1)
+		for lbl in labels:
+			_check(is_equal_approx(lbl.modulate.a, 0.5), "%s fades once during %s" % [lbl.text, kind])
+		battle._float_step(0.6)
+		_check(battle.floats.is_empty(), "%s callouts expire on time" % kind)
+		battle._cine_release()
+
+	battle.api = API.new()
+	battle.hud.ledger.hide()
+	battle.hud.log_panel.hide()
+	battle.cam.input_enabled = true
+	for button in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
+		battle._kill_frame("tgt", "att")
+		battle.cam.snap()
+		battle.kill_hold_until = battle.game_t + 5.0
+		var press := InputEventMouseButton.new()
+		press.button_index = button
+		press.pressed = true
+		press.position = Vector2(760, 500)
+		_check(not battle.hud.over_ui(press.position), "the skip click is on the board")
+		battle._unhandled_input(press)
+		_check(battle.kill_hold_until < 0.0, "the skip click ends the kill hold")
+		_check(battle.cam._drag == 0 and not battle._board_press, "the skip click starts no camera or board gesture")
+		var held_a: float = battle.cam.a
+		var held_t: Vector3 = battle.cam.t
+		var motion := InputEventMouseMotion.new()
+		motion.relative = Vector2(20, 4)
+		battle.cam.handle_input(motion)
+		_check(battle.cam.a == held_a and battle.cam.t == held_t and battle.cam._cut_return_elapsed < RIG.CUT_RETURN_S,
+			"motion after the skip click leaves the smooth return running")
+		# Reset gesture state so one failing button cannot affect the other case.
+		press.pressed = false
+		battle._input(press)
+		battle._board_release = false
 	battle.queue_free()
 	await process_frame

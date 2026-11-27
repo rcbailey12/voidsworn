@@ -146,7 +146,9 @@ func row(ship: Dictionary, damaged: bool, parent: Control) -> void:
 	var hull = C.HULLS[ship["tpl"]]; var derived = C.derive(ship)
 	var name_w = GS.sheet_name().get_string_size(str(ship["name"]).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1, ui.px(28)).x / k
 	var cls_w = GS.sheet_body().get_string_size(hull["n"], HORIZONTAL_ALIGNMENT_LEFT, -1, ui.px(17)).x / k
-	var available = manifest_w - 238; var wrap_class = name_w + cls_w + 18 > available
+	var cp_x = manifest_w - 52
+	var available = cp_x - 188 - 12
+	var wrap_class = name_w + cls_w + 18 > available
 	var name_height = maxf(38, ceilf(name_w / maxf(1, available)) * 36)
 	var rh = maxf(54, name_height + (24 if wrap_class else 0) + (28 if damaged else 0))
 	var b = Button.new(); b.text = ""; style_link(b)
@@ -162,7 +164,7 @@ func row(ship: Dictionary, damaged: bool, parent: Control) -> void:
 	picture(ship, Rect2(22, 5, 150, 40), b)
 	head(ship["name"], Rect2(188, 0, available if wrap_class else name_w + 2, name_height), 28, b)
 	words(hull["n"], Rect2(188 if wrap_class else 206 + name_w, name_height - 4 if wrap_class else 9, available if wrap_class else cls_w + 3, 26), 17, GS.TEXT2, null, b)
-	words(C.numstr(hull["cp"])+ " CP", Rect2(manifest_w - 52, 9, 72, 28), 17, GS.TEXT2, GS.num(), b)
+	words(C.numstr(hull["cp"]) + " CP", Rect2(cp_x, 9, 72, 28), 17, GS.TEXT2, GS.num(), b)
 	if damaged:
 		var y = name_height + (24 if wrap_class else 0)
 		meter(b, Rect2(188, y + 9, 130, 5), ship["hp"], derived["maxHp"], GS.HULL_LOW)

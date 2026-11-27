@@ -56,7 +56,7 @@ func _run() -> void:
 	C.fixed_clock = true
 	C.persist_on = false
 	C.UID = 1
-	JSM.rnd_seed(678)
+	C.rng.rnd_seed(678)
 	C.META = C.defaultMeta()
 	C.SAVED_RUN = null
 	C.RUN = null

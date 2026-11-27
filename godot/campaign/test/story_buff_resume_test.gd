@@ -29,7 +29,7 @@ func _resume(D) -> Variant:
 
 func _init() -> void:
 	var C = Campaign.new(); C.load_tables(); C.persist_on = false; C.fixed_clock = true
-	JSM.rnd_seed(7); C.META = C.defaultMeta(); C.newRun("vex", "voidsworn", {})
+	C.rng.rnd_seed(7); C.META = C.defaultMeta(); C.newRun("vex", "voidsworn", {})
 	C.RUN["sector"] = 3; C.RUN["map"] = C.genSector(3); C.RUN["pos"] = null
 	var node = null
 	for col in C.RUN["map"]["cols"]:
