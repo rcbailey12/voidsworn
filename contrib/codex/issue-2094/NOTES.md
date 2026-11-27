@@ -1,5 +1,15 @@
 # Vanguard cruiser redraw, issue 2094
 
+## Run 4
+
+H9E Spineguard keeps its four capacitor hoops, pinched waist and solid stern. The cruiser now uses the Cordon-style recessed accelerator, the shared Directorate Plasma lance turrets and rectangular drive kit, and the same steel-blue module rings, flush panel courses and blue flank strips as Picket and Cordon. The lower collar and worked flat belly are deliberate departures from the approved concept.
+
+[Same-length family comparison](../../../docs/shots/issue-2094-codex/vanguard_family_lineup_r4.png) | [Orthographic build sheet and cutaway](../../../docs/shots/issue-2094-codex/vanguard_build_sheet_r4.png) | [Build sheet and method](../../../docs/ship_pipeline/build_sheets/hegemony_H9E/README.md) | [Manifest](../../../docs/ship_pipeline/build_sheets/hegemony_H9E/manifest.json)
+
+The three comparison ships were built from their sheet sources on CPU with the same cameras, lighting and kit materials. Their overall lengths are normalized to 350 px. This is sheet-built evidence on `d7f5c7a6a` plus the uncommitted recipe work, not a paint proof.
+
+Weapon match, fit, sheet conversion, part audit and unpainted GLB readback passed. Fit found no clashes or blocked arcs. The test export has 51,396 triangles, two moving turrets, five muzzles, four engine exits and two launch origins for the single rules hangar. All test exports stayed in scratch. The GPU shape reference, paint bake, installed measurements and publish are for the later PC queue run.
+
 ## Run 3
 
 **Pick H9E Spineguard.** The four capacitor hoops and the heavy bow collar read as one long ion cannon. Its housing sits half-sunk in a solid armor saddle. The pinched waist and broad, unbroken stern give it a clear top outline even with the paint and fittings stripped away. **H9F Cheekguard** wraps the same gun in two heavier cheek plates that reach the muzzle, with a deep front belly tapering up to a shallower stern.
