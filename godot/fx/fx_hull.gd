@@ -57,6 +57,24 @@ const GEO_LIMIT := 32
 static var _hull_geometry := {}
 
 
+# The worker owns its snapshot. Leave only sets this flag and hands the task to ShipView to join.
+class GeometryCancel:
+	extends RefCounted
+	var _mutex := Mutex.new()
+	var _cancelled := false
+
+	func stop() -> void:
+		_mutex.lock()
+		_cancelled = true
+		_mutex.unlock()
+
+	func stopped() -> bool:
+		_mutex.lock()
+		var answer := _cancelled
+		_mutex.unlock()
+		return answer
+
+
 static func clear_static() -> void:
 	_hull_geometry.clear()
 
@@ -802,11 +820,40 @@ static func face_corners(triangle: int, strip: bool) -> Vector3i:
 	return Vector3i(first, first + 1, first + 2)
 
 
-func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
+func analyse(root: Node3D, meshes: Array, seed_v: int, build := {}) -> void:
+	var pending := begin_geometry(root, meshes, false) if build.is_empty() else build
+	var geo := _join_geometry(pending)
 	_rng.seed = seed_v
+	tm = geo["tm"]
+	tri_count = (geo["faces"] as PackedVector3Array).size() / 3
+	bvh_ranges.clear()
+	for r in geo["ranges"]:
+		var mi := meshes[int(r["mi_index"])] as MeshInstance3D
+		var si := int(r["surface"])
+		var e: Dictionary = r.duplicate()
+		e.erase("mi_index")
+		e["mi"] = mi
+		e["mesh"] = mi.mesh
+		var paint := mi.get_active_material(si) as BaseMaterial3D
+		e["paint"] = paint if paint != null else mi.mesh.surface_get_material(si) as BaseMaterial3D
+		bvh_ranges.append(e)
+	_samples(900)
+	_find_bow()
+	nozzles = (geo["nozzles"] as Array).duplicate(true)
+	_kit_nozzles(root)
+	for side in ["port", "stb", "top"]:
+		mounts[side] = _mount_row(side)
+	_find_core(geo["faces"], geo)
+	for k in turrets.size():
+		(turrets[k] as Dictionary).merge((geo["turrets"][k] as Dictionary).duplicate(true), true)
+
+
+# LOAD39: only the main thread sees the ship or its resources. On a miss it snapshots
+# the packed arrays and mount pose. Direct callers use the same geometry pass inline.
+func begin_geometry(root: Node3D, meshes: Array, threaded := true) -> Dictionary:
 	if code == "" and root.get("code") != null:
 		code = str(root.get("code"))
-	_authored(root)
+	_authored(root)   # mark interior materials before taking the outside geometry
 	var inv = root.global_transform.affine_inverse()
 	var first = true
 	for m in meshes:
@@ -823,106 +870,186 @@ func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 	W = maxf(box.size.z, 0.05)
 	H = maxf(box.size.y, 0.05)
 	c = box.get_center()
-	bvh_ranges.clear()
-	var geo := _geometry(root, meshes)
-	var faces: PackedVector3Array
-	if not geo.is_empty():
-		faces = geo["faces"]
-		tm = geo["tm"]
-		for r in geo["ranges"]:
-			var mi := meshes[int(r["mi_index"])] as MeshInstance3D
-			var e: Dictionary = r.duplicate()
-			e.erase("mi_index")
-			e["mi"] = mi
-			var paint := mi.get_active_material(int(r["surface"])) as BaseMaterial3D
-			e["paint"] = paint if paint != null else (r["mesh"] as Mesh).surface_get_material(int(r["surface"])) as BaseMaterial3D
-			bvh_ranges.append(e)
-	else:
-		faces = faces_of(root, meshes, bvh_ranges)
-		tm = TriangleMesh.new()
-		if faces.size() >= 3:
-			tm.create_from_faces(faces)
-		else:
-			tm = null
-	tri_count = faces.size() / 3
-	_samples(900)
-	_find_bow()
-	if geo.has("nozzles"):
-		nozzles = (geo["nozzles"] as Array).duplicate(true)
-	else:
-		_find_nozzles()
-		if not geo.is_empty():
-			geo["nozzles"] = nozzles.duplicate(true)
-	_kit_nozzles(root)
-	for side in ["port", "stb", "top"]:
-		mounts[side] = _mount_row(side)
 	_read_turrets(root)
 	_read_doors(root)
 	_read_points(root)
-	_find_core(faces, geo)
-	if geo.has("turrets") and (geo["turrets"] as Array).size() == turrets.size():
-		for k in turrets.size():
-			(turrets[k] as Dictionary).merge((geo["turrets"][k] as Dictionary).duplicate(true), true)
-	else:
-		_turret_clearance(root, meshes)
-		if not geo.is_empty():
-			var reach: Array = []
-			for t in turrets:
-				reach.append({"full": t.get("full"), "ymin": t.get("ymin"), "ymax": t.get("ymax"), "blocked": t.get("blocked", [])})
-			geo["turrets"] = reach
-
-
-# The shared geometry entry for one hull pose: its triangles, the hit BVH and the per-surface ranges (meshes by index).
-static func build_geo(root: Node3D, meshes: Array) -> Dictionary:
-	var ranges: Array = []
-	var faces := faces_of(root, meshes, ranges)
-	var tm2: TriangleMesh = TriangleMesh.new()
-	if faces.size() >= 3:
-		tm2.create_from_faces(faces)
-	else:
-		tm2 = null
-	var keep: Array = []
-	for r in ranges:
-		var e: Dictionary = r.duplicate()
-		e["mi_index"] = meshes.find(r["mi"])
-		e.erase("mi")
-		e.erase("paint")
-		keep.append(e)
-	return {"faces": faces, "tm": tm2, "ranges": keep}
-
-
-# Issue 1434: the sliced load builds the BVH in a separate frame from seeded analysis.
-func prime(root: Node3D, meshes: Array) -> bool:
 	var key := _geo_key(root, meshes)
-	if key.is_empty() or _hull_geometry.has(key):
-		return false
-	_authored(root)   # mark interior faces before building the outside BVH
-	_geometry(root, meshes)
-	return true
-
-
-func _geometry(root: Node3D, meshes: Array) -> Dictionary:
-	var key := _geo_key(root, meshes)
-	if key.is_empty():
-		return {}
 	if _hull_geometry.has(key):
 		var cached: Dictionary = _hull_geometry[key]
-		_hull_geometry.erase(key)
-		_hull_geometry[key] = cached
-		return cached
+		var core_ready: bool = not points["core"].is_empty() or cached.has("fallback_core") or (cached["faces"] as PackedVector3Array).is_empty()
+		if (cached["turrets"] as Array).size() == turrets.size() and core_ready:
+			_hull_geometry.erase(key)
+			_hull_geometry[key] = cached
+			return {"geo": cached, "tid": -1}
+	var resources: Array[Mesh] = []
+	var input := _geometry_input(root, meshes, inv, resources)
+	var build := {"key": key, "resources": resources, "tid": -1}
+	if threaded:
+		var cancel := GeometryCancel.new()
+		var out := [{}]
+		build["cancel"] = cancel
+		build["result"] = out
+		build["tid"] = _queue_geometry(input, out, cancel)
+	else:
+		build["geo"] = _build_geometry(input)
+	return build
+
+
+func _join_geometry(build: Dictionary) -> Dictionary:
+	var tid := int(build["tid"])
+	if tid >= 0:
+		WorkerThreadPool.wait_for_task_completion(tid)   # the sliced caller has already polled for completion
+	var geo: Dictionary = build["result"][0] if tid >= 0 else build["geo"]
+	var key: Array = build.get("key", [])
+	if key.is_empty():
+		return geo
+	_hull_geometry.erase(key)
 	if _hull_geometry.size() >= GEO_LIMIT:
 		_hull_geometry.erase(_hull_geometry.keys()[0])
-	var geo := build_geo(root, meshes)
-	var resources: Array[Mesh] = []
-	for m in meshes:
-		if not is_instance_valid(m):
-			continue
-		var mi := m as MeshInstance3D
-		if mi != null and mi.mesh != null:
-			resources.append(mi.mesh)
-	geo["resources"] = resources
+	geo["resources"] = build["resources"]   # keep the mesh identities used by the key alive
 	_hull_geometry[key] = geo
 	return geo
+
+
+func _geometry_input(root: Node3D, meshes: Array, inv: Transform3D, resources: Array[Mesh]) -> Dictionary:
+	var parts: Array = []
+	var has_turning_mesh := false
+	for i in meshes.size():
+		if not is_instance_valid(meshes[i]):
+			continue
+		var mi := meshes[i] as MeshInstance3D
+		if mi == null or mi.mesh == null:
+			continue
+		var mesh := mi.mesh
+		var xf := inv * mi.global_transform
+		var turning := not turrets.is_empty() and _turret_above(mi, root) >= 0
+		has_turning_mesh = has_turning_mesh or turning
+		parts.append([i, xf, _geometry_surfaces(mesh), turning])
+		resources.append(mesh)
+	var mounts_at_rest: Array = []
+	for t in turrets:
+		mounts_at_rest.append({"xf": t["xf"], "lo": t["lo"], "hi": t["hi"], "name": t["name"], "id": t["id"], "blocked": []})
+	var muzzles: Array = []
+	for p in points["gun"]:
+		if p.has("tur"):
+			muzzles.append({"tur": p["tur"], "lp": p["lp"], "lf": p["lf"], "ex": {"radius": (p["ex"] as Dictionary).get("radius", 0.0)}})
+	return {"parts": parts, "box": box, "turrets": mounts_at_rest, "muzzles": muzzles,
+		"need_fixed_bvh": has_turning_mesh, "need_core": points["core"].is_empty(), "code": code, "stb_z": stb_z}
+
+
+static func _geometry_surfaces(mesh: Mesh) -> Array:
+	var array_mesh := mesh as ArrayMesh
+	var inside := {}
+	for si in mesh.get_surface_count():
+		if interior_material(mesh.surface_get_material(si)):
+			inside[si] = true
+	if array_mesh == null and not mesh is PrimitiveMesh and inside.is_empty():
+		# For other Mesh subclasses only the native call knows the primitive types.
+		return [[-1, mesh.get_faces(), PackedInt32Array(), false, false]]
+	var surfaces: Array = []
+	for si in mesh.get_surface_count():
+		var primitive := array_mesh.surface_get_primitive_type(si) if array_mesh != null else Mesh.PRIMITIVE_TRIANGLES
+		if inside.has(si) or (primitive != Mesh.PRIMITIVE_TRIANGLES and primitive != Mesh.PRIMITIVE_TRIANGLE_STRIP):
+			continue
+		var arrays := mesh.surface_get_arrays(si)
+		if not arrays.is_empty() and arrays[Mesh.ARRAY_VERTEX] is PackedVector3Array:
+			var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX] if arrays[Mesh.ARRAY_INDEX] != null else PackedInt32Array()
+			surfaces.append([si if array_mesh != null else -1, arrays[Mesh.ARRAY_VERTEX], indices,
+				primitive == Mesh.PRIMITIVE_TRIANGLE_STRIP, inside.is_empty()])
+	return surfaces
+
+
+static func _queue_geometry(input: Dictionary, out: Array, cancel: GeometryCancel) -> int:
+	return WorkerThreadPool.add_task(func() -> void: out[0] = _build_geometry(input, cancel), false, "hull geometry")
+
+
+static func _build_geometry(input: Dictionary, cancel: GeometryCancel = null) -> Dictionary:
+	var faces := PackedVector3Array()
+	var fixed_faces := PackedVector3Array()
+	var ranges: Array = []
+	var need_fixed_bvh: bool = input["need_fixed_bvh"]
+	for part in input["parts"]:
+		if cancel != null and cancel.stopped():
+			return {}
+		var xf: Transform3D = part[1]
+		var identity := xf.is_equal_approx(Transform3D.IDENTITY)
+		var to_part := Transform3D.IDENTITY if identity else xf.affine_inverse()
+		var part_faces := PackedVector3Array()
+		for surf in part[2]:
+			if cancel != null and cancel.stopped():
+				return {}
+			var start: int = (faces.size() + part_faces.size()) / 3
+			var v: PackedVector3Array = surf[1]
+			var idx: PackedInt32Array = surf[2]
+			var strip: bool = surf[3]
+			# Mesh.get_faces() goes through a native TriangleMesh, which snaps in
+			# mesh space first. The authored-interior path used raw outside arrays.
+			if surf[4]:
+				for j in v.size():
+					v[j] = v[j].snappedf(0.0001)
+			var indexed := not idx.is_empty()
+			var corners := idx.size() if indexed else v.size()
+			var count: int = maxi(corners - 2, 0) if strip else corners / 3
+			if count == 0 or (not strip and corners % 3 != 0):
+				continue
+			if not indexed and not strip:
+				part_faces.append_array(v)
+			else:
+				var offset := part_faces.size()
+				part_faces.resize(offset + count * 3)
+				if strip:
+					for tri in count:
+						var ids := face_corners(tri, true)
+						part_faces[offset] = v[idx[ids.x] if indexed else ids.x]
+						part_faces[offset + 1] = v[idx[ids.y] if indexed else ids.y]
+						part_faces[offset + 2] = v[idx[ids.z] if indexed else ids.z]
+						offset += 3
+				else:
+					for j in corners:
+						part_faces[offset + j] = v[idx[j]]
+			if surf[0] >= 0:
+				ranges.append({"mi_index": part[0], "surface": surf[0], "start": start, "count": count, "to_part": to_part, "strip": strip})
+		if not identity:
+			part_faces = xf * part_faces
+		faces.append_array(part_faces)
+		if need_fixed_bvh and not part[3]:
+			fixed_faces.append_array(part_faces)
+	if cancel != null and cancel.stopped():
+		return {}
+	# A scratch analyser never owns live nodes or per-ship state.
+	var scratch = new()
+	scratch.code = input["code"]
+	scratch.stb_z = input["stb_z"]
+	scratch.box = input["box"]
+	scratch.c = scratch.box.get_center()
+	scratch.L = maxf(scratch.box.size.x, 0.1)
+	scratch.W = maxf(scratch.box.size.z, 0.05)
+	scratch.H = maxf(scratch.box.size.y, 0.05)
+	scratch.tm = _make_bvh(faces)
+	if cancel != null and cancel.stopped():
+		return {}
+	scratch._find_nozzles()
+	scratch.turrets = input["turrets"]
+	scratch.points = {"gun": input["muzzles"]}
+	var reach: Array = []
+	if not scratch.turrets.is_empty():
+		scratch._turret_clearance(_make_bvh(fixed_faces) if need_fixed_bvh else scratch.tm, cancel)
+		for t in scratch.turrets:
+			reach.append({"full": t.get("full"), "ymin": t.get("ymin"), "ymax": t.get("ymax"), "blocked": t["blocked"]})
+	if cancel != null and cancel.stopped():
+		return {}
+	var geo := {"faces": faces, "tm": scratch.tm, "ranges": ranges, "nozzles": scratch.nozzles, "turrets": reach}
+	if input["need_core"] and faces.size() >= 3:
+		geo["fallback_core"] = scratch._volume_center(faces)
+	return geo
+
+
+static func _make_bvh(faces: PackedVector3Array) -> TriangleMesh:
+	if faces.size() < 3:
+		return null
+	var bvh := TriangleMesh.new()
+	bvh.create_from_faces(faces)
+	return bvh
 
 
 # Only installed hulls have a stable kit contract. The local frames keep world
@@ -1717,21 +1844,10 @@ func _first_muzzle(k: int) -> Dictionary:
 # Once per hull: the yaws each turret may reach from rest, walking both ways until its arc ends or a barrel would run into the
 # ship (the hull and every part that does not turn; another turret is taken at rest). A turret's reach is one unbroken run of
 # yaws through 0 (rest), [ymin, ymax], or the whole circle (full). Its edges are found to a tenth of a degree.
-func _turret_clearance(root: Node3D, meshes: Array) -> void:
-	if turrets.is_empty():
-		return
-	var fixed: Array = []
-	for m in meshes:
-		if not is_instance_valid(m): continue
-		var mi := m as MeshInstance3D
-		if mi != null and _turret_above(mi, root) < 0:
-			fixed.append(mi)
-	var faces := faces_of(root, fixed)
-	var tmf: TriangleMesh = null
-	if faces.size() >= 3:
-		tmf = TriangleMesh.new()
-		tmf.create_from_faces(faces)
+func _turret_clearance(tmf: TriangleMesh, cancel: GeometryCancel) -> void:
 	for k in turrets.size():
+		if cancel != null and cancel.stopped():
+			return
 		var t: Dictionary = turrets[k]
 		var ok_at := func(yaw: float) -> bool: return _turret_ok(k, yaw, tmf)
 		if not ok_at.call(0.0):

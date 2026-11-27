@@ -586,6 +586,7 @@ var _build_gen := 0
 
 func stop_build() -> void:
 	_build_gen += 1
+	_retire_hull_analysis()
 	_drop_staged_ship()
 	stage.stop()
 	if not _vp_saved.is_empty():
@@ -768,6 +769,7 @@ func _begin(a) -> void:
 	_threat_version = -1
 	_threat_one_ver = -1
 	api = a
+	_retire_hull_analysis()
 	_build_gen += 1
 	var gen := _build_gen
 	load_phase = "start"
@@ -931,14 +933,18 @@ func _begin(a) -> void:
 	if sliced:
 		load_phase = "ships"
 		var built: bool = await _make_views_sliced(gen)
-		load_phase = "after_ships"
 		if not built:
 			return
+		load_phase = "after_ships"
 	else:
 		for u in V["units"]:
 			_make_view(u)
 	_sync(V)
-	if world != null: world.use_ship_debris(views.values())
+	# LOAD39: a cold lit proxy for the first painted hull chunk stalled the title draw for 1.9 s.
+	# Keep the world's existing wreck kit behind the live menu. Only battles and their previews
+	# upgrade those slots to cut hull meshes, with the normal load cover and pipeline warm-up.
+	if world != null and not title_backdrop:
+		world.use_ship_debris(views.values())
 	# open on your fleet, looking toward the enemy (the browser game's camera starts over the player's side)
 	var hv: Dictionary = board.home_view(V["units"])   # shared with the Hold relay beacon's placement (issue 1536)
 	cam.home = hv["target"]
@@ -1324,8 +1330,20 @@ func _drop_preload(wait := true) -> void:
 # stretch is long; and the worst ship's stages and effects parts are logged.
 const INST_AHEAD := 3
 var _inst_tasks := {}   # unit index -> {"tid", "out": [instance]}
+var _hull_analysis := {}   # at most one geometry job in the sliced registration loop
 var _ls := {}           # the sliced build's stats in progress
 var _ls_t := 0          # start of the current main-thread stretch
+
+
+func _retire_hull_analysis() -> void:
+	if _hull_analysis.is_empty():
+		return
+	var work: Dictionary = _hull_analysis["geometry"]
+	_hull_analysis = {}
+	var tid := int(work["tid"])
+	if tid >= 0:
+		work["cancel"].stop()
+		ShipView.retire_build([], [{"tid": tid}])   # no node output, just like a retired debris cut
 
 
 func _start_inst(units: Array, from: int) -> void:
@@ -1354,9 +1372,11 @@ func _ls_yield(gen: int, force := false) -> bool:
 		return true
 	_ls["worst_stretch"] = maxi(_ls["worst_stretch"], now - _ls_t)
 	await get_tree().process_frame
+	if gen != _build_gen:
+		return false
 	_ls["frames"] += 1
 	_ls_t = Time.get_ticks_usec()
-	return gen == _build_gen
+	return true
 
 
 func _make_views_sliced(gen: int) -> bool:
@@ -1439,32 +1459,40 @@ func _make_views_sliced(gen: int) -> bool:
 			_ls["worst_setup"] = used
 			_ls["worst_code"] = sv.code
 			_ls["worst_stages"] = sv.stage_us.duplicate()
-		# issue 1434 (LOAD5: a first hull's analyse took up to 450 ms): a new hull's triangles and hit BVH get their own
-		# frame. The view holds still until its effects are registered, so the pose (and the geometry key) is the same.
-		# the whole view (its hull node bobs on its own) holds still, so the geometry key matches at registration
+		# LOAD39: hold the fitted pose until registration. Snapshot on the main thread,
+		# then let the seed-free geometry pass run while the menu or cover keeps drawing.
 		var pm_was: Node.ProcessMode = sv.process_mode
 		sv.process_mode = Node.PROCESS_MODE_DISABLED
 		ok = await _ls_yield(gen)
 		if not ok:
 			return false
-		if gfx != null and "starboard_z" in gfx:
+		if gfx != null and "starboard_z" in gfx and gfx.has_method("add_ship"):
 			var tg := Time.get_ticks_usec()
 			# The altitude band moves the hull in its root frame. Set it before keying the BVH,
 			# just as for effect registration, or registration rebuilds the geometry at the new pose.
 			sv.set_band(ALT_BAND.height(u))
 			var ms_list: Array = sv.meshes if not sv.a4 else []
-			if load("res://fx/fx_ship.gd").prime_hull(gfx, sv, str(u["id"]), bool(u["squadron"]), ms_list):
-				var g_us := Time.get_ticks_usec() - tg
-				_ls["geo"] = int(_ls.get("geo", 0)) + g_us
-				if g_us > int(_ls.get("worst_geo", 0)):
-					_ls["worst_geo"] = g_us
-					_ls["worst_geo_code"] = sv.code
-				ok = await _ls_yield(gen, true)
-				if not ok:
-					return false
+			var squad := bool(u["squadron"]) or str(u["cls"]) == "Squadron"
+			_hull_analysis = load("res://fx/fx_ship.gd").begin_hull_analysis(gfx, sv, str(u["id"]), squad, ms_list)
+			var g_us := Time.get_ticks_usec() - tg
+			_ls["geo"] = int(_ls.get("geo", 0)) + g_us
+			if g_us > int(_ls.get("worst_geo", 0)):
+				_ls["worst_geo"] = g_us
+				_ls["worst_geo_code"] = sv.code
+			var tid := int(_hull_analysis["geometry"]["tid"])
+			if tid >= 0:
+				var wait_at := Time.get_ticks_usec()
+				while true:
+					ok = await _ls_yield(gen, true)
+					if not ok:
+						return false
+					if WorkerThreadPool.is_task_completed(tid):
+						break
+				_ls["wait"] += Time.get_ticks_usec() - wait_at
 		var prof0: Dictionary = (gfx.prof as Dictionary).duplicate() if gfx != null and "prof" in gfx else {}
 		var tr := Time.get_ticks_usec()
-		_register_fx_ship(u, sv)
+		_register_fx_ship(u, sv, _hull_analysis)
+		_hull_analysis = {}
 		sv.process_mode = pm_was
 		var fx_us := Time.get_ticks_usec() - tr
 		_ls["fx"] += fx_us
@@ -1489,7 +1517,7 @@ func _make_views_sliced(gen: int) -> bool:
 	load_stats = _ls   # read by bench/load_1434.gd (times in microseconds, ms in milliseconds)
 	_drop_preload()
 	hud.loading_count(0, 0)
-	print("[load] %d ships built in %d ms over %d frames%s: longest stretch %d ms; ship setup %d ms (worst %d ms, %s: %s), effects registration %d ms (worst %d ms, %s: %s), hull geometry %d ms (worst %d ms, %s), waiting on hull files and worker instances %d ms; %d hulls instanced on workers" % [
+	print("[load] %d ships built in %d ms over %d frames%s: longest stretch %d ms; ship setup %d ms (worst %d ms, %s: %s), effects registration %d ms (worst %d ms, %s: %s), hull geometry snapshot %d ms (worst %d ms, %s), waiting on hull files and workers %d ms; %d hulls instanced on workers" % [
 		total, _ls["ms"], _ls["frames"], " (title backdrop)" if title_backdrop else "", _ls["worst_stretch"] / 1000,
 		_ls["setup"] / 1000, _ls["worst_setup"] / 1000, _ls["worst_code"], _us_ms(_ls["worst_stages"]),
 		_ls["fx"] / 1000, _ls["worst_fx"] / 1000, _ls["worst_fx_code"], _us_ms(_ls["worst_fx_parts"]),
@@ -1505,7 +1533,7 @@ static func _us_ms(d: Dictionary) -> String:
 	return ", ".join(parts) if not parts.is_empty() else "-"
 
 
-func _register_fx_ship(u: Dictionary, sv: ShipView) -> void:
+func _register_fx_ship(u: Dictionary, sv: ShipView, analysis := {}) -> void:
 	# issue 1582: the class altitude band and drop-line, set here so every way a view is built (the opening roster,
 	# reinforcements, a revived or captured hull) gets it before its effects are registered. Same height every call.
 	sv.set_band(ALT_BAND.height(u))
@@ -1515,6 +1543,8 @@ func _register_fx_ship(u: Dictionary, sv: ShipView) -> void:
 			info["shielded"] = false   # issue 1434 (item 10): the backdrop never takes a hit, so it builds no shield skin
 		if not sv.a4:
 			info["meshes"] = sv.meshes   # A4 ships: fx finds the hull and its skin_<n> patches itself
+		if not analysis.is_empty():
+			info["hull_analysis"] = analysis
 		gfx.add_ship(str(u["id"]), sv, info)
 		sv.fx_engines = true   # G4 draws the engines at the hull's real nozzles: hide ShipView's guessed glows
 		if movement != "brisk" and gfx.has_method("set_engine"):
@@ -1860,7 +1890,8 @@ func _exit_tree() -> void:
 	_drop_staged_ship()
 	stage.stop()
 	_build_gen += 1   # issue 1518: a build still awaiting stops at its next step (quit or leave mid-load)
-	last_exit_mid_build = not _inst_tasks.is_empty() or _preload.values().has(null)
+	last_exit_mid_build = not _inst_tasks.is_empty() or _preload.values().has(null) or not _hull_analysis.is_empty()
+	_retire_hull_analysis()
 	_drop_preload(false)   # issue 1434: a build stopped part way hands its running loads and instances on, no wait
 	# exit synchronisation stays: drain both tasks, then clear the flags they own
 	retiring = true
