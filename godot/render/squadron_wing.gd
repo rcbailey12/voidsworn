@@ -205,6 +205,13 @@ func _make_craft(fac: String, kind: String) -> Node3D:
 	return craft_root
 
 
+# Only one distressed craft needs the wing's smoke ribbon. Use its real exhaust and moving local frame.
+func damage_exhaust() -> Dictionary:
+	if craft.is_empty() or not is_instance_valid(craft[0]):
+		return {}
+	return {"parent": craft[0], "p": _stern}
+
+
 func _engine_origin(model: Node3D) -> Vector3:
 	var engines := model.find_children("hp_eng_*", "Node3D", true, false)
 	if engines.is_empty():

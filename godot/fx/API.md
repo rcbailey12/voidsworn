@@ -61,13 +61,14 @@ Call it after the events that changed a ship have been animated (or simply after
 | Stage | When (per section, hp fraction) | Look |
 |---|---|---|
 | 0 intact | above 0.8 | clean hull |
-| 1 scorched | 0.6 < f <= 0.8 | spreading scorch and secondary burns, up to 2 surface marks; transition sparks, no persistent emitter |
-| 2 dented | 0.4 < f <= 0.6 | an anchor dent or material-specific concavity, wider surface damage, up to 3 marks; smoke starts |
+| 1 scorched | 0.6 < f <= 0.8 | spreading scorch and secondary burns, up to 2 surface marks. Transition sparks and a brief cold puff, no persistent emitter |
+| 2 dented | 0.4 < f <= 0.6 | an anchor dent or material-specific concavity, wider surface damage, up to 3 marks and a steady smoke sheath |
 | 3 fissured | 0.2 < f <= 0.4 | a deep crater and buckled sealed fissure over intact dark skin; up to 4 marks, fire and smoke, a slow vent on heavy hulls |
 | 4 hull breach | f <= 0.2, or broken | open break with throat radius 0.048 L, stepped torn collar, recess 0.17 L, three cross members and seated fire; medium hulls up get a second break; transition sparks and debris |
 | 5 wreck | `dead` (after `death`) | see section 5 |
 
-- R80 owner rulings govern this ladder. Stage 3 and every weapon mark stay sealed. Squadrons keep stage 0 surfaces and trail pooled smoke below half total HP.
+- R80 owner rulings govern this ladder. Stage 3 and every weapon mark stay sealed. Squadrons keep stage 0 surfaces and trail a baked ribbon from one craft's exhaust below half total HP.
+- Issue 2044 uses one shared baked vent for wound, wisp, wing and hulk plumes. A wound combines a short core and a longer sheath with a small nearby light that does not scatter into fog. Wounds V2 keeps its separate cavity lights and their fog and falloff. Meridian vents cold blue, Eclipse stays violet, Chorus vents ochre organic mist and Glasswrights get pale vapour without fire or soot. Hulk smoke thins for about a minute and stays as a cold wisp until the wreck is cleared (R458).
 - A stage that goes up while shots are still flying at that ship waits until they land, so holes open when the hit lands, not before.
 - Repair seals a stage 4 break with a material-specific patch and keeps dents, scorch and weapon scars. Removed emitters fade within 0.8 effect seconds. Chorus knits over 3 seconds.
 - `burning` shares the section emitter allocator. The per-ship caps for fire and smoke/vent are 4 and 8 for light hulls, 8 and 12 for medium hulls, and 12 and 16 for heavy and capital hulls. Persistent emission spends zero counted flashes. Safe mode keeps flat marks and drops deformation, breaks and emitters. A broken `eng` section makes the engines sputter. Shields rising play a short faction-coloured regen shimmer.
@@ -122,12 +123,13 @@ fx.clear_wreck(id)                     # optional: remove the wreck pieces (e.g.
 - Authored recipe ships: the version 1 `voidsworn_destruct` GLB extra and interior surfaces are defined in `docs/ship_pipeline/RECIPE.md`, stage 7. `fx_hull.gd` reads them in the installed hull's scaled frame. Damage opens the exterior onto the authored decks, frames and machinery; death carries those surfaces into its pieces. Authored joints guide the irregular fracture, retaining the missing bite, chips, ragged rims and faction matter. Their count follows the build's structure. Ships without that extra keep the #167 procedural cavity and capped-face fallback.
 - Main rigid wreck pieces lock linear Y at the altitude where they separated, and their release velocity has zero Y. They can still tumble. This keeps physics contacts from pushing the main wreck below the board where Ryan cannot see it (`death_plane_check.gd`); it is an existing visibility protection, not a restriction on the rotation or every small thrown fragment. Kinematic main pieces also receive zero Y release velocity.
 - fx hides the ship's own meshes at the break-up. G2 can keep or free the root after `t`; fx keeps its own copies of the meshes.
-- `fx.jump_out(id)` for `fled`: a short drive flare and streak, then the ship's meshes are hidden.
 
 ## 6. Other events
 
-- `fx.ability(id, ab)` and `fx.command(id, cmd)`: a short faction-coloured pulse on the ship (a stand-in until each ability gets its own look; coming).
-- `fx.launch(carrier_id, squadron_id)`: bay flare and craft streaming out toward the new wing.
+- `fx.ability(id, ab)` and `fx.command(id, cmd)` use the faction's own layered core pulse. Command adds a second beat. Blink, Phase and Nova have their own event calls below.
+- `fx.launch(carrier_id, squadron_id)` opens the authored bay as before, with a directional lip glow, paired rails, vapor and ignition timed to each of the six craft.
+- `fx.rift_in(id, pace, delay, risen)` opens a portal before showing and resolving the hull. `fx.fold(id, pace, transfer)` takes an optional callback that places a blinking view at its new hex. Without the callback, Phase leaves an echo and resolves on the same hex. `fx.jump_out(id, pace)` spools the drive, pinches the hull and hides it at the end. These return the absolute FX time when the hull hand-off ends, or `-1` for a missing or inactive ship. Only the visual pivot moves. The caller still owns the rules position.
+- `fx.nova(id, target, pace)` returns the detonation time on the FX clock, or `-1` if the ship is missing or inactive. The bench sets `fx.nova_look` to `ember_hammer` or `crown_lance` to compare the three beats. Leaving it unset preserves the pre-pick cue until Ryan selects a default. The two choices use the shared flash counter and never call the old stub.
 - `var t = fx.board(attacker_id, target_id, result)` on the rules' `board` event. The shared kit sends the faction's pods, phase beams, prismatic locks or living umbilicals between hull attachments, then opens a cutter ring and vents at the target's hatch. The wider hatch leaves a scar on the facing flank (camera-facing flank if the attacker is dead ahead or astern). The crossing uses the same paced 1.6 s hold from `fx.board_hold_ms()` as before. The return value estimates the whole effect, including the vent tail.
 - `fx.hull_mark(id, look, w, world_p, dir, sec)`: a weapon mark without a volley (look as in volley, plus `board` and `ram`).
 - `fx.tick(id, kind)` plays the turn-start beat only. Fire uses a short baked plume, acid adds droplets and an etch, tidal pulls toward `fx.well`, and a storm branches down from the cloud onto the live shield or the bare hull. A zero pool never wakes the shield. Persistent acid and ion status are separate.
@@ -153,7 +155,7 @@ Torpedoes and rams shove, shells and gauss slugs kick, and lances and ions carry
 
 ShipView owns board position and heading. FX moves `hull_pivot`, keeping the hex marker and selection ring on the board. The pivot's translation follows the ShipView heading while the hull yaws under it. ShipView takes idle bob time from the effect clock so it follows hit pause.
 
-Missed projectiles pass the target plane and leave a fading trail. Close misses can spark at the shield edge, and the positional pass-by cue plays on the effect clock. `fx/test/wave_1a_check.gd` covers the hit, recoil and miss behavior.
+Missed projectiles pass the target plane and leave a fading trail. Close misses can throw one shared glint at the shield edge, and the positional pass-by cue plays on the effect clock. `fx/test/wave_1a_check.gd` covers the hit, recoil and miss behavior.
 
 ## 8. Accessibility
 
@@ -205,7 +207,7 @@ Tonemapper, exposure, bloom threshold and the dark-hull lift are chosen in look.
 | `section_down`, `system`, `burning`, `tick` | `sync_ship` after it (and `tick(id, kind)` for `tick`) |
 | `death` | `death(unit, cause)` |
 | `wreck` | nothing: the wreck is already there |
-| `fled` | `jump_out(unit)` |
+| `fled` | `jump_out(unit, pace)` |
 | `ability`, `command` | `ability(unit, ab)`, `command(unit, id)` |
 | `ram` | `volley(unit, "torp", target, {weapon_id: "ram", hits: [...]})`: the ram's crumple on the target, a smaller one on the rammer, the biggest shove |
 | `board` | `board(unit, target, result)` |
@@ -235,8 +237,7 @@ func play_event(e: Dictionary) -> float:     # returns how long to wait before t
 		"death":
 			return fx.death(str(e["unit"]), str(e["cause"]))
 		"fled":
-			fx.jump_out(str(e["unit"]))
-			return 0.5
+			return maxf(0.0, fx.jump_out(str(e["unit"])) - fx.now)
 		"ability":
 			fx.ability(str(e["unit"]), str(e["ab"]))
 		"command":
@@ -349,6 +350,8 @@ Cost (cloud sandbox CPU, about three times slower than Ryan's PC; the PC numbers
 
 The shared faction palette and styles live in `res://fx/faction_looks.json`. `FLOOK.of(faction)` and `fx.faction_info(faction)` return the entry. An unknown id warns once and falls back to Sunward. The palette includes `weapon`, `engine`, `shield` (null for factions without a bubble), `damage_glow` for fire and lit conduits inside damage, and optional `accent` for the engine corona and `shield_edge` for the rim. Sunward, Ashfall and Eclipse have engine accents. Sunward has a tinted shield rim and the Glasswrights have a rainbow rim. Eclipse has dedicated `weapon_core` and `weapon_sheath` fields.
 
+`rift_shape` is the shared contour for rifts, ability and command waves, and bay lips. These draw from the existing weapon or engine colors, not a duplicate palette.
+
 The table also supplies `shield_style` (0 veil, 1 hex lattice, 2 patchy, 3 prismatic), `shielded`, `trail`, `engine_extra` (none, soot, spores, embers), `hull_fix` for the rim and lift on dark hulls, `nebula` for the battle sky, faction death styles and `wound_kind` (0 metal, 1 living tissue, 2 crystal, 3 Eclipse machine).
 
 Code outside fx/ reads the effect colours through `FLOOK.engine(f)`, `FLOOK.weapon(f)` and `FLOOK.shield(f)`. The last returns the weapon colour for a faction without a bubble. `FLOOK.has(f)` checks for a known id. `render/test/faction_colour_source_check.gd` guards the shared source. The json ships in the export (`include_filter="*.json"`). Ids never change.
@@ -368,7 +371,7 @@ Ryan's first playtest: "effects looked very weak, especially at a distance and f
 
 ### Round 2 (Nov 1, after Opus's read of round 1 and Ryan's 16:12 note on hollow wrecks)
 
-- **Per-effect sizes on screen.** `fx.spr(..., px)`, `fx.sprx(px, ...)`, `fx.stk(..., wpx, lpx)` and `fx.ring(..., px)` give one effect its own minimum size in pixels (1080 lines), on top of its kind's floor; a sprite or line grown to its own floor dims less (f^-0.5 and f^-0.3), so the moments that must land read as big bright bursts, not big faint ones. A ring's px is its final size: the floor grows with the ring, so a far shock ring still expands. (Sprites carry it in the seed's whole part, streaks in a4.zw, rings in a4.w.)
+- **Per-effect sizes on screen.** `fx.spr(..., px)`, `fx.sprx(px, ...)`, `fx.flight_streak(..., wpx, lpx)` and `fx.ring(..., px)` give one effect its own minimum size in pixels (1080 lines), on top of its kind's floor; a sprite or line grown to its own floor dims less (f^-0.5 and f^-0.3), so the moments that must land read as big bright bursts, not big faint ones. A ring's px is its final size: the floor grows with the ring, so a far shock ring still expands. (Sprites carry it in the seed's whole part, streaks in a4.zw, rings in a4.w.)
 - **Pops and the flash budget.** `fx.pop` (and every bright sprite) books a counted flash only when it is drawn at 6% of the screen height or more (`_flash_sized` now counts the pixel floor). Before, every pop booked one, so in a busy fight most hits, and a dying ship's cook-off, used up the 3 a second and drew as faint lifts, and the kill's own blast was refused. WCAG 2.3.1 counts flashes by area; the cap is unchanged for big ones and reduce flashing still turns every bright pop into a soft lift.
 - **Impacts by weight** (`HIT_PX` in fx_weapons.gd: 34, 46, 56 px for light, medium, heavy; plasma +6, at most 62): the hit flash, a hot core, longer sparks with their own length, glowing debris embers, the afterglow and hot spot at a size you can see, and a hull light at 7.9 (just under the 8 that counts) held 0.42 s, placed further off the plate so it lights a patch of the target's hull. Laser and prism hits flash in their own colour; prism hits throw spectral glints.
 - **Muzzles** (`MUZ_PX` 20, 26, 32 px; `_muzzle`): every gun shows a flash and a short light on the firing ship. Autocannon: a four-shot brass stutter with fat short tracers; laser turret: long hard faction-coloured bolts with a white core (4.6 by 30 px); flak: airbursts round the target with a pale burst ring; gauss: a white discharge, a fat shock ring and an instant bright wake, then a punch ring at the hit; prism: needles riding spectral glints.
@@ -443,24 +446,43 @@ intercept. Rockets add a cold, short smoke layer over the nozzle wake with
 its own small pixel floor. A torpedo without its kit model uses the same
 tapered wake as a kit round.
 
-Streaks retain their existing pool and API. The mask has a bright compact head,
-a short irregular tail, and a soft halo. Spark heads follow drag and a gentle
-curved drift; the cooling history bends inside the quad. After the usual length
-floor, the shader measures the projected head-to-tail distance and shortens it
-with perspective-correct interpolation. The caps are **actual render-target
-pixels**, at cameras 170, 60 and 26, at 1080p or 4K, including `min_px = 0`:
+### Shared sparks (issue 2018)
 
-| Streak kind | Maximum projected head-to-tail length | Default quad width floor at 1080 |
+Use `fx.spark(p, t, life, faction, intensity, shutter, width, velocity, drag, wpx, lpx, role, tint)` for thrown
+sparks. `t` and `life` are effect seconds. `shutter` is how many seconds of motion the tapered tail can
+show, shortened as the spark cools. `p` and `velocity` are world-space. `width` uses the same `fx.unit`
+convention as the other primitives. `drag` defaults to zero and is in inverse seconds. Optional pixel
+floors describe the whole mask at 1080 lines, not the hot core. The optional `tint` is for an approved
+effect colour such as plasma's blue slag on metal. It does not bypass the Chorus no-spark rule.
+
+The shared shader draws one camera-facing HDR streak with a small hot head, fading to the faction
+tint. Its tail samples the same gravity-free, drag-only path as the head. There is no floor or bounce.
+Pixel floors and a projected length cap keep it legible at camera 170 without bloating close views.
+The per-hit recipe still sets the spawn point, cone and delay, and scales spark count, heft and life
+with hit size. Looping Eclipse drive sparks use the same packed attributes with a period and the
+existing nozzle power gates. They keep the original hull-local motion.
+
+The faction producing the spark owns its colour. For a hull hit pass the struck faction, and for a
+muzzle or airburst pass the firing faction. `SparkRole` defaults to `HULL` (`damage_glow`). The other
+roles use the matching death, shield, engine or weapon tint in `faction_looks.json`. Eclipse uses
+`damage_glow` except for its white-gold engine accent. The Glasswrights use their stored-light tint and a compact, faceted glint.
+Chorus tissue and bio splashes throw no metal sparks. A shield that holds still gives its ripple and local arcs, with no
+thrown spark spray. Shield breaks can throw sparks. No spark books a flash or spawns a light.
+
+`fx.stk` remains a compatibility wrapper. Its retired spark kinds route to `fx.spark`, and its other
+kinds route to `fx.flight_streak`. Use `fx.flight_streak` for new shot tracers and organic droplet trails. Those still use their
+own masks and timing. The projected-length caps use 1080-line pixels and scale with the render target,
+even with `min_px` set to zero.
+
+| Streak kind | Default maximum projected length at 1080 | Default quad width floor at 1080 |
 |---|---|---|
-| Spark, bio drop, molten drip, flame tongue | 16 px | 6 px |
+| Bio drop, flame tongue | 16 px | 6 px |
 | Shell and tracer | 22 px | 8 px |
 | Gauss and gauss flak | 26 px | 22 px (issue 800) |
 | Las and prism dart | 32 px | 7 px |
 
-These are geometry caps before post-process bloom. They do not cap a halo's
-threshold-dependent lit extent. Width floors are the whole textured quad,
-not a claim that every pixel of it is bright. The absolute length cap is
-independent of `fx_px`; widths still grow with the render scale and world size.
+The geometry caps apply before bloom. `fx/test/shared_spark_check.gd` checks the live pool's faction
+colours, shield behaviour, and guards against reintroducing low-res spark sprites.
 
 Both gauss emitters use `_gauss_wake`. Its tracer lasts `(2 - 0.001) / 60`
 seconds: two drawn samples on the 60 Hz clock, with the small epsilon preventing
@@ -637,8 +659,8 @@ the tracer's length follows the shot, with no short screen-space length cap.
 
 Stopped shield hits never call a gas atlas, vent or gas-cloud emitter, including
 the former baked flash body. They use faction-coloured energy light, brief
-electrical branches and spark scatter. The existing ripple, shield pattern and
-break look remain owned by issue 372. Hull hits retain their smoke. Flash-area
+electrical branches. Issue 2018 limits thrown sparks to shield breaks. The existing ripple,
+shield pattern and break look remain owned by issue 372. Hull hits retain their smoke. Flash-area
 booking and the reduce-flashing fallback are preserved by `_shield_crackle`.
 
 Proof tools live in docs/shots/look_bench/kit: capture_round3.py renders all 46

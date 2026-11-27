@@ -15,6 +15,7 @@ extends RefCounted
 #   nebula                     three colours for the battle sky when this faction is the enemy (world.gd)
 #   accent                     a second effect colour; when set, a corona round each engine core (four factions set one)
 #   shield_edge                an edge colour or "rainbow" for the shield bubble's rim (none in use yet)
+#   rift_shape                 contour family for the shared warp, pulse and launch kit
 # Ids never change; display names live in the story tables, not here.
 
 const PATH := "res://fx/faction_looks.json"
@@ -101,3 +102,9 @@ static func weapon(faction: String) -> Color:
 # A faction with no shield bubble (shield null) still gets a hit flash: its weapon colour.
 static func shield(faction: String) -> Color:
 	return _pick(faction, "shield", "weapon")
+
+# Death spark colours are stored beside the rest of the death look as linear RGB.
+static func death_spark(faction: String) -> Color:
+	var look := of(faction)
+	var tint = _col(look.get("death", {}).get("spark"))
+	return tint if tint is Color else look["damage_glow"]

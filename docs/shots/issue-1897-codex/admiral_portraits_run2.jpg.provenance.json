@@ -1,0 +1,53 @@
+{
+  "source_commit": "7f3f87db866f51ae97c4df8b9ae5d8418c0098db",
+  "source_dirty": true,
+  "source_diff_sha256": "99c58ed3056c1815b05b7553bf5ec7174655bb9d15a70df4fed44ee0215b70ee",
+  "source_dirty_files": {
+    "contrib/codex/portraits_v1/NOTES.md": "f8d34e9c997e3459e4483a3edfacbabfe42c1fc9",
+    "contrib/codex/portraits_v1/anuket.png": "76405e6141d52469ed5be89db926ce586fb39452",
+    "contrib/codex/portraits_v1/ashgrove.png": "40eebc0541961f7cedad5beec6cfd18dde262bbf",
+    "contrib/codex/portraits_v1/contact_sheet.jpg": "e0415d58967fb19a0b02d70f2a52ae5a0fa01e43",
+    "contrib/codex/portraits_v1/maren.png": "2bed13f1c82e92167cb585c994fb8dcdc47cf040",
+    "contrib/codex/portraits_v1/mending.png": "022da26ede310c3a21d5d56f6206b1205adb57d9"
+  },
+  "stage": "paint proof",
+  "schema": 1,
+  "picture_name": "admiral_portraits_run2.jpg",
+  "date": "2026-11-25T15:49:56Z",
+  "sources": [
+    {
+      "source_commit": "7f3f87db866f51ae97c4df8b9ae5d8418c0098db",
+      "source_dirty": true,
+      "source_diff_sha256": "99c58ed3056c1815b05b7553bf5ec7174655bb9d15a70df4fed44ee0215b70ee",
+      "source_dirty_files": {
+        "contrib/codex/portraits_v1/NOTES.md": "f8d34e9c997e3459e4483a3edfacbabfe42c1fc9",
+        "contrib/codex/portraits_v1/anuket.png": "76405e6141d52469ed5be89db926ce586fb39452",
+        "contrib/codex/portraits_v1/ashgrove.png": "40eebc0541961f7cedad5beec6cfd18dde262bbf",
+        "contrib/codex/portraits_v1/contact_sheet.jpg": "e0415d58967fb19a0b02d70f2a52ae5a0fa01e43",
+        "contrib/codex/portraits_v1/maren.png": "2bed13f1c82e92167cb585c994fb8dcdc47cf040",
+        "contrib/codex/portraits_v1/mending.png": "022da26ede310c3a21d5d56f6206b1205adb57d9"
+      },
+      "stage": "paint proof"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    559,
+    564,
+    657
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "e31e2e367b104f3fe481bd6678ba553d5063223f145825272cd52b28e054301b"
+  ],
+  "stamp_template_sha256": "e96b26b66753b4c68ddd96fa02ed035f00785b974841699995c950b1a0c277fa",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABkUlEQVR4nO3VMRHAIADAQKgHjg3/MrtjgAz/CrJlrn0GAJR8rwMA4GZOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBMGp+Ep8BDnysdAIAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "da299a7454daa09d5d5c0a613697df48b230a204902a88e16575341acdae5b02",
+  "issue": 1897
+}

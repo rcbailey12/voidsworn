@@ -50,6 +50,7 @@ const LOOK := preload("res://render/look.gd")
 const CAMRIG := preload("res://render/camera_rig.gd")
 const BL := preload("res://world/board_look.gd")
 const LIVING := preload("res://world/world_living.gd")
+const BLOCKERS := preload("res://world/blocker_visuals.gd")
 const WORLD_PATH := "res://world/world.gd"
 const MOMENTS := "res://bench/look_moments.json"
 const HEX_S := 10.0
@@ -90,9 +91,11 @@ var _wound := {}   # issue 1741 (Artoo on 6fbf60fe): a wound-aimed row's open cu
 var cfg := {}
 var steps := 0
 var headless := false
+var moment_deadstar := false
 var failed := ""   # issue 1877 (Artoo on PR 1904): a failed clip or strict row fails the run (no LOOK_BENCH_DONE, exit 4)
 var sfx: Node = null          # --sound only
 var death_audio: Node = null
+var _build_d_stub: Node = null   # only used when comparing Nova on a pre-2045 checkout
 
 
 func _ready() -> void:
@@ -337,6 +340,7 @@ func _sound_setup() -> void:
 # A fresh effects system: every moment starts from the same empty state (no smoke, wrecks or debris left over from the
 # moment before, the effect clock at 0).
 func _make_fx() -> void:
+	_build_d_stub = null
 	if fx != null and is_instance_valid(fx):
 		world.remove_child(fx)   # _exit_tree releases its GPU resources and waits for its worker jobs
 		fx.queue_free()
@@ -360,7 +364,7 @@ func _hex(q: int, r: int) -> Vector3:
 # Build the world twice: the first build bakes the sky and planet (seconds on the PC, cached after); then wait for the
 # frame grid; then the second build reuses the bakes inside one frame, and a fixed 120 frames pass. So the shader clock
 # (TIME) and the world's own clocks (world_living's storm and gas) stand at the same values on every run.
-func _world(biome: Dictionary, terrain: Dictionary, units: Array) -> void:
+func _world(biome: Dictionary, terrain: Dictionary, units: Array, map := {}) -> void:
 	for pass_i in 2:
 		if wld != null and is_instance_valid(wld):
 			world.remove_child(wld)
@@ -374,7 +378,7 @@ func _world(biome: Dictionary, terrain: Dictionary, units: Array) -> void:
 			await _grid()
 		wld = load(WORLD_PATH).new()
 		world.add_child(wld)
-		wld.build({"map": {}, "terrain": terrain, "units": units, "round": 1},
+		wld.build({"map": map, "terrain": terrain, "units": units, "round": 1},
 			{"biome": biome, "fac": "voidsworn", "hex_world": _hex, "camera": cam, "environment": env, "quality": "max", "seed": 7})
 		if pass_i == 0:
 			var t0 := Time.get_ticks_msec()
@@ -391,6 +395,10 @@ func _world(biome: Dictionary, terrain: Dictionary, units: Array) -> void:
 		_warn("world rebuild did not reuse the bake (pending %d): this part's stills may not repeat" % int(wld.pending_bakes))
 	for k in 120:
 		await get_tree().process_frame
+	if map.has("deadstar"):
+		var blockers := BLOCKERS.new()
+		wld.add_child(blockers)
+		blockers.build({"map": map, "terrain": terrain}, _hex)
 
 
 func _grid() -> void:
@@ -404,6 +412,8 @@ func _grid() -> void:
 func _step() -> void:
 	_settle()
 	fx.step(STEP)
+	if is_instance_valid(_build_d_stub):
+		_build_d_stub._process(STEP)
 	if wld != null and is_instance_valid(wld) and wld.has_method("step"):
 		wld.step(STEP)
 	steps += 1
@@ -449,13 +459,14 @@ func _clear() -> void:
 
 
 # One ship as the battle draws it (G2's ShipView, added to G4's effects as the battle does), or null when it is a block.
-func _ship(id: String, fac: String, cls: String, pos: Vector3, facing: int, code := "", cut_on_arrival := false):
+func _ship(id: String, fac: String, cls: String, pos: Vector3, facing: int, code := "", cut_on_arrival := false,
+		squad_tpl := ""):
 	var sv = SV.new()
 	sv.name = "ship_" + id
 	world.add_child(sv)
 	var u := {"id": id, "fac": fac, "cls": cls, "facing": facing, "hp": 100, "maxHp": 100, "size": 1.0}
 	if cls == "Squadron":
-		u["tpl"] = "spore" if fac == "chorus" else "fighter"
+		u["tpl"] = squad_tpl if squad_tpl != "" else ("spore" if fac == "chorus" else "fighter")
 	if code != "":
 		u["code"] = code
 		u["L"] = float(OBJ_LEN.get(code, 10.0))
@@ -491,6 +502,8 @@ func _cam(focus: Vector3, r: float) -> void:
 
 
 func _grab() -> Image:
+	if headless:
+		return null
 	var img := vp.get_texture().get_image()
 	if img == null or img.is_empty():
 		return null
@@ -568,10 +581,7 @@ func _moments_part() -> void:
 	var only: Array = []
 	if args.has("only"):
 		only = Array(str(args["only"]).split(",", false))
-	var terrain := {"0,-4": "rock", "-5,3": "rock", "4,3": "debris", "-1,5": "rock"}
-	terrain.merge(cfg.get("terrain", {}), true)
-	await _world({"rock": "stone", "planet": 4}, terrain,
-		[{"q": -3, "r": -2}, {"q": 3, "r": 2}])
+	await _moment_world(false)
 	report["parts"]["moments"] = {"region": str(wld.setting.get("region", "")), "start_frame": Engine.get_process_frames()}
 	# warm the effect shaders once (fx.warmup), off the measured moments
 	_clear()
@@ -711,10 +721,90 @@ func _moment_cut(kind: String) -> void:
 	cam.t = (pa + pt) * 0.5
 
 
+# The effect-only replay of the battle events. The bench runs on both revisions, so the before frames use
+# the actual old FX methods or the old battle cue, not a look-alike built on the new kit.
+func _build_d(row: Dictionary, event: String) -> void:
+	var t: float = fx.now
+	var p: Vector3 = T.visual_position() + Vector3.UP * 2.0
+	var from: Vector3 = A.visual_position() + Vector3.UP * 2.0
+	var dest: Vector3 = T.position + Vector3(-24.0, 0.0, -7.0)
+	var shared: bool = fx.has_method("rift_in")
+	report["build_d"] = "shared" if shared else "legacy"
+	match event:
+		"nova":
+			var impact: Vector3 = T.position + Vector3.UP * 2.0
+			if shared:
+				fx.nova("A", impact)
+			else:
+				fx.ability("A", "nova")
+				_build_d_stub = load("res://scenes/battle/fx_stub.gd").new()
+				fx.add_child(_build_d_stub)
+				_build_d_stub.set_process(false)
+				fx.later(t + 0.50, func legacy_shell() -> void:
+					_build_d_stub.bolt(from, impact, Color(1.0, 0.8, 0.5), 0.35, 0.0, 3.0))
+				fx.later(t + 0.85, _build_d_pop.bind(impact, Color(1.0, 0.7, 0.4), 60.0, 0.8))
+		"arrival":
+			if shared:
+				fx.rift_in("T")
+			else:
+				_build_d_pop(p, Color(1.0, 0.5, 0.4), 24.0, 0.6)
+		"risen":
+			if shared:
+				fx.rift_in("T", 1.0, 0.0, true)
+			else:
+				_build_d_pop(p, FX.FLOOK.engine("deathless"), 16.0, 0.8)
+		"blink":
+			if shared:
+				fx.fold("T", 1.0, func bench_blink() -> void: T.position = dest)
+			else:
+				var c := FX.FLOOK.engine("ithar")
+				# The explicit-hex ability moved the view before the separate blink event on the old branch.
+				fx.ability("T", "blink")
+				T.position = dest
+				_build_d_pop(T.visual_position() + Vector3.UP * 2.0, c, 18.0, 0.5)
+				fx.later(t + 0.30, func legacy_blink() -> void:
+					_build_d_pop(T.visual_position() + Vector3.UP * 2.0, c, 18.0, 0.5))
+				fx.later(t + 0.55, func legacy_blink_end() -> void:
+					_build_d_pop(T.visual_position() + Vector3.UP * 2.0, c, 18.0, 0.5))
+		"phase":
+			if shared:
+				fx.fold("T")
+			else:
+				fx.ability("T", "phase")
+				_build_d_pop(p, Color("#ddc4ff"), 22.0, 0.9)
+		"jump":
+			fx.jump_out("T")
+		"ability":
+			fx.ability("T", str(row.get("ability", "")))
+		"command":
+			fx.command("T")
+		"bay":
+			fx.launch("A", "T")
+
+
+func _build_d_pop(p: Vector3, c: Color, size: float, life: float) -> void:
+	fx.pop(p, fx.now, c, size * 0.5, 3.0, Vector3.UP, clampf(life * 0.5, 0.1, 0.4))
+	fx.light(p, fx.now, life, 2.0, c)
+
+
+func _moment_world(deadstar: bool) -> void:
+	moment_deadstar = deadstar
+	var terrain := {"0,-4": "rock", "-5,3": "rock", "4,3": "debris", "-1,5": "rock"} if not deadstar else {}
+	terrain.merge(cfg.get("terrain", {}), true)
+	var map := {}
+	if deadstar:
+		var cells := [[0, 0], [1, 0], [0, 1], [-1, 1], [-1, 0], [0, -1], [1, -1]]
+		map = {"deadstar": {"q": 0, "r": 0}, "holes": [{"kind": "deadstar", "cells": cells}]}
+	await _world({"rock": "stone", "planet": 4}, terrain, [{"q": -3, "r": -2}, {"q": 3, "r": 2}], map)
+
+
 func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: String, keep := true) -> bool:
 	var id := str(row["id"])
 	var strict := bool(row.get("strict", false)) or args.has("strict-moments")
 	_clear()
+	var deadstar := bool(row.get("deadstar", false))
+	if deadstar != moment_deadstar:
+		await _moment_world(deadstar)
 	_make_fx()
 	# Issue 462: a row may set effect switches (for example reduce flashing). Set by
 	# name so a commit without the switch simply ignores it.
@@ -738,7 +828,8 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	var tat: Array = row.get("tgt_at", [34, 0])
 	# Only the target of a death row can die. Hull and shader warm-up still runs for every ship.
 	var fatal := str(row.get("fatal", ""))
-	T = _ship("T", str(tgt[0]), str(tgt[1]), Vector3(float(tat[0]), 0, float(tat[1])), 2, "", row.get("do") == "death" or fatal != "")
+	T = _ship("T", str(tgt[0]), str(tgt[1]), Vector3(float(tat[0]), 0, float(tat[1])), int(row.get("tgt_facing", 2)), "",
+		row.get("do") == "death" or fatal != "", str(row.get("tgt_tpl", "")))
 	if T == null:
 		return false
 	if row.has("shield_left"):
@@ -896,10 +987,22 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	elif what == "jets":
 		# every movement jet ShipView fires, at once; the bench keeps ShipView's processing off, so each puff stays where
 		# it started unless step_jets is set (issue 2042: steps puffs and fires repeat bursts so motion strings show)
+		var first_puff: int = A.puffs.size()
 		A._retro_puffs(1.0)
 		A._aft_puffs(1.0)
 		A._side_puffs(1.0, 1.0)
 		A._couple_puffs(1.0, 1.0)
+		# The directional jets read their instance uniforms, not the old sprite tint.
+		if row.get("jet_tint", "") == "damage_glow" and not headless:
+			if A.puffs.size() <= first_puff:
+				return _fail_moment(id, r, "no movement jets to tint")
+			var glow: Color = fx.faction_info(str(att[0])).damage_glow
+			for i in range(first_puff, A.puffs.size()):
+				var puff: Dictionary = A.puffs[i]
+				var jet := puff.n as MeshInstance3D
+				if jet == null or not bool(puff.get("rcs", false)):
+					return _fail_moment(id, r, "movement jet has no directional shader")
+				jet.set_instance_shader_parameter("core_col", Vector3(glow.r, glow.g, glow.b))
 	elif what == "move":
 		# issue 2042: drive A forward along +X so moving nozzle trails build and taper cleanly behind the stern
 		fx.set_engine("A", float(row.get("engine", 1.6)))
@@ -923,6 +1026,35 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	elif what == "wounds":
 		fx.sync_ship("A", {"hp": 25.0, "maxHp": 100.0, "burning": false, "sh": [5, 5, 5, 5],
 			"sec": {"eng": {"hp": 10, "max": 100}, "mid": {"hp": 10, "max": 100}, "prow": {"hp": 10, "max": 100}}})
+	elif what == "build_d":
+		_build_d(row, str(row["event"]))
+	elif what == "wisp":
+		# Isolate the real turret/mount/nozzle picture without a nearby full wound or a spark hiding it.
+		var target = fx.ship("T")
+		var e := {"id": "bench_wisp"}
+		if not target.hull.turrets.is_empty():
+			e["tur"] = 0
+		elif not target.hull.nozzles.is_empty():
+			e["mp"] = target.hull.nozzles[0]["p"]
+		else:
+			var anchor: Dictionary = target._anchor(1, "a")
+			if anchor.is_empty():
+				_warn(id + ": no wisp source")
+				return false
+			e["mp"] = anchor.p
+		target._build_wisp(fx, e)
+		_cam(target.to_world(e.source), r)
+	# Issue 2044: frame the same existing source in both revisions, rather than picking a screen offset per hull.
+	match str(row.get("focus_site", "")):
+		"mid_wound":
+			var target = fx.ship("T")
+			var anchor: Dictionary = target._anchor(1, "a")
+			if not anchor.is_empty():
+				focus = target.to_world(anchor.p)
+			_cam(focus, r)
+		"wing_lead":
+			if not T.hull.craft.is_empty():
+				_cam(T.hull.craft[0].global_position, r)
 	var anchors := {"fire": t_ev, "event": t_ev, "impact": t_ev + (float(impacts[0]) if impacts.size() > 0 else 0.6)}
 	var fatal_at := float(anchors["impact"]) + 0.90 if fatal != "" else INF
 	# Issue 504: a row may fire a second volley from A at T during the event ("also": [seconds after the event, kind,
@@ -949,6 +1081,8 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	var strip := Image.create_empty(1 if clip else cell.x * total, cell.y, false, Image.FORMAT_RGB8)
 	var ci := 0
 	var cells: Array = []
+	var focus_by_window: Array = row.get("focus_by_window", [])
+	var event_target: Vector3 = Vector3(float(tat[0]), 0, float(tat[1]))
 	var guard := 0
 	var wi := 0
 	var step_jets := what == "jets" and bool(row.get("step_jets", false))
@@ -957,6 +1091,9 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	var move_dur := float(row.get("move_dur", 0.75))
 	var brake_at := float(row.get("brake_at", 0.55))
 	var focus_mode := str(row.get("focus", "target"))
+	var track_hulk := bool(row.get("seek_hulk", false))
+	var start_pos: Vector3 = T.global_position
+	var travel: Vector3 = T.global_basis.x.normalized() * 12.0 if what == "drive" else Vector3.ZERO
 	while wi < wins.size() and guard < 900:
 		var w: Dictionary = wins[wi]
 		if step_jets and is_instance_valid(A):
@@ -1006,12 +1143,33 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		var start: float = float(anchors.get(w["anchor"], t_ev)) + float(w["at"])
 		if w["anchor"] == "also" and not anchors.has("also"):
 			start = INF
+		# Long hulk rows step to the next sample after the death beat, then follow the same drifting wreck in both runs.
+		if track_hulk and ci > 0 and int(w["got"]) == 0 and start - fx.now > 4.0:
+			fx.step(start - fx.now - STEP)
 		var take := false
 		if int(w["got"]) == 0:
 			take = fx.now + 1e-4 >= start
 		else:
 			take = steps >= int(w["next"])
 		if take:
+			if not headless and int(w["got"]) == 0 and wi < focus_by_window.size():
+				var shot_focus: Vector3 = focus
+				match str(focus_by_window[wi]):
+					"flight": shot_focus = A.position.lerp(event_target, 0.52)
+					"target": shot_focus = event_target
+					"blink_end": shot_focus = event_target + Vector3(-24.0, 0.0, -7.0)
+				_cam(shot_focus, r)
+				await RenderingServer.frame_post_draw
+			if track_hulk:
+				var hulk: Node3D
+				for wreck in fx.dstate.get("wrecks", []):
+					if wreck.id == "T" and wreck.get("hulk", false) and not wreck.nodes.is_empty():
+						hulk = wreck.nodes[0]
+						break
+				if not is_instance_valid(hulk):
+					return _fail_moment(id, r, "no target hulk at %.2f s" % (fx.now - t_ev))
+				_cam(hulk.global_position, r)
+				await _step()
 			var img := _grab() if keep and not headless else null
 			if clip:
 				if keep:
@@ -1025,7 +1183,7 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 							clip_bad.append("f%03d.png (save error %d)" % [ci, se])
 			elif img != null:
 				strip.blit_rect(_crop(img, crop, cell), Rect2i(Vector2i.ZERO, cell), Vector2i(ci * cell.x, 0))
-			elif strict and keep:
+			elif strict and keep and not headless:
 				clip_bad.append("cell %d (no frame grabbed)" % ci)
 			cells.append({"t": snappedf(fx.now - t_ev, 0.0001), "step": steps})
 			ci += 1
@@ -1034,6 +1192,10 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 			if int(w["got"]) >= int(w["n"]):
 				wi += 1
 				continue
+		if travel != Vector3.ZERO:
+			var offset: Vector3 = travel * (fx.now + STEP - t_ev)
+			T.global_position = start_pos + offset
+			_cam(focus + offset, r)
 		await _step()
 		guard += 1
 	if wi < wins.size():
@@ -1051,6 +1213,21 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		_log("LOOK_BENCH CODE MISMATCH %s: drew %s, expected %s" % [id, tcode, str(row["expect_code"])])
 		if strict:
 			return _fail_moment(id, r, "target drew %s, expected %s" % [tcode, str(row["expect_code"])])
+	if row.has("expect_att_code") and str(A.code) != str(row["expect_att_code"]):
+		_warn("%s: attacker drew %s, the row expects %s" % [id, str(A.code), str(row["expect_att_code"])])
+		_log("LOOK_BENCH CODE MISMATCH %s: drew %s, expected %s" % [id, str(A.code), str(row["expect_att_code"])])
+		if strict:
+			return _fail_moment(id, r, "attacker drew %s, expected %s" % [acode, str(row["expect_att_code"])])
+	if row.has("expect_craft") and not args.has("allow-blocks"):
+		var craft_code := ""
+		if is_instance_valid(T) and is_instance_valid(T.hull):
+			var craft = T.hull.get("craft")
+			if craft is Array and not craft.is_empty() and is_instance_valid(craft[0]):
+				craft_code = str(craft[0].get_meta("model_code", ""))
+		if craft_code != str(row.expect_craft):
+			_warn("%s: wing drew %s, the row expects %s" % [id, craft_code, row.expect_craft])
+			if strict:
+				return _fail_moment(id, r, "wing drew %s, expected %s" % [craft_code, str(row.expect_craft)])
 	if clip:
 		# Every numbered frame must be on disk, and a stale frame cannot cover a failed read or save this run.
 		for fi in total:
