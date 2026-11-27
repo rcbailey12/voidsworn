@@ -1,0 +1,306 @@
+Issue 2205 campaign records
+
+Compared with main b193fe726. W1 offers only usable captain perks in stable order.
+W6 filters Nemesis weaknesses and adaptations by the fleet kits. W7 removes Brace
+boons when no ship can Brace. M4 pins new captain callsigns and portraits to a
+fixed hash. The first difference is shown for every changed save.
+
+c1.jsonl - W1/M4 offer filtering and stable order
+FAIL at step 12 (after help title newRunScreen pickFaction:hegemony pickFaction:corsair pickAdmiral:mott startRun): state "run" differs at run.fleet[0].cap.perks[0]
+  Before: "deflector"
+  After:  "flanker"
+
+c2.jsonl - W1/M4 offer filtering and stable order
+FAIL at step 10 (after buyVariant:b_spitter_s progTab:variants title newRunScreen pickFaction:voidsworn pickFaction:voidsworn startRun): state "run" differs at run.fleet[0].cap.perks[0]
+  Before: "steady"
+  After:  "hunter"
+
+c3.jsonl - M4 stable captain identity
+FAIL at step 5 (after start legacy title newRunScreen pickFaction:hegemony startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Compass"
+  After:  "Relay"
+
+c4.jsonl - M4 stable captain identity
+FAIL at step 8 (after progTab:variants title help title newRunScreen pickFaction:deathless startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Echo"
+  After:  "Archive"
+
+c5.jsonl - M4 stable captain identity
+FAIL at step 15 (after progTab:favour title help title newRunScreen optAlt:0 startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Trace"
+  After:  "Relay"
+
+c6.jsonl - W1/M4 offer filtering and stable order
+FAIL at step 10 (after help title newRunScreen optHeat:h_elite optHeat:h_flag pickFaction:ithar startRun): state "run" differs at run.fleet[0].cap.perks[0]
+  Before: "gunnery"
+  After:  "deflector"
+
+c7.jsonl - M4 stable captain identity
+FAIL at step 12 (after progTab:favour progTab:legacy buyLegacy:u_carrier progTab:fallen title newRunScreen startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Needle"
+  After:  "Abacus"
+
+c8.jsonl - M4 stable captain identity
+FAIL at step 9 (after progTab:mastery progTab:variants title newRunScreen pickFaction:voidsworn pickFaction:voidsworn startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Reliquary"
+  After:  "Flint"
+
+c9.jsonl - M4 stable captain identity
+FAIL at step 14 (after newRunScreen pickAdmiral:mending optAlt:1 pickAdmiral:matriarch optCmd:1 pickFaction:deathless startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Echo"
+  After:  "Null"
+
+c10.jsonl - M4 stable captain identity
+FAIL at step 20 (after optAlt:0 pickAdmiral:mirelle optHeat:h_cmd pickAdmiral:aelith optHeat:h_flag pickFaction:ithar startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Shard"
+  After:  "Mirage"
+
+c11.jsonl - M4 stable captain identity
+FAIL at step 14 (after optHeat:h_repair optHeat:h_undying optHeat:h_hunted pickFaction:deathless pickFaction:chorus pickAdmiral:voice startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Thorn"
+  After:  "Drift"
+
+c12.jsonl - M4 stable captain identity
+FAIL at step 5 (after start legacy progTab:variants title newRunScreen startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Cinder"
+  After:  "Vesper"
+
+c13.jsonl - M4 stable captain identity
+FAIL at step 15 (after progTab:favour title newRunScreen optAlt:1 optCmd:1 pickFaction:deathless startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Cipher"
+  After:  "Echo"
+
+c14.jsonl - W1/M4 offer filtering and stable order
+FAIL at step 14 (after pickFaction:ithar pickAdmiral:aelith pickFaction:corsair optHeat:h_cmd optHeat:h_flag pickAdmiral:sable startRun): state "run" differs at run.flagUid
+  Before: "x01"
+  After:  "x02"
+
+c15.jsonl - M4 stable captain identity
+FAIL at step 7 (after legacy buyVariant:vs_penitent_g buyVariant:i_wisp_l title newRunScreen pickAdmiral:matriarch startRun): state "run" differs at run.fleet[0].cap.portrait_id
+  Before: "matriarch"
+  After:  "nem_chorus_5"
+
+c16.jsonl - M4 stable captain identity
+FAIL at step 7 (after legacy progTab:heat progTab:mastery progTab:variants title newRunScreen startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Afterlight"
+  After:  "Facet"
+
+c17.jsonl - M4 stable captain identity
+FAIL at step 19 (after pickFaction:voidsworn optAlt:0 pickAdmiral:ashgrove pickAdmiral:vex pickFaction:ithar pickFaction:hegemony startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Relay"
+  After:  "Ledger"
+
+c18.jsonl - W1/M4 offer filtering and stable order
+FAIL at step 6 (after start legacy title help title newRunScreen startRun): state "run" differs at run.fleet[0].cap.perks[0]
+  Before: "deflector"
+  After:  "flanker"
+
+c19.jsonl - M4 stable captain identity
+FAIL at step 10 (after buyLegacy:vets buyLegacy:cmd1 title newRunScreen optCmd:1 pickAdmiral:maren startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Ledger"
+  After:  "Relay"
+
+c20.jsonl - M4 stable captain identity
+FAIL at step 8 (after progTab:variants title newRunScreen pickFaction:corsair pickAdmiral:grax pickFaction:deathless startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Null"
+  After:  "Archive"
+
+c21.jsonl - M4 stable captain identity
+FAIL at step 7 (after legacy buyVariant:i_song_w title help title newRunScreen startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Tendril"
+  After:  "Hush"
+
+c22.jsonl - W1/M4 offer filtering and stable order
+FAIL at step 18 (after optHeat:h_elite pickAdmiral:sable pickFaction:corsair pickFaction:voidsworn pickAdmiral:malek optHeat:h_elite startRun): state "run" differs at run.flagUid
+  Before: "x02"
+  After:  "x01"
+
+c23.jsonl - M4 stable captain identity
+FAIL at step 8 (after buyVariant:c_hulk_g progTab:heat title newRunScreen pickFaction:chorus pickFaction:hegemony startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Vector"
+  After:  "Grid"
+
+c24.jsonl - M4 stable captain identity
+FAIL at step 10 (after progTab:variants title help title newRunScreen pickAdmiral:vex startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Penance"
+  After:  "Cinder"
+
+c25.jsonl - M4 stable captain identity
+FAIL at step 12 (after progTab:fallen progTab:favour progTab:legacy title newRunScreen optCmd:1 startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Compass"
+  After:  "Relay"
+
+c26.jsonl - W1/M4 offer filtering and stable order
+FAIL at step 18 (after optHeat:h_flag optHeat:h_coffers optHeat:h_elite pickFaction:ithar optHeat:h_coffers pickFaction:voidsworn startRun): state "run" differs at run.fleet[0].cap.perks[0]
+  Before: "hunter"
+  After:  "steady"
+
+c27.jsonl - W1/M4 offer filtering and stable order
+FAIL at step 12 (after title newRunScreen optHeat:h_hunted optCmd:1 pickAdmiral:matriarch pickFaction:deathless startRun): state "run" differs at run.fleet[0].cap.perks[0]
+  Before: "stubborn"
+  After:  "lanceadept"
+
+c28.jsonl - M4 stable captain identity
+FAIL at step 12 (after newRunScreen pickFaction:ithar pickFaction:ithar pickFaction:corsair pickAdmiral:grax pickFaction:ithar startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Prism"
+  After:  "Facet"
+
+c29.jsonl - M4 stable captain identity
+FAIL at step 13 (after pickAdmiral:reyes pickFaction:deathless pickAdmiral:sekhmar pickAdmiral:khepra pickFaction:voidsworn pickAdmiral:ashgrove startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Reliquary"
+  After:  "Vigil"
+
+c30.jsonl - M4 stable captain identity
+FAIL at step 12 (after optHeat:h_cmd optHeat:h_cmd pickAdmiral:ashgrove pickFaction:ithar optHeat:h_coffers pickAdmiral:vaelen startRun): state "run" differs at run.fleet[0].cap.callsign
+  Before: "Facet"
+  After:  "Afterlight"
+
+nem.txt - W6 changes offered weaknesses or adaptations. 14 of 223 rows change. First differing row 11.
+  Before: b1 {"credits":10,"fleet":[["x01",135],["x03",50]],"nem":{"adapt":[],"adaptSector":0,"beaten":0,"dead":false,"epithets":[],"fac":"corsair","fed":0,"g":"m","held":{"cap":{"callsign":"Lantern","captain_id":"captain:x02","fac":"voidsworn","full_name":"Osric Kellan","pending":0,"perks":[],"portrait_id":"nem_voidsworn_1","rank":0,"trait_line":"","xp":0},"hp":1,"mk":1,"mods":[],"name":"Black Anvil","tpl":"harrow","uid":"x02"},"honed":0,"lessons":[],"loot":40,"met":0,"name":"Skarn Gut","persona":"proud","portrait":"nem_corsair_4","revealed":[],"revived":false,"riches":1,"scarKinds":[],"scars":0,"seen":{},"signatures":["raid"],"title":"Apex","traits":["swift","rockets"],"weak":["anchor","torp"]},"nemAssign":["corsair","corsair","corsair"],"nemClock":4,"nemStrike":true,"nems":{"corsair":{"adapt":[],"adaptSector":0,"beaten":0,"dead":false,"epithets":[],"fac":"corsair","fed":0,"g":"m","held":{"cap":{"callsign":"Lantern","captain_id":"captain:x02","fac":"voidsworn","full_name":"Osric Kellan","pending":0,"perks":[],"portrait_id":"nem_voidsworn_1","rank":0,"trait_line":"","xp":0},"hp":1,"mk":1,"mods":[],"name":"Black Anvil","tpl":"harrow","uid":"x02"},"honed":0,"lessons":[],"loot":40,"met":0,"name":"Skarn Gut","persona":"proud","portrait":"nem_corsair_4","revealed":[],"revived":false,"riches":1,"scarKinds":[],"scars":0,"seen":{},"signatures":["raid"],"title":"Apex","traits":["swift","rockets"],"weak":["anchor","torp"]}},"rng":424859581,"variants":{}}
+  After:  b1 {"credits":10,"fleet":[["x01",135],["x03",50]],"nem":{"adapt":[],"adaptSector":0,"beaten":0,"dead":false,"epithets":[],"fac":"corsair","fed":0,"g":"m","held":{"cap":{"callsign":"Vesper","captain_id":"captain:x02","fac":"voidsworn","full_name":"Osric Kellan","pending":0,"perks":[],"portrait_id":"nem_voidsworn_5","rank":0,"trait_line":"","xp":0},"hp":1,"mk":1,"mods":[],"name":"Black Anvil","tpl":"harrow","uid":"x02"},"honed":0,"lessons":[],"loot":40,"met":0,"name":"Skarn Gut","persona":"proud","portrait":"nem_corsair_4","revealed":[],"revived":false,"riches":1,"scarKinds":[],"scars":0,"seen":{},"signatures":["raid"],"title":"Apex","traits":["swift","rockets"],"weak":["anchor","torp"]},"nemAssign":["corsair","corsair","corsair"],"nemClock":4,"nemStrike":true,"nems":{"corsair":{"adapt":[],"adaptSector":0,"beaten":0,"dead":false,"epithets":[],"fac":"corsair","fed":0,"g":"m","held":{"cap":{"callsign":"Vesper","captain_id":"captain:x02","fac":"voidsworn","full_name":"Osric Kellan","pending":0,"perks":[],"portrait_id":"nem_voidsworn_5","rank":0,"trait_line":"","xp":0},"hp":1,"mk":1,"mods":[],"name":"Black Anvil","tpl":"harrow","uid":"x02"},"honed":0,"lessons":[],"loot":40,"met":0,"name":"Skarn Gut","persona":"proud","portrait":"nem_corsair_4","revealed":[],"revived":false,"riches":1,"scarKinds":[],"scars":0,"seen":{},"signatures":["raid"],"title":"Apex","traits":["swift","rockets"],"weak":["anchor","torp"]}},"rng":424859581,"variants":{}}
+
+Run 4: combined with R460 (#2206)
+
+Compared with the earlier #2205 baseline. All 30 seeds and Nemesis were re-run.
+Twenty-eight seeded records changed. Seeds 11 and 14 and all 223 Nemesis lines
+reproduced byte for byte. The first difference per changed seed follows.
+
+c1.jsonl - Glasswright wreck or prize CP
+  Step 16: Lancet CP rises from 2 to 3 and crosses the tow limit.
+  Before: "takeSalvage:1:tow:1 | takeSalvage:2:mod:1 | takeSalvage:2:cred:1 | takeSalvage:2:tow:1"
+  After:  "takeSalvage:2:mod:1 | takeSalvage:2:cred:1 | takeSalvage:2:tow:1"
+
+c2.jsonl - Glasswright wreck or prize CP
+  Step 14: state "run" differs at run.reward.prizes[0].cp
+  Before: 1
+  After:  2
+
+c3.jsonl - Glasswright wreck or prize CP
+  Step 9: state "run" differs at run.reward.prizes[0].cp
+  Before: 1
+  After:  2
+
+c4.jsonl - Glasswright wreck or prize CP
+  Step 12: state "run" differs at run.reward.wrecks[2].cp
+  Before: 2
+  After:  3
+
+c5.jsonl - Slip the Net removed from the boon pool
+  Step 30: state "run" differs at run.reward.boonOffer[0].id
+  Before: "e_hunt"
+  After:  "e_chain"
+
+c6.jsonl - Slip the Net removed from the boon pool
+  Step 15: state "run" differs at run.reward.boonOffer[2].id
+  Before: "r_prow"
+  After:  "r_burn"
+
+c7.jsonl - Slip the Net removed from the boon pool
+  Step 12: state "run" differs at run.boons[0].id
+  Before: "r_jink"
+  After:  "r_mom"
+
+c8.jsonl - Slip the Net removed from the boon pool
+  Step 21: state "run" differs at run.reward.boonOffer[0].id
+  Before: "s_cap"
+  After:  "i_line"
+
+c9.jsonl - Glasswright wreck or prize CP
+  Step 105: state "run" differs at run.reward.wrecks[1].cp
+  Before: 2
+  After:  3
+
+c10.jsonl - Slip the Net removed from the boon pool
+  Step 30: state "run" differs at run.reward.boonOffer[1].id
+  Before: "a_long"
+  After:  "a_crit"
+
+c12.jsonl - Glasswright wreck or prize CP
+  Step 19: state "run" differs at run.reward.wrecks[1].cp
+  Before: 2
+  After:  3
+
+c13.jsonl - Slip the Net removed from the boon pool
+  Step 20: state "run" differs at run.reward.boonOffer[1].id
+  Before: "r_prow"
+  After:  "r_burn"
+
+c15.jsonl - Slip the Net removed from the boon pool
+  Step 14: state "run" differs at run.reward.boonOffer[1].id
+  Before: "h_brood"
+  After:  "i_wall"
+
+c16.jsonl - Slip the Net removed from the boon pool
+  Step 12: state "run" differs at run.reward.boonOffer[0].id
+  Before: "a_aim"
+  After:  "a_lance"
+
+c17.jsonl - Glasswright wreck or prize CP
+  Step 23: state "run" differs at run.reward.prizes[0].cp
+  Before: 1
+  After:  2
+
+c18.jsonl - Glasswright wreck or prize CP
+  Step 19: state "run" differs at run.reward.prizes[0].cp
+  Before: 1
+  After:  2
+
+c19.jsonl - Slip the Net removed from the boon pool
+  Step 29: state "run" differs at run.reward.boonOffer[0].id
+  Before: "h_wings"
+  After:  "h_hatch"
+
+c20.jsonl - Slip the Net removed from the boon pool
+  Step 13: state "run" differs at run.reward.boonOffer[1].id
+  Before: "e_hunt"
+  After:  "e_chain"
+
+c21.jsonl - Glasswright wreck or prize CP
+  Step 17: state "run" differs at run.reward.wrecks[1].cp
+  Before: 2
+  After:  3
+
+c22.jsonl - Glasswright wreck or prize CP
+  Step 28: state "run" differs at run.reward.wrecks[1].cp
+  Before: 1
+  After:  2
+
+c23.jsonl - Slip the Net removed from the boon pool
+  Step 19: state "run" differs at run.reward.boonOffer[2].id
+  Before: "a_aim"
+  After:  "a_lance"
+
+c24.jsonl - Slip the Net removed from the boon pool
+  Step 33: state "run" differs at run.reward.boonOffer[0].id
+  Before: "e_chain"
+  After:  "e_kindle"
+
+c25.jsonl - Slip the Net removed from the boon pool
+  Step 17: state "run" differs at run.reward.boonOffer[0].id
+  Before: "r_slip"
+  After:  "a_mark"
+
+c26.jsonl - Glasswright wreck or prize CP
+  Step 45: state "run" differs at run.reward.wrecks[0].cp
+  Before: 2
+  After:  3
+
+c27.jsonl - Glasswright wreck or prize CP
+  Step 79: state "run" differs at run.reward.wrecks[2].cp
+  Before: 2
+  After:  3
+
+c28.jsonl - Slip the Net removed from the boon pool
+  Step 17: state "run" differs at run.reward.boonOffer[1].id
+  Before: "a_long"
+  After:  "a_crit"
+
+c29.jsonl - Slip the Net removed from the boon pool
+  Step 21: state "run" differs at run.reward.boonOffer[1].id
+  Before: "r_prow"
+  After:  "r_burn"
+
+c30.jsonl - Slip the Net removed from the boon pool
+  Step 36: state "run" differs at run.reward.boonOffer[1].id
+  Before: "e_kindle"
+  After:  "e_reload"

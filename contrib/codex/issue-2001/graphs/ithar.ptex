@@ -1,0 +1,364 @@
+{
+  "type": "graph",
+  "name": "graph",
+  "label": "Glasswrights | warm pearl leaf shell",
+  "nodes": [
+    {
+      "name": "Leaf_curl",
+      "type": "fbm4",
+      "parameters": {
+        "noise": 1,
+        "scale_x": 5,
+        "scale_y": 5,
+        "iterations": 3,
+        "folds": 0,
+        "offset": 0,
+        "persistence": 0.55,
+        "lacunarity": 2
+      },
+      "node_position": {
+        "x": 0,
+        "y": -230
+      },
+      "seed_int": 26189
+    },
+    {
+      "name": "Pearl_polish",
+      "type": "fbm4",
+      "parameters": {
+        "noise": 1,
+        "scale_x": 13,
+        "scale_y": 27,
+        "iterations": 3,
+        "folds": 0,
+        "offset": 0,
+        "persistence": 0.55,
+        "lacunarity": 2
+      },
+      "node_position": {
+        "x": 0,
+        "y": 50
+      },
+      "seed_int": 26206
+    },
+    {
+      "name": "Wrapped_leaf",
+      "type": "shader",
+      "parameters": {},
+      "node_position": {
+        "x": 310,
+        "y": -290
+      },
+      "shader_model": {
+        "name": "Pillowed overlapping shell leaves",
+        "shortdesc": "Pillowed overlapping shell leaves",
+        "longdesc": "Pillowed overlapping shell leaves",
+        "instance": "",
+        "code": [
+          "vec2 p = vec2($uv.x + $uv.y, -$uv.x + $uv.y) * vec2(2.0, 4.0);",
+          "p.x += ($curl($uv) - 0.5) * 0.24;",
+          "p.x += 0.5 * mod(floor(p.y), 2.0);",
+          "vec2 f = fract(p) - 0.5;",
+          "float along = abs(f.x) * 2.0;",
+          "float span = 0.5 * pow(max(0.0, 1.0 - along), 0.64);",
+          "float edge = span - abs(f.y);",
+          "float leaf_mask = smoothstep(-0.025, 0.16, edge);",
+          "float lip_mask = smoothstep(-0.024, 0.006, edge) * (1.0 - smoothstep(0.010, 0.06, edge));",
+          "float silk_grain = $silk($uv);"
+        ],
+        "global": "",
+        "inputs": [
+          {
+            "name": "curl",
+            "label": "Curl",
+            "type": "f",
+            "default": "0.5"
+          },
+          {
+            "name": "silk",
+            "label": "Silk",
+            "type": "f",
+            "default": "0.5"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "f",
+            "shortdesc": "Leaf dome",
+            "f": "leaf_mask"
+          },
+          {
+            "type": "f",
+            "shortdesc": "Rounded lip",
+            "f": "lip_mask"
+          },
+          {
+            "type": "f",
+            "shortdesc": "Pearl grain",
+            "f": "silk_grain"
+          }
+        ],
+        "parameters": []
+      }
+    },
+    {
+      "name": "Finish",
+      "type": "shader",
+      "parameters": {
+        "roughness": 0.24,
+        "layer_share": 0.22
+      },
+      "node_position": {
+        "x": 650,
+        "y": -175
+      },
+      "shader_model": {
+        "name": "Height, tinted detail and roughness",
+        "shortdesc": "Height, tinted detail and roughness",
+        "longdesc": "Height, tinted detail and roughness",
+        "instance": "",
+        "code": [
+          "float leaf = $leaf($uv);",
+          "float lip = $lip($uv);",
+          "float polish = $polish($uv) - 0.5;",
+          "float height = 0.44 + 0.14 * leaf + 0.025 * lip + 0.024 * polish;",
+          "float shade = 0.935 + 0.063 * leaf - 0.035 * lip + 0.018 * polish;",
+          "float roughness = $roughness + 0.12 * (1.0 - leaf) + 0.08 * lip + 0.07 * polish;"
+        ],
+        "global": "",
+        "inputs": [
+          {
+            "name": "leaf",
+            "label": "Leaf",
+            "type": "f",
+            "default": "0.5"
+          },
+          {
+            "name": "lip",
+            "label": "Lip",
+            "type": "f",
+            "default": "0.5"
+          },
+          {
+            "name": "polish",
+            "label": "Polish",
+            "type": "f",
+            "default": "0.5"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "f",
+            "shortdesc": "Relief",
+            "f": "height"
+          },
+          {
+            "type": "rgba",
+            "shortdesc": "Multiply color + share",
+            "rgba": "vec4(clamp(shade * vec3(1.000, 0.995, 0.981), 0.0, 1.0), $layer_share)"
+          },
+          {
+            "type": "f",
+            "shortdesc": "Roughness",
+            "f": "clamp(roughness, 0.0, 1.0)"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "roughness",
+            "label": "Roughness",
+            "type": "float",
+            "default": 0.24,
+            "min": 0.1,
+            "max": 0.95,
+            "step": 0.01
+          },
+          {
+            "name": "layer_share",
+            "label": "Layer Share",
+            "type": "float",
+            "default": 0.22,
+            "min": 0,
+            "max": 1,
+            "step": 0.01
+          }
+        ]
+      }
+    },
+    {
+      "name": "Normal_from_relief",
+      "type": "normal_map",
+      "parameters": {
+        "param0": 9,
+        "param1": 1.3,
+        "param2": 1,
+        "param4": 1
+      },
+      "node_position": {
+        "x": 940,
+        "y": 70
+      }
+    },
+    {
+      "name": "Material",
+      "type": "material",
+      "parameters": {
+        "size": 9,
+        "flags_transparent": false,
+        "albedo_color": {
+          "type": "Color",
+          "r": 1,
+          "g": 1,
+          "b": 1,
+          "a": 1
+        },
+        "roughness": 1,
+        "normal": 1,
+        "ao": 1,
+        "depth_scale": 0,
+        "metallic": 0,
+        "sss": 0,
+        "emission_energy": 1
+      },
+      "node_position": {
+        "x": 1540,
+        "y": -390
+      }
+    },
+    {
+      "name": "Preview_normal_format",
+      "type": "normal_map_convert",
+      "parameters": {
+        "op": 0
+      },
+      "node_position": {
+        "x": 1220,
+        "y": -390
+      }
+    },
+    {
+      "name": "Save_ithar_grain",
+      "type": "export",
+      "parameters": {
+        "size": 9,
+        "format": 0,
+        "suffix": "ithar_grain"
+      },
+      "node_position": {
+        "x": 1250,
+        "y": -100
+      }
+    },
+    {
+      "name": "Save_ithar_n",
+      "type": "export",
+      "parameters": {
+        "size": 9,
+        "format": 0,
+        "suffix": "ithar_n"
+      },
+      "node_position": {
+        "x": 1250,
+        "y": 135
+      }
+    },
+    {
+      "name": "Save_ithar_roughness",
+      "type": "export",
+      "parameters": {
+        "size": 9,
+        "format": 0,
+        "suffix": "ithar_roughness"
+      },
+      "node_position": {
+        "x": 1250,
+        "y": 370
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "Leaf_curl",
+      "from_port": 0,
+      "to": "Wrapped_leaf",
+      "to_port": 0
+    },
+    {
+      "from": "Pearl_polish",
+      "from_port": 0,
+      "to": "Wrapped_leaf",
+      "to_port": 1
+    },
+    {
+      "from": "Wrapped_leaf",
+      "from_port": 0,
+      "to": "Finish",
+      "to_port": 0
+    },
+    {
+      "from": "Wrapped_leaf",
+      "from_port": 1,
+      "to": "Finish",
+      "to_port": 1
+    },
+    {
+      "from": "Wrapped_leaf",
+      "from_port": 2,
+      "to": "Finish",
+      "to_port": 2
+    },
+    {
+      "from": "Finish",
+      "from_port": 0,
+      "to": "Normal_from_relief",
+      "to_port": 0
+    },
+    {
+      "from": "Normal_from_relief",
+      "from_port": 0,
+      "to": "Preview_normal_format",
+      "to_port": 0
+    },
+    {
+      "from": "Finish",
+      "from_port": 1,
+      "to": "Material",
+      "to_port": 0
+    },
+    {
+      "from": "Preview_normal_format",
+      "from_port": 0,
+      "to": "Material",
+      "to_port": 4
+    },
+    {
+      "from": "Finish",
+      "from_port": 2,
+      "to": "Material",
+      "to_port": 2
+    },
+    {
+      "from": "Finish",
+      "from_port": 1,
+      "to": "Save_ithar_grain",
+      "to_port": 0
+    },
+    {
+      "from": "Normal_from_relief",
+      "from_port": 0,
+      "to": "Save_ithar_n",
+      "to_port": 0
+    },
+    {
+      "from": "Finish",
+      "from_port": 2,
+      "to": "Save_ithar_roughness",
+      "to_port": 0
+    }
+  ],
+  "node_position": {
+    "x": 0,
+    "y": 0
+  },
+  "parameters": {}
+}

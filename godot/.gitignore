@@ -10,5 +10,8 @@ assets/ships/*/
 # Issue 1777: the six faction micro-detail maps are tracked source art, with their import settings (normal maps as normal maps)
 !assets/ships/detail/
 !assets/ships/detail/*.import
+# Issue 2001: keep the trial tiles' normal compression and packed data settings.
+!assets/ships/detail/mm_trial/*.png.import
+!world/detail/mm_trial/*.png.import
 # Godot 4 regenerates .uid files; the repo does not track new ones.
 *.uid
