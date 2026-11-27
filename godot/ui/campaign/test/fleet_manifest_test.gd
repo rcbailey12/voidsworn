@@ -14,7 +14,7 @@ func check(ok: bool, message: String) -> void:
 	if not ok: failures += 1; printerr("FAIL: " + message)
 func frames(n := 5) -> void:
 	for i in n: await process_frame
-func snap() -> String: return C.save_text() + "|" + str(JSM.rng_s) + "|" + str(C.UID)
+func snap() -> String: return C.save_text() + "|" + str(C.rng.rng_s) + "|" + str(C.UID)
 func key(code: int) -> void:
 	var e = InputEventKey.new(); e.keycode = code; e.pressed = true; ui._unhandled_input(e)
 func page(): return ui.fleet_manifest
@@ -32,7 +32,7 @@ func fixture(fac := "voidsworn", count := 12) -> void:
 	var adm = "vex"
 	for id in C.ADMIRALS:
 		if C.ADMIRALS[id].get("fac", "voidsworn") == fac: adm = str(id); break
-	JSM.rnd_seed(868); C.newRun(adm, fac)
+	C.rng.rnd_seed(868); C.newRun(adm, fac)
 	C.modal_d = null; C.RUN["fleet"] = []; C.RUN["inventory"] = ["prow"]; C.RUN["credits"] = 500
 	var names = ["Wrath of Vesper", "Vigilant Ash", "Cold Fury", "Oath Flame", "Resolve of the Reach", "Cinder Vow", "Burning Spire", "Unyielding Oath", "Last Light", "Dawn's Promise", "Silent Ember", "Ashen Wake"]
 	for i in count:
@@ -152,7 +152,7 @@ func run() -> void:
 	for i in int(C.HULLS[filled_target["tpl"]]["slots"]): filled_target["mods"].append("prow")
 	before = snap(); page().select_ship(filled_target["uid"])
 	check(snap() == before and not page().state["held"].is_empty(), "full target leaves source and held refit intact")
-	check(page().state["uid"] == source["uid"] and text(page().workspace).contains("has no free compatible slot"), "failed move explains the problem without changing ships")
+	check(page().state["uid"] == source["uid"] and text(page().workspace).contains(str(filled_target["name"]) + ": Slot") and text(page().workspace).contains("taken by " + C.modName("prow")), "failed move names the item that fills the slot, without changing ships")
 	var cancel = page().workspace.find_children("*", "Button", true, false).filter(func(b): return b.text == "Cancel move")
 	check(cancel.size() == 1, "failed move offers a mouse Cancel")
 	if cancel.size() == 1: cancel[0].pressed.emit()

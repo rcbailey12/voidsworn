@@ -225,7 +225,9 @@ class Rec extends Node:
 	func tick(...a: Array) -> void: _r("tick", a)
 	func ability(...a: Array) -> void: _r("ability", a)
 	func command(...a: Array) -> void: _r("command", a)
-	func jump_out(...a: Array) -> void: _r("jump_out", a)
+	func jump_out(...a: Array) -> float:
+		_r("jump_out", a)
+		return now
 	func set_engine(...a: Array) -> void: _r("set_engine", a)
 	func sync_ship(...a: Array) -> void: _r("sync_ship", a)
 	func hull_mark(...a: Array) -> void: _r("hull_mark", a)

@@ -107,7 +107,7 @@ func nem() -> Dictionary:
 
 
 func feed(h, m: Dictionary) -> void:
-	h.set_info({"foe_name": "Hegemony Navy", "foe_ships": 2, "heat": 3, "heat_tip": "Heat 3 of 9."})
+	h.set_info({"foe_name": "Meridian Directorate", "foe_ships": 2, "heat": 3, "heat_tip": "Heat 3 of 9."})
 	h.set_command("Fire for effect", bool(m.get("cmd", true)))
 	h.set_top(1, m.get("turn", "Your turn (3 ready)"), "Objective: break their fleet", "End ship (Space)", true, false, false)
 	h.set_nemesis(nem())
@@ -275,7 +275,7 @@ func _run() -> void:
 		check(absf(h.ledger.size.x - sz.x) < 1.0, "%s: the sheet covers the window (%s)" % [tag, str(h.ledger.size)])
 		plate_halo(h, tag)
 		for i in 3:
-			h.add_log(["Fleet Marshal Petra Valk: \"Every move you can make has been planned for.\"", "Fleet Marshal Petra Valk: \"All reserve squadrons, jump in now. Encircle them.\"", "Contact: Hegemony Navy, 2 ships on the scanners."][i], "e")
+			h.add_log(["Fleet Marshal Petra Valk: \"Every move you can make has been planned for.\"", "Fleet Marshal Petra Valk: \"All reserve squadrons, jump in now. Encircle them.\"", "Contact: Meridian Directorate, 2 ships on the scanners."][i], "e")
 		# 1. your turn with a target (the step 1 moment)
 		feed(h, {})
 		await process_frame
@@ -290,7 +290,7 @@ func _run() -> void:
 		for x in h.ledger.items:
 			words.append(str(x["t"]))
 		var joined := " | ".join(words)
-		check("FIRE THE OATH LANCE" in joined and "92%" in joined and "UNYIELDING OATH" in joined and "Hegemony Navy, 2 ships" in joined, "%s: the KEEL shelf shows the ship, target, odds and fire button" % tag)
+		check("FIRE THE OATH LANCE" in joined and "92%" in joined and "UNYIELDING OATH" in joined and "Meridian Directorate, 2 ships" in joined, "%s: the KEEL shelf shows the ship, target, odds and fire button" % tag)
 		check("About 16 damage" in words and "7 to shields" in words and "9 to hull" in words and "73 / 80" in words, "%s: plain damage words and the actual pool, without summing its facings" % tag)
 		if sz.y == 1080:
 			check("Fire for effect" in words, "1080p: Command keeps its full standing name")
@@ -333,13 +333,13 @@ func _run() -> void:
 		await _camera_clear(h, tag)
 		# 2. the enemy's turn
 		feed(h, {"turn": "Enemy turn", "card": {}, "target": {}, "ship": {}, "cmd": false, "phase_kind": "enemy",
-			"phase_text": "[b][color=#c4a4ff]ENEMY TURN[/color][/b]  ·  Hegemony Navy: Iron Warden  ·  [color=#8d86a0]Enter hurries[/color]", "phase_p": 0.4})
+			"phase_text": "[b][color=#c4a4ff]ENEMY TURN[/color][/b]  ·  Meridian Directorate: Iron Warden  ·  [color=#8d86a0]Enter hurries[/color]", "phase_p": 0.4})
 		await process_frame
 		measure(h, tag + " enemy turn")
 		var j2 := ""
 		for x in h.ledger.items:
 			j2 += str(x["t"]) + " | "
-		check("Enemy turn" in j2 and "Hegemony Navy:" in j2 and not "FIRE" in j2, "%s: the enemy's turn says whose turn and who is moving, no action" % tag)
+		check("Enemy turn" in j2 and "Meridian Directorate:" in j2 and not "FIRE" in j2, "%s: the enemy's turn says whose turn and who is moving, no action" % tag)
 		# 3. a "you may" prompt (issue 529, PR 533's words) in the shot's place
 		feed(h, {"ask": {"kind": "may", "key": "debtDue", "n": "Debt Comes Due", "q": "Delay the whole volley to the start of next round? It fires then with +20% damage.",
 			"opts": [{"id": "yes", "n": "Delay the volley"}, {"id": "no", "n": "Fire it now"}]}})

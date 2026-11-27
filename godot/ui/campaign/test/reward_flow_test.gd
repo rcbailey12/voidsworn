@@ -2,6 +2,7 @@ extends SceneTree
 # Issue 1905: the real reward and shipyard cards, with a cold Continue from the saved text.
 const Campaign = preload("res://campaign/campaign.gd")
 const CampaignUI = preload("res://ui/campaign/campaign_ui.gd")
+const BattleAPI = preload("res://rules/battle_api.gd")
 const REFIT := "prow"
 
 class RewardUI extends CampaignUI:
@@ -53,7 +54,7 @@ func reload() -> void:
 	await frames()
 
 func fixture() -> void:
-	Campaign.JSM.rnd_seed(1905)
+	C.rng.rnd_seed(1905)
 	C.newRun("vex", "voidsworn")
 	var ship = C.newShip("penitent")
 	ship["name"] = "Quiet Resolve"
@@ -99,7 +100,7 @@ func captain_loss_check() -> void:
 	for row in [["Cold Reckoning", "Lucan Ivers"], ["Iron Wake", "Octavia Vale"]]:
 		var ship: Dictionary = C.newShip("penitent")
 		ship["name"] = row[0]
-		ship["cap"]["name"] = row[1]
+		ship["cap"]["full_name"] = row[1]
 		C.RUN["fleet"].append(ship)
 	var node: Dictionary = C.RUN["map"]["cols"][0][0]
 	C.RUN["pos"] = node["id"]
@@ -108,7 +109,7 @@ func captain_loss_check() -> void:
 	for unit in C.B["units"].slice(1, 3):
 		unit["dead"] = true
 		unit["hp"] = 0
-	Campaign.JSM.rnd_seed(8)   # the first captain escapes and the second falls
+	C.rng.rnd_seed(8)   # the first captain escapes and the second falls
 	C.finishBattle("win")
 	await frames()
 	var losses: String = "Lost: the Cold Reckoning, the Iron Wake and Octavia Vale."
@@ -142,6 +143,120 @@ func promotion_words_check() -> void:
 	var rules = preload("res://rules/rules.gd").new()
 	check(rules.load_tables("res://rules/data/tables.json") == "" and rules.PERKS == C.PERKS, "C39: both Godot perk tables agree")
 
+# Issue 2095: build a real Spread Pattern burst with the rules, not a hand-written log.
+# A missed torpedo bursts on the aimed hull and every hull within 1 hex of it. The aimed hull
+# and one neighbour die in the burst; a third enemy is killed by the same attacker before the
+# burst and is not caught by it. The rules mark only the hulls the burst actually killed.
+func splash_checks() -> void:
+	var api = BattleAPI.new()
+	var err: String = api.load_rules()
+	check(err == "", "the rules load for the splash fixture")
+	if err != "": return
+	var R = api.R
+	var attempt := 0
+	while attempt < 40:
+		attempt += 1
+		api.new_battle_scenario({"seed": 20 + attempt, "admiral": "vex", "fac_player": "voidsworn", "fleet": ["harrow"],
+			"fac": "hegemony", "enemies": ["h_picket", "h_picket", "h_picket"], "obj": "rout", "shape": "open",
+			"map": "open", "dep": "line", "kind": "battle", "sector": 1, "boons": [{"id": "e_spread", "r": 0}]})
+		var B = R.B
+		B["cp0"] = null   # no rout ending in the middle of the burst
+		B["terrain"] = {}
+		var attacker = null; var foes := []
+		for u in B["units"]:
+			if R.jt(u.get("isSq")): continue
+			if u["side"] == "player": attacker = u
+			else: foes.append(u)
+		if attacker == null or foes.size() < 3: continue
+		var aimed = foes[0]; var neighbour = foes[1]; var unrelated = foes[2]
+		attacker["name"] = "Splash Ship"
+		aimed["name"] = "Aimed Hull"; neighbour["name"] = "Near Hull"; unrelated["name"] = "Unrelated Kill"
+		# The attacker fires east from (10,6); the aimed hull is 3 hexes ahead with two neighbours.
+		attacker["q"] = 10; attacker["r"] = 6; attacker["facing"] = 0
+		aimed["q"] = 13; aimed["r"] = 6
+		neighbour["q"] = 14; neighbour["r"] = 6
+		unrelated["q"] = 13; unrelated["r"] = 7
+		for f in foes:
+			f["dead"] = false; f["hp"] = 1; f["shp"] = 0; f["sh"] = [0, 0, 0, 0]; f["killCause"] = null; f.erase("splashKill")
+			f["ev"] = 45   # the torpedo shot misses (5% hit), as Spread Pattern needs
+		var wi := -1
+		for i in range(attacker["weapons"].size()):
+			if attacker["weapons"][i]["k"] == "torp": wi = i; break
+		if wi < 0: continue
+		# The same attacker kills this hull outside the burst. The log never names the attack.
+		unrelated["killCause"] = "big"; R.killUnit(unrelated, attacker)
+		var w = attacker["weapons"][wi]; w["fired"] = false; w["cdLeft"] = 0; w["off"] = 0
+		R.fireWeapon(attacker, wi, aimed)
+		var burst := false
+		for entry in B["log"]:
+			if String(entry.get("m", "")).contains(", catching "): burst = true; break
+		if not (burst and R.jt(aimed.get("dead")) and R.jt(neighbour.get("dead")) and R.jt(aimed.get("splashKill")) and R.jt(neighbour.get("splashKill"))): continue
+		check(C._heavy_wreck_cause(aimed, B["log"]) == "Torpedo strike", "a Spread Pattern burst credits the hull it was aimed at")
+		check(C._heavy_wreck_cause(neighbour, B["log"]) == "Torpedo strike", "a Spread Pattern burst credits a neighbour it actually hit")
+		check(C._heavy_wreck_cause(unrelated, B["log"]) == "", "an unrelated heavy kill by the same attacker keeps the generic wording")
+		check(unrelated["killCause"] == "big" and not R.jt(unrelated.get("splashKill")), "the unrelated kill is heavy and carries no burst mark")
+		return
+	check(false, "the splash fixture never produced a real Spread Pattern burst kill")
+
+# Issue 2095: a Legion hull killed by a Spread Pattern burst reassembles, and its next death
+# is credited by the cause that killed it then. Card wording only, never damage.
+func legion_splash_rise_ram_check() -> void:
+	var api = BattleAPI.new()
+	var err: String = api.load_rules()
+	check(err == "", "the rules load for the legion splash fixture")
+	if err != "": return
+	var R = api.R
+	var attempt := 0
+	while attempt < 40:
+		attempt += 1
+		api.new_battle_scenario({"seed": 300 + attempt, "admiral": "vex", "fac_player": "voidsworn",
+			"fleet": ["harrow", "harrow"], "fac": "deathless", "enemies": ["d_jackal", "d_jackal"],
+			"obj": "rout", "shape": "open", "map": "open", "dep": "line", "kind": "battle", "sector": 1,
+			"boons": [{"id": "e_spread", "r": 0}]})
+		var B = R.B
+		B["cp0"] = null   # no rout ending in the middle of the burst
+		B["terrain"] = {}
+		var players := []; var foes := []
+		for u in B["units"]:
+			if R.jt(u.get("isSq")): continue
+			if u["side"] == "player": players.append(u)
+			else: foes.append(u)
+		if players.size() < 2 or foes.is_empty(): continue
+		var attacker = players[0]; var rammer = players[1]; var aimed = foes[0]
+		attacker["name"] = "Splash Ship"; rammer["name"] = "Ram Ship"; aimed["name"] = "Risen Hull"
+		# The attacker fires east from (10,6) at a Legion hull 3 hexes ahead.
+		attacker["q"] = 10; attacker["r"] = 6; attacker["facing"] = 0
+		aimed["q"] = 13; aimed["r"] = 6
+		for f in foes:
+			f["dead"] = false; f["hp"] = 1; f["shp"] = 0; f["sh"] = [0, 0, 0, 0]; f["killCause"] = null; f.erase("splashKill")
+			f["ev"] = 45   # the torpedo shot misses (5% hit), as Spread Pattern needs
+		# Any other Legion hull sits out of burst range, so only the aimed hull is caught.
+		for i in range(1, foes.size()):
+			foes[i]["q"] = 10; foes[i]["r"] = 10 + i
+		var wi := -1
+		for i in range(attacker["weapons"].size()):
+			if attacker["weapons"][i]["k"] == "torp": wi = i; break
+		if wi < 0: continue
+		if B["legion"]["enemy"]["max"] < 1: B["legion"]["enemy"]["max"] = 1
+		B["legion"]["enemy"]["used"] = 0
+		var w = attacker["weapons"][wi]; w["fired"] = false; w["cdLeft"] = 0; w["off"] = 0
+		R.fireWeapon(attacker, wi, aimed)
+		if not (R.jt(aimed.get("dead")) and aimed.get("riseAt") != null and R.jt(aimed.get("splashKill"))): continue
+		# The wreck reassembles. The burst mark belongs to the death that set it and must not survive.
+		check(R.legionRise(aimed), "the downed Legion hull reassembles")
+		check(not R.jt(aimed.get("dead")) and not R.jt(aimed.get("splashKill")), "reassembling clears the old torpedo burst mark")
+		# It later dies to a ram, so the wreck card must name the ram, not the earlier torpedo.
+		aimed["hp"] = 1
+		rammer["q"] = 11; rammer["r"] = 6; rammer["facing"] = 0; rammer["rammed"] = false; rammer["mp"] = rammer["speed"]
+		var ri = R.ramInfo(rammer)
+		check(ri != null and is_same(ri["t"], aimed), "the fixture lines up a real ram on the risen hull")
+		if ri == null or not is_same(ri["t"], aimed): return
+		R.ramUnit(rammer)
+		check(R.jt(aimed.get("dead")), "the ram kills the risen hull")
+		check(C._heavy_wreck_cause(aimed, B["log"]) == "Rammed", "a risen Legion hull killed by a ram gets the ram wording")
+		return
+	check(false, "the legion splash fixture never produced a burst kill that reassembled")
+
 func wreck_checks() -> void:
 	var ship := {"name": "Broken Crown", "killedBy": "Quiet Resolve"}
 	var ram: String = C._heavy_wreck_cause(ship, [{"m": "Quiet Resolve rams Broken Crown at full speed: 30 to its prow, 10 back to the ram."}])
@@ -149,18 +264,10 @@ func wreck_checks() -> void:
 	check(ram == "Rammed" and torpedo == "Torpedo strike", "the shared big kill class is distinguished by the battle log")
 	var stray: String = C._heavy_wreck_cause(ship, [{"m": "Torpedoes from Quiet Resolve reach Broken Crown (a stray hit in the lane): 36 hull."}])
 	check(stray == "Torpedo strike", "a stray torpedo uses the same wreck wording")
-	# issue 2025: a Spread Pattern splash kill is never named in the burst line, so an earlier gun hit must not take the credit
-	var splash := {"name": "Broken Crown", "killedBy": "Quiet Resolve"}
-	var splash_log := [
-		{"m": "Pale Lantern fires Heavy Battery at Broken Crown: 4 hull."},
-		{"m": "Volley Torpedo from Quiet Resolve burst against Iron Vow, catching 2 ships."},
-		{"m": "Broken Crown is destroyed."},
-	]
-	check(C._heavy_wreck_cause(splash, splash_log) == "Torpedo strike", "a Spread Pattern splash kill is credited to the torpedo, not an earlier gun hit")
-	var splash_ram := splash_log.duplicate(); splash_ram.append({"m": "Quiet Resolve rams Broken Crown at full speed: 30 to its prow, 10 back to the ram."})
-	check(C._heavy_wreck_cause(splash, splash_ram) == "Rammed", "a later ram on the wreck still wins over an earlier burst")
-	check(C._heavy_wreck_cause({"name": "Iron Vow", "killedBy": "Quiet Resolve"}, splash_log.slice(0, 2)) == "", "the ship the burst was aimed at is not credited by the burst line")
-	check(C._heavy_wreck_cause({"name": "Broken Crown", "killedBy": "Other Hull"}, splash_log) == "", "a burst from a different ship does not take the credit")
+	# issue 2095: a real Spread Pattern burst, produced by the rules, credits the aimed-at hull and a
+	# neighbour it actually hit, and leaves an unrelated heavy kill by the same ship on the generic wording.
+	splash_checks()
+	legion_splash_rise_ram_check()
 	for row in [
 		["big", ram, "Rammed"],
 		["big", torpedo, "Torpedo strike"],
@@ -279,7 +386,7 @@ func full_reward_check() -> void:
 	C.RUN["reward"]["modOffer"] = [REFIT]
 	C.act("takeSalvage", "0:cred")
 	await frames()
-	check(control("fitRewardRefit", REFIT + ":" + uid) == null and words().contains("No free compatible slot."), "a full fleet sees why it cannot fit a won refit")
+	check(control("fitRewardRefit", REFIT + ":" + uid) == null and words().contains(C.fitBlock(ship, REFIT)) and C.fitBlock(ship, REFIT).contains("taken by"), "a full fleet sees why it cannot fit a won refit (names what fills the slot)")
 	C.act("fitRewardRefit", REFIT + ":" + uid)
 	check(kind() == "mod" and C.W["modOffer"] == [REFIT] and C.RUN["inventory"].is_empty(), "a rejected fit leaves the offer available")
 	await reload()
@@ -313,7 +420,7 @@ func bought_checks() -> void:
 		var fitted: int = ship["mods"].size()
 		check(kind() == "bought_refit" and C.RUN["inventory"] == [REFIT, REFIT], "Continue restores the paid refit card and one new copy")
 		if keep:
-			check(control("fitBoughtRefit", uid) == null and words().contains("No free compatible slot."), "a full fleet can keep the purchased module")
+			check(control("fitBoughtRefit", uid) == null and words().contains(C.fitBlock(ship, REFIT)), "a full fleet can keep the purchased module and sees what fills the slot")
 			C.act("fitBoughtRefit", uid)
 			check(kind() == "bought_refit" and ship["mods"].size() == fitted, "a full slot cannot consume the purchase")
 			var escape := InputEventKey.new()

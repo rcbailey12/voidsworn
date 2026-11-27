@@ -701,7 +701,7 @@ func _build_tip() -> void:
 
 # Keep detail tips off the controls. Shelf tips open upward; corner tips face the board.
 func _ledger_tip(t: String, at: Vector2) -> void:
-	if t == "":
+	if t == "" or bool(_last.get("letterbox", false)):
 		dtip.visible = false
 		return
 	dtip_text.text = recol(t)
@@ -723,7 +723,7 @@ func _ledger_tip(t: String, at: Vector2) -> void:
 
 
 func show_tip(bb: String, at: Vector2) -> void:
-	if bb == "":
+	if bb == "" or bool(_last.get("letterbox", false)):
 		tip.visible = false
 		return
 	var rb := recol(bb)
@@ -976,10 +976,13 @@ func _draw_regen_lock(icon: Control) -> void:
 
 # The odds and the ghost are on the sheet. The plate holds the name and active regen lock.
 func set_plate(id: String, screen: Vector2, on: bool, name_txt: String, friend: bool, flag: bool, hp: float, mx: float, sh: float, shmx: float, up := false, extra := {}) -> void:
-	var c := plate(id)
-	c.visible = on
 	if not on:
+		var existing: Control = plates.get(id)
+		if existing != null:
+			existing.hide()
 		return
+	var c := plate(id)
+	c.show()
 	# issue 1437 (item 9): the plate's three parts are looked up once, not by path for every ship every frame
 	var refs: Array = c.get_meta("parts") if c.has_meta("parts") else []
 	if refs.is_empty():

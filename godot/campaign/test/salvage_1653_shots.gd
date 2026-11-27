@@ -40,7 +40,7 @@ func _shot(name: String) -> bool:
 
 func _run() -> void:
 	await _frames(4)
-	BattleAPI.JSM.rnd_seed(1653)
+	C.rng.rnd_seed(1653)
 	C.META = C.migrateMeta(C.defaultMeta())
 	C.newRun("vex", "voidsworn")
 	C.RUN["reward"] = {"kind": "boss", "rw": {"k": "boon"}, "stage": "relic", "relics": [], "wrecks": [], "prizes": [], "boonOffer": null, "modOffer": null}

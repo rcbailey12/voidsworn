@@ -29,8 +29,10 @@ static func clear_static() -> void:
 # The cue each kind of button plays when pressed; hover and arrow-key focus play HOVER_CUE.
 # "reward" (issue 1448): the confirm that takes a reward, relic, promotion perk or bought hull plays the built reward chime
 # instead of the plain confirm, so the two never sound together.
-const PRESS_CUE := {"primary": "ui_confirm", "quiet": "ui_click", "link": "ui_click", "back": "ui_cancel", "tab": "ui_select", "reward": "ui_reward"}
-const HOVER_CUE := "ui_select"
+const PRESS_CUE := {"primary": "ui_confirm", "quiet": "ui_click", "link": "ui_click", "back": "ui_cancel",
+	"tab": "ui_select", "reward": "ui_reward", "purchase": "ui_purchase", "install": "ui_module_install",
+	"relic": "ui_relic_socket"}
+const HOVER_CUE := "ui_hover"
 const OPEN_CUE := "ui_panel"
 
 # Every face the game ships, for Credits (title.gd) and the font check (godot/ui/test/front_end_test.gd fails when a .ttf
@@ -151,12 +153,7 @@ static func section(text: String, k: float) -> Control:
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", px(4, k))
 	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var l := label(text.to_upper(), 17, k, GS.TEXT3, medium_font(), false)
-	var sp := maxi(1, int(round(17.0 * 0.12 * k)))
-	var fv := FontVariation.new()
-	fv.base_font = medium_font()
-	fv.spacing_glyph = sp
-	l.add_theme_font_override("font", fv)
+	var l := label(text.to_upper(), 17, k, GS.TEXT3, GS.caps(k), false)
 	v.add_child(l)
 	var r := ColorRect.new()
 	r.color = GS.SHEET_HAIR
@@ -450,6 +447,7 @@ static func sheet_box(k: float, pad_x := 32.0, pad_y := 24.0) -> StyleBoxFlat:
 static func drawer(parent: Control, k: float, w: float, slide := true, reduce_motion := false) -> PanelContainer:
 	var p := PanelContainer.new()
 	var box := sheet_box(k, 40, 36)
+	box.bg_color.a = 1.0   # issue 2029 item 2: solid, so no card text or button behind it shows through
 	box.set_border_width_all(0)
 	box.border_width_left = maxi(1, px(1, k))
 	p.add_theme_stylebox_override("panel", box)

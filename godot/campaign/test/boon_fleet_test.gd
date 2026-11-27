@@ -89,7 +89,7 @@ func _set_fleet(c, rows: Array) -> void:
 func _seeded_reward(seed: int, campaign_script: GDScript, ui_script: GDScript) -> Dictionary:
 	var c = _campaign(campaign_script)
 	if c == null: return {}
-	JSM.rnd_seed(seed)
+	c.rng.rnd_seed(seed)
 	c.newRun("vex", "voidsworn")
 	_set_fleet(c, [["penitent", "Oath"], ["harrow", "Spark"], ["reliquary", "Hearth"]])
 	c.RUN["patrons"] = ["star", "storm", "iron", "ember"]
@@ -112,7 +112,7 @@ func _seeded_reward(seed: int, campaign_script: GDScript, ui_script: GDScript) -
 		await _settle()
 		ui.free()
 	return {"pool": pool, "offer": offer, "save": save, "reroll": JSON.stringify(c.modal_d),
-		"rerolled_save": c.save_text(), "next_random": JSM.rnd(), "read_only": read_only,
+		"rerolled_save": c.save_text(), "next_random": c.rng.rnd(), "read_only": read_only,
 		"first_pick_count": first_pick_count, "has_details": has_details}
 
 
@@ -122,7 +122,7 @@ func _reopen(save: String) -> void:
 	c.load_save_text(save)
 	var before: String = c.save_text()
 	var saved_offers: Array = JSON.parse_string(save)["run"]["reward"]["boonOffer"]
-	JSM.rnd_seed(78)
+	c.rng.rnd_seed(78)
 	c.act("continueRun")
 	# Exercise the real Continue path but draw just its offer over the same blank
 	# battle backdrop as the other checks, so there are no ship assets to load.
@@ -130,7 +130,7 @@ func _reopen(save: String) -> void:
 	var ui = _attach_ui(c)
 	await _settle()
 	_ok(saved_offers.size() == 3 and c.modal_d["kind"] == "boon" and c.modal_d["data"]["offer"] == saved_offers
-		and _details(ui, c).size() == 3 and JSM.rng_u32() == 78 and c.save_text() == before,
+		and _details(ui, c).size() == 3 and c.rng.rng_u32() == 78 and c.save_text() == before,
 		"Continue restores all three saved cards without drawing again or rewriting the save")
 	ui.free()
 
@@ -153,7 +153,7 @@ func _show_cases(shots: String, base: String, before_ui: GDScript) -> void:
 	var c = _campaign()
 	if c == null: return
 	var ui = _attach_ui(c)
-	JSM.rnd_seed(1075)
+	c.rng.rnd_seed(1075)
 	c.newRun("malek", "voidsworn")
 	# Include a weapon cap, a stacked effect cap, an aspect wing and a hold-only fit.
 	# No shipped refit grants a squadron to a hull without a hangar: use a local trial
@@ -224,15 +224,15 @@ func _show_cases(shots: String, base: String, before_ui: GDScript) -> void:
 	c.show_page("battle", {}, [])
 	var pool: Array = c.boonOfferPool("iron")
 	var duos: Array = c.boonOfferDuos("iron")
-	JSM.rnd_seed(75)
+	c.rng.rnd_seed(75)
 	c.resumeReward()
 	var saved: String = c.save_text()
 	await _settle()
 	var lines := _details(ui, c)
 	_ok(lines.size() == 3 and lines.all(func(line): return line.ends_with("No effect on this fleet: none of its ships can Brace.")),
 		"all three Brace offers show no effect on the real Glasswright reward screen")
-	_ok(pool.has("i_brace") and pool.has("i_wall") and duos.has("d_bastion") and c.modal_d["data"]["offer"] == brace_offers
-		and JSM.rng_u32() == 75 and c.save_text() == saved, "Brace explanations do not change the Glasswright pool, saved offer, or RNG")
+	_ok(not pool.has("i_brace") and not pool.has("i_wall") and not duos.has("d_bastion") and c.modal_d["data"]["offer"] == brace_offers
+		and c.rng.rng_u32() == 75 and c.save_text() == saved, "New offers exclude Brace boons without changing an open saved offer or spending RNG")
 	var captured: Dictionary = c.newShip("warden"); captured["name"] = "Added Escort"; c.RUN["fleet"].append(captured)
 	_ok(brace_offers.all(func(entry): return ui._boon_fleet_line(entry.id, 0) == "Affects 1 ship that can Brace: Added Escort"),
 		"a captured ship can benefit from Brace protocols in a Glasswright fleet")

@@ -146,7 +146,9 @@ func row(ship: Dictionary, damaged: bool, parent: Control) -> void:
 	var hull = C.HULLS[ship["tpl"]]; var derived = C.derive(ship)
 	var name_w = GS.sheet_name().get_string_size(str(ship["name"]).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1, ui.px(28)).x / k
 	var cls_w = GS.sheet_body().get_string_size(hull["n"], HORIZONTAL_ALIGNMENT_LEFT, -1, ui.px(17)).x / k
-	var available = manifest_w - 238; var wrap_class = name_w + cls_w + 18 > available
+	var cp_x = manifest_w - 52
+	var available = cp_x - 188 - 12
+	var wrap_class = name_w + cls_w + 18 > available
 	var name_height = maxf(38, ceilf(name_w / maxf(1, available)) * 36)
 	var rh = maxf(54, name_height + (24 if wrap_class else 0) + (28 if damaged else 0))
 	var b = Button.new(); b.text = ""; style_link(b)
@@ -162,7 +164,7 @@ func row(ship: Dictionary, damaged: bool, parent: Control) -> void:
 	picture(ship, Rect2(22, 5, 150, 40), b)
 	head(ship["name"], Rect2(188, 0, available if wrap_class else name_w + 2, name_height), 28, b)
 	words(hull["n"], Rect2(188 if wrap_class else 206 + name_w, name_height - 4 if wrap_class else 9, available if wrap_class else cls_w + 3, 26), 17, GS.TEXT2, null, b)
-	words(C.numstr(hull["cp"])+ " CP", Rect2(manifest_w - 52, 9, 72, 28), 17, GS.TEXT2, GS.num(), b)
+	words(C.numstr(hull["cp"]) + " CP", Rect2(cp_x, 9, 72, 28), 17, GS.TEXT2, GS.num(), b)
 	if damaged:
 		var y = name_height + (24 if wrap_class else 0)
 		meter(b, Rect2(188, y + 9, 130, 5), ship["hp"], derived["maxHp"], GS.HULL_LOW)
@@ -186,7 +188,7 @@ func select_ship(uid: String) -> void:
 		if source != null and target != null and int(held["slot"]) < source["mods"].size():
 			var m = source["mods"][held["slot"]]
 			if not C.canFitModule(target, m):
-				state["move_error"] = str(target["name"]) + " has no free compatible slot for this refit."
+				state["move_error"] = str(target["name"]) + ": " + C.fitBlock(target, m)
 				refresh()
 				return
 			var inventory_index = C.RUN["inventory"].size()
@@ -278,7 +280,7 @@ func specification(ship: Dictionary) -> void:
 			"gun": v.add_child(body(line["t"], 17, GS.TEXT2, GS.num()))
 			"stat": v.add_child(body(line["t"], 17))
 			_: v.add_child(body(line["t"]))
-	v.add_child(body(str(cap["name"]).to_upper(), 28, GS.TEXT, GS.sheet_name()))
+	v.add_child(body(str(cap["full_name"]).to_upper(), 28, GS.TEXT, GS.sheet_name()))
 	var rank = int(cap["rank"]); var next = C.RANK_XP[rank + 1] if rank + 1 < C.RANK_XP.size() else null
 	var xp = C.rankName(cap) + " · " + C.numstr(cap["xp"])
 	if next != null:
@@ -304,9 +306,9 @@ func specification(ship: Dictionary) -> void:
 # regrown hulls). Each line is {"t": text, "k": shield | stat | ability | ability_d | weapon | gun}; callers pick the type.
 static func spec_lines(c, ship: Dictionary) -> Array:
 	var hull = c.HULLS[ship["tpl"]]; var d = c.derive(ship); var out = []
-	if ship["uid"] == "" and ship["cap"].has("name"):   # a preview with a recovered captain: say whose perks the numbers include
+	if ship["uid"] == "" and not ship["cap"].get("full_name", "").is_empty():   # a preview with a recovered captain: say whose perks the numbers include
 		var ps = ship["cap"]["perks"].map(func(p): return str(c.PERKS[p]["n"]))
-		out.append({"k": "captain", "t": "Comes with " + c.rankName(ship["cap"]) + " " + str(ship["cap"]["name"]) + ", recovered from the reserve" + ((" (" + ", ".join(PackedStringArray(ps)) + ")") if not ps.is_empty() else "") + ". The numbers include their perks."})
+		out.append({"k": "captain", "t": "Comes with " + c.rankName(ship["cap"]) + " " + str(ship["cap"]["full_name"]) + ", recovered from the reserve" + ((" (" + ", ".join(PackedStringArray(ps)) + ")") if not ps.is_empty() else "") + ". The numbers include their perks."})
 	out.append({"k": "shield", "t": "Shields " + c.numstr(d["shMax"]) + "  +" + c.numstr(d["regen"]) + "/turn"})
 	out.append({"k": "stat", "t": "Armor " + c.pct(d["armor"]) + "   Speed " + c.numstr(d["speed"]) + "\nTurns " + c.numstr(d["turns"]) + "   Evasion " + c.numstr(d["ev"])})
 	var ability = c.ABILITIES.get(hull.get("ab"), {})
@@ -321,12 +323,7 @@ static func spec_lines(c, ship: Dictionary) -> Array:
 # would really install: the nth recovered captain in the reserve when newShip would take one (same test as newShip: no
 # battle running, a reserve to draw from), else a fresh lieutenant. The reserve is read, never popped (issue 1449, Artoo).
 static func preview_ship(c, tpl: String, ripped := false, nth := 0) -> Dictionary:
-	var cap = {"perks": [], "rank": 0, "xp": 0}
-	var R = c.RUN
-	if c.B == null and R != null and R.get("reserve") is Array and nth < R["reserve"].size(): cap = R["reserve"][nth]["cap"].duplicate(true)
-	var s = {"uid": "", "tpl": tpl, "mk": 1, "mods": [], "cap": cap, "hp": c.HULLS[tpl]["hp"]}
-	if ripped: s["ripped"] = true
-	return s
+	return c.incoming_ship(tpl, ripped, nth)
 
 func chooser(title: String) -> VBoxContainer:
 	head(title, Rect2(0, 0, middle_w, 60), 32, workspace)
@@ -344,7 +341,7 @@ func hold(ship: Dictionary) -> void:
 	for i in C.RUN["inventory"].size():
 		var m = C.RUN["inventory"][i]
 		v.add_child(body(C.modName(m), 20, GS.TEXT, GS.sheet_medium())); v.add_child(body(C.MODULES[m]["d"]))
-		var b = Button.new(); b.text = "Fit refit" if C.canFitModule(ship, m) else "Needs a free compatible slot"
+		var b = Button.new(); b.text = "Fit refit" if C.canFitModule(ship, m) else C.fitBlock(ship, m)
 		b.disabled = not C.canFitModule(ship, m); style_link(b); b.alignment = HORIZONTAL_ALIGNMENT_LEFT; b.set_meta("inventory_index", i)
 		b.pressed.connect(func(): state["mode"] = ""; C.act("equip", str(i) + ":" + ship["uid"])); v.add_child(b)
 
