@@ -84,7 +84,7 @@ func _advance() -> void:
 
 func _run() -> void:
 	await _frames(4)
-	BattleAPI.JSM.rnd_seed(4242)
+	C.rng.rnd_seed(4242)
 	C.playtest_default = true
 	C.META = C.migrateMeta(C.defaultMeta())
 	C.META["opts"]["playtestAll"] = true   # R69 stays on, as in the shipped game

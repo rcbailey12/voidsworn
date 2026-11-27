@@ -93,7 +93,7 @@ func run() -> void:
 	for fac in C.RUN_FACTIONS: seen[str(Kit.faction_accent(str(fac)))] = true
 	check(seen.size() >= 4, "the factions' accents differ from each other (%d distinct)" % seen.size())
 	# 4: the shipyard
-	API.JSM.rnd_seed(2029); C.META = C.defaultMeta()
+	C.rng.rnd_seed(2029); C.META = C.defaultMeta()
 	var adm = null
 	for id in C.ADMIRALS.keys():
 		if C.ADMIRALS[id].get("fac") == "voidsworn" and adm == null: adm = id

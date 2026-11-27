@@ -60,7 +60,7 @@ func _init() -> void:
 	_rmdir(DIR); DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(DIR))
 	var path := DIR.path_join("campaign.json")
 	var C = _fresh(path)
-	API.JSM.rnd_seed(4242); C.META = C.defaultMeta(); C.newRun("vex", "voidsworn", {})
+	C.rng.rnd_seed(4242); C.META = C.defaultMeta(); C.newRun("vex", "voidsworn", {})
 	C.RUN["sector"] = 2; C.RUN["map"] = C.genSector(2); C.RUN["pos"] = null
 	for i in 3: C.RUN["fleet"].append(C.newShip(C.cheapHull("voidsworn")))
 	var node = null

@@ -165,8 +165,10 @@ static func _pbr_channels(m: BaseMaterial3D, faction: String) -> void:
 		m.backlight = Color(float(back[0]), float(back[1]), float(back[2]))
 
 const DETAIL_DIR := "res://assets/ships/detail/"
+const MM_DETAIL_DIR := DETAIL_DIR + "mm_trial/"
 const DETAIL_FACTIONS := ["voidsworn", "hegemony", "corsair", "chorus", "ithar", "deathless"]
-static var _detail := {}   # faction -> [grain texture, normal texture]
+const MM_TRIAL := preload("res://render/mm_trial.gd")
+static var _detail := {}   # grain path -> [grain texture, normal texture, detail share]
 
 
 # Issue 1204: the detail maps and fitted hull materials are GPU resources held in statics; dropped before quit
@@ -187,15 +189,29 @@ static func v2_of(key: String):
 	return t.get(key, V2[key])
 
 
-# The faction's micro-detail pair [grain, normal], or [] when the faction has none (an unknown faction id).
+# The faction's grain, normal and blend share, or [] when the faction has none.
 static func detail_maps(faction: String) -> Array:
 	if not faction in DETAIL_FACTIONS:
 		return []
-	if not _detail.has(faction):
-		var g := DETAIL_DIR + faction + "_grain.png"
-		var n := DETAIL_DIR + faction + "_n.png"
-		_detail[faction] = [load(g), load(n), _alpha_of(load(g))] if ResourceLoader.exists(g) and ResourceLoader.exists(n) else []
-	return _detail[faction]
+	if MM_TRIAL.enabled():
+		return _load_detail_pair(MM_DETAIL_DIR + faction, faction)
+	return _load_detail_pair(DETAIL_DIR + faction)
+
+
+static func _load_detail_pair(prefix: String, trial_faction := "") -> Array:
+	if not _detail.has(prefix):
+		var g := prefix + "_grain.png"
+		var n := prefix + "_n.png"
+		var grain: Texture2D
+		var normal: Texture2D
+		if trial_faction.is_empty():
+			grain = load(g) as Texture2D if ResourceLoader.exists(g) else null
+			normal = load(n) as Texture2D if ResourceLoader.exists(n) else null
+		else:
+			grain = MM_TRIAL.load_tile(trial_faction, g)
+			normal = MM_TRIAL.load_tile(trial_faction, n)
+		_detail[prefix] = [grain, normal, _alpha_of(grain)] if grain != null and normal != null else []
+	return _detail[prefix]
 
 
 # The grain's alpha (the layer's share), read once per faction.
@@ -217,7 +233,7 @@ static func _detail_layer(m: BaseMaterial3D, faction: String) -> void:
 	if maps.is_empty():
 		return
 	var grain := maps[0] as Texture2D
-	var a := float(maps[2])   # make_detail_maps.py writes one constant alpha per grain map, so one pixel reads it
+	var a := float(maps[2])   # one constant alpha per grain map stores the detail layer's share
 	m.detail_enabled = true
 	m.detail_blend_mode = BaseMaterial3D.BLEND_MODE_MUL
 	m.detail_uv_layer = BaseMaterial3D.DETAIL_UV_2

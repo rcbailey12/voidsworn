@@ -2255,15 +2255,22 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 		"stance":
 			_float(e["unit"], "Wings: %s" % str(e["stance"]), Color("#9fd4ff"), -24)
 		"blink":
-			var sv = views.get(e["unit"])
+			var id := str(e["unit"])
+			var sv: ShipView = views.get(id)
 			if sv != null:
-				var c: Color = FLOOK.engine(str(VU.get(e["unit"], {}).get("fac", "ithar")))
-				_flash(sv.visual_position() + Vector3(0, 2, 0), 18.0, c, 0.5)
+				var dst: Vector3 = board.hex_world(int(e["to"]["q"]), int(e["to"]["r"]))
 				sfx.play("phase", {"pos": sv.visual_position()})
-				await wait(250.0)
-				sv.position = board.hex_world(int(e["to"]["q"]), int(e["to"]["r"]))
-				_flash(sv.visual_position() + Vector3(0, 2, 0), 18.0, c, 0.5)
-				await wait(250.0)
+				var at: float = gfx.fold(id, speed, func blink_snap() -> void: sv.position = dst) if gfx != null else -1.0
+				if at >= 0.0:
+					await _await_fx(at)
+				else:
+					var c := FLOOK.engine(str(VU.get(id, {}).get("fac", "ithar")))
+					_flash(sv.visual_position() + Vector3(0, 2, 0), 18.0, c, 0.5)
+					await wait(250.0)
+					if is_instance_valid(sv):
+						sv.position = dst
+						_flash(sv.visual_position() + Vector3(0, 2, 0), 18.0, c, 0.5)
+					await wait(250.0)
 		"side":
 			if e["side"] == "player":
 				hud.set_chip("")
@@ -2329,31 +2336,36 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			await wait(120.0)
 		"ability":
 			var ab := str(e["ab"])
+			var id := str(e["unit"])
 			var A = TBL.get("ABILITIES", {}).get(ab, {})
 			if ab != "launch":
-				_log("%s: %s." % [_name(e["unit"]), str(A.get("n", ab))], _who(e["unit"]))
-			var c: Color = FLOOK.engine(str(VU.get(e["unit"], {}).get("fac", "hegemony")))
-			if gfx != null and gfx.has_method("ability"):
-				gfx.ability(str(e["unit"]), ab)
-			else:
-				_flash(_pos(e["unit"]) + Vector3(0, 2, 0), 18.0, c, 0.5)
-			if ab == "phase":   # issue 1649: Fold skip leaves a violet after-image where the ship stood (Eclipse violet, never green)
-				_flash(_pos(e["unit"]) + Vector3(0, 2, 0), 22.0, Color("#ddc4ff"), 0.9)
-				sfx.play("phase", {"pos": _pos(e["unit"])})
-			if ab == "blink" and e.get("hex") != null:
-				sfx.play("phase", {"pos": _pos(e["unit"])})
-				var sv = views.get(e["unit"])
-				if sv != null:
-					sv.position = board.hex_world(e["hex"]["q"], e["hex"]["r"])
-					_flash(sv.visual_position() + Vector3(0, 2, 0), 18.0, c, 0.5)
+				_log("%s: %s." % [_name(id), str(A.get("n", ab))], _who(id))
+			if ab == "blink":
+				# Rules emit the authoritative blink event next, for player and AI alike.
+				return
+			if ab == "phase":
+				sfx.play("phase", {"pos": _pos(id)})
+				var at: float = gfx.fold(id, speed) if gfx != null else -1.0
+				if at >= 0.0:
+					await _await_fx(at)
+					return
+				_flash(_pos(id) + Vector3(0, 2, 0), 22.0, Color("#ddc4ff"), 0.9)
 			elif ab == "nova" and e.get("hex") != null:
-				sfx.play("charge", {"pos": _pos(e["unit"])})
-				await wait(500.0)
+				sfx.play("charge", {"pos": _pos(id)})
 				var p: Vector3 = board.hex_world(e["hex"]["q"], e["hex"]["r"], 2.0)
-				fx.bolt(_pos(e["unit"]) + Vector3(0, 2, 0), p, Color(1, 0.8, 0.5), 0.35 * speed, 0.0, 3.0)
-				await wait(350.0)
-				_flash(p, 60.0, Color(1, 0.7, 0.4), 0.8)
+				var at: float = gfx.nova(id, p, speed) if gfx != null else -1.0
+				if at >= 0.0:
+					if not await _await_fx(at):
+						return
+				else:
+					_flash(_pos(id) + Vector3(0, 2, 0), 18.0, Color(1, 0.8, 0.5), 0.5)
+					await wait(850.0)
+					_flash(p, 60.0, Color(1, 0.7, 0.4), 0.8)
 				sfx.boom(1.0, p)
+			elif gfx != null:
+				gfx.ability(id, ab)
+			else:
+				_flash(_pos(id) + Vector3(0, 2, 0), 18.0, FLOOK.engine(str(VU.get(id, {}).get("fac", "hegemony"))), 0.5)
 			await wait(300.0)
 		"order":
 			var O = TBL.get("ORDERS", {}).get(str(e["order"]), {})
@@ -2443,22 +2455,34 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				gfx.anchor_wreck(str(e["unit"]), board.hex_world(int(e["q"]), int(e["r"])), board.HS * WRECK_LEASH_K)
 			_log("The wreck of %s breaks into tumbling wreckage, blocking movement and line of fire." % _name(e["unit"]), "x")
 		"death":
-			await _play_death(e)
+			await _play_death(e, batch_view)
 			if wrecked.has(e["unit"]):
 				_lay_wreck(e["unit"])
 		"fled":
-			var sv = views.get(e["unit"])
-			if gfx != null and gfx.has_method("jump_out"):
-				gfx.jump_out(str(e["unit"]))
-				if sv != null:
+			var id := str(e["unit"])
+			var sv: ShipView = views.get(id)
+			var at: float = gfx.jump_out(id, speed) if gfx != null else -1.0
+			if sv != null:
+				if at >= 0.0:
 					sv.dead = true
 					if sv.marker != null:
 						sv.marker.visible = false
 					sv.ring.visible = false
-			elif sv != null:
-				sv.flee()
-			_log("%s leaves the battle." % _name(e["unit"]), "e" if _side(e["unit"]) == "player" else "s")
-			await wait(300.0)
+				else:
+					sv.flee()
+					# The fallback flies longer than the event hold. Park it when it hides, not when the hold ends.
+					var park := _park_dead_view.bind(sv)
+					if not sv.visible:
+						_park_dead_view(sv)
+					elif not sv.visibility_changed.is_connected(park):
+						sv.visibility_changed.connect(park, CONNECT_ONE_SHOT)
+				_retire_dead_plate(id, sv)
+			_log("%s leaves the battle." % _name(id), "e" if _side(id) == "player" else "s")
+			if at >= 0.0:
+				if await _await_fx(at) and is_instance_valid(sv) and views.get(id) == sv and sv.dead:
+					_park_dead_view(sv)
+			else:
+				await wait(300.0)
 		"end":
 			pass
 		_:
@@ -2517,7 +2541,11 @@ func _reassemble(e: Dictionary, batch_view: Dictionary) -> void:
 		gfx.clear_wreck(id)
 		gfx.remove_ship(id)
 	wrecked.erase(id)
+	sv.remove_meta("plate_off")
 	sv.revive()
+	if sv.has_meta("death_view_parked"):
+		sv.remove_meta("death_view_parked")
+		sv.set_process(true)
 	var yaw := ShipView.yaw_of(ru["facing"]) if ru.has("facing") else sv.cur_yaw
 	sv.snap_to(board.hex_world(int(e["q"]), int(e["r"])), yaw)
 	if not ru.is_empty():
@@ -2535,9 +2563,8 @@ func _reassemble(e: Dictionary, batch_view: Dictionary) -> void:
 					var cap := float(ru["sec"][key]["max"])
 					sec[key] = {"hp": maxf(1.0, JSM.jsround(cap * frac)), "max": cap, "broken": false}
 			gfx.sync_ship(id, {"hp": hp, "maxHp": ru["maxHp"], "sec": sec, "sh": sh, "burning": false})
-	# issue 1460: the revival flash is the faction's own colour from fx/faction_looks.json (Eclipse is all violet, R372),
-	# not the old lime green
-	_flash(sv.visual_position() + Vector3(0, 2, 0), 16.0, FLOOK.engine(str(ru.get("fac", "deathless"))), 0.8)
+	if gfx == null or gfx.rift_in(id, speed, 0.0, true) < 0.0:
+		_flash(sv.visual_position() + Vector3(0, 2, 0), 16.0, FLOOK.engine(str(ru.get("fac", "deathless"))), 0.8)
 
 
 # the battle log: the rules' own log lines (G1 log events, word for word as the game); the scene's own lines are kept
@@ -3704,7 +3731,7 @@ func view_cause(cause: String, id: String) -> String:
 	return cause
 
 
-func _play_death(e: Dictionary) -> void:
+func _play_death(e: Dictionary, batch_view := {}) -> void:
 	var id = e["unit"]
 	var sv = views.get(id)
 	_deaths_left = maxi(_deaths_left - 1, 0)
@@ -3739,7 +3766,12 @@ func _play_death(e: Dictionary) -> void:
 		if sv.marker != null:
 			sv.marker.visible = false
 		sv.ring.visible = false
-		hud.remove_plate(str(id))
+		_retire_dead_plate(str(id), sv)
+		if gfx.has_method("ship"):
+			var ship = gfx.ship(str(id))
+			if ship != null and t > 0.0:
+				var keep_fx: bool = not sq and (wrecked.has(id) or _death_can_rise(id, unit, batch_view))
+				gfx.later(float(gfx.now) + t, _retire_death_view.bind(str(id), gfx, ship, keep_fx))
 		# a death is a key moment: it follows the pace only gently (half its hold at most on the enemy's turn, a quarter on
 		# hurry) and a big hull always gets 0.8 s; G4's effect plays on either way
 		var pk := clampf(speed, 0.25 if skip else 0.5, 1.0)
@@ -3766,9 +3798,66 @@ func _play_death(e: Dictionary) -> void:
 	else:
 		sfx.boom(0.22 + minf(0.3, L / 90.0) if sq else (1.2 if big else 0.6), p)
 	sv.die(wrecked.has(id))
-	hud.remove_plate(str(id))
+	_retire_dead_plate(str(id), sv)
 	var dk := _enemy_pace_k() if not friend else 1.0
 	await wait((0.68 if not sq else 0.25) * 1000.0 * maxf(0.4, dk))
+	if is_instance_valid(sv) and sv.dead and not wrecked.has(id):
+		_park_dead_view(sv)
+
+
+func _death_can_rise(id: String, unit: Dictionary, batch_view: Dictionary) -> bool:
+	if unit.get("fac") != "deathless":
+		return false
+	# VU still holds the preceding view while a batch plays. Only the batch's view may know this kill scheduled a rise.
+	for row in batch_view.get("units", []):
+		if row["id"] == id:
+			return row.get("rising") != null
+	return unit.get("rising") != null
+
+
+func _retire_dead_plate(id: String, sv: ShipView) -> void:
+	if hud != null and not sv.has_meta("plate_off"):
+		hud.remove_plate(id)
+		sv.set_meta("plate_off", true)
+
+
+func _park_dead_view(sv: ShipView) -> void:
+	if sv.is_processing():
+		sv.set_meta("death_view_parked", true)
+		sv.set_process(false)
+	# Removing a ship clears its FX clock, which hands detailed wings back to their own _process.
+	if not sv.squad_kind.is_empty() and is_instance_valid(sv.hull):
+		sv.hull.set_process(false)
+
+
+func _retire_death_view(id: String, effects, ship, keep_fx: bool) -> void:
+	var sv: ShipView = views.get(id)
+	if gfx != effects or not is_instance_valid(sv) or not sv.dead or effects.ship(id) != ship:
+		return
+	# The nominal death time can come before a cold cut, a late core or the last visible or audible tail.
+	if not ship.death_fx_done or ship.death_core_pending or _death_view_has_tail(sv) or (not keep_fx and _death_audio_pending(ship)):
+		effects.later(float(effects.now) + 0.1, _retire_death_view.bind(id, effects, ship, keep_fx))
+		return
+	if not keep_fx:
+		effects.remove_ship(id)
+	_park_dead_view(sv)
+
+
+func _death_audio_pending(ship) -> bool:
+	for cue in death_audio.deaths:
+		if cue.ship == ship:
+			return true
+	return false
+
+
+func _death_view_has_tail(sv: ShipView) -> bool:
+	if not sv.puffs.is_empty():
+		return true
+	if not sv.squad_kind.is_empty():
+		for trail in sv.hull.trails:
+			if trail.hist.size() >= 2:
+				return true
+	return false
 
 
 # ---------------------------------------------------------------- end of battle
@@ -4049,7 +4138,7 @@ func _attack_move(t_id: String):
 var fan_root: Node3D
 var fan_for := ""
 var fan_key := ""
-const ARC_SPAN := {"F": [-60.5, 60.5], "R": [119.5, 240.5], "S": [29.5, 150.5], "P": [-150.5, -29.5]}
+const ARC_SPAN := {"F": [-60.5, 60.5], "S": [29.5, 150.5], "P": [-150.5, -29.5]}
 
 
 func _fans(id: String, host: Node3D = null) -> void:
@@ -4880,12 +4969,18 @@ func _input(e: InputEvent) -> void:
 		if skip_key or skip_click:
 			get_viewport().set_input_as_handled()
 			_pick_skill_target("")
+		elif e is InputEventMouseMotion and is_instance_valid(_deploy_grid):
+			_deploy_grid.point_at(e.position)
 		elif e is InputEventMouseButton and e.pressed:
 			# Leave the picker rows, Skip and fleet paging to the ledger's normal GUI handler.
 			var ledger: Control = hud.ledger
 			var local_position: Vector2 = ledger.get_global_transform_with_canvas().affine_inverse() * e.position
 			if not ledger._has_point(local_position):
 				get_viewport().set_input_as_handled()
+				if e.button_index == MOUSE_BUTTON_LEFT and is_instance_valid(_deploy_grid):
+					var cell = _deploy_grid.open_at(e.position)
+					if cell != null and _deployment_api.pick_skill_hex(cell.x, cell.y):
+						_finish_skill_pick(false)
 		elif not e is InputEventMouse:
 			get_viewport().set_input_as_handled()
 		return
@@ -5844,7 +5939,7 @@ func _enemy_phase(uid: String) -> void:
 	hud.set_phase("enemy", "[b][color=#c4a4ff]ENEMY TURN[/color][/b]  ·  %s%s  ·  [color=#8d86a0]Enter hurries[/color]" % [fname, who], float(done) / maxf(1.0, float(total)))
 
 
-# F1: reinforcements arrive with a flash, a banner, a toast naming them and a camera nudge.
+# F1: reinforcements arrive through a rift, with a banner, names and a camera nudge.
 func _arrive(list: Array) -> void:
 	for u in list:
 		_make_view(u)
@@ -5860,7 +5955,8 @@ func _arrive(list: Array) -> void:
 		sfx.play("arrive_jump", {"pos": p, "rate": 0.92 if u["side"] == "enemy" else 1.0, "delay": arrival_index * 0.14})
 		arrival_index += 1
 		c += p
-		_flash(p + Vector3(0, 2, 0), 24.0, Color(0.6, 0.9, 1.0) if u["side"] == "player" else Color(1.0, 0.5, 0.4), 0.6)
+		if gfx == null or gfx.rift_in(str(u["id"]), 1.0, minf((arrival_index - 1) * 0.14, 0.56)) < 0.0:
+			_flash(p + Vector3(0, 2, 0), 24.0, Color(0.6, 0.9, 1.0) if u["side"] == "player" else Color(1.0, 0.5, 0.4), 0.6)
 		_float(u["id"], "Arrived", Color("#52f0c4") if u["side"] == "player" else Color("#ff8a72"), -30)
 	c /= float(list.size())
 	var names := " and ".join(PackedStringArray(list.map(func(x): return Campaign.ship_with_article(str(x["name"])))))
@@ -6291,6 +6387,8 @@ func _on_action(name: String, arg) -> void:
 
 var roles_opened := false
 var _deployment_api: API
+const DeployGrid := preload("res://ui/battle/deploy_grid.gd")
+var _deploy_grid: DeployGrid
 
 
 # Deployment uses the fleet list before the board, ship views or effects are built.
@@ -6298,6 +6396,11 @@ func _show_skill_picker() -> void:
 	var v: Dictionary = _deployment_api.view()
 	var picker: Dictionary = v["skill_target"]
 	var first := str(picker["picked"].get("id", ""))
+	if picker.has("hexes"):
+		if not is_instance_valid(_deploy_grid):
+			_deploy_grid = DeployGrid.new()
+			hud.add_child(_deploy_grid)
+		_deploy_grid.show_zone(picker, v)
 	var candidates := {}
 	for t in picker["targets"]:
 		candidates[t["id"]] = true
@@ -6310,19 +6413,27 @@ func _show_skill_picker() -> void:
 				"status": "Selected" if picked else "Ready"})
 	hud.set_roster(rows)
 	hud.show_ask({"kind": "skill_target", "key": picker["key"], "id": first, "n": picker["n"],
-		"q": picker["q"] + " Choose from your fleet below.",
+		"q": picker["q"] if picker.has("hexes") else picker["q"] + " Choose from your fleet below.",
 		"opts": [{"id": "skip_skill_target", "n": "Skip", "d": "Skip this skill with Esc or right-click."}]})
 
 
 func _pick_skill_target(id: String) -> void:
 	if quitting or _deployment_api == null or not _deployment_api.pick_skill_target(id):
 		return
-	sfx.play("ui_cancel" if id == "" else "ui_click")
+	_finish_skill_pick(id == "")
+
+
+func _finish_skill_pick(skipped: bool) -> void:
+	sfx.play("ui_cancel" if skipped else "ui_click")
 	if _deployment_api.phase == "deployment":
 		_show_skill_picker()
 	else:
 		var a := _deployment_api
 		_deployment_api = null
+		if is_instance_valid(_deploy_grid):
+			_deploy_grid.hide()
+			_deploy_grid.queue_free()
+			_deploy_grid = null
 		hud.hide_ask()
 		_begin(a)
 
@@ -7284,12 +7395,16 @@ func _process(dt: float) -> void:
 	var show_up: bool = not bot and not thinking and not ended and api.phase == "player"
 	for id in views:
 		var sv = views[id]
+		if sv.dead:
+			if not sv.has_meta("plate_off"):
+				_retire_dead_plate(str(id), sv)
+			continue
 		var u: Dictionary = VU.get(id, {})
 		if not plates_on:
 			_breathe_ring(sv, show_up and not u.is_empty() and str(id) == sel and u["side"] == "player")
 			continue
 		var aimed := not aim.is_empty() and (str(id) == str(aim["t"]) or str(id) == str(aim["a"]))
-		if u.is_empty() or sv.dead or not sv.visible or _cut_overlay_alpha <= 0.0:
+		if u.is_empty() or not sv.visible or _cut_overlay_alpha <= 0.0:
 			hud.set_plate(str(id), Vector2.ZERO, false, "", true, false, 0, 1, 0, 0)
 			continue
 		var wp: Vector3 = sv.visual_position() + Vector3(0, 3.0 + sv.L * 0.18, 0)

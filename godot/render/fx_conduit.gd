@@ -2,10 +2,12 @@ extends RefCounted
 # A depth-tested, round effect path. The mesh gives the path a real silhouette at close zoom.
 # The shader rolls the colour from a bright axial core to a soft sleeve, with a moving pattern.
 
+const SH := preload("res://fx/fx_shaders.gd")
+
 const SHADER := """
 shader_type spatial;
 render_mode unshaded, blend_add, cull_disabled, depth_draw_never, fog_disabled, shadows_disabled;
-global uniform float fx_calm;
+""" + SH.COMMON + """
 uniform vec4 tint : source_color = vec4(1.0);
 uniform vec4 core : source_color = vec4(1.0);
 uniform float gain = 0.0;
@@ -19,7 +21,7 @@ varying vec3 eye;
 void vertex() {
 	vec3 offset = mix(first_shift, last_shift, UV.x);
 	vec3 centre = (MODELVIEW_MATRIX * vec4(VERTEX - NORMAL * UV2.x + offset, 1.0)).xyz;
-	float floor_r = pixels * max(-centre.z, .01) / max(abs(PROJECTION_MATRIX[1][1]) * 540.0, .01);
+	float floor_r = px_world(pixels, -centre.z, PROJECTION_MATRIX);
 	VERTEX += offset + NORMAL * max(0.0, floor_r * UV2.y - UV2.x);
 	radial = MODELVIEW_NORMAL_MATRIX * NORMAL;
 	eye = -centre;
@@ -45,7 +47,7 @@ void fragment() {
 	} else if (pattern == 5.) { // pod body: painted collars around a hot drive
 		pulse = .42 + .32 * ribs + .26 * (1. - smoothstep(.05, .26, x));
 	}
-	ALBEDO = mix(hue * .68, core.rgb * 1.65, axial);
+	ALBEDO = mix(hue * .68, core.rgb * 1.65, axial) * fx_gain;
 	ALPHA = gain * (.28 * facing + .68 * axial) * mix(pulse, .72, fx_calm) * mix(1., .63, fx_calm);
 }
 """
