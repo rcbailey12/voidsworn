@@ -61,7 +61,7 @@ var _center := Vector3.ZERO
 var _lo := Vector3.ZERO
 var _hi := Vector3.ZERO
 var _yaw := 0.0
-var _sky_tex: Texture2D = null
+var _rock_haze_tex: Texture2D = null
 var _sky_gamma := false
 var _old_clouds: Array = []     # today's faint cloud billboards on nebula and storm hexes
 var _under_mat: ShaderMaterial = null
@@ -156,10 +156,10 @@ func wait_ready() -> void:
 		await get_tree().process_frame
 
 
-func _sky_into(m: ShaderMaterial) -> void:
-	if _sky_tex == null or m == null:
+func _rock_haze_into(m: ShaderMaterial) -> void:
+	if _rock_haze_tex == null or m == null:
 		return
-	m.set_shader_parameter("sky_tex", _sky_tex)
+	m.set_shader_parameter("sky_haze_tex", _rock_haze_tex)
 	m.set_shader_parameter("sky_gamma", _sky_gamma)
 	m.set_shader_parameter("has_sky", 1.0)
 	m.set_shader_parameter("turn", Basis(Vector3.UP, -_yaw))
@@ -562,8 +562,8 @@ func _load_sky() -> void:
 	mat.set_shader_parameter("neb_gamma", _sky_gamma)
 	SKEEP.event("sky nebula map set (%dx%d)" % [img.get_width(), img.get_height()])
 	mat.set_shader_parameter("has_neb", 1.0)
-	_sky_tex = tex
-	for k in _mats: _sky_into(_mats[k])
+	_rock_haze_tex = ImageTexture.create_from_image(WR.sky_haze_image(img))
+	for k in _mats: _rock_haze_into(_mats[k])
 
 
 # ---------------------------------------------------------------- the system: planet, rings, moons
@@ -889,7 +889,7 @@ func _annulus(r0: float, r1: float, seg: int, rings: int) -> ArrayMesh:
 func _mat(kind: String) -> ShaderMaterial:
 	if not _mats.has(kind):
 		_mats[kind] = WR.material(kind, _look)
-		_sky_into(_mats[kind])
+		_rock_haze_into(_mats[kind])
 	return _mats[kind]
 
 
