@@ -75,6 +75,7 @@ set "PUSHMODE=test"
 rem The PowerShell parent owns the lane until this batch returns, including final reporting.
 set "PC_RUNNER_TEST=0"
 if defined CODEX_TEST_ROOT if defined CODEX_TEST_AGENT set "PC_RUNNER_TEST=1"
+if defined CODEX_TEST_ROOT if defined PC_TEST_GH set "PC_RUNNER_TEST=1"
 if "%~2"=="locked" if "%PC_RUNNER_LOCKED_ISSUE%"=="%N%" if /i "%CODEX_LOCKED_REPO%"=="%R%" goto :locked
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%TP%codex_issue.ps1" run "%N%" "%R%"
 exit /b %ERRORLEVEL%
@@ -141,18 +142,21 @@ if errorlevel 1 goto :prepfail
 set /p EFF=<"%O%\effort.txt"
 %COMMON% effort "%O%" "%EFF%"
 set "PROBE=%APPDATA%\npm\codex.cmd"
-if "%PC_RUNNER_TEST%"=="1" set "PROBE=%CODEX_TEST_AGENT%"
+if "%PC_RUNNER_TEST%"=="1" if defined CODEX_TEST_AGENT set "PROBE=%CODEX_TEST_AGENT%"
 %COMMON% preflight "%O%" "%R%" codex "%PROBE%" %CODEX_MODEL% ""
 if errorlevel 1 goto :probefail
 rem Progress watch applies only to the agent, never preflight or the runner's own checks.
+%PSW% mark-pre-agent "%R%" "%O%" >> "%O%\result.txt" 2>&1
+if errorlevel 1 goto :probefail
 set "TMO_REPO=%R%"
 set "TMO_OUT=%O%"
 set "TMO_LOG=%O%\log.txt"
 set "TMO_ERR_LOG="
+set "TMO_COMPLETE_FILE=%O%\last.md"
 rem CODEX_CAP is a hard ceiling in seconds; STALL_MIN defaults to 30 in the watchdog.
 if not defined CODEX_CAP set "CODEX_CAP=21600"
 if defined CODEX_TEST_ROOT if defined CODEX_TEST_AGENT goto :testagent
-call "%TP%tmo.bat" %CODEX_CAP% "%APPDATA%\npm\codex.cmd" exec -m %CODEX_MODEL% -c model_reasoning_effort=%EFF% --approve-for-me --ephemeral --color never -C "%R%" -o "%O%\last.md" "Read CODEX_TASK.md in this folder and do exactly what it says. Do not commit." > "%O%\log.txt" 2>&1
+call "%TP%tmo.bat" %CODEX_CAP% "%APPDATA%\npm\codex.cmd" exec --ignore-user-config -c windows.sandbox=unelevated -m %CODEX_MODEL% -c model_reasoning_effort=%EFF% --approve-for-me --ephemeral --color never -C "%R%" -o "%O%\last.md" "Read CODEX_TASK.md in this folder and do exactly what it says. Do not commit." < nul > "%O%\log.txt" 2>&1
 set "CX=%ERRORLEVEL%"
 goto :ran
 :testagent
@@ -163,6 +167,7 @@ set "TMO_REPO="
 set "TMO_FATAL_PATTERN="
 set "TMO_OUT="
 set "TMO_LOG="
+set "TMO_COMPLETE_FILE="
 echo codex exit %CX% >> "%O%\result.txt"
 rem Codex has stopped, but this wrapper still holds the lane and issue. Use the same sandbox to hand back protected ACLs.
 if "%PUSHMODE%"=="real" if not "%PC_RUNNER_TEST%"=="1" call :scratch_handoff
@@ -197,6 +202,8 @@ if errorlevel 1 goto :guardfail
 git diff --cached --quiet
 if errorlevel 1 goto :haschange
 if defined PARTIAL goto :haschange
+%PSW% check-brief "%R%" "%O%" >> "%O%\result.txt" 2>&1
+if errorlevel 1 goto :brieffail
 %PSW% head-changed "%R%" "%O%" >> "%O%\result.txt" 2>&1
 if "%ERRORLEVEL%"=="7" goto :nochange
 if errorlevel 1 goto :guardfail
@@ -245,6 +252,11 @@ echo the refuse step failed: nothing committed, nothing pushed >> "%O%\result.tx
 %COMMON% finish "%O%" 13 "%PARTIAL%" "%PUSHMODE%" 0 "%R%"
 popd
 exit /b 13
+:brieffail
+echo agent did not read brief or run commands with zero file changes: nothing committed, nothing pushed >> "%O%\result.txt"
+%COMMON% finish "%O%" 15 "" "%PUSHMODE%" 0
+popd
+exit /b 15
 :nochange
 echo Codex made no changes >> "%O%\result.txt"
 if not defined PARTIAL call :scratch_handoff -RemoveScratch

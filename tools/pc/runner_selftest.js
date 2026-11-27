@@ -261,6 +261,14 @@ if (probe) {
   if (process.env.STUB_AGENT_NO_CHANGE !== '1') {
     fs.writeFileSync('agent_started.txt', expectResume ? 'resumed work verified' : 'fresh start verified');
   }
+  if (process.env.STUB_BRIEF_UNREADABLE) {
+    if (process.env.STUB_BRIEF_UNREADABLE === 'codex-1223') {
+      console.log('OpenAI Codex v0.171.0\\nShellExecuteExW failed to launch setup helper: 1223\\nI could not open CODEX_TASK.md. Please paste it.');
+    } else {
+      console.log('OpenAI Codex v0.171.0\\nI finished without running any shell commands.');
+    }
+    process.exit(0);
+  }
   const agentHold = process.env.STUB_AGENT_HOLD;
   if (agentHold) {
     fs.writeFileSync(agentHold + '.ready', 'agent owns checkout');
@@ -342,7 +350,7 @@ const defaults = {
   PC_WAIT_FOR: '', PC_WAIT_RUN: '', PC_WAIT_SECONDS: '2', STUB_GIT_FAULT: '', STUB_AUTH_FAIL: '',
   STUB_PROBE_TIMEOUT: '', STUB_FETCH_HOLD: '', STUB_CHECKOUT_EDIT: '', STUB_RECHECK_FAIL: '', STUB_CHECKOUT_MARKER: '',
   STUB_CHECKOUT_EDIT_PATH: '',
-  STUB_ACCOUNT_FAULT: '', STUB_EXPECT_FRESH: '', STUB_AGENT_HOLD: '', STUB_AGENT_EXIT: '', STUB_CHECKS_EXIT: '', STUB_IGNORED_WORK: '', STUB_REFUSED_WORK: '',
+  STUB_ACCOUNT_FAULT: '', STUB_EXPECT_FRESH: '', STUB_AGENT_HOLD: '', STUB_AGENT_EXIT: '', STUB_CHECKS_EXIT: '', STUB_IGNORED_WORK: '', STUB_REFUSED_WORK: '', STUB_BRIEF_UNREADABLE: '',
   // Issue 722: about 68 GB fake free space, above the 60 GB floor, so fixture runs pass the space check on any host;
   // the dedicated floor tests force 100 MB instead. Settings and hashes fixtures stay unset unless a test names them.
   PC_TEST_SPACE_FREE_MB: '70000', PC_TEST_SETTINGS: '', PC_TEST_HASHES: '',
@@ -1138,6 +1146,27 @@ async function testNoEditRerun() {
     assert.equal(run('git', ['--git-dir', remote, 'rev-parse', branch]).text.trim(), pushed);
     pass(arm + ': no-edit rerun delivers the runner merge and runs both checks; another unchanged rerun exits 7');
   });
+  // Brief-unreadable / zero-command Codex abort on a runner merge must NEVER publish an empty checkpoint or overwrite PR body.
+  for (const mode of ['codex-1223', 'zero-exec']) {
+    const branch = 'codex/issue-687';
+    const remote = fixtureSource('brief-refuse-' + mode);
+    const earlier = fixtureCommit({ 'progress.txt': 'from partial\n', 'earlier.txt': 'delivered\n' }, base, '', remote);
+    write(path.join(remote, 'refs/heads', branch), earlier + '\n');
+    fs.unlinkSync(path.join(remote, 'refs/heads', branch + '-partial'));
+    const main = fixtureCommit({ 'progress.txt': 'base\n', 'main.txt': 'new on main\n' }, base, 'main advanced\n', remote);
+    write(path.join(remote, 'refs/heads/main'), main + '\n');
+    const refused = await job('codex', 'same-seat', {
+      CODEX_TEST_ROOT: path.join(root, 'brief-refuse-' + mode), STUB_RUNNER_TOOLS: deliveryTools,
+      PC_TEST_STOP_BEFORE_PUBLISH: '0', WORK_SKIP_CHECKS: '0', STUB_AGENT_NO_CHANGE: '1',
+      STUB_EXPECT_FRESH: '1', STUB_BRIEF_UNREADABLE: mode, PC_TEST_SOURCE: remote
+    });
+    assert.equal(refused.code, 15, refused.text + refused.result);
+    assert.equal(refused.state.status, 'failed', refused.result);
+    assert(refused.result.includes('delivery refused:'), refused.result);
+    assert.equal(run('git', ['--git-dir', remote, 'rev-parse', branch]).text.trim(), earlier, 'remote branch must stay on earlier tip');
+    assert.equal(fs.existsSync(path.join(refused.out, 'commit.txt')) ? read(path.join(refused.out, 'commit.txt')).trim() : '', '', 'PR description / commit message must not be generated');
+    pass('codex brief-unreadable guard (' + mode + '): blocks merge-only empty delivery even on exit 0');
+  }
 }
 async function testCodexPushExits() {
   const branch = 'refs/heads/codex/issue-687';
