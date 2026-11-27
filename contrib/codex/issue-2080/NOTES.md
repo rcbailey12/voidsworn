@@ -9,7 +9,16 @@ The shipyard now keeps fleet selection, the lit ship, and the inspector in view 
 - The CI audio check failed because the Gantry used the quiet click for every transaction. Gantry buttons now use the shared cue roles. Buy Hull plays `ui_reward`, while refit and late-market purchases keep `ui_purchase` from Sound Gate 3.
 - Weapon arcs and figures, ability text, and fitted refit effects are on their inspector tooltips.
 
-## Proof
+## Run 4 reconciliation
+
+- Restored the terrain polish and Material Maker registrations. The list contains every row from main at `4a6c1c18b` plus the Gantry test, with no duplicate paths.
+- The hosted load gate failed because the Gantry test still called the retired global RNG. It now seeds and checks the campaign's own RNG.
+- The repair hover now draws the planned hull and section state. A partial repair removes the recorded cutout while showing the remaining wear, just as the paid repair does. Leaving the hover restores the live ship.
+- The headless Gantry test selects the corvette-sized Warden and Daybreak dreadnought through the roster, loads a fixture at each ship class's scale, and checks that each fills the bay at the opening angle and stays in frame on orbit. It also compares partial repair hover wear against the committed result.
+- Godot 4.7.2 loaded all 498 scripts and 17 scenes. Gantry, AAA UI data, desk polish, audio, both restored checks, and shipyard repair text passed headless. All 379 battle records, 30 seeded campaign runs, and the Nemesis records matched byte for byte. The weekly bot battle passed.
+- The full local Windows shards hit their time budgets. The shard planner passed on retry, but the broader checks were not all green locally. The cache safety workers timed out, and standing checks reported Windows runner failures. The hosted result must be read after the runner pushes this patch.
+
+## Earlier run proof
 
 - `shipyard_gantry_test.gd` exercises the visible partial repair quote and charge, read-only hover rows, one reward cue on Buy Hull, a confirmed flagship sale, last-ship protection and responsive layouts.
 - The unchanged `audio_check.gd` passes. `desk_polish_2029_test.gd` now selects the ship in the Gantry roster before checking the Decommission row and confirmation flow.
@@ -19,4 +28,4 @@ The shipyard now keeps fleet selection, the lit ship, and the inspector in view 
 
 ## After green checks and review
 
-Run this on a GPU-enabled PC lane with the current ship assets, Forward+ and the approved GPU queue. Use `tools/pc/tmo.bat 120 <Godot console exe> --path godot --resolution 1920x1080 --script res://ui/campaign/test/shipyard_gantry_test.gd -- --shots <issue-2080 shot directory>`. The script saves one 1280 × 720 shot and its provenance per selected hull, with its code visible in the bay. Use the corvette-sized Warden, which the game classifies as a frigate, and the Daybreak dreadnought. No capture was run in run 2. The Board queues it after review.
+Run this on a GPU-enabled PC lane with the current ship assets, Forward+ and the approved GPU queue. Use `tools/pc/tmo.bat 120 <Godot console exe> --path godot --resolution 1920x1080 --script res://ui/campaign/test/shipyard_gantry_test.gd -- --shots <issue-2080 shot directory>`. The script saves one 1280 × 720 shot and its provenance per selected hull, with its code visible in the bay. Use the corvette-sized Warden, which the game classifies as a frigate, and the Daybreak dreadnought. No capture was run in this code-only lane. The Board queues it after review.

@@ -29,7 +29,6 @@ var _rest := 0.0
 var _fx: Node3D
 var _ship_key := ""
 var _damage := {}
-var _clean := {}
 
 
 func setup(C, ship: Dictionary, accent: Color, still := false, gantry := false) -> void:
@@ -205,7 +204,6 @@ func _install_damage(world: Node3D, view, ship: Dictionary, full: float) -> void
 	if float(ship["hp"]) >= full: return
 	_ship_key = str(ship["uid"])
 	_damage = damage_snapshot(ship, full)
-	_clean = {"hp": full, "maxHp": full, "sec": {}}
 	_fx = Fx.new()
 	_fx.manual = true
 	_fx.defer_initial_cuts = true
@@ -227,9 +225,10 @@ static func damage_snapshot(ship: Dictionary, full: float) -> Dictionary:
 	return {"hp": ship["hp"], "maxHp": full, "sec": sections}
 
 
-func preview_repair(enabled: bool) -> void:
+func preview_repair(projected: Dictionary = {}) -> void:
 	if is_instance_valid(_fx):
-		_fx.sync_ship(_ship_key, _clean if enabled else _damage)
+		var damage := _damage if projected.is_empty() else damage_snapshot(projected, _damage["maxHp"])
+		_fx.sync_ship(_ship_key, damage)
 
 
 func _gui_input(event: InputEvent) -> void:

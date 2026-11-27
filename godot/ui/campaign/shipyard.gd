@@ -475,12 +475,18 @@ func _preview(id: String, action: String, key: String, slot: int, label: String)
 			meter.queue_redraw()
 	_pending_model += 1
 	if action == "buyHull" and is_inside_tree():
+		if is_instance_valid(_podium): _podium.preview_repair()
 		_preview_model_after(_pending_model, plan["ship"])
 	else:
 		if not _preview_tpl.is_empty(): _show_model(selected, false)
 		if is_instance_valid(_podium):
-			var repair := action in ["repair", "repairAll"] and for_ship.any(func(r): return r["stat_key"] == "hull" and r["delta"] > 0)
-			_podium.preview_repair(repair)
+			var projected: Dictionary = {}
+			if action in ["repair", "repairAll"] and plan["reason"].is_empty():
+				for entry: Dictionary in plan["entries"]:
+					if entry["after"]["uid"] == uid:
+						projected = entry["after"]
+						break
+			_podium.preview_repair(projected)
 
 
 func _preview_model_after(ticket: int, ship: Dictionary) -> void:
@@ -497,7 +503,7 @@ func _clear_preview(id: String) -> void:
 	_live_stats.show()
 	_reset_meters()
 	if not _preview_tpl.is_empty(): _show_model(selected, false)
-	elif is_instance_valid(_podium): _podium.preview_repair(false)
+	elif is_instance_valid(_podium): _podium.preview_repair()
 
 
 func _reset_meters() -> void:

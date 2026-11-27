@@ -2496,7 +2496,7 @@ func _apply_preview_op(action: String, key := "", slot := -1) -> Dictionary:
 		for entry in p["entries"]:
 			var live: Dictionary = entry["before"]; var after: Dictionary = entry["after"]
 			live["hp"] = after["hp"]
-			if action in ["repair", "repairAll"]: live.erase("yard_sections")
+			if live.has("yard_sections") and not after.has("yard_sections"): live.erase("yard_sections")
 			if action == "refit" or action == "upgradeMk":
 				live["mk"] = after["mk"]; live["mods"] = after["mods"]
 				if after.has("hpOwed"): live["hpOwed"] = after["hpOwed"]

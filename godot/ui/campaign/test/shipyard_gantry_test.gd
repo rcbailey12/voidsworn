@@ -7,8 +7,8 @@ const Tips := preload("res://ui/campaign/campaign_tips.gd")
 const Yard := preload("res://ui/campaign/shipyard.gd")
 const Podium := preload("res://ui/campaign/flagship_podium.gd")
 const ShipView := preload("res://render/ship_view.gd")
+const HullTable := preload("res://render/hull_table.gd")
 const PreviewOp := preload("res://campaign/preview_op.gd")
-const JSM := preload("res://rules/jsm.gd")
 const UiScale := preload("res://ui/ui_scale.gd")
 const Kit := preload("res://ui/theme/orders_kit.gd")
 const Picture := preload("res://tools/picture_provenance.gd")
@@ -26,6 +26,10 @@ class CueEar extends Node:
 		heard.append(id)
 
 
+class SettingsHost extends Node:
+	var settings := {"reduce_motion": true}
+
+
 func _initialize() -> void: _run.call_deferred()
 
 
@@ -33,7 +37,7 @@ func _run() -> void:
 	var err := C.load_tables()
 	if not err.is_empty(): printerr(err); quit(1); return
 	C.fixed_clock = true
-	JSM.rnd_seed(2080)
+	C.seed_rng(2080)
 	C.newRun("vex", "voidsworn")
 	C.RUN["credits"] = 650
 	C.RUN["cpCap"] = 40
@@ -133,10 +137,6 @@ func _run() -> void:
 	await _geometry()
 	var damaged := Podium.damage_snapshot({"hp": 10, "yard_sections": {"eng": {"broken": true, "hp": 0, "max": 20}}}, 100)
 	check(damaged["sec"]["eng"]["broken"] and damaged["sec"]["prow"].is_empty(), "wear never invents a broken section from total hull")
-	var small := AABB(Vector3.ZERO, Vector3(10, 2, 3))
-	var large := AABB(Vector3.ZERO, small.size * 4.0)
-	for aspect in [0.62, 1.0, 1.65]:
-		check(is_equal_approx(Podium.framing_distance(large, aspect, 30.0), 4.0 * Podium.framing_distance(small, aspect, 30.0)), "same bay fill at both hull scales")
 	await _check_loaded_mesh()
 	print("SY-A Gantry: " + ("PASS" if fails == 0 else "FAIL (%d)" % fails))
 	quit(1 if fails > 0 else 0)
@@ -236,45 +236,80 @@ func _capture(out: String) -> void:
 
 
 func _check_loaded_mesh() -> void:
-	# A small numerical fixture exercises the installed-model path even when CI has no game hulls.
+	# CI has no installed hulls. Let ShipView fit one mesh for each real hull class through the yard.
 	var manifest := ShipView.manifest()
 	var saved := manifest.duplicate(true)
-	var cutter := BoxMesh.new()
-	cutter.size = Vector3(10.0, 2.0, 3.0)
-	var mesh := ArrayMesh.new()
-	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, cutter.get_mesh_arrays())
-	var model := "user://gantry_2080_fixture_%d.res" % Time.get_ticks_usec()
-	var ok := ResourceSaver.save(mesh, model) == OK
-	check(ok, "writable isolated mesh fixture")
-	if not ok: return
+	var codes := {}
+	var hulls := {}
+	var fleet := [C.newShip("warden"), C.newShip("ascendant")]
+	for ship: Dictionary in fleet:
+		var cls: String = C.HULLS[ship["tpl"]]["cls"]
+		var code := HullTable.code_for(C.factionOfTpl(ship["tpl"]), cls)
+		var box := BoxMesh.new()
+		box.size = Vector3(10.0, 2.4, 3.8) if cls == "Dreadnought" else Vector3(10.0, 2.0, 3.0)
+		var mesh := ArrayMesh.new()
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, box.get_mesh_arrays())
+		var model := "user://gantry_2080_%s_%d.res" % [code, Time.get_ticks_usec()]
+		var ok := ResourceSaver.save(mesh, model) == OK
+		check(ok, "%s mesh fixture can be saved" % code)
+		if ok: hulls[code] = {"res": model}
+		codes[ship["uid"]] = code
 	manifest.clear()
-	manifest["hulls"] = {"V14_23": {"res": model}}
-	var stage := Podium.new()
-	root.add_child(stage)
-	stage.size = Vector2(890, 760)
-	var damaged := C.incoming_ship("warden")
-	damaged["uid"] = "gantry-damage-fixture"
-	damaged["hp"] = 30.0
-	stage.setup(C, damaged, Color.WHITE, true, true)
-	await process_frame
-	check(stage.installed and not stage.spin, "installed mesh works with reduced motion")
-	if stage.installed:
-		var dressing = stage._fx.ship(damaged["uid"])
-		check(dressing.hull_wear > 0.0, "installed bay reads saved hull wear")
-		stage.preview_repair(true)
-		check(dressing.hull_wear == 0.0, "repair hover shows clean hull wear")
-		stage.preview_repair(false)
-		check(dressing.hull_wear > 0.0 and damaged["hp"] == 30.0, "leaving hover restores wear without repairing the ship")
-		for pitch in [4.0, 18.0, 44.0]:
-			stage._pitch = pitch
-			stage._frame()
-			for yaw in range(-23, 337, 30):
-				stage._pivot.rotation_degrees.y = float(yaw)
-				_check_projection(stage, yaw == -23 and pitch == 18.0)
-	stage.free()
+	manifest["hulls"] = hulls
+	C.RUN["fleet"] = fleet
+	C.RUN["credits"] = 9
+	var escort: Dictionary = fleet[0]
+	escort["hp"] = floorf(C.derive(escort)["maxHp"] * 0.35)
+	escort["yard_sections"] = {"prow": {"hp": 0.0, "max": 40.0, "broken": true}}
+	var settings := SettingsHost.new()
+	settings.name = "Main"
+	root.add_child(settings)
+	C.ensureFlagship()
+	C.shipyardScreen(stop)
+	await _resize(Vector2i(1920, 1080), 1.0)
+	var spans := []
+	for ship: Dictionary in fleet:
+		var uid: String = ship["uid"]
+		_pick(uid)
+		await _frames()
+		var yard := _yard()
+		var stage := yard._podium
+		check(yard.selected["uid"] == uid and stage.installed and yard._bay_code.text == codes[uid], "%s selected in the bay" % codes[uid])
+		if stage.installed:
+			check(not stage.spin, "%s holds still with reduced motion" % codes[uid])
+			spans.append(stage._bounds.get_longest_axis_size())
+			for pitch in [4.0, 18.0, 44.0]:
+				stage._pitch = pitch
+				stage._frame()
+				for yaw in range(-23, 337, 30):
+					stage._pivot.rotation_degrees.y = float(yaw)
+					_check_projection(stage, yaw == -23 and pitch == 18.0)
+			if ship == escort: await _check_projected_wear(ship, stage)
+	check(spans.size() == 2 and spans[1] > 3.0 * spans[0], "the framing check covers distinct escort and dreadnought scales")
+	settings.free()
 	manifest.clear()
 	manifest.merge(saved)
-	DirAccess.remove_absolute(ProjectSettings.globalize_path(model))
+	for fixture: Dictionary in hulls.values(): DirAccess.remove_absolute(ProjectSettings.globalize_path(fixture["res"]))
+
+
+func _check_projected_wear(ship: Dictionary, stage: Podium) -> void:
+	var uid: String = ship["uid"]
+	var dressing = stage._fx.ship(uid)
+	var repair := _button("repair", uid)
+	var before := _snapshot()
+	var wear: float = dressing.hull_wear
+	_hover(repair)
+	var projected: float = dressing.hull_wear
+	check(projected > 0.0 and projected < wear, "affordable partial repair previews less wear, not a pristine hull")
+	check(_snapshot() == before, "model preview leaves the damaged ship, purse and RNG unchanged")
+	_unhover(repair)
+	check(is_equal_approx(dressing.hull_wear, wear), "leaving hover restores the original wear")
+	_hover(repair)
+	repair.pressed.emit()
+	await _resize(Vector2i(1920, 1080), 1.0)
+	var committed := _yard()._podium
+	check(committed.installed and is_instance_valid(committed._fx) and is_equal_approx(committed._fx.ship(uid).hull_wear, projected), "committed partial repair has exactly the previewed wear")
+	check(not ship.has("yard_sections"), "committed partial repair removes the recorded cutout")
 
 
 func _check_projection(stage: Podium, check_fill: bool) -> void:
@@ -321,7 +356,7 @@ func _unhover(button: Button) -> void: button.get_parent().mouse_exited.emit()
 func _labels(n: Node) -> Array: return n.find_children("*", "Label", true, false)
 func _preview_labels(yard: Yard) -> Array: return _labels(yard).filter(func(l): return l.has_meta("preview_row"))
 func _meter_keys(yard: Yard) -> Array: return yard._meters.keys()
-func _snapshot() -> String: return C.save_text() + "|" + str(JSM.rng_s) + "|" + str(C.UID)
+func _snapshot() -> String: return C.save_text() + "|" + str(C.rng.rng_s) + "|" + str(C.UID)
 
 
 func _yard() -> Yard:
