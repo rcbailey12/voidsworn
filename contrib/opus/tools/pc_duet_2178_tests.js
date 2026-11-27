@@ -125,18 +125,42 @@ async function main() {
     assert.match(detail(cmdRun(driver)), /\[3600\]/);
     assert.match(detail(cmdRun(driver, { env: { ...env, PC_GPU_WAIT_SECONDS: '17' } })), /\[17\]/);
   });
-  await test('F5 retired Startup entry and one-line Codex queue history', () => {
+  await test('F5 Startup uses the root watchers once and retires only old Startup entries', () => {
     const dir = dirs('autostart'), appdata = path.join(dir, 'appdata');
     const startup = path.join(appdata, 'Microsoft/Windows/Start Menu/Programs/Startup');
+    const profile = path.join(dir, 'profile');
+    const pcRoot = path.join(profile, 'Downloads/voidsworn_test');
+    const install = copy(path.join(pcRoot, 'build/tools/pc'), 'autostart_on.bat');
+    copy(pcRoot, 'watcher.bat');
+    copy(pcRoot, 'watcher_b.bat');
     fs.mkdirSync(startup, { recursive: true });
     const retired = path.join(startup, 'voidsworn_codex_board.bat');
+    const retiredRoot = path.join(pcRoot, 'voidsworn_codex_board.bat');
+    const mainEntry = path.join(startup, 'voidsworn_watcher.bat');
+    const secondEntry = path.join(startup, 'voidsworn_watcher_b.bat');
+    const unrelated = path.join(startup, 'keep.bat');
+    bat(retiredRoot, '@echo keep the root file\n');
     bat(retired, '@echo stale\n');
-    const r = cmdRun(copy(dir, 'autostart_on.bat'), { env: { ...env, APPDATA: appdata }, input: 'x\r\n' });
-    assert.equal(r.status, 0, detail(r));
-    assert(!fs.existsSync(retired), 'the retired Startup entry still exists');
-    assert(fs.existsSync(path.join(startup, 'voidsworn_watcher.bat')));
-    assert(fs.existsSync(path.join(startup, 'voidsworn_watcher_b.bat')));
-    const profile = path.join(dir, 'profile');
+    bat(mainEntry, 'start "" /min "' + path.join(pcRoot, 'build/tools/pc/watcher.bat') + '"\n');
+    bat(secondEntry, 'start "" /min "' + path.join(pcRoot, 'build/tools/pc/watcher_b.bat') + '"\n');
+    bat(unrelated, '@echo keep unrelated entries\n');
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const r = cmdRun(install, { env: { ...env, APPDATA: appdata, USERPROFILE: profile }, input: 'x\r\n' });
+      assert.equal(r.status, 0, detail(r));
+      const entry = read(mainEntry).replace(/%USERPROFILE%/gi, () => profile);
+      const launches = [...entry.matchAll(/^start "[^"]*" \/min "([^"]+)"$/gim)].map(match => match[1]);
+      assert.deepEqual(launches, [path.join(pcRoot, 'watcher.bat')], 'Startup must launch only the root watcher');
+      assert(!fs.existsSync(secondEntry), 'Startup launches queue B even though the root watcher already starts it');
+      assert(!fs.existsSync(retired), 'the retired Startup entry still exists');
+      assert.deepEqual(fs.readdirSync(startup).sort(), ['keep.bat', 'voidsworn_watcher.bat']);
+      assert.equal(read(retiredRoot), '@echo keep the root file');
+      assert.equal(read(unrelated), '@echo keep unrelated entries');
+    }
+    assert.equal((source('watcher.bat').match(/^if exist watcher_b\.bat start "" \/min "%~dp0watcher_b\.bat"$/gim) || []).length, 1,
+      'the root watcher must start its sibling queue B watcher once');
+  });
+  await test('F5 one-line Codex queue history', () => {
+    const dir = dirs('queue history'), profile = path.join(dir, 'profile');
     const list = path.join(profile, 'Downloads/voidsworn_test/board/queued.txt');
     fs.mkdirSync(path.dirname(list), { recursive: true });
     const filter = source('codex_issue.bat').split('\n').find(line => line.includes('board\\queued.txt'));
@@ -309,5 +333,5 @@ main().catch(e => { failures.push('fixture'); console.error(e); }).finally(async
   // Only remove the fresh fixture root, never the PC's real queue or job history.
   fs.rmSync(root, { recursive: true, force: true, maxRetries: 4 });
   process.exitCode = failures.length ? 1 : 0;
-  if (!failures.length) console.log('PASS issue 2178 Windows runner regressions (9 items)');
+  if (!failures.length) console.log('PASS issue 2178 Windows runner regressions');
 });
