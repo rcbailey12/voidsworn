@@ -287,6 +287,7 @@ func _ready() -> void:
 	sfx.silent = title_backdrop   # issue 1434 (W4): the backdrop loads no sound bank and never writes the shared sfx bus
 	add_child(sfx)
 	sfx.cam = cam
+	sfx.focus_fn = func() -> Variant: return _pos(sel) if sel != "" and views.has(sel) else null   # issue 2034: a voice near the selected ship is the last one stolen
 	death_audio = DeathAudio.new()
 	death_audio.sfx = sfx
 	add_child(death_audio)
@@ -1549,7 +1550,8 @@ func _music_feed() -> void:
 				if m["side"] == "player" and not m["dead"] and hex_distance(m, u) <= 3:
 					close += 1
 					break
-	music.feed({"close": close, "shots": music_hits, "hull": hp / maxf(1.0, mhp), "flagship": flag, "mine": mine, "enemy": foes, "boss": boss})
+	music.feed({"close": close, "shots": music_hits, "hull": hp / maxf(1.0, mhp), "flagship": flag, "mine": mine, "enemy": foes, "boss": boss,
+		"urgency": music.objective_urgency(V.get("obj"), V["units"]) if music.has_method("objective_urgency") else 0.0})   # issue 2034: a relay or transport on the edge lifts the music
 
 
 # True hex steps between two units on the axial grid (rules.gd hdist); the music counts an enemy within 3 as close.

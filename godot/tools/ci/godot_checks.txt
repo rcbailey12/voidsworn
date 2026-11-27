@@ -134,6 +134,7 @@ headless|audio/test/audio_check.gd|-|-|sound data, real player starts, variants 
 headless|audio/test/gate3_check.gd|-|-|issue 2039: every Wave F, F2 and F3 keeper and Wave A extra loads, round robin and live cue starts, terrain loops and front-end catalog
 headless|audio/test/battle_sfx_cache_check.gd|-|-|issue 1995: a silent node leaves the catalog and buses alone, and the second battle uses the first battle's catalog with fresh playback state
 headless|audio/test/salvo_check.gd|-|-|salvo sounds: counts real player starts and keeps the caps
+headless|audio/test/mix_2034_check.gd|-|-|issue 2034: Effects and Tactical cues volume channels, voice stealing by audibility (near and selected ship kept), sustained sounds follow camera distance gently, the 20-ship salvo soak with node counts and churn trace, music objective urgency
 headless|audio/test/smoke_lifetime_check.gd|-|-|sound and debris lifetimes leave no freed node behind; no ship files needed
 headless|audio/test/sound_weight_check.gd|-|-|issue 771: death bed length from the death beats, tail, sub-bass, core-flash duck, capital near-silence, heavy hit and shield tails, lance and torpedo charge, seeded death pitch, dry guns
 headless|audio/test/faction_death_check.gd|-|-|issue 1238: Chorus cruiser and Bio-Titan rupture at their class time with the kill beat and Chorus sounds only; a Glasswright breaks with a glass shatter, no steel; prints the cue timing trace

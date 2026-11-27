@@ -25,7 +25,7 @@ const StaticCaches := preload("res://render/static_caches.gd")
 signal battle_done(result: Dictionary)
 
 var args := {}
-var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "standard", "follow": true, "music": true, "music_volume": 0.7, "cine": "key", "brisk_camera": false, "movement": "cinematic", "taa": false, "ui_scale": 1.0, "reduce_motion": false, "nebula_wake_on": true, "render_scale": 1.0, "fps_cap": 0.0, "vsync": true}
+var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "standard", "follow": true, "music": true, "music_volume": 0.7, "effects_volume": 1.0, "tactical_volume": 1.0, "cine": "key", "brisk_camera": false, "movement": "cinematic", "taa": false, "ui_scale": 1.0, "reduce_motion": false, "nebula_wake_on": true, "render_scale": 1.0, "fps_cap": 0.0, "vsync": true}
 var title: CanvasLayer
 var battle: Node
 var campaign: Node
@@ -398,6 +398,8 @@ func apply_volumes() -> void:
 		music.set_volume(float(settings.get("music_volume", 0.7)))
 	if battle != null and is_instance_valid(battle) and battle.sfx != null:
 		battle.sfx.set_volume(float(settings["volume"]))
+		battle.sfx.set_effects_volume(float(settings.get("effects_volume", 1.0)))
+		battle.sfx.set_tactical_volume(float(settings.get("tactical_volume", 1.0)))
 	_settings_to_ui_sound()
 
 
@@ -417,6 +419,8 @@ func _settings_to_ui_sound() -> void:
 	if ui_sound != null and is_instance_valid(ui_sound):
 		ui_sound.set_on(bool(settings.get("sound", true)))
 		ui_sound.set_volume(float(settings.get("volume", 0.8)))
+		ui_sound.set_effects_volume(float(settings.get("effects_volume", 1.0)))   # issue 2034
+		ui_sound.set_tactical_volume(float(settings.get("tactical_volume", 1.0)))
 
 
 func _settings_to_battle(b: Node) -> void:
@@ -426,6 +430,8 @@ func _settings_to_battle(b: Node) -> void:
 	if b.sfx != null:
 		b.sfx.set_on(bool(settings["sound"]))
 		b.sfx.set_volume(float(settings["volume"]))
+		b.sfx.set_effects_volume(float(settings.get("effects_volume", 1.0)))   # issue 2034
+		b.sfx.set_tactical_volume(float(settings.get("tactical_volume", 1.0)))
 	b.user_speed = float(settings["speed"])
 	if not args.has("movement"):
 		b.movement = str(settings.get("movement", "cinematic"))
