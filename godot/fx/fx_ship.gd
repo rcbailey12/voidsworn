@@ -598,6 +598,24 @@ func _build_trails(fx) -> void:
 			"d": nz.get("d", Vector3(-1, 0, 0)), "style": -1})
 
 
+# Call after the root snaps so the next FX step does not treat the jump as thrust.
+func break_trails_at_teleport() -> void:
+	for t in _trails:
+		t["hist"].clear()
+		(t["mi"] as MeshInstance3D).hide()
+	_last_pos = _motion_position()
+	_moving = 0.0
+	_was_moving = false
+
+
+func _motion_position() -> Vector3:
+	var pos := root.global_position
+	if hull_pivot == null:
+		var parent := root.get_parent_node_3d()
+		pos -= parent.global_basis * _app_pos if parent != null else _app_pos
+	return pos
+
+
 func update(fx, dt: float) -> void:
 	if gone or death_fx_done or not is_instance_valid(root):
 		return
@@ -618,10 +636,7 @@ func update(fx, dt: float) -> void:
 	_power_step(fx)
 	_status_step(fx)
 	_hide_placeholder_engines()
-	var pos := root.global_position
-	if hull_pivot == null:
-		var parent := root.get_parent_node_3d()
-		pos -= parent.global_basis * _app_pos if parent != null else _app_pos
+	var pos := _motion_position()
 	var moved = pos.distance_to(_last_pos) if _last_pos != Vector3.INF else 0.0
 	_last_pos = pos
 	_moving = maxf(_moving - dt, 0.0)
@@ -726,6 +741,8 @@ func _update_trails(fx, _moved: bool) -> bool:
 	var eng: Color = fac["engine"]
 	var lvl = clampf(_eng_cur, 0.0, 2.0)
 	var style: int = 1 if eng_soot else int(fac["trail"])
+	# Let old exhaust cool in place, without sampling or anchoring to the pinched or hidden hull.
+	var rift_pose: bool = _rift_start >= 0.0 and (_rift_in or fx.now >= _rift_start)
 	for ti in _trails.size():
 		var t: Dictionary = _trails[ti]
 		var hist: Array = t["hist"]
@@ -741,7 +758,7 @@ func _update_trails(fx, _moved: bool) -> bool:
 		# Each sample belongs to world space for its entire life. Turning, stopping
 		# or throttling down never drags old exhaust along with the nozzle.
 		# (issue 1581, OpenAI review F4: no fresh exhaust while the battle has the drive cold, even as the plume eases down)
-		var active_burn: bool = (not dead or flaring) and lvl > 0.12 and not (_moving > 0.0 and engine_level < 0.12)
+		var active_burn: bool = not rift_pose and (not dead or flaring) and lvl > 0.12 and not (_moving > 0.0 and engine_level < 0.12)
 		if active_burn:
 			if hist.is_empty() or ((hist[0][0] as Vector3).distance_to(start) > 0.03 * fx.unit and (_tclock - float(hist[0][1]) >= 0.05 or (hist[0][0] as Vector3).distance_to(start) > 1.2 * fx.unit)):
 				hist.push_front([start, _tclock, lvl_t])

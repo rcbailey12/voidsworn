@@ -102,17 +102,45 @@ func _warp() -> void:
 	_step_to(at + 0.001)
 	_check(hull.visible and hull.scale.is_equal_approx(Vector3.ONE) and hull.position.is_zero_approx(), "arrival restores pose")
 
+	var ship := fx.ship("warp")
+	var trail: Dictionary = ship._trails[0]
+	var hist: Array = trail["hist"]
+	var ribbon := trail["mi"] as MeshInstance3D
+	# Lay a real world-space trail, then stop while it is still visible.
+	for i in 4:
+		view.position.x += 2.0
+		fx.step(0.06)
+	_step_to(fx.now + 0.42)
+	var launch := view.position
+	_check(hist.size() >= 2 and ribbon.visible and ship._moving == 0.0, "ordinary movement leaves a cooling trail")
+	var before := hist.duplicate()
+	ship.sick_nozzle = 0
+	var cough_before: float = ship._cough_next
 	t = fx.now
 	at = fx.fold("warp", 1.0, func blink_position() -> void:
 		transfers += 1
 		view.position = next)
 	var ghost := fx.get_node_or_null("fx_warp_echo") as Node3D
 	_check(ghost != null and ghost.get_child_count() == 1, "Blink snapshots the hull, not a sprite dot")
-	_check(view.position == old, "Blink does not pre-snap on the ability cue")
+	_check(view.position == launch, "Blink does not pre-snap on the ability cue")
+	_step_to(t + 0.20)
+	_check(hist == before, "departure pose does not lay new exhaust")
 	_step_to(t + 0.26)
 	_check(view.position == next and transfers == 1 and hull.scale.z < 0.95, "Blink snaps exactly once between rifts")
+	_check(hist.is_empty() and not ribbon.visible, "Blink clears and hides the old trail at the snap")
+	_check(ship._last_pos == view.global_position and ship._moving == 0.0 and ship._cough_next == cough_before,
+		"Blink records the new position without thrust or a damaged nozzle cough")
+	_step_to(at - 0.01)
+	_check(hist.is_empty(), "reveal pose does not lay new exhaust")
 	_step_to(at + 0.001)
 	_check(hull.scale.is_equal_approx(Vector3.ONE) and ghost.is_queued_for_deletion(), "Blink restores pose and frees the echo")
+	_check(hist.size() == 1 and not ribbon.visible, "trail sampling restarts at the destination without a bridge")
+	for i in 3:
+		view.position.x += 2.0
+		fx.step(0.06)
+	_check(hist.size() >= 2 and ribbon.visible and ship._moving > 0.0 and ship._cough_next > cough_before,
+		"normal movement after Blink still builds a trail and triggers the damaged nozzle cough")
+	next = view.position
 
 	var risen := _fixture("risen", "deathless", old)
 	var rp := risen.get_node("hull_pivot") as Node3D
