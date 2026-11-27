@@ -28,7 +28,7 @@ func _run() -> void:
 	var fx: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://campaign/test/fixtures/issue_1628/event_fight_retreat.json"))
 	for cs in fx["cases"]:
 		var name: String = cs["name"]; var ex: Dictionary = cs["expect"]
-		JSM.rnd_seed(int(fx["seed"]))
+		c.rng.rnd_seed(int(fx["seed"]))
 		c.META["admirals"][fx["admiral"]] = true
 		c.newRun(fx["admiral"], fx["fac"])
 		var n: Dictionary = c.RUN["map"]["cols"][0][0]

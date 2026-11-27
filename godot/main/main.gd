@@ -463,6 +463,12 @@ func show_title(music_after_draw := false) -> void:
 		if ResourceLoader.load_threaded_get_status(HOST_SCRIPT) != ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
 			_host_script = ResourceLoader.load_threaded_get(HOST_SCRIPT)   # read by now: no wait; held, so load() finds it cached
 	_clear()
+	# C32: set the title's AA before its first draw. The deferred backdrop must not rebuild live render buffers.
+	var vp := get_viewport()
+	if vp.msaa_3d != Viewport.MSAA_DISABLED:
+		vp.msaa_3d = Viewport.MSAA_DISABLED
+	if vp.use_taa:
+		vp.use_taa = false
 	if music != null:
 		if music_after_draw and DisplayServer.window_can_draw():
 			_title_music_after_draw()   # issue 1519: the music starts after the title's first frame, not inside it
@@ -545,8 +551,8 @@ func _start_showcase() -> void:
 		var t_wait: Node = title
 		if not await battle_parts_ready():
 			return
-		if title != t_wait or showcase != null or title == null or not is_instance_valid(title):
-			return   # the title was left, or a backdrop started, meanwhile
+		if title != t_wait or showcase != null or title == null or not is_instance_valid(title) or not _showcase_wanted():
+			return   # the title was left, a backdrop started, or Low was selected meanwhile
 	# issue 1519: a battle just left is still being freed in slices behind this title: the backdrop's build waits for
 	# that to end, so the two never share a frame and the 3D is back on (off while the old battle is parked)
 	if retire_pending():
@@ -558,8 +564,7 @@ func _start_showcase() -> void:
 	showcase = _battle_packed().instantiate()
 	showcase.showcase = true
 	showcase.title_backdrop = true   # issue 1434: capped at High, silent, no combat warm-up
-	showcase.args["quality"] = str(settings["quality"])
-	showcase.args["taa"] = bool(settings.get("taa", false))
+	showcase.args["quality"] = "high"
 	showcase.args["fac"] = next_showcase_fac()
 	showcase.args["map"] = ["open", "planet", "station", "storm"][randi() % 4]  # open fields: the dense belts hide the ships at this height
 	add_child(showcase)
@@ -587,12 +592,13 @@ func _start_showcase() -> void:
 		quit_clean(0)
 
 
-# Issue 1437 (review on PR 1607): Graphics or TAA changed on the title: the battle behind the menu is rebuilt with the new
-# setting (Low has none), so what shows is what the setting gives
+# Graphics changed on the title: Low has no 3D backdrop, High and Max both use the same High backdrop.
 var _showcase_gen := 0   # bumped by each rebuild request, so only the newest pending one starts a battle
 
 
 func restart_showcase() -> void:
+	if is_instance_valid(showcase) and _showcase_wanted():
+		return   # switching between High and Max never changes the backdrop or rebuilds it
 	_showcase_gen += 1
 	if showcase != null and is_instance_valid(showcase):
 		if showcase.has_method("stop_build"):

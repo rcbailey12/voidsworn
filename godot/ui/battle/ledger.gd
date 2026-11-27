@@ -287,6 +287,7 @@ func layout() -> void:
 	var action_x := target_x + target_w + gap
 	var foot := vs.y - px(FLEET_H)
 	_ship_block(Rect2(pad, y, ship_w, foot - y), compact)
+	_ship_losses(pad, shelf_y, ship_w, usable)
 	var after_guns := _guns(gun_x, y, gun_w)
 	var after_odds := _target_block(target_x, y, target_w, compact)
 	_status(gun_x, maxf(after_guns, after_odds) + px(3), gun_w + gap + target_w, foot)
@@ -483,6 +484,23 @@ func _ship_block(r: Rect2, compact: bool) -> void:
 	_hit(Rect2(bars_x, yy, bars_w, px(82)), "", null, detail_bb)
 
 
+func _ship_losses(x: float, shelf_y: float, ship_w: float, usable: float) -> void:
+	var losses: PackedStringArray = ship.get("section_losses", PackedStringArray())
+	if losses.is_empty():
+		return
+	var width := minf(usable, maxf(ship_w, px(380)))
+	var rows := PackedStringArray()
+	for loss in losses:
+		rows.append_array(_lines(loss, f_body, 17, width - px(12)))
+	var line_h := ceilf(_text_h(f_body, 17)) + px(2)
+	var strip := Rect2(x - px(8), shelf_y - rows.size() * line_h - px(18), width + px(16), rows.size() * line_h + px(18))
+	_veil(strip, Brand.KEEL_VEIL, Vector4(0, px(9), px(9), 0))
+	blockers.append(strip)
+	for i in rows.size():
+		_text(x, strip.position.y + px(12) + i * line_h, rows[i], f_body, 17, TEXT)
+	_hit(strip, "", null, detail_bb)
+
+
 # issue 1446: "stbd routed" for the KEEL shield readout (quad order prow, starboard, rear, port)
 static func _routed_tag(sides) -> String:
 	if not (sides is Array) or (sides as Array).is_empty():
@@ -526,7 +544,7 @@ static func keyword_tip(line: String) -> String:
 		"Braced": "Braced: the ship takes 40% less hull damage until its next turn. A braced ship does not turn or fire. A Sunward ship also covers one adjacent ally facing the same way.",
 		"On fire": "On fire: its shields falter and it can no longer repair itself.",
 		"focusing its fire": "Focus fire: the enemy fleet favors this ship when it picks targets.",
-		"Fired": "Most ships cannot move after firing. Glasswright ships and ships with the Slip the Net protocol can keep some movement."}
+		"Fired": "Firing ends movement. Glasswright ships alone can keep some movement after firing."}
 	for kw in keywords:
 		if line.contains(kw):
 			out.append(keywords[kw])

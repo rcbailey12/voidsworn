@@ -1,0 +1,80 @@
+{
+  "about": "Issue 2001 Material Maker trial on six installed hulls at true pixel size, with one still per camera.",
+  "cameras": [170, 26],
+  "cell": [1280, 600],
+  "crop": {"170": [1280, 600], "26": [1280, 600]},
+  "rows": [
+    {
+      "id": "V16_37",
+      "group": "Material Maker trial",
+      "label": "V16_37 Sunward Crusade",
+      "att": ["hegemony", "Cruiser"],
+      "tgt": ["voidsworn", "Cruiser"],
+      "expect_code": "V16_37",
+      "do": "hold",
+      "focus": "target",
+      "tgt_at": [34, -30],
+      "windows": [["event", 4.0, 1]]
+    },
+    {
+      "id": "H10_23",
+      "group": "Material Maker trial",
+      "label": "H10_23 Meridian Directorate",
+      "att": ["voidsworn", "Cruiser"],
+      "tgt": ["hegemony", "Battleship"],
+      "expect_code": "H10_23",
+      "do": "hold",
+      "focus": "target",
+      "tgt_at": [34, -30],
+      "windows": [["event", 4.0, 1]]
+    },
+    {
+      "id": "C19_51",
+      "group": "Material Maker trial",
+      "label": "C19_51 Ashfall Hullbreakers",
+      "att": ["hegemony", "Cruiser"],
+      "tgt": ["corsair", "Battle-barge"],
+      "expect_code": "C19_51",
+      "do": "hold",
+      "focus": "target",
+      "tgt_at": [34, -30],
+      "windows": [["event", 4.0, 1]]
+    },
+    {
+      "id": "D21_23",
+      "group": "Material Maker trial",
+      "label": "D21_23 Eclipse",
+      "att": ["hegemony", "Cruiser"],
+      "tgt": ["deathless", "Cruiser"],
+      "expect_code": "D21_23",
+      "do": "hold",
+      "focus": "target",
+      "tgt_at": [34, -30],
+      "windows": [["event", 4.0, 1]]
+    },
+    {
+      "id": "B21_11",
+      "group": "Material Maker trial",
+      "label": "B21_11 Chorus",
+      "att": ["hegemony", "Cruiser"],
+      "tgt": ["chorus", "Cruiser"],
+      "expect_code": "B21_11",
+      "do": "hold",
+      "focus": "target",
+      "tgt_at": [34, -30],
+      "windows": [["event", 4.0, 1]]
+    },
+    {
+      "id": "I8_37",
+      "group": "Material Maker trial",
+      "label": "I8_37 Glasswrights",
+      "att": ["hegemony", "Cruiser"],
+      "tgt": ["ithar", "Ark"],
+      "expect_code": "I8_37",
+      "do": "hold",
+      "focus": "target",
+      "tgt_at": [34, -30],
+      "windows": [["event", 4.0, 1]]
+    }
+  ]
+}

@@ -1387,21 +1387,16 @@ func _hp(pt: Dictionary) -> Dictionary:
 # Gun muzzles for one volley: n entries, one per shot (HARDPOINTS.md "When shots outnumber points"). slot is the weapon's
 # index in the ship's data.js list (the rules' fire event "weapon"; -1 when unknown), weapon its id. bow_first: a heavy
 # forward weapon (lance, torpedo) with a target ahead, which on a hull with no authored point fires from the bow.
-# Every entry is {} when the hull has neither a point nor plating that bears: the volley's effects are skipped.
+# With neither a point nor plating that bears the effects are skipped, except a known jammed battery uses the hull.
 func guns(slot: int, weapon: String, target_local: Vector3, n: int, bow_first := false) -> Array:
 	n = maxi(n, 1)
 	var d := target_local - core
 	d = d.normalized() if d.length() > 1e-4 else Vector3(1, 0, 0)
 	var pts := _gun_points(slot, weapon, target_local, d)
 	var out: Array = []
+	var had_mounts := not pts.is_empty()
+	pts = _unjammed_points(pts)
 	if not pts.is_empty():
-		pts = _unjammed_points(pts)
-		if pts.is_empty():
-			# A known battery is jammed, not missing its mounts. Do not draw a shot from its barrels or the plating.
-			for i in n:
-				out.append({})
-				_took("gun", "skip")
-			return out
 		var key := "%d|%s" % [slot, weapon]
 		var off: int = int(_gun_turn.get(key, posmod(hash(code + key), pts.size())))
 		var aims := {}     # issue 560: each turret this volley uses turns once, toward the target, before its shots
@@ -1420,15 +1415,28 @@ func guns(slot: int, weapon: String, target_local: Vector3, n: int, bow_first :=
 	# no usable authored point: the plating found by the station rays (cast once at analyse, the same each shot)
 	# (the bow is a ray hit too: _find_bow's ray from ahead, or the foremost surface sample when that ray finds a hole)
 	var from_bow := bow_first and d.x > 0.5
-	var row: Array = [{"p": bow, "n": Vector3(1, 0, 0)}] if from_bow else mounts_for(target_local, n)
+	var src := "bow" if from_bow else "ray"
+	var row: Array = []
+	if tm != null:
+		row = [{"p": bow, "n": Vector3(1, 0, 0)}] if from_bow else mounts_for(target_local, n)
+	# A visual jam can freeze every barrel for a rules-approved volley. Keep the shot on the hull without moving
+	# those barrels, even if the model has no station facing the target.
+	if had_mounts and row.is_empty():
+		if tm != null:
+			var plate := surface(core, d)
+			row = [plate if not plate.is_empty() else hit_point(target_local, -1)]
+			src = "ray"
+		else:
+			row = [{"p": core, "n": d}]
+			src = "centre"
 	for i in n:
-		if row.is_empty() or tm == null:
+		if row.is_empty():
 			out.append({})
 			_took("gun", "skip")
 		else:
 			var m: Dictionary = row[i % row.size()]
-			out.append({"p": m["p"], "n": m["n"], "f": d, "src": "bow" if from_bow else "ray"})
-			_took("gun", "ray")
+			out.append({"p": m["p"], "n": m["n"], "f": d, "src": src})
+			_took("gun", "centre" if src == "centre" else "ray")
 	return out
 
 
