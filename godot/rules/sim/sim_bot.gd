@@ -19,10 +19,10 @@ func bot_turn() -> int:
 		if rules.B.over or ship.dead:
 			continue
 		activations += 1
-		_use_ability(ship, true)
-		if not _move(ship, true):
+		_use_ability(ship, false)
+		if rules.B.over or not _move(ship, true):
 			break
-		_fire(ship)
+		_fire_or_brace(ship)
 		if rules.B.over:
 			break
 	return activations
@@ -44,12 +44,9 @@ func bot_unit(ship: Dictionary) -> void:
 	if not ship.isSq and rules.tacticBoard(ship):
 		ship.activated = true
 		return
-	_fire(ship)
+	_fire_or_brace(ship)
 	if rules.B.over or ship.dead or ship.isSq:
 		return
-	if brace_enabled and ship.hp < ship.maxHp * 0.5 and not ship.weapons.any(_fired):
-		if rules.canOrder(ship, "brace") and rules.evalThreat(ship, rules.alive("enemy")) > 10:
-			rules.giveOrder(ship, "brace")
 	if rules.canFade(ship):
 		rules.fadeMove(ship)
 	ship.activated = true
@@ -80,28 +77,20 @@ func bot_command() -> void:
 		rules.useCommand("player")
 
 
-func _use_ability(ship: Dictionary, classic: bool) -> void:
-	if not rules.jt(ship.get("ab")) or not rules.canAbility(ship):
+func _use_ability(ship: Dictionary, after_move: bool) -> void:
+	var arg: Variant = rules.botAbility(ship, after_move)
+	if arg != null:
+		rules.useAbility(ship, arg)
+
+
+func _fire_or_brace(ship: Dictionary) -> void:
+	_use_ability(ship, true)
+	if rules.B.over or ship.dead:
 		return
-	match ship.ab:
-		"launch":
-			var hexes := rules.launchHexes(ship)
-			if not hexes.is_empty():
-				var kind: String
-				if classic or ship.fac == "voidsworn":
-					kind = "fighter" if rules.rnd() < 0.5 else "bomber"
-				else:
-					kind = rules.wingKind(ship)
-				rules.useAbility(ship, {"hex": hexes[0], "kind": kind})
-		"nova":
-			var enemies := rules.alive("enemy")
-			var players := rules.alive("player")
-			for hex in rules.novaTargets(ship):
-				if enemies.any(func(enemy): return rules.hdist(enemy, hex) <= 1) and not players.any(func(player): return rules.hdist(player, hex) <= 1):
-					rules.useAbility(ship, {"hex": hex})
-					break
-		_:
-			rules.useAbility(ship)
+	if brace_enabled and rules.botShouldBrace(ship):
+		rules.giveOrder(ship, "brace")
+	else:
+		_fire(ship)
 
 
 func _move(ship: Dictionary, classic: bool) -> bool:
@@ -177,7 +166,3 @@ func _fire(ship: Dictionary) -> void:
 			rules.fireWeapon(ship, i, best)
 		if rules.B.over:
 			return
-
-
-func _fired(weapon: Dictionary) -> bool:
-	return rules.jt(weapon.get("fired"))

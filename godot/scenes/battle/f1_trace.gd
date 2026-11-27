@@ -26,7 +26,7 @@ func _hash() -> Dictionary:
 	for u in B["units"]:
 		parts.append(JSM.canon(u, "u", SKIP_U))
 	var s := "{\"b\":" + JSM.canon(B, "b", SKIP_B) + ",\"units\":[" + ",".join(parts) + "]}"
-	return {"hash": JSM.sha256(s).substr(0, 16), "rng": JSM.rng_u32(), "version": int(b.api.version)}
+	return {"hash": JSM.sha256(s).substr(0, 16), "rng": R.rng.rng_u32(), "version": int(b.api.version)}
 
 
 func _idle() -> void:
@@ -102,9 +102,9 @@ func _shot(name: String) -> void:
 	if PG.stop_if_any():
 		return
 	await get_tree().create_timer(0.6 / maxf(Engine.time_scale, 1.0)).timeout
-	# every still: no two ship names overlap, and a hover tip never sits on the activation card
-	var ov: int = b.hud.plate_name_overlaps()
-	_check(ov == 0, "%s: no ship names overlap (%d hidden by the declutter)" % [name, b.hud.plates_hidden])
+	# every still: no two ship plates overlap, and a hover tip never sits on the activation card
+	var ov: int = b.hud.plates_root.overlap_count()
+	_check(ov == 0, "%s: no ship plates overlap (%d hidden by the declutter)" % [name, b.hud.plates_hidden])
 	var up: int = b.hud.plate_names_under_panels()
 	_check(up == 0, "%s: no ship name sits under a side panel (%d found)" % [name, up])
 	var lg = b.hud.ledger

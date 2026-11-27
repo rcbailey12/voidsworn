@@ -366,7 +366,8 @@ static func _shield_lp(tg: Dictionary) -> Vector3:
 
 # Where a shot ends: the shield bubble, the hull (section, facing), or past the target for a miss.
 static func _target(fx, Tg, to_c: Vector3, from: Vector3, hit: bool, hd: Dictionary, quad: int, kt: float,
-		variation: Dictionary = {}, rhythm: RandomNumberGenerator = null, clusters: Dictionary = {}) -> Dictionary:
+		variation: Dictionary = {}, rhythm: RandomNumberGenerator = null, clusters: Dictionary = {},
+		force_shield := false) -> Dictionary:
 	if Tg == null:
 		var d = (to_c - from).normalized()
 		return {"p": to_c, "n": -d, "shield": false, "miss": not hit}
@@ -393,8 +394,9 @@ static func _target(fx, Tg, to_c: Vector3, from: Vector3, hit: bool, hd: Diction
 		var path := (pass_point - from).normalized()
 		var exit: Vector3 = pass_point + path * Tg.hull.L * fx.rng.randf_range(0.4, 1.2)
 		return {"p": exit, "n": -path, "shield": false, "miss": true, "pass": pass_point}
-	var on_shield: bool = Tg.shielded and Tg._shield_mat != null and float(hd.get("shield", 0)) > 0.0 and float(hd.get("hull", 0)) <= 0.0
-	var sec: int = {"eng": 0, "mid": 1, "prow": 2}.get(String(hd.get("section", "")), -1)
+	var on_shield: bool = force_shield or (Tg.shielded and Tg._shield_mat != null
+		and float(hd.get("shield", 0)) > 0.0 and float(hd.get("hull", 0)) <= 0.0)
+	var sec: int = {"eng": 0, "mid": 1, "prow": 2}.get(str(hd.get("section", "")), -1)
 	var inv: Transform3D = Tg.xf().affine_inverse()
 	var view := Vector3.ZERO
 	if fx.camera != null and is_instance_valid(fx.camera):
@@ -752,7 +754,7 @@ static func _weapon_shader(fx, routed := false) -> Shader:
 		code = SH.patch(code, "float frame = mix(age * 15.0, 3.0 + sqrt(age) * 12.0, plasma);",
 			"float frame = hot > 0.5 ? age * 15.0 : mix(age * 15.0, 3.0 + sqrt(age) * 12.0, plasma);")
 		code = SH.patch(code, "vec3 core = mix(vec3(0.65, 0.76, 0.93), vec3(0.9, 0.83, 0.68), age);",
-			"vec3 core = mix(weapon_tint, vec3(0.9, 0.83, 0.68), age * 0.45);")
+			"vec3 core = mix(weapon_tint, vec3(0.9), age * 0.45);")
 		# Issue 281 Cone B: the vent gas cools toward the weapon colour and darkens with age, so the cone reads as hot
 		# exhaust instead of a flat pale blob. The flash keeps its own palette (vent is 0 for every other kind).
 		code = SH.patch(code, "vec3 smoke = mix(vec3(0.12, 0.085, 0.18), vec3(0.42, 0.36, 0.50), lit);",
@@ -777,14 +779,23 @@ static func _weapon_shader(fx, routed := false) -> Shader:
 
 
 static func _burst(fx, p: Vector3, axis: Vector3, T: float, size: float, kind: String, life: float, col: Color,
-		strength := 3.0, px := 0.0, velocity := Vector3.ZERO, opacity := 1.0, aspect := 1.0, gun := true) -> void:
+		strength := 3.0, px := 0.0, velocity := Vector3.ZERO, opacity := 1.0, aspect := 1.0, gun := true,
+		book := true) -> void:
 	var seed: float = fx.rng.randf()
 	fx.later(T, func l_burst() -> void:
 		var power := strength
 		var duration := life
 		var is_flash: bool = kind == "flash" and strength >= fx.FLASH_I
 		# Book the drawn envelope with bloom, at the camera the player has when the burst appears.
-		if is_flash and not fx.flash_at(p, T, size / BURST_PX_K, px / BURST_PX_K, life, gun):
+		var refused := false
+		if is_flash:
+			if book:
+				refused = not fx.flash_at(p, T, size / BURST_PX_K, px / BURST_PX_K, life, gun)
+			else:
+				# issue 2194: a pulse kept out of the budget still softens under Reduce Flashing
+				fx.flash_lift = false
+				refused = fx.reduce_flashing
+		if refused:
 			power = FLASH_LIFT_POWER if fx.flash_lift else SOFT_FLASH_POWER
 			duration = maxf(life, 1.2 if fx.flash_lift else 0.4)
 		var node := DEATH.flipbook(fx, p, axis, size * fx.unit, kind, duration, velocity, power, "small", null, false, false, null, "weapon") as MeshInstance3D
@@ -940,8 +951,10 @@ static func _muzzle(fx, p: Vector3, dir: Vector3, t: float, col: Color, k: float
 	var lifetime := 0.23 if organic else 0.16
 	var core_life := 0.12 if forward else 0.15
 	fx.record_spawn(src, p, true)
+	# issue 2194: keep the bright core, but a light gun's muzzle pulse must not spend the flash budget that the
+	# impact and death cores need (autocannon and flak fired four to six pulses a volley against a cap of three)
 	_burst(fx, p + dir * k * 0.28 * fx.unit, dir, t, 1.55 * k, "flash", core_life, col,
-		2.5 if organic else 4.2, px)
+		2.5 if organic else 4.2, px, Vector3.ZERO, 1.0, 1.0, true, false)
 	fx.spr(p + offset, t, lifetime, col, 1.15, 1.65 * k, 2.55 * k, profile,
 		dir * (2.0 * k * fx.unit if forward else 0.0), 0.0, 0.0, 0.0, px)
 	if profile != MUZZLE_BALLISTIC:
@@ -2028,7 +2041,8 @@ static func warm_craft_trail(fx, parent: Node3D) -> void:
 # The weapon sets the size, timing and direction. The target sets what comes off the hull (R412).
 const IMPACT_RESPONSE := {
 	"metal": {"fire_body": true, "gas_kind": 7, "debris": "plate", "hot_plate": true},
-	"glass": {"fire_body": false, "gas_kind": 0, "debris": "glass", "tint": Color(1.0, 0.95, 0.78), "prism": 1.0},
+	"hegemony": {"fire_body": true, "gas_kind": 7, "debris": "plate", "faction_glow": true},
+	"glass": {"fire_body": false, "gas_kind": 0, "debris": "glass", "faction_glow": true, "prism": 1.0},
 	"bio": {"fire_body": false, "gas_kind": 20, "debris": "drop", "tint": Color(0.72, 0.86, 0.27),
 		"mist": Color(0.32, 0.38, 0.15)},
 	"obsidian": {"fire_body": true, "gas_kind": 0, "debris": "plate", "faction_glow": true},
@@ -2037,7 +2051,11 @@ const METAL_EMBER := Color(0.42, 0.07, 0.02)
 
 
 static func _impact_response(target) -> Dictionary:
-	return IMPACT_RESPONSE[HULL.target_substance(target.faction)] if target != null else IMPACT_RESPONSE["metal"]
+	return _response_for(target.faction) if target != null else IMPACT_RESPONSE["metal"]
+
+
+static func _response_for(faction: String) -> Dictionary:
+	return IMPACT_RESPONSE[faction if faction == "hegemony" else HULL.target_substance(faction)]
 
 
 static func _impact_color(response: Dictionary, target, fallback: Color) -> Color:
@@ -2065,7 +2083,7 @@ static func _impact_embers(fx, p: Vector3, n: Vector3, T: float, k: float, count
 		response: Dictionary, target, col := METAL_EMBER) -> void:
 	if response.fire_body:
 		var ember: Color = target.fac.damage_glow * 0.35 if response.get("faction_glow", false) else col
-		_embers(fx, p, n, T, k, count, fam, ember)
+		_embers(fx, p, n, T, k, count, fam, ember, SH.TICK_EMBER if response.get("faction_glow", false) else fx.HOT_FLECK_SPRITE)
 
 
 # Issue 461: the weapon family whose hit recipe a look uses (deaths_and_hits.md "The hits, upgraded"). Shell: a spark
@@ -2147,7 +2165,7 @@ static func _throw_sparks(fx, p: Vector3, n: Vector3, axis: Vector3, T: float, k
 # the larger pieces peel off slowly along the surface, with a few loose pieces between them.
 static func _throw_debris(fx, p: Vector3, n: Vector3, axis: Vector3, T: float, k: float, count: int, speed: float, size: float,
 		heat: float, fam: String, faction := "metal", macro := false, target = null) -> void:
-	var response: Dictionary = IMPACT_RESPONSE[HULL.target_substance(faction)]
+	var response := _response_for(faction)
 	if response.debris == "drop":
 		var tissue: Color = response.tint
 		for j in _amount(fx, count):
@@ -2229,12 +2247,12 @@ static func _gas_cloud(fx, p: Vector3, n: Vector3, T: float, k: float, col: Colo
 
 
 # Embers: slow cooling flecks that hang near the plate and cool yellow-white to dark red, with no flicker.
-static func _embers(fx, p: Vector3, n: Vector3, T: float, k: float, count: int, fam: String, col := METAL_EMBER) -> void:
+static func _embers(fx, p: Vector3, n: Vector3, T: float, k: float, count: int, fam: String, col: Color, kind: int) -> void:
 	for j in _amount(fx, int(ceil(count * 1.5))):
 		var d := _outward(n, fx.rcone(n, 0.85), 0.2)
 		var v: Vector3 = d * fx.rng.randf_range(0.6, 3.2) * k * fx.unit
 		var life: float = fx.rng.randf_range(EMBER_LIFE.x, EMBER_LIFE.y)
-		fx.spr(p, T + fx.rng.randf() * 0.12, life, col, 1.6, 0.18 * k, 0.09 * k, fx.HOT_FLECK_SPRITE, v, 0.5, 0.0, 0.0, 6.0)
+		fx.spr(p, T + fx.rng.randf() * 0.12, life, col, 1.6, 0.18 * k, 0.09 * k, kind, v, 0.5, 0.0, 0.0, 6.0)
 		_note(fx, "ember", fam, v, n, life)
 
 
@@ -2251,13 +2269,16 @@ static func _heat_spot(fx, p: Vector3, T: float, k: float, size: float, fam: Str
 		fx.spr(p, T + 0.04, life, Color(1, 0.5, 0.15), i, size * k, size * k * 0.8, 21, Vector3.ZERO, 0.0, 0.0, 0.0, px)
 		return
 	var lp: Vector3 = src.xf().affine_inverse() * p
+	var faction_glow: bool = _impact_response(src).get("faction_glow", false)
+	var col: Color = src.fac.damage_glow if faction_glow else Color(1, 0.5, 0.15)
+	var kind := SH.TICK_EMBER if faction_glow else 21
 	fx.later(T + 0.04, func l_hull_heat() -> void:
 		if src.dead or src.gone or not is_instance_valid(src._dmg_root): return
 		# Issue 1558 item 10: a small ring of heat spots on each hull (fx_pool Pool), written in place, instead of a new
 		# Batch, ArrayMesh and MeshInstance3D for every metal hit. The oldest spot is reused when the ring wraps.
 		var pool = _heat_pool(fx, src)
 		pool.emit(POOLS.pack(Vector4(lp.x, lp.y, lp.z, T + 0.04), Vector4(0, 0, 0, life),
-			Vector4(1, 0.5, 0.15, i), Vector4(size * k * fx.unit, size * k * fx.unit * 0.8, 21, px + 0.31), Vector4.ZERO))
+			Vector4(col.r, col.g, col.b, i), Vector4(size * k * fx.unit, size * k * fx.unit * 0.8, kind, px + 0.31), Vector4.ZERO))
 		pool.flush())
 
 
@@ -2278,6 +2299,36 @@ static func _heat_pool(fx, src):
 
 static func _hit_impulse(lk: String, weight: int, critical: bool) -> float:
 	return float(REACT_IMPULSE.get(lk, 0.5)) * [0.7, 0.85, 1.0, 1.3, 1.6][clampi(weight, 0, 4)] * (1.6 if critical else 1.0)
+
+
+static func standalone_hit(fx, target, hit: Dictionary, from: Vector3, breaking: bool) -> void:
+	var hull_damage := float(hit["hull"]) > 0.0
+	var shield_contact := not hull_damage and (float(hit["shield"]) > 0.0 or breaking)
+	var ion := bool(hit.get("regenLock", false))
+	if not hull_damage and not shield_contact and not ion:
+		return
+	var quad := int(hit.get("quad", 0))
+	var center: Vector3 = target.to_world(target.hull.c)
+	if from == Vector3.INF or from.is_equal_approx(center):
+		from = target.to_world(target.hull.c + target.hull.quad_dir(quad) * target.hull.L * 2.0)
+	var scale := maxf(target.scale_k(), VIS_K_HIT)
+	# The hit event has no weapon id. Use the light shell recipe or the ion recipe when it locked shield regen.
+	var look := "ion" if ion else "auto"
+	var contact := _target(fx, target, center, from, true, hit, quad, scale, {}, null, {}, shield_contact)
+	contact["breaking"] = breaking
+	contact["tk"] = TARGET_K.get(DEATH.atlas_band(float(target.hull.L)), 1.0)
+	if not hull_damage and not shield_contact:
+		# An ion lock without damage gets a contact flash, not a hull reaction or a scar.
+		var response := _impact_response(target)
+		var tint := _impact_color(response, target, target.fac.damage_glow)
+		var px := ladder_px(look, 1, contact)
+		var size := scale * sqrt(float(contact.get("gk", 1.0)))
+		_impact_flash(fx, target, contact["p"], contact["n"], fx.now, size, 4.0 * size, 0.16,
+			tint, px * BURST_PX_K, response, 0.3 * size, 4.2)
+		_note(fx, "flash", family_of(look), Vector3.ZERO, contact["n"], 0.16, px)
+		return
+	var dir := (Vector3(contact["p"]) - from).normalized()
+	_impact(fx, look, 1, target, contact, fx.now, target.fac.damage_glow, dir, hit, scale, 0.0)
 
 
 static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: Color, dir: Vector3, hd: Dictionary, k: float, sustain: float) -> void:
@@ -2437,6 +2488,7 @@ static func _impact_old(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, co
 	var p: Vector3 = tg["p"]; var n: Vector3 = tg["n"]
 	var size := (3.8 if light else (5.6 if w <= 2 else 7.0)) * k
 	var tint: Color = col if lk in ["las", "prism", "plasma", "pflak", "mflak", "gflak"] else Color(0.94, 0.67, 0.33)
+	tint = _impact_color(_impact_response(Tg), Tg, tint)
 	_burst(fx, p+n*0.35*k, n, T, size, "flash", 0.24 if light else 0.32, tint, 4.2, HIT_PX[clampi(w,1,3)])
 	_vent(fx, p+n*0.5*k, n, T+0.025, size*0.85, 0.38, tint, 0.9, n*4.0*k, 0.55, 1.0, w, Tg, true)
 	_impact_sparks(fx, p + n * 0.15 * k, (n - dir * 0.25).normalized(), T, k, _spark_faction(Tg), 7 if light else 12)
@@ -2453,7 +2505,7 @@ static func _afterglow(fx, p: Vector3, T: float, col: Color, sz: float, light: b
 static func _shield_impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, dir: Vector3, k: float, sustain: float, torp: bool, beam: bool, bio: bool, light: bool, col := Color.WHITE, fraction := -1.0) -> void:
 	var p: Vector3 = tg["p"]
 	var n: Vector3 = tg["n"]
-	var sc: Color = Tg.fac["shield"] if Tg != null else FLOOK.shield("hegemony")
+	var sc := FLOOK.shield(Tg.faction if Tg != null else "hegemony")
 	var strength = 0.6 if light else (1.0 if w <= 2 else 1.4)
 	var spread = (9.0 if light else 14.0) * k
 	var life = float(fx.timing.get("shield", 0.6))

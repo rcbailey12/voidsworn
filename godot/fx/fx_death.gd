@@ -10,6 +10,7 @@ extends RefCounted
 const SH := preload("res://fx/fx_shaders.gd")
 const POOLS := preload("res://fx/fx_pool.gd")
 const HULL := preload("res://fx/fx_hull.gd")
+const BREACH := preload("res://fx/fx_breach.gd")
 const WOUNDS := preload("res://fx/fx_wounds_flag.gd")
 const FLOOK_W := preload("res://fx/faction_look.gd")
 const DAMAGE_PLUME := preload("res://fx/fx_damage_plume.gd")
@@ -147,7 +148,7 @@ uniform float section_scale = 1.0;
 uniform vec3 scorch_tint = vec3(0.20, 0.21, 0.22);
 uniform vec3 cap_albedo = vec3(0.32);
 // R367: the seam's heat in the faction's death colours (defaults for an unstyled hull).
-uniform vec3 heat_cool = vec3(0.38, 0.035, 0.018);
+uniform vec3 heat_cool = vec3(0.12, 0.025, 0.013);
 uniform vec3 heat_hot = vec3(0.95, 0.40, 0.09);
 uniform vec3 heat_white = vec3(0.94, 0.84, 0.64);
 varying vec3 slag_p;
@@ -383,7 +384,7 @@ static func dsmoke(src) -> float:
 static func _style_heat(m: ShaderMaterial, st: Dictionary, prefix: String) -> void:
 	var rim = st.get("rim")
 	if not (rim is Color): return
-	m.set_shader_parameter(prefix + "cool", (rim as Color) * 0.14)
+	m.set_shader_parameter(prefix + "cool", (rim as Color) * 0.12)
 	m.set_shader_parameter(prefix + "hot", rim)
 	m.set_shader_parameter(prefix + "white", (rim as Color).lerp(Color(1, 1, 1), 0.7))
 
@@ -1776,7 +1777,11 @@ static func build_pieces(fx, s, job: Dictionary, deadline: int) -> bool:
 		var i := meshes.size()
 		var pc: Dictionary = pieces[i]
 		pc["dstyle"] = dstyle(s)
-		pc["scorch_tint"] = s.fac.get("fragment_paint", Color(0.20, 0.21, 0.22))
+		var paint: Color = s.fac.get("fragment_paint", Color(0.20, 0.21, 0.22))
+		# Heat only changes the seam. These cold faces take the darker finish of their own scorched hull.
+		if s.faction in ["deathless", "corsair"]:
+			paint = BREACH.wound_col(s.fac.get("wound", {}), "scorch_col", paint)
+		pc["scorch_tint"] = paint
 		meshes.append(_piece_materials(geo[i], pc, false, fx) if i < geo.size() else _piece_mesh(pc, false, fx))
 		if pc.has("hull"): pc["shape"] = safe_convex(pc["hull"])
 		if Time.get_ticks_usec() >= deadline: break
@@ -2884,9 +2889,15 @@ static func _wing_death(fx, s) -> float:
 	s.set_meta("death_split", fx.now)
 	if not hit.is_empty():
 		var p: Vector3 = s.to_world(hit["p"])
-		# Birth on the next FX step: a one-frame picture born between steps could expire before its first draw.
-		fx.later(fx.now + 0.000001, _wing_flash.bind(fx, s, p, s.xf()))
-		BEATS.corkscrew(fx, s, p, s.xf())   # issue 1586
+		if s.faction == "chorus":
+			var L: float = s.hull.L
+			fx.spr(p, fx.now, 0.55, s.fac.damage_glow, 1.4, L * 0.08, L * 0.32, 20, Vector3.ZERO, 0.0, 0.0, 0.0, 28.0)
+			for j in 2:
+				BEATS.debris(fx, s, p, fx.now, 1.2, fx.rdir() * L * 0.8, L * 0.04, 0.0)
+		else:
+			# Birth on the next FX step: a one-frame picture born between steps could expire before its first draw.
+			fx.later(fx.now + 0.000001, _wing_flash.bind(fx, s, p, s.xf()))
+			BEATS.corkscrew(fx, s, p, s.xf())   # issue 1586
 	_hide_ship(s)
 	return 1.0 / 60.0
 
@@ -3091,10 +3102,9 @@ static func _split_vent(fx, s, lp: Vector3, ln: Vector3) -> void:
 	var light_col: Color = dcol(s, "light", fire_col.lerp(Color.WHITE, 0.35))
 	var smoke_k: float = dsmoke(s)
 	var jet_vel: Vector3 = inherited + n * s.hull.L * 0.95
-	# Layer 1: primary directional supersonic vent jet (SH.SPRITE SH.VENT_JET=40; core fades inside 0.22 s, total life 0.30 s).
-	fx.spr(p, fx.now, 0.30, fire_col, 2.2 if ignited else 0.45, s.hull.L * 0.28, s.hull.L * 0.52, SH.VENT_JET, jet_vel, 1.8)
-	# Layer 2: staggered sheared directional gas sheets (k=27) for smoky factions, or pale crystal shards (k=16) for Glasswrights.
+	# Layers 1 and 2: the directional jet and sheared gas sheets contain soot. Glass only vents stored light.
 	if smoke_k > 0.01:
+		fx.spr(p, fx.now, 0.30, fire_col, 2.2 if ignited else 0.45, s.hull.L * 0.28, s.hull.L * 0.52, SH.VENT_JET, jet_vel, 1.8)
 		var soot_col: Color = Color(0.11, 0.08, 0.16) if s.faction == "deathless" else Color(0.16, 0.15, 0.14)
 		for j in 3:
 			var jf := float(j)
@@ -3103,9 +3113,10 @@ static func _split_vent(fx, s, lp: Vector3, ln: Vector3) -> void:
 				clampf(0.45 + 0.35 * smoke_k, 0.22, 0.78) * (1.0 - jf * 0.16), s.hull.L * (0.14 + jf * 0.05),
 				s.hull.L * (0.34 + jf * 0.08), 27, gv, 1.4)
 	else:
+		fx.spr(p, fx.now, 0.30, s.fac.damage_glow, 1.25 if ignited else 0.45, s.hull.L * 0.14, s.hull.L * 0.28, 18, jet_vel, 1.8)
 		for j in 4:
 			var sv: Vector3 = inherited + fx.rcone(n, 0.22) * s.hull.L * (0.55 + float(j) * 0.15)
-			fx.spr(p + n * s.hull.L * 0.04, fx.now + float(j) * 0.025, 0.40, core_col, 1.6 if ignited else 0.8,
+			fx.spr(p + n * s.hull.L * 0.04, fx.now + float(j) * 0.025, 0.40, s.fac.damage_glow, 1.6 if ignited else 0.8,
 				s.hull.L * 0.05, s.hull.L * 0.02, 16, sv, 1.2)
 	# Layer 3: tight breach-mouth ignition ember and faction light when the flash counter permits.
 	if ignited:
@@ -3268,28 +3279,38 @@ static func _tell(fx, s, T: float, tl: DeathTimeline, cause: String, seeds: Pack
 	m.set_shader_parameter("width", maxf(h.L * 0.010, 0.02))
 	if cause == "cut":
 		m.set_shader_parameter("straight", 1.0)
-		m.set_shader_parameter("ember", Vector3(1.0, 0.72, 0.45))
-	elif cause == "melt":
-		m.set_shader_parameter("tip", Vector3(0.62, 0.85, 0.18))
-		m.set_shader_parameter("ember", Vector3(0.45, 0.62, 0.10))
-	elif not dstyle(s).is_empty():
+	if not dstyle(s).is_empty():
 		# R367: the tear and its hairlines glow in the faction's death colour, white at the running tip
 		var rim := dcol(s, "rim", Color(1.0, 0.36, 0.07))
 		var tip := dcol(s, "fire", Color(1.0, 0.94, 0.82))
 		m.set_shader_parameter("ember", Vector3(rim.r, rim.g, rim.b))
 		m.set_shader_parameter("tip", Vector3(tip.r, tip.g, tip.b))
-	for mm in s.meshes:
-		if is_instance_valid(mm):
-			var mi := mm as MeshInstance3D
-			var local: ShaderMaterial = m.duplicate()
-			local.set_shader_parameter("frame", s.root.global_transform.affine_inverse() * mi.global_transform)
-			mi.material_overlay = local
+	elif cause == "cut":
+		m.set_shader_parameter("ember", Vector3(1.0, 0.72, 0.45))
+	_set_death_overlays(s, m)
 	for i in tl.chain.size():
 		fx.later(T + float(tl.chain[i]), _chain_blast.bind(fx, s, i, tl, cause, T))
 	if not strain.is_empty():
 		var groans: Array = strain["groans"]
 		for i in groans.size():
 			fx.later(T + float(groans[i]), _groan.bind(fx, s, i))
+
+
+# A ship may leave the tree before its split or rise. Detach only our overlay, not any restored paint.
+static func _set_death_overlays(s, mat: ShaderMaterial) -> void:
+	for mm in s.meshes:
+		if not is_instance_valid(mm):
+			continue
+		var mi := mm as MeshInstance3D
+		var local: ShaderMaterial = mat.duplicate()
+		local.set_shader_parameter("frame", s.root.global_transform.affine_inverse() * mi.global_transform)
+		mi.material_overlay = local
+		var overlay_id := local.get_instance_id()
+		var detach_overlay := func() -> void:
+			var overlay := mi.material_overlay
+			if overlay != null and overlay.get_instance_id() == overlay_id:
+				mi.material_overlay = null
+		mi.tree_exiting.connect(detach_overlay, CONNECT_ONE_SHOT)
 
 
 # The fracture plan's breaks as [at, normal] lines, the bite's break first; empty for the old seed cut.
@@ -3542,6 +3563,7 @@ const CORE_VEIL_DELAY := 0.45
 
 # Issue 1558 item 2: the big-death gas veil, born after the core's full-heat window, so it never sits over the flash.
 static func _core_gas_veil(fx, s, node_ref: WeakRef, local: Vector3, capital: bool, vel: Vector3) -> void:
+	if dsmoke(s) < 0.02: return
 	# born 0.45 s after the flash: read the piece where it is now (it drifts), and skip the veil if it is already gone
 	var node := node_ref.get_ref() as Node3D
 	if not is_instance_valid(node) or node.is_queued_for_deletion() or not node.is_inside_tree():
@@ -3682,12 +3704,7 @@ static func _melt_glow(fx, s, T: float, tl: DeathTimeline) -> void:
 	m.set_shader_parameter("n_spots", mini(spots.size(), 6))
 	m.set_shader_parameter("rise", Vector2(T - 0.05, T + maxf(tl.cut, 0.3)))
 	s.set_meta("death_melt_spots", spots)
-	for mm in s.meshes:
-		if is_instance_valid(mm):
-			var mi := mm as MeshInstance3D
-			var local: ShaderMaterial = m.duplicate()
-			local.set_shader_parameter("frame", s.root.global_transform.affine_inverse() * mi.global_transform)
-			mi.material_overlay = local
+	_set_death_overlays(s, m)
 
 
 static func _fac_pop(fx, s, p: Vector3, L: float) -> void:
@@ -3930,6 +3947,12 @@ static func _secondary_on(fx, s, node_ref: WeakRef, ship_p: Vector3) -> void:
 
 
 static func _hide_ship(s) -> void:
+	# Eclipse keeps the tear paint on its hidden original hull until ShipView restores the live paint on a rise.
+	# Detach the other tear overlays and all melt overlays before the renderer tears down the hull.
+	if s.has_meta("death_melt_spots") or (s.has_meta("death_grow") and s.faction != "deathless"):
+		for mesh in s.meshes:
+			if is_instance_valid(mesh):
+				(mesh as MeshInstance3D).material_overlay = null
 	s.set_meta("death_hidden", true)
 	s.remove_meta("death_power")
 	s.remove_meta("death_poses")
@@ -3981,7 +4004,7 @@ static func _hulk(fx, s) -> void:
 	var p: Vector3 = hit.get("p", s.hull.core)   # issue 370: a missed ray falls back to the core, never a box point
 	var n: Vector3 = hit.get("n", Vector3.UP)
 	var vent := DAMAGE_PLUME.build(fx, node, p, (n + Vector3.UP * 0.3).normalized(), maxf(s.hull.L * 0.20, 0.12),
-		DAMAGE_PLUME.Form.HULK, s.fac, 0.12, "fx_hulk_vent")
+		DAMAGE_PLUME.Form.HULK, s.fac, 0.12, "fx_hulk_vent", s._plume_glow(), s._plume_profile())
 	fx.later(fx.now + HULK_VENT_TICK, _thin_hulk_vent.bind(fx, weakref(vent), fx.now))
 	fx.dstate["wrecks"].append(wreck)
 	_cap_wrecks(fx)
@@ -4272,7 +4295,8 @@ static func _break_up_inner(fx, s, cause: String, tint: Color, job: Dictionary) 
 		# without buckets, or a cut job not ready) still throws one pooled physical shard and a visible ember, never light
 		# and smoke alone.
 		_spawn_ship_debris(fx, s, center, xf.basis.x * 2.0, 1, maxf(h.L * 0.15, 0.3), 0.0)
-		fx.spr(center, T, 5.0, tint, 1.2, R * 0.3, R * 0.05, fx.HOT_FLECK_SPRITE, xf.basis.x * 2.0, 0.25, 0.0, 0.0, 12.0)
+		var kind: int = fx.HOT_FLECK_SPRITE if s.faction in ["voidsworn", "corsair"] else SH.TICK_EMBER
+		fx.spr(center, T, 5.0, tint, 1.2, R * 0.3, R * 0.05, kind, xf.basis.x * 2.0, 0.25, 0.0, 0.0, 12.0)
 
 
 # Issue 484: the bite's fragments and the chips along the break, as real pieces of the hull (capped, glowing faces,
