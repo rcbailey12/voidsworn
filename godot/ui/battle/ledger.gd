@@ -544,7 +544,7 @@ static func keyword_tip(line: String) -> String:
 		"Braced": "Braced: the ship takes 40% less hull damage until its next turn. A braced ship does not turn or fire. A Sunward ship also covers one adjacent ally facing the same way.",
 		"On fire": "On fire: its shields falter and it can no longer repair itself.",
 		"focusing its fire": "Focus fire: the enemy fleet favors this ship when it picks targets.",
-		"Fired": "Most ships cannot move after firing. Glasswright ships and ships with the Slip the Net protocol can keep some movement."}
+		"Fired": "Firing ends movement. Glasswright ships alone can keep some movement after firing."}
 	for kw in keywords:
 		if line.contains(kw):
 			out.append(keywords[kw])

@@ -26,7 +26,7 @@ func _hash() -> Dictionary:
 	for u in B["units"]:
 		parts.append(JSM.canon(u, "u", SKIP_U))
 	var s := "{\"b\":" + JSM.canon(B, "b", SKIP_B) + ",\"units\":[" + ",".join(parts) + "]}"
-	return {"hash": JSM.sha256(s).substr(0, 16), "rng": JSM.rng_u32(), "version": int(b.api.version)}
+	return {"hash": JSM.sha256(s).substr(0, 16), "rng": R.rng.rng_u32(), "version": int(b.api.version)}
 
 
 func _idle() -> void:

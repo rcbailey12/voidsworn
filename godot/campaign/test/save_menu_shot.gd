@@ -21,7 +21,7 @@ func _go() -> void:
 	var out := OS.get_cmdline_user_args()[0] if OS.get_cmdline_user_args().size() > 0 else "/tmp/save1.png"
 	var C = Campaign.new(); C.load_tables(); C.persist_on = false; C.fixed_clock = true
 	C.battle_mode = "external"; C.battle_setup = _setup
-	API.JSM.rnd_seed(11); C.META = C.defaultMeta()
+	C.rng.rnd_seed(11); C.META = C.defaultMeta()
 	C.newRun("vex", "voidsworn", {})
 	var node = null
 	for n in C.RUN["map"]["cols"][0]:

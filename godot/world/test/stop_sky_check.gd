@@ -54,7 +54,7 @@ func _initialize() -> void:
 	var exempt_checked := 0
 	var min_gap := {}
 	for seed in range(1, runs + 1):
-		JSM.rnd_seed(seed)
+		C.rng.rnd_seed(seed)
 		C.META = C.defaultMeta()
 		C.newRun("vex", "voidsworn")
 		var today := {}
