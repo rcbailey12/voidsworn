@@ -1,6 +1,6 @@
 # H9E Spineguard feature table
 
-Length 14.5 u. Stations below run from the bow tip. The build source holds the exact positions.
+Length 14.5 u. Stations below run from the bow tip. The saddle is 5.04 u wide at the shoulders (31% to 38% from the bow), or 5.09 u over the fitted model. The collar reaches 0.62 u forward of the saddle's deck edge. The muzzle stays inside the collar. The build source holds the exact positions.
 
 ## Major masses
 
@@ -39,4 +39,4 @@ The bow contains the ion feed and capacitors beneath the armoured jacket, a crew
 | B-1 | 46.2% | Bow module joint, kinks around the jacket fittings |
 | B-2 | 73.1% | Stern module joint, ahead of the drone doors and transom equipment |
 
-Four breach anchors flank the two joints. Paired forward braking and mid-flank boarding points sit in clear skin. The forward-most face is the collar, with zero overhang ahead of it. The aft engine lips set the full length.
+Four breach anchors flank the two joints. Paired forward braking and mid-flank boarding points sit in clear skin. The collar and aft engine lips set the full model length.

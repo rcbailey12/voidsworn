@@ -6,9 +6,11 @@ H9E Spineguard keeps its four capacitor hoops, pinched waist and solid stern. Th
 
 [Same-length family comparison](../../../docs/shots/issue-2094-codex/vanguard_family_lineup_r4.png) | [Orthographic build sheet and cutaway](../../../docs/shots/issue-2094-codex/vanguard_build_sheet_r4.png) | [Build sheet and method](../../../docs/ship_pipeline/build_sheets/hegemony_H9E/README.md) | [Manifest](../../../docs/ship_pipeline/build_sheets/hegemony_H9E/manifest.json)
 
-The three comparison ships were built from their sheet sources on CPU with the same cameras, lighting and kit materials. Their overall lengths are normalized to 350 px. This is sheet-built evidence on `d7f5c7a6a` plus the uncommitted recipe work, not a paint proof.
+The three comparison ships were built from their sheet sources on CPU with the same cameras, lighting and kit materials. Their overall lengths are normalized to 350 px. The stamp records `d7f5c7a6a` plus the working H9E design. Its recorded source blob matches the resumed design, and both picture sidecars verify. The broad spine has less panel relief than the flanking armour. The lineup is for shape and family cues, not a verdict on the baked finish.
 
-Weapon match, fit, sheet conversion, part audit and unpainted GLB readback passed. Fit found no clashes or blocked arcs. The test export has 51,396 triangles, two moving turrets, five muzzles, four engine exits and two launch origins for the single rules hangar. All test exports stayed in scratch. The GPU shape reference, paint bake, installed measurements and publish are for the later PC queue run.
+Concept import, weapon match, fit, sheet conversion, part audit and unpainted GLB readback passed on the resumed recipe. Fit found no clashes or blocked arcs. The test export has 51,396 triangles and 15 primitives, including two moving turrets. It has five muzzles, four engine exits and two launch origins for the single rules hangar. All test exports stayed in scratch. The GPU shape reference, recipe outline scores, paint bake, painted surface check, installed measurements and publish are for the later PC queue run after Ryan reviews the lineup.
+
+The full standing run recorded 124 passes, two known baseline results and two Windows runner fixture failures. The temporary Git clone failure in `runner_selftest` passed on its own rerun. The watchdog's `runner_stall_tests` reported a surviving fake Godot process in the full run and failed its isolated rerun with `kill EPERM` during fixture cleanup. Neither runner fixture nor the watchdog changed in this job.
 
 ## Run 3
 
