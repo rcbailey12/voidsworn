@@ -6,8 +6,10 @@ const HT = preload("res://render/hull_table.gd")
 const Kit = preload("res://ui/theme/orders_kit.gd")
 const GS = preload("res://ui/theme/glass_shell.gd")
 const World = preload("res://world/world.gd")
+const Look = preload("res://render/look.gd")
+const CameraRig = preload("res://render/camera_rig.gd")
 const TURN_DEG_PER_S := 4.0
-const START_YAW := 34.0
+const START_YAW := 40.0
 const DRIVE_LEVEL := 0.82
 var code := ""
 var installed := false
@@ -99,13 +101,19 @@ func _build(C, ship: Dictionary, accent: Color, still: bool) -> void:
 
 	_camera = Camera3D.new()
 	world.add_child(_camera)
-	var eye := center + length * Vector3(0.0, 0.64, 1.21)
-	_camera.look_at_from_position(eye, center - Vector3.UP * length * 0.025)
+	# See more of the deck as well as the flank. The old shallow view gains little
+	# from filling the stage horizontally once it must leave room for a full turn.
+	var eye := center + length * Vector3(0.0, 1.10, 1.45)
+	_camera.look_at_from_position(eye, center - Vector3.UP * length * 0.105)
 	_camera.current = true
 	# Fit the whole turn once. The camera only reframes on resize, so there's no zoom as the ship rolls past.
 	var local_center := _camera.to_local(center)
-	var radius := Vector2(footprint, half_height).length()
-	_fit_horizontal = radius / sqrt(local_center.z * local_center.z - radius * radius) / 0.94
+	# The turning footprint sweeps a circle. Fit its projected tangent at the
+	# closest height band, rather than leaving room for a sphere around the hull.
+	var camera_depth_axis := _camera.basis.z
+	var band_depth := -local_center.z - absf(camera_depth_axis.y) * half_height
+	var turn_depth := absf(camera_depth_axis.z) * footprint
+	_fit_horizontal = footprint / sqrt(band_depth * band_depth - turn_depth * turn_depth) / 0.94
 	_fit_vertical = tan(deg_to_rad(13.0))
 	for y in [-half_height, half_height]:
 		for z in [-footprint, footprint]:
@@ -116,6 +124,15 @@ func _build(C, ship: Dictionary, accent: Color, still: bool) -> void:
 	# Frame the hole above and past the ship. Its disc may bleed out of the stage, but not into the refit column.
 	var star_center := _camera.to_global(length * Vector3(0.69, 0.93, -8.0))
 	world.build_hollow_sun_backdrop(e, star_center, length * 0.52 / 15.0)
+	if installed and Look.post_fx_enabled("DOF"):
+		# Keep the whole turning hull sharp. The live star is the distant subject of the optional blur.
+		var lens := CameraRig.far_dof(-local_center.z, Vector2(footprint, half_height).length())
+		lens.dof_blur_far_enabled = true
+		_camera.attributes = lens
+		if still:
+			lens.dof_blur_amount = CameraRig.DOF_AMOUNT
+		else:
+			create_tween().tween_property(lens, "dof_blur_amount", CameraRig.DOF_AMOUNT, CameraRig.DOF_ENTER_S)
 	set_process(installed and spin)
 
 

@@ -103,6 +103,27 @@ class PodiumCampaign extends RefCounted:
 		return "voidsworn"
 
 
+func _projected_hull_bounds(camera: Camera3D, view: ShipView, yaw: float) -> Rect2:
+	var bounds := Rect2()
+	var first := true
+	for x in [-view.L * 0.5, view.L * 0.5]:
+		for y in [-view.half_h, view.half_h]:
+			for z in [-view.half_w, view.half_w]:
+				var corner := Vector3(x, y, z).rotated(Vector3.UP, deg_to_rad(yaw))
+				var point := camera.unproject_position(view.visual_position() + corner)
+				bounds = Rect2(point, Vector2.ZERO) if first else bounds.expand(point)
+				first = false
+	return bounds
+
+
+func _full_turn_fits(podium: Podium, view: ShipView) -> bool:
+	var stage := Rect2(Vector2.ZERO, Vector2(podium._vp.size))
+	for angle in range(0, 360, 15):
+		if not stage.encloses(_projected_hull_bounds(podium._camera, view, float(angle))):
+			return false
+	return true
+
+
 func flagship_checks() -> void:
 	var C := PodiumCampaign.new()
 	var tpl := "c37_check_hull"
@@ -165,9 +186,21 @@ func flagship_checks() -> void:
 		podium._process(1.0)
 		check(is_equal_approx(podium._pivot.rotation_degrees.y - yaw, Podium.TURN_DEG_PER_S),
 			"C37 turns at the slow showcase rate")
+		var old_camera := Camera3D.new()
+		world.add_child(old_camera)
+		old_camera.fov = 30.0
+		old_camera.look_at_from_position(view.L * Vector3(0.0, 0.55, 1.9), Vector3.DOWN * view.L * 0.04)
+		var before := _projected_hull_bounds(old_camera, view, -35.0)
+		var after := _projected_hull_bounds(podium._camera, view, Podium.START_YAW)
+		var area_ratio := after.get_area() / maxf(before.get_area(), 1.0)
+		check(area_ratio >= 1.75 and _full_turn_fits(podium, view),
+			"C37 opening frame has about twice the old projected bounds area (%.2fx) and the whole turn fits" % area_ratio)
+		old_camera.queue_free()
 		var wide_fov := podium._camera.fov
 		podium.size = Vector2(630, 800)
-		check(podium._camera.fov > wide_fov, "C37 keeps the hull in frame as the stage narrows")
+		await frames(2)
+		check(podium._camera.fov > wide_fov and _full_turn_fits(podium, view),
+			"C37 keeps the whole turn in frame as the stage narrows")
 
 	var still := Podium.new()
 	root.add_child(still)
