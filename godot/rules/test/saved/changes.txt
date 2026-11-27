@@ -1,1112 +1,1360 @@
-Saved manifest before: 4fcf972525e3d7fd79e6e2bdd39d7bfcf2d0afaf4d7dc0635fe40d69685d089c
-Saved manifest after: 0511661a906d9bee58aa1eae74d8ea1d2983eccc84106d26e36975ef2ddca916
+Run 4 combined replay for issue 2033
+All 379 battles were recorded on the combined code, not taken from either branch.
+Main PRs 2236 and 2237 restore the rules and fixture inputs the merge dropped.
+The runner comparison below includes 47 old archives whose record count disagreed with the merged manifest.
+
+Compared with main e23fe088, 12 Veteran fixtures use different seeds so their lineage effects still fire.
+The other 253 changed battles start identically and diverge after Veteran called shots alter play.
+All three Standard battles (s9, s15 and s22) match main byte for byte.
+The s4 and s19 threat maps follow from the changed fights. The s23 threat map, PRNG and math files match main.
+
+Saved manifest before: 7d78511c8a052441dd6ed15c617e77be3ef86afd93ca2d69d7dd16e8d7043dc2
+Saved manifest after: 5465d8b7d84ec0bd25b1bf7027349678c7363764783e6e14d16fe93ddad3ba92
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
 FAIL battle s1
-  turn 28, round 2, after activation x08; unit x04 (player harrow)
-  state.units[0].sec.mid.hp: 34 -> 38
-  later changed records: 141; total records: 170 -> 158
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 157; total records: 158 -> 158
 FAIL battle s2
-  turn 33, round 2, after fire x010; unit x05 (player penitent)
-  state.units[0].sec.mid.hp: 56 -> 61
-  later changed records: 137; total records: 159 -> 171
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 170; total records: 171 -> 171
 FAIL battle s3
-  turn 24, round 2, after fire x07; unit x04 (player penitent)
-  state.units[0].sec.mid.hp: 57 -> 61
-  later changed records: 105; total records: 118 -> 130
+  turn 0, round 1, after tick player; unit x08 (enemy c_reaver)
+  state.units[4].weapons[1].arc: "S" -> "T"
+  later changed records: 129; total records: 130 -> 121
 FAIL battle s4
-  turn 34, round 1, after fire x025; unit x011 (player cathedral)
-  state.units[0].sec.mid.hp: 81 -> 99
-  later changed records: 247; total records: 272 -> 282
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 281; total records: 282 -> 282
 FAIL battle s5
-  turn 99, round 2, after fire x026; unit x011 (player cathedral)
-  state.units[0].intercepts: 1 -> 2
-  later changed records: 277; total records: 323 -> 377
+  turn 0, round 1, after tick player; unit x024 (enemy c_reaver)
+  state.units[13].weapons[1].arc: "S" -> "T"
+  later changed records: 376; total records: 377 -> 351
 FAIL battle s6
-  turn 160, round 4, after fire x011; unit x07 (player penitent)
-  state.units[1].sec.mid.hp: 6 -> 18
-  later changed records: 43; total records: 198 -> 204
+  turn 0, round 1, after tick player; unit x013 (enemy c_reaver)
+  state.units[7].weapons[1].arc: "S" -> "T"
+  later changed records: 212; total records: 204 -> 213
 FAIL battle s7
-  turn 104, round 2, after activation x013; unit x07 (player harrow)
-  state.units[2].crew: 42 -> 43
-  later changed records: 316; total records: 356 -> 421
+  turn 0, round 1, after tick player; unit x022 (enemy bomber)
+  state.units[17].ev: 35 -> 25
+  later changed records: 420; total records: 421 -> 382
 FAIL battle s8
-  turn 12, round 1, after activation x010; unit x05 (player cathedral)
-  state.units[0].crew: 59 -> 60
-  later changed records: 129; total records: 129 -> 142
+  turn 0, round 1, after tick player; unit x05 (player cathedral)
+  state.units[0].aim: 10 -> 0
+  later changed records: 141; total records: 142 -> 94
 FAIL battle s10
-  turn 94, round 2, after activation x015; unit x06 (player penitent)
-  state.units[1].crew: 50 -> 51
-  later changed records: 252; total records: 347 -> 288
+  turn 0, round 1, after tick player; unit x09 (enemy b_spitter)
+  state.units[4].aim: 0 -> 6
+  later changed records: 316; total records: 288 -> 317
 FAIL battle s11
-  turn 125, round 4, after activation x012; unit x05 (player penitent)
-  state.units[0].st.engine: 1 -> 0
-  later changed records: 5; total records: 131 -> 131
+  saved record count differs from manifest
 FAIL battle s12
-  turn 41, round 1, after activation x012; unit x05 (player penitent)
-  state.units[0].crew: 49 -> 50
-  later changed records: 146; total records: 168 -> 188
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "T"
+  later changed records: 187; total records: 188 -> 172
 FAIL battle s13
-  turn 175, round 5, after fire x012; unit x06 (player harrow)
-  state.units[1].crew: 42 -> 43
-  later changed records: 71; total records: 247 -> 236
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 235; total records: 236 -> 236
 FAIL battle s14
-  turn 9, round 1, after fire x09; unit x05 (player penitent)
-  state.units[0].route[3]: 1 -> 0
-  later changed records: 129; total records: 134 -> 139
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 154; total records: 139 -> 155
 FAIL battle s16
-  turn 90, round 3, after activation x09; unit x05 (player cathedral)
-  state.units[0].sh[0]: 3 -> 5
-  later changed records: 233; total records: 324 -> 323
+  turn 0, round 1, after tick player; unit x017 (enemy bomber)
+  state.units[12].ev: 35 -> 25
+  later changed records: 322; total records: 323 -> 197
 FAIL battle s17
-  turn 9, round 1, after fire x07; unit x04 (player harrow)
-  state.units[0].sh[0]: 8 -> 14
-  later changed records: 99; total records: 98 -> 109
+  turn 0, round 1, after tick player; unit x08 (enemy c_reaver)
+  state.units[4].weapons[1].arc: "S" -> "T"
+  later changed records: 108; total records: 109 -> 104
 FAIL battle s18
-  turn 36, round 2, after fire x010; unit x05 (player penitent)
-  state.units[0].sec.mid.hp: 66 -> 67
-  later changed records: 243; total records: 274 -> 280
+  turn 0, round 1, after tick player; unit x013 (enemy bomber)
+  state.units[8].ev: 35 -> 25
+  later changed records: 279; total records: 280 -> 248
 FAIL battle s19
-  turn 42, round 2, after activation x010; unit x05 (player cathedral)
-  state.units[0].crew: 57 -> 58
-  later changed records: 155; total records: 179 -> 198
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 240; total records: 198 -> 241
 FAIL battle s20
-  turn 36, round 2, after activation x07; unit x04 (player harrow)
-  state.units[0].hp: 83 -> 85
-  later changed records: 107; total records: 140 -> 144
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 148; total records: 144 -> 149
 FAIL battle s21
-  turn 95, round 4, after tick player; unit x06 (player penitent)
-  state.units[1].hp: 117 -> 113
-  later changed records: 141; total records: 199 -> 237
+  turn 0, round 1, after tick player; unit x016 (enemy bomber)
+  state.units[11].ev: 35 -> 25
+  later changed records: 256; total records: 237 -> 257
 FAIL battle s23
-  turn 480, round 6, after activation x028; unit x014 (player cathedral)
-  state.units[3].sec.mid.hp: 95 -> 99
-  later changed records: 177; total records: 654 -> 658
+  turn 0, round 1, after tick player; unit x040 (enemy bomber)
+  state.units[29].ev: 35 -> 25
+  later changed records: 673; total records: 658 -> 674
 FAIL battle s24
-  turn 204, round 3, after activation x013; unit x010 (player penitent)
-  state.units[3].crew: 49 -> 48
-  later changed records: 314; total records: 498 -> 519
+  turn 0, round 1, after tick player; unit x032 (enemy bomber)
+  state.units[25].ev: 35 -> 25
+  later changed records: 563; total records: 519 -> 564
 FAIL battle s25
-  turn 56, round 1, after fire x017; unit x08 (player c_marauder)
-  state.units[2].hp: 117 -> 120
-  later changed records: 277; total records: 334 -> 330
+  turn 0, round 1, after tick player; unit x09 (player c_reaver)
+  state.units[3].weapons[1].arc: "S" -> "T"
+  later changed records: 404; total records: 330 -> 405
 FAIL battle s26
-  turn 21, round 1, after activation x013; unit x06 (player h_vanguard)
-  state.units[0].hp: 136 -> 138
-  later changed records: 208; total records: 230 -> 203
+  turn 0, round 1, after tick player; unit x017 (enemy bomber)
+  state.units[11].ev: 35 -> 25
+  later changed records: 202; total records: 203 -> 198
 FAIL battle s27
-  turn 112, round 3, after activation x012; unit x07 (player i_song)
-  state.units[1].hp: 96 -> 93
-  later changed records: 127; total records: 240 -> 206
+  turn 0, round 1, after tick player; unit x010 (player i_wisp)
+  state.units[4].shHit[0]: 0 -> 1
+  later changed records: 205; total records: 206 -> 199
 FAIL battle s28
-  turn 52, round 2, after activation x015; unit x07 (player d_harvester)
-  state.units[0].sec.mid.hp: 51 -> 65
-  later changed records: 328; total records: 341 -> 381
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 380; total records: 381 -> 380
 FAIL battle s29
-  turn 136, round 5, after fire x011; unit x06 (player cathedral)
-  state.units[0].weapons[0].off: 0 -> 2
-  later changed records: 26; total records: 163 -> 163
+  saved record count differs from manifest
 FAIL battle s30
-  turn 160, round 3, after activation x013; unit x08 (player penitent)
-  state.units[2].sec.mid.hp: 51 -> 61
-  later changed records: 159; total records: 320 -> 318
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 317; total records: 318 -> 285
 FAIL battle s31
-  turn 139, round 6, after move x013; unit x06 (player penitent)
-  state.units[0].sec.eng.hp: 28 -> 34
-  later changed records: 25; total records: 165 -> 165
+  saved record count differs from manifest
 FAIL battle s32
-  turn 84, round 5, after activation x09; unit x06 (player penitent)
-  state.units[2].sec.eng.hp: 30 -> 34
-  later changed records: 33; total records: 116 -> 118
+  turn 0, round 1, after tick player; unit x09 (enemy c_reaver)
+  state.units[5].weapons[1].arc: "S" -> "T"
+  later changed records: 183; total records: 118 -> 184
 FAIL battle s33
-  turn 91, round 2, after activation x015; unit x05 (player cathedral)
-  state.units[0].sec.eng.hp: 54 -> 55
-  later changed records: 157; total records: 244 -> 249
+  turn 0, round 1, after tick player; unit x06 (player penitent)
+  state.units[1].q: 1 -> -1
+  later changed records: 248; total records: 249 -> 153
 FAIL battle s34
-  turn 50, round 2, after fire x010; unit x05 (player cathedral)
-  state.units[0].hp: 219 -> 220
-  later changed records: 165; total records: 179 -> 216
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 253; total records: 216 -> 254
 FAIL battle s35
-  turn 60, round 1, after activation x018; unit x06 (player cathedral)
-  state.units[0].sh[0]: 36 -> 41
-  later changed records: 206; total records: 215 -> 267
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[5].weapons[1].arc: "S" -> "T"
+  later changed records: 268; total records: 267 -> 269
 FAIL battle s36
-  turn 53, round 2, after fire x020; unit x07 (player cathedral)
-  state.units[0].crew: 59 -> 58
-  later changed records: 219; total records: 273 -> 243
+  turn 0, round 1, after tick player; unit x08 (player penitent)
+  state.units[1].q: 0 -> 1
+  later changed records: 387; total records: 243 -> 388
 FAIL battle s37
-  turn 106, round 3, after fire x013; unit x05 (player cathedral)
-  state.units[0].sh[0]: 20 -> 29
-  later changed records: 191; total records: 298 -> 265
+  turn 0, round 1, after tick player; unit x017 (enemy bomber)
+  state.units[12].ev: 35 -> 25
+  later changed records: 266; total records: 265 -> 267
+FAIL battle s38
+  turn 222, round 5, after fire x012; unit x06 (player cathedral)
+  state.units[0].sh[1]: 17 -> 18
+  later changed records: 30; total records: 253 -> 253
 FAIL battle s39
-  turn 234, round 4, after fire x023; unit x07 (player cathedral)
-  state.units[0].hp: 211 -> 207
-  later changed records: 180; total records: 366 -> 415
+  turn 0, round 1, after tick player; unit x013 (enemy d_scythe)
+  state.units[6].aim: 0 -> 6
+  later changed records: 426; total records: 415 -> 427
 FAIL battle s40
-  turn 54, round 2, after fire x012; unit x05 (player cathedral)
-  state.units[0].sec.mid.hp: 98 -> 99
-  later changed records: 247; total records: 271 -> 302
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 301; total records: 302 -> 280
 FAIL battle s41
-  turn 141, round 4, after activation x09; unit x05 (player cathedral)
-  state.units[0].sec.mid.hp: 97 -> 99
-  later changed records: 202; total records: 334 -> 344
+  turn 0, round 1, after tick player; unit x018 (enemy bomber)
+  state.units[13].ev: 35 -> 25
+  later changed records: 347; total records: 344 -> 348
+FAIL battle s42
+  turn 88, round 2, after fire x09; unit x08 (player h_dominion)
+  state.units[3].sh[0]: 38 -> 42
+  later changed records: 92; total records: 181 -> 135
 FAIL battle s43
-  turn 51, round 2, after fire x08; unit x05 (player b_drone)
-  state.units[1].ev: 0 -> 15
-  later changed records: 99; total records: 148 -> 151
+  turn 0, round 1, after tick player; unit x05 (player b_drone)
+  state.units[1].q: 3 -> 0
+  later changed records: 150; total records: 151 -> 109
 FAIL battle s44
-  turn 11, round 1, after activation x07; unit x04 (player c_marauder_g)
-  state.units[0].crew: 50 -> 51
-  later changed records: 154; total records: 123 -> 166
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 180; total records: 166 -> 181
 FAIL battle s46
-  turn 81, round 4, after activation x07; unit x05 (player cathedral)
-  state.units[1].sec.eng.hp: 53 -> 55
-  later changed records: 127; total records: 209 -> 198
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 197; total records: 198 -> 114
 FAIL battle s47
-  turn 34, round 2, after activation x06; unit x03 (player harrow)
-  state.units[0].sec.eng.hp: 19 -> 21
-  later changed records: 17; total records: 52 -> 52
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 51; total records: 52 -> 52
 FAIL battle s48
-  turn 85, round 3, after fire x011; unit x05 (player c_reaver)
-  state.units[0].crew: 41 -> 40
-  later changed records: 65; total records: 144 -> 151
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "T"
+  later changed records: 150; total records: 151 -> 130
 FAIL battle s50
-  turn 7, round 1, after activation x05; unit x03 (player harrow)
-  state.units[0].crew: 41 -> 42
-  later changed records: 93; total records: 101 -> 79
+  turn 0, round 1, after tick player; unit x05 (enemy c_reaver)
+  state.units[2].weapons[1].arc: "S" -> "T"
+  later changed records: 124; total records: 79 -> 125
 FAIL battle s51
-  turn 93, round 5, after activation x08; unit x05 (player warden)
-  state.units[1].shp: 6.398036322575063 [d:40199796d57051ec] -> 6.529862008169294 [d:401a1e942571eb86]
-  later changed records: 56; total records: 138 -> 150
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 149; total records: 150 -> 150
 FAIL battle s53
-  turn 36, round 2, after activation x09; unit x04 (player b_razor)
-  state.units[0].hp: 114 -> 110
-  later changed records: 63; total records: 87 -> 100
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 99; total records: 100 -> 100
 FAIL battle s54
-  turn 7, round 1, after activation x09; unit x04 (player b_razor)
-  state.units[0].hp: 129 -> 127
-  later changed records: 55; total records: 56 -> 63
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 62; total records: 63 -> 63
+FAIL battle s55
+  turn 87, round 3, after fire x07; unit x05 (player i_song)
+  state.units[1].hp: 105 -> 104
+  later changed records: 109; total records: 197 -> 197
 FAIL battle s56
-  turn 197, round 8, after tick player; unit x05 (player i_song)
-  state.units[1].sec.mid.hp: 47 -> 49
-  later changed records: 7; total records: 205 -> 205
+  saved record count differs from manifest
 FAIL battle s57
-  turn 62, round 3, after move x09; unit x05 (player penitent)
-  state.units[0].sec.eng.hp: 20 -> 34
-  later changed records: 9; total records: 72 -> 72
+  saved record count differs from manifest
 FAIL battle t_casttwice
-  turn 30, round 2, after fire x05; unit x03 (player i_carrier)
-  state.units[0].hp: 152 -> 155
-  later changed records: 59; total records: 90 -> 83
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 116; total records: 83 -> 117
 FAIL battle t_flakskip
-  turn 31, round 2, after activation x05; unit x03 (player i_carrier)
-  state.units[0].hp: 157 -> 160
-  later changed records: 80; total records: 106 -> 112
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 111; total records: 112 -> 111
 FAIL battle t_lensaloft
-  turn 38, round 2, after activation x05; unit x03 (player i_carrier)
-  state.units[0].hp: 165 -> 168
-  later changed records: 12; total records: 51 -> 51
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 50; total records: 51 -> 51
 FAIL battle t_longfocus
-  turn 10, round 1, after activation x07; unit x04 (player i_song)
-  state.units[0].hp: 104 -> 108
-  later changed records: 29; total records: 40 -> 40
+  saved record count differs from manifest
 FAIL battle t_recordedangle
-  turn 35, round 2, after fire x07; unit x04 (player i_song)
-  state.units[0].crew: 31 -> 33
-  later changed records: 18; total records: 54 -> 54
+  saved record count differs from manifest
 FAIL battle t_flawforever
-  turn 29, round 2, after activation x07; unit x04 (player i_song)
-  state.units[0].crew: 30 -> 31
-  later changed records: 21; total records: 50 -> 51
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 50; total records: 51 -> 48
 FAIL battle t_twoimages
-  turn 26, round 2, after activation x05; unit x03 (player i_song)
-  state.units[0].weapons[0].off: 0 -> 2
-  later changed records: 43; total records: 70 -> 70
+  saved record count differs from manifest
 FAIL battle t_mirrorturns
-  turn 10, round 1, after activation x05; unit x03 (player i_wisp)
-  state.units[0].sec.mid.hp: 12 -> 16
-  later changed records: 46; total records: 57 -> 57
+  saved record count differs from manifest
 FAIL battle t_falsehulls
-  turn 56, round 4, after activation x05; unit x03 (player i_song)
-  state.units[0].crew: 33 -> 32
-  later changed records: 19; total records: 72 -> 76
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 75; total records: 76 -> 70
 FAIL battle t_rechargelit
-  turn 26, round 2, after activation x05; unit x03 (player i_song)
-  state.units[0].hp: 102 -> 106
-  later changed records: 12; total records: 39 -> 38
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 37; total records: 38 -> 37
 FAIL battle t_glasscorrected
-  turn 28, round 2, after fire x05; unit x04 (player i_wisp)
-  state.units[1].hp: 33 -> 31
-  later changed records: 83; total records: 112 -> 106
+  turn 0, round 1, after tick player; unit x05 (enemy h_boss)
+  state.units[2].hp: 154 -> 187
+  later changed records: 105; total records: 106 -> 106
 FAIL battle t_hardlight
-  turn 26, round 2, after activation x05; unit x03 (player i_song)
-  state.units[0].weapons[0].off: 0 -> 2
-  later changed records: 59; total records: 71 -> 86
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 85; total records: 86 -> 81
 FAIL battle t_wardglass
-  turn 24, round 2, after fire x05; unit x03 (player i_song)
-  state.units[0].sec.eng.hp: 25 -> 27
-  later changed records: 46; total records: 71 -> 71
+  saved record count differs from manifest
 FAIL battle t_heldaccount
-  turn 27, round 2, after activation x05; unit x03 (player penitent)
-  state.units[0].hp: 132 -> 131
-  later changed records: 37; total records: 42 -> 65
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 64; total records: 65 -> 64
 FAIL battle t_namedledger
-  turn 48, round 4, after activation x05; unit x03 (player penitent)
-  state.units[0].sec.mid.hp: 57 -> 61
-  later changed records: 9; total records: 58 -> 58
+  saved record count differs from manifest
 FAIL battle t_inheritedaim
-  turn 31, round 3, after activation x03; unit x02 (player penitent)
-  state.units[0].hp: 133 -> 132
-  later changed records: 53; total records: 85 -> 81
+  turn 0, round 1, after tick player; unit x02 (player penitent)
+  state.units[0].name: "Long Watch" -> "Edge of Winter"
+  later changed records: 80; total records: 81 -> 73
 FAIL battle t_everygun
-  turn 27, round 2, after fire x05; unit x03 (player penitent)
-  state.units[0].sec.mid.hp: 58 -> 61
-  later changed records: 53; total records: 81 -> 80
+  turn 0, round 1, after tick player; unit x03 (player penitent)
+  state.units[0].name: "Unpaid Debt" -> "Oath Flame"
+  later changed records: 79; total records: 80 -> 64
 FAIL battle t_sworndeploy
-  turn 20, round 2, after activation x05; unit x03 (player penitent)
-  state.units[0].hp: 130 -> 132
-  later changed records: 21; total records: 40 -> 42
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 41; total records: 42 -> 38
 FAIL battle t_debtsreserve
-  turn 16, round 2, after activation x05; unit x03 (player penitent)
-  state.units[0].sec.mid.hp: 57 -> 61
-  later changed records: 11; total records: 28 -> 28
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 27; total records: 28 -> 28
 FAIL battle t_standardreroll
-  turn 23, round 2, after activation x03; unit x02 (player penitent)
-  state.units[0].hp: 130 -> 135
-  later changed records: 30; total records: 53 -> 54
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 64; total records: 54 -> 65
 FAIL battle t_preyname
-  turn 22, round 2, after fire x05; unit x03 (player harrow)
-  state.units[0].hp: 68 -> 60
-  later changed records: 41; total records: 55 -> 64
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 63; total records: 64 -> 64
+FAIL battle t_salvotwohands
+  turn 59, round 4, after fire x05; unit x04 (player penitent)
+  state.units[1].hp: 131 -> 133
+  later changed records: 5; total records: 65 -> 65
 FAIL battle t_debthunts
-  turn 22, round 2, after activation x04; unit x02 (player penitent)
-  state.units[0].hp: 132 -> 131
-  later changed records: 30; total records: 53 -> 53
+  saved record count differs from manifest
 FAIL battle t_twosalvos
-  turn 33, round 3, after fire x05; unit x03 (player harrow)
-  state.units[0].crew: 43 -> 42
-  later changed records: 29; total records: 63 -> 61
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 60; total records: 61 -> 61
 FAIL battle t_namedprey
-  turn 34, round 3, after fire x05; unit x03 (player harrow)
-  state.units[0].weapons[0].off: 0 -> 2
-  later changed records: 27; total records: 62 -> 62
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 61; total records: 62 -> 62
 FAIL battle t_wingreserve
-  turn 46, round 3, after fire x05; unit x04 (player penitent)
-  state.units[1].crew: 49 -> 50
-  later changed records: 13; total records: 60 -> 60
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 59; total records: 60 -> 60
 FAIL battle t_oathstillness
-  turn 22, round 2, after activation x05; unit x03 (player cathedral)
-  state.units[0].hp: 235 -> 233
-  later changed records: 18; total records: 41 -> 41
+  saved record count differs from manifest
 FAIL battle t_unpaid
-  turn 110, round 5, after fire x08; unit x05 (player warden)
-  state.units[1].sec.mid.hp: 23 -> 25
-  later changed records: 12; total records: 123 -> 123
+  saved record count differs from manifest
 FAIL battle t_wallanswers
-  turn 0, round 1, after tick player; unit x03 (player warden)
-  state.units[0].name: "Unpaid Debt" -> "Resolve of the Reach"
-  later changed records: 84; total records: 85 -> 85
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 84; total records: 85 -> 81
 FAIL battle t_irontestament
-  turn 33, round 3, after activation x05; unit x03 (player cathedral)
-  state.units[0].sec.mid.hp: 107 -> 109
-  later changed records: 11; total records: 45 -> 45
+  saved record count differs from manifest
 FAIL battle t_ecl_restoreninth
-  turn 7, round 1, after fire x07; unit x04 (player d_harvester)
-  state.units[0].hp: 138 -> 134
-  later changed records: 74; total records: 82 -> 67
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 66; total records: 67 -> 67
 FAIL battle t_ecl_restoredbeyond
-  turn 42, round 2, after fire x07; unit x04 (player d_harvester)
-  state.units[0].hp: 132 -> 129
-  later changed records: 91; total records: 134 -> 116
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 115; total records: 116 -> 113
 FAIL battle t_ecl_copiescontribute
-  turn 52, round 3, after fire x09; unit x05 (player d_harvester)
-  state.units[0].sec.mid.hp: 58 -> 65
-  later changed records: 17; total records: 70 -> 70
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 69; total records: 70 -> 70
 FAIL battle t_ecl_tenthframe
-  turn 19, round 1, after activation x07; unit x04 (player d_harvester)
-  state.units[0].st.fire: 2 -> 0
-  later changed records: 97; total records: 116 -> 117
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 116; total records: 117 -> 115
 FAIL battle t_ecl_earliercopy
-  turn 69, round 4, after activation x07; unit x04 (player d_harvester)
-  state.units[0].hp: 138 -> 134
-  later changed records: 11; total records: 81 -> 81
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 80; total records: 81 -> 81
 FAIL battle t_ecl_arcswarm
-  turn 62, round 2, after activation x011; unit x05 (player d_harvester)
-  state.units[0].crew: 44 -> 43
-  later changed records: 11; total records: 74 -> 74
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 73; total records: 74 -> 74
 FAIL battle t_ecl_copyfires
-  turn 0, round 1, after tick player; unit x05 (player d_harvester)
-  state.units[0].name: "Cold Archive" -> "The Unbroken"
-  later changed records: 69; total records: 57 -> 70
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 69; total records: 70 -> 70
 FAIL battle t_ecl_everyframe
-  turn 37, round 2, after activation x08; unit x04 (player d_harvester)
-  state.units[0].hp: 140 -> 138
-  later changed records: 36; total records: 74 -> 74
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 73; total records: 74 -> 74
 FAIL battle t_ecl_onesuncopy
-  turn 28, round 2, after activation x09; unit x04 (player d_harvester)
-  state.units[0].sec.mid.hp: 59 -> 65
-  later changed records: 34; total records: 63 -> 63
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 62; total records: 63 -> 63
 FAIL battle t_ecl_copiedbehind
-  turn 97, round 5, after activation x07; unit x04 (player d_harvester)
-  state.units[0].crew: 43 -> 44
-  later changed records: 26; total records: 124 -> 116
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 115; total records: 116 -> 116
 FAIL battle t_ecl_unseenarchive
-  turn 35, round 2, after fire x07; unit x04 (player d_harvester)
-  state.units[0].crew: 40 -> 41
-  later changed records: 24; total records: 60 -> 58
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 57; total records: 58 -> 58
 FAIL battle t_ecl_uncopiedtarget
-  turn 49, round 3, after activation x07; unit x04 (player d_harvester)
-  state.units[0].sec.eng.hp: 27 -> 36
-  later changed records: 30; total records: 80 -> 80
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 79; total records: 80 -> 80
 FAIL battle t_ecl_iterationkill
-  turn 82, round 4, after activation x09; unit x04 (player d_harvester)
-  state.units[0].hp: 139 -> 135
-  later changed records: 18; total records: 95 -> 101
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 100; total records: 101 -> 101
 FAIL battle t_ecl_silentarchive
-  turn 31, round 2, after activation x07; unit x04 (player d_harvester)
-  state.units[0].crew: 44 -> 45
-  later changed records: 62; total records: 94 -> 86
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 85; total records: 86 -> 86
 FAIL battle t_ecl_outshadow
-  turn 7, round 1, after fire x07; unit x04 (player d_harvester)
-  state.units[0].sec.mid.hp: 59 -> 65
-  later changed records: 66; total records: 74 -> 74
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 73; total records: 74 -> 74
 FAIL battle t_ecl_platesshadow
-  turn 50, round 3, after fire x07; unit x04 (player d_harvester)
-  state.units[0].sec.mid.hp: 70 -> 78
-  later changed records: 33; total records: 84 -> 84
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 83; total records: 84 -> 84
 FAIL battle t_ecl_twicerestored
-  turn 36, round 2, after fire x07; unit x04 (player d_harvester)
-  state.units[0].st.engine: 1 -> 0
-  later changed records: 75; total records: 110 -> 112
-FAIL battle t_ecl_nolayer
-  turn 38, round 2, after activation x07; unit x04 (player d_harvester)
-  state.units[0].hp: 170 -> 169
-  later changed records: 67; total records: 106 -> 104
-FAIL battle t_ecl_stillness
-  turn 46, round 2, after fire x09; unit x05 (player d_harvester)
-  state.units[0].sec.mid.hp: 74 -> 78
-  later changed records: 87; total records: 133 -> 134
-FAIL battle t_ecl_tenthousand
-  turn 87, round 3, after fire x09; unit x05 (player d_harvester)
-  state.units[0].hp: 160 -> 157
-  later changed records: 83; total records: 169 -> 171
-FAIL battle t_ecl_restoredfleet
-  turn 32, round 2, after fire x08; unit x04 (player d_harvester)
-  state.units[0].crew: 44 -> 45
-  later changed records: 83; total records: 108 -> 116
-FAIL battle t_ecl_flagshipindex
   turn 0, round 1, after tick player; unit x04 (player d_harvester)
-  state.units[0].facing: 4 -> 0
-  later changed records: 99; total records: 65 -> 100
+  state.units[0].name: "Ninth Shade" -> "Silent Heir"
+  later changed records: 111; total records: 112 -> 105
+FAIL battle t_ecl_nolayer
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 103; total records: 104 -> 98
+FAIL battle t_ecl_stillness
+  turn 0, round 1, after tick player; unit x05 (player d_harvester)
+  state.units[0].facing: 3 -> 5
+  later changed records: 133; total records: 134 -> 88
+FAIL battle t_ecl_tenthousand
+  turn 0, round 1, after tick player; unit x012 (enemy bomber)
+  state.units[7].ev: 35 -> 25
+  later changed records: 170; total records: 171 -> 170
+FAIL battle t_ecl_restoredfleet
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 115; total records: 116 -> 109
+FAIL battle t_ecl_flagshipindex
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 122; total records: 100 -> 123
 FAIL battle t_ecl_framezero
-  turn 34, round 2, after fire x07; unit x05 (player d_jackal)
-  state.units[1].hp: 84 -> 88
-  later changed records: 77; total records: 61 -> 112
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 116; total records: 112 -> 117
 FAIL battle t_choosebrood
-  turn 35, round 2, after activation x05; unit x04 (player b_drone)
-  state.units[1].crew: 28 -> 26
-  later changed records: 19; total records: 53 -> 55
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 54; total records: 55 -> 55
 FAIL battle t_secondthroat
-  turn 84, round 4, after fire x05; unit x04 (player b_drone)
-  state.units[1].crew: 24 -> 23
-  later changed records: 29; total records: 101 -> 114
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[7].ev: 35 -> 25
+  later changed records: 113; total records: 114 -> 105
 FAIL battle t_rundown
-  turn 27, round 2, after activation x05; unit x03 (player b_razor)
-  state.units[0].crew: 45 -> 46
-  later changed records: 56; total records: 78 -> 84
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 100; total records: 84 -> 101
 FAIL battle t_razorprey
-  turn 12, round 1, after fire x05; unit x03 (player b_razor)
-  state.units[0].crew: 46 -> 45
-  later changed records: 81; total records: 94 -> 89
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 88; total records: 89 -> 89
 FAIL battle t_frenzyfeeds
-  turn 30, round 2, after activation x07; unit x04 (player b_razor)
-  state.units[0].weapons[0].off: 0 -> 2
-  later changed records: 94; total records: 125 -> 106
+  turn 0, round 1, after tick player; unit x09 (enemy bomber)
+  state.units[5].ev: 35 -> 25
+  later changed records: 165; total records: 106 -> 166
+FAIL battle t_breathbite
+  turn 21, round 1, after activation x012; unit x06 (player b_razor)
+  state.units[0].sec.mid.hp: 54 -> 61
+  later changed records: 95; total records: 117 -> 114
 FAIL battle t_throatred
-  turn 28, round 2, after activation x08; unit x04 (player b_razor)
-  state.units[0].sec.eng.hp: 23 -> 34
-  later changed records: 49; total records: 67 -> 78
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 77; total records: 78 -> 77
 FAIL battle t_preyeverymouth
-  turn 31, round 2, after fire x07; unit x04 (player b_razor)
-  state.units[0].crew: 43 -> 44
-  later changed records: 76; total records: 108 -> 103
+  turn 0, round 1, after tick player; unit x08 (enemy bomber)
+  state.units[4].ev: 35 -> 25
+  later changed records: 107; total records: 103 -> 108
 FAIL battle t_growhurts
-  turn 73, round 5, after fire x05; unit x03 (player b_razor)
-  state.units[0].crew: 40 -> 39
-  later changed records: 30; total records: 104 -> 99
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 98; total records: 99 -> 89
 FAIL battle t_skinthick
-  turn 46, round 4, after fire x05; unit x03 (player b_razor)
-  state.units[0].crew: 44 -> 46
-  later changed records: 21; total records: 68 -> 68
+  saved record count differs from manifest
 FAIL battle t_fleshknit
-  turn 18, round 2, after fire x05; unit x03 (player b_razor)
-  state.units[0].crew: 45 -> 47
-  later changed records: 35; total records: 54 -> 48
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 53; total records: 48 -> 54
 FAIL battle t_refuseholes
-  turn 25, round 2, after fire x07; unit x04 (player b_drone)
-  state.units[0].crew: 31 -> 29
-  later changed records: 101; total records: 93 -> 127
+  turn 0, round 1, after tick player; unit x08 (enemy bomber)
+  state.units[4].ev: 35 -> 25
+  later changed records: 127; total records: 127 -> 128
 FAIL battle t_tideend
-  turn 18, round 2, after fire x05; unit x03 (player b_razor)
-  state.units[0].crew: 46 -> 47
-  later changed records: 24; total records: 43 -> 43
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 42; total records: 43 -> 43
 FAIL battle t_tornback
-  turn 106, round 6, after fire x07; unit x04 (player b_drone)
-  state.units[0].crew: 26 -> 25
-  later changed records: 27; total records: 134 -> 131
+  turn 0, round 1, after tick player; unit x08 (enemy bomber)
+  state.units[4].ev: 35 -> 25
+  later changed records: 130; total records: 131 -> 114
 FAIL battle t_throatspits
-  turn 43, round 3, after activation x03; unit x02 (player b_brood)
-  state.units[0].crew: 51 -> 52
-  later changed records: 109; total records: 141 -> 153
+  turn 0, round 1, after tick player; unit x02 (player b_brood)
+  state.units[0].name: "Shrieking Coil" -> "Sac-mother"
+  later changed records: 157; total records: 153 -> 158
 FAIL battle t_burnstays
-  turn 75, round 5, after fire x05; unit x03 (player b_spitter)
-  state.units[0].crew: 36 -> 38
-  later changed records: 9; total records: 85 -> 85
+  saved record count differs from manifest
 FAIL battle t_manymouths
   turn 0, round 1, after tick player; unit x05 (player b_spitter)
-  state.units[0].name: "Spine Gullet" -> "Crawling Gut"
-  later changed records: 65; total records: 66 -> 62
+  state.units[0].facing: 1 -> 0
+  later changed records: 90; total records: 62 -> 91
 FAIL battle t_volleygrows
-  turn 31, round 2, after fire x05; unit x03 (player b_spitter)
-  state.units[0].crew: 35 -> 34
-  later changed records: 57; total records: 89 -> 87
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 86; total records: 87 -> 84
 FAIL battle t_mouthdeep
-  turn 60, round 4, after fire x05; unit x03 (player b_spitter)
-  state.units[0].crew: 33 -> 35
-  later changed records: 25; total records: 86 -> 86
+  saved record count differs from manifest
 FAIL battle t_broodreserve
-  turn 7, round 1, after fire x05; unit x04 (player b_drone)
-  state.units[1].crew: 28 -> 31
-  later changed records: 41; total records: 41 -> 49
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 48; total records: 49 -> 49
 FAIL battle t_firstthroat
-  turn 22, round 2, after activation x06; unit x03 (player b_razor)
-  state.units[0].sec.mid.hp: 47 -> 61
-  later changed records: 38; total records: 61 -> 56
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 63; total records: 56 -> 64
 FAIL battle t_throatdeep
-  turn 19, round 2, after activation x05; unit x03 (player b_razor)
-  state.units[0].crew: 46 -> 47
-  later changed records: 18; total records: 32 -> 38
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 37; total records: 38 -> 38
 FAIL battle t_hb_railboarding
-  turn 71, round 4, after activation x07; unit x06 (player c_reaver)
-  state.units[2].sec.mid.hp: 22 -> 31
-  later changed records: 10; total records: 82 -> 82
+  saved record count differs from manifest
 FAIL battle t_hb_packcloses
-  turn 9, round 1, after activation x07; unit x04 (player c_marauder)
-  state.units[0].hp: 118 -> 117
-  later changed records: 42; total records: 46 -> 52
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 51; total records: 52 -> 52
 FAIL battle t_hb_rushrail
-  turn 51, round 3, after activation x07; unit x06 (player c_marauder)
-  state.units[2].crew: 51 -> 52
-  later changed records: 21; total records: 73 -> 73
+  saved record count differs from manifest
 FAIL battle t_hb_allscars
-  turn 26, round 2, after fire x07; unit x04 (player c_marauder)
-  state.units[0].sec.eng.hp: 23 -> 30
-  later changed records: 42; total records: 62 -> 69
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 68; total records: 69 -> 68
 FAIL battle t_hb_mawopens
-  turn 8, round 1, after activation x07; unit x04 (player c_marauder)
-  state.units[0].hp: 116 -> 115
-  later changed records: 45; total records: 54 -> 48
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 47; total records: 48 -> 48
 FAIL battle t_hb_burncarry
-  turn 28, round 2, after fire x07; unit x04 (player c_marauder)
-  state.units[0].hp: 104 -> 99
-  later changed records: 50; total records: 72 -> 79
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 78; total records: 79 -> 60
 FAIL battle t_hb_warlordrun
-  turn 29, round 2, after fire x07; unit x04 (player c_marauder)
-  state.units[0].crew: 51 -> 52
-  later changed records: 26; total records: 56 -> 49
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 77; total records: 49 -> 78
+FAIL battle t_hb_knifeback
+  turn 27, round 2, after fire x07; unit x04 (player c_reaver)
+  state.units[0].crew: 43 -> 42
+  later changed records: 18; total records: 46 -> 45
 FAIL battle t_hb_darktorps
-  turn 26, round 2, after fire x07; unit x04 (player c_reaver)
-  state.units[0].sec.mid.hp: 25 -> 31
-  later changed records: 41; total records: 68 -> 67
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "T"
+  later changed records: 67; total records: 67 -> 68
 FAIL battle t_hb_secondknife
-  turn 65, round 4, after fire x07; unit x04 (player c_reaver)
-  state.units[0].sec.eng.hp: 8 -> 17
-  later changed records: 9; total records: 75 -> 75
+  saved record count differs from manifest
 FAIL battle t_hb_smilecut
-  turn 9, round 1, after fire x07; unit x04 (player c_marauder)
-  state.units[0].hp: 115 -> 113
-  later changed records: 27; total records: 37 -> 37
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 36; total records: 37 -> 37
 FAIL battle t_hb_everyknife
-  turn 33, round 2, after activation x09; unit x05 (player c_raider)
-  state.units[0].crew: 32 -> 34
-  later changed records: 21; total records: 44 -> 55
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 54; total records: 55 -> 55
 FAIL battle t_hb_darkknives
-  turn 27, round 2, after activation x07; unit x04 (player c_reaver)
-  state.units[0].sec.mid.hp: 29 -> 31
-  later changed records: 39; total records: 67 -> 67
+  saved record count differs from manifest
 FAIL battle t_hb_cutfeeds
-  turn 26, round 2, after fire x07; unit x04 (player c_reaver)
-  state.units[0].sec.mid.hp: 24 -> 31
-  later changed records: 48; total records: 75 -> 67
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "T"
+  later changed records: 92; total records: 67 -> 93
 FAIL battle t_hb_patchedwing
-  turn 29, round 2, after activation x05; unit x04 (player c_reaver)
-  state.units[1].crew: 42 -> 44
-  later changed records: 27; total records: 57 -> 46
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 45; total records: 46 -> 46
 FAIL battle t_hb_retasked
-  turn 73, round 4, after fire x05; unit x04 (player c_reaver)
-  state.units[1].crew: 42 -> 41
-  later changed records: 13; total records: 87 -> 87
+  saved record count differs from manifest
 FAIL battle t_hb_wholeyard
-  turn 30, round 2, after activation x05; unit x04 (player c_reaver)
-  state.units[1].crew: 43 -> 42
-  later changed records: 50; total records: 58 -> 81
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 80; total records: 81 -> 65
 FAIL battle t_hb_screaming
-  turn 56, round 3, after fire x05; unit x04 (player c_reaver)
-  state.units[1].sec.mid.hp: 23 -> 31
-  later changed records: 63; total records: 115 -> 120
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 166; total records: 120 -> 167
 FAIL battle t_hb_swarmscrap
-  turn 27, round 2, after fire x05; unit x04 (player c_reaver)
-  state.units[1].crew: 44 -> 45
-  later changed records: 39; total records: 66 -> 67
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 66; total records: 67 -> 67
 FAIL battle t_hb_weldmatters
-  turn 24, round 2, after activation x05; unit x04 (player c_reaver)
-  state.units[1].crew: 41 -> 43
-  later changed records: 102; total records: 109 -> 127
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 159; total records: 127 -> 160
 FAIL battle t_hb_patchguns
-  turn 47, round 3, after activation x07; unit x04 (player c_reaver)
-  state.units[0].sec.mid.hp: 24 -> 31
-  later changed records: 107; total records: 155 -> 129
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "T"
+  later changed records: 143; total records: 129 -> 144
 FAIL battle t_hb_scrapfront
-  turn 41, round 3, after activation x05; unit x04 (player c_reaver)
-  state.units[1].hp: 64 -> 66
-  later changed records: 102; total records: 144 -> 134
+  turn 0, round 1, after tick player; unit x03 (player c_hulk)
+  state.units[0].name: "Cold Trail" -> "Cinder Wolf"
+  later changed records: 133; total records: 134 -> 116
 FAIL battle t_hb_weldedfight
-  turn 69, round 4, after fire x05; unit x04 (player c_reaver)
-  state.units[1].crew: 37 -> 35
-  later changed records: 50; total records: 106 -> 120
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 158; total records: 120 -> 159
 FAIL battle t_hb_doublebolted
-  turn 45, round 3, after activation x05; unit x04 (player c_reaver)
-  state.units[1].crew: 38 -> 43
-  later changed records: 110; total records: 148 -> 156
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 157; total records: 156 -> 158
 FAIL battle t_hb_packbites
-  turn 20, round 2, after activation x05; unit x03 (player c_reaver)
-  state.units[0].crew: 43 -> 44
-  later changed records: 118; total records: 135 -> 139
+  turn 0, round 1, after tick player; unit x03 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "T"
+  later changed records: 138; total records: 139 -> 136
 FAIL battle t_hb_weldedwhole
-  turn 20, round 2, after fire x05; unit x03 (player c_reaver)
-  state.units[0].crew: 43 -> 45
-  later changed records: 91; total records: 106 -> 112
+  turn 0, round 1, after tick player; unit x03 (player c_reaver)
+  state.units[0].name: "Chain of Teeth" -> "Second Death"
+  later changed records: 141; total records: 112 -> 142
 FAIL battle t_hb_nothingbroken
-  turn 65, round 5, after activation x05; unit x03 (player c_raider)
-  state.units[0].crew: 31 -> 35
-  later changed records: 43; total records: 92 -> 109
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 108; total records: 109 -> 85
 FAIL battle t_hb_preyscent
-  turn 25, round 2, after fire x07; unit x04 (player c_marauder)
-  state.units[0].crew: 51 -> 52
-  later changed records: 29; total records: 55 -> 46
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 45; total records: 46 -> 40
 FAIL battle t_hb_loosepack
-  turn 9, round 1, after fire x03; unit x02 (player c_raider)
-  state.units[0].weapons[0].off: 0 -> 2
-  later changed records: 20; total records: 30 -> 30
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 29; total records: 30 -> 30
+FAIL battle t_heg_secondvolley
+  turn 89, round 4, after activation x07; unit x04 (player h_dominion)
+  state.units[0].sec.mid.hp: 95 -> 96
+  later changed records: 48; total records: 131 -> 138
 FAIL battle t_heg_irontempo
-  turn 98, round 4, after fire x08; unit x05 (player h_dominion)
-  state.units[1].sec.mid.hp: 102 -> 104
-  later changed records: 94; total records: 193 -> 193
+  saved record count differs from manifest
+FAIL battle t_heg_livingrelay
+  turn 41, round 2, after fire x011; unit none (battle state)
+  record.rng: 530046180 -> 1161881850
+  later changed records: 15; total records: 57 -> 57
 FAIL battle t_heg_onevoice
-  turn 14, round 1, after activation x09; unit x05 (player h_dominion)
-  state.units[0].sh[0]: 49 -> 56
-  later changed records: 55; total records: 70 -> 61
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "T"
+  later changed records: 67; total records: 61 -> 68
 FAIL battle t_heg_formation
-  turn 15, round 1, after activation x09; unit x05 (player h_dominion)
-  state.units[0].sh[0]: 39 -> 45
-  later changed records: 42; total records: 58 -> 49
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "T"
+  later changed records: 57; total records: 49 -> 58
 FAIL battle t_heg_filedtriplicate
-  turn 24, round 1, after activation x010; unit x05 (player h_dominion)
-  state.units[0].route[0]: 1 -> 0
-  later changed records: 31; total records: 56 -> 56
+  saved record count differs from manifest
 FAIL battle t_heg_strikebook
-  turn 50, round 2, after fire x011; unit x05 (player h_dominion)
-  state.units[0].intercepts: 1 -> 2
-  later changed records: 32; total records: 83 -> 83
+  saved record count differs from manifest
 FAIL battle t_heg_filedbefore
-  turn 35, round 2, after activation x09; unit x05 (player h_dominion)
-  state.units[0].hp: 228 -> 227
-  later changed records: 86; total records: 122 -> 122
+  saved record count differs from manifest
+FAIL battle t_heg_totalinterdiction
+  turn 117, round 6, after fire x09; unit x05 (player h_dominion)
+  state.units[0].weapons[0].off: 0 -> 2
+  later changed records: 6; total records: 124 -> 124
+FAIL battle t_heg_sevenbreach
+  turn 50, round 3, after fire x09; unit x05 (player h_dominion)
+  state.units[0].hp: 228 -> 230
+  later changed records: 59; total records: 104 -> 110
 FAIL battle t_heg_permanentfile
-  turn 0, round 1, after tick player; unit x05 (player h_dominion)
-  state.units[0].q: 0 -> 1
-  later changed records: 70; total records: 68 -> 71
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "T"
+  later changed records: 70; total records: 71 -> 64
 FAIL battle t_heg_fullgroup
-  turn 87, round 6, after fire x03; unit x02 (player h_dominion)
-  state.units[0].weapons[0].off: 0 -> 2
-  later changed records: 31; total records: 119 -> 119
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 118; total records: 119 -> 119
+FAIL battle t_heg_escorts
+  turn 74, round 3, after fire x09; unit x06 (player h_picket)
+  state.units[2].intercepts: 1 -> 2
+  later changed records: 19; total records: 92 -> 94
 FAIL battle t_heg_columnstraight
-  turn 102, round 4, after activation x010; unit x05 (player h_dominion)
-  state.units[0].hp: 261 -> 260
-  later changed records: 22; total records: 125 -> 125
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 124; total records: 125 -> 123
 FAIL battle t_heg_overflow
-  turn 124, round 5, after activation x010; unit x05 (player h_dominion)
-  state.units[0].sec.eng.hp: 64 -> 66
-  later changed records: 5; total records: 130 -> 130
+  saved record count differs from manifest
 FAIL battle t_heg_bell
-  turn 119, round 4, after activation x011; unit x05 (player h_dominion)
-  state.units[0].sec.eng.hp: 61 -> 66
-  later changed records: 14; total records: 134 -> 134
+  saved record count differs from manifest
 FAIL battle t_heg_rotation
-  turn 117, round 4, after activation x011; unit x06 (player h_dominion)
-  state.units[0].hp: 263 -> 261
-  later changed records: 27; total records: 145 -> 145
+  saved record count differs from manifest
 FAIL battle t_heg_filedarmor
-  turn 79, round 3, after fire x010; unit x05 (player h_dominion)
-  state.units[0].sec.mid.hp: 105 -> 119
-  later changed records: 56; total records: 136 -> 133
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 139; total records: 133 -> 140
 FAIL battle t_heg_standardcovers
-  turn 55, round 2, after fire x010; unit x05 (player h_dominion)
-  state.units[0].sec.mid.hp: 117 -> 119
-  later changed records: 69; total records: 125 -> 121
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 120; total records: 121 -> 121
 FAIL battle t7a_flightpaths
-  turn 75, round 4, after activation x05; unit x03 (player i_carrier)
-  state.units[0].hp: 154 -> 157
-  later changed records: 14; total records: 89 -> 90
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 92; total records: 90 -> 93
+FAIL battle t7a_replay
+  turn 74, round 4, after fire x05; unit none (battle state)
+  record.rng: 504620422 -> 3599857575
+  later changed records: 29; total records: 93 -> 104
 FAIL battle t7a_starlings
-  turn 98, round 5, after fire x05; unit x03 (player i_carrier)
-  state.units[0].hp: 149 -> 152
-  later changed records: 5; total records: 104 -> 104
+  saved record count differs from manifest
 FAIL battle t7a_flightcast
-  turn 75, round 4, after fire x05; unit x03 (player i_carrier)
-  state.units[0].sec.mid.hp: 70 -> 76
-  later changed records: 19; total records: 95 -> 95
+  saved record count differs from manifest
 FAIL battle t7a_lighttogether
-  turn 0, round 1, after tick player; unit x04 (player i_song)
-  state.units[0].name: "Glass Heron" -> "Clear Whisper"
-  later changed records: 32; total records: 31 -> 33
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 32; total records: 33 -> 30
 FAIL battle t7a_sunlens
-  turn 11, round 1, after fire x07; unit x04 (player i_song)
-  state.units[0].crew: 33 -> 32
-  later changed records: 29; total records: 41 -> 41
+  saved record count differs from manifest
 FAIL battle t7a_splitthree
-  turn 41, round 3, after activation x05; unit x03 (player i_song)
-  state.units[0].sec.mid.hp: 43 -> 49
-  later changed records: 27; total records: 64 -> 69
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 68; total records: 69 -> 63
 FAIL battle t7a_fleetelsewhere
-  turn 42, round 3, after activation x05; unit x03 (player i_song)
-  state.units[0].crew: 33 -> 32
-  later changed records: 29; total records: 72 -> 70
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 79; total records: 70 -> 80
 FAIL battle t7a_weakside
-  turn 25, round 2, after activation x05; unit x03 (player i_song)
-  state.units[0].sec.eng.hp: 23 -> 27
-  later changed records: 13; total records: 39 -> 39
+  saved record count differs from manifest
 FAIL battle t7a_prismsface
-  turn 10, round 1, after activation x05; unit x03 (player i_song)
-  state.units[0].hp: 104 -> 106
-  later changed records: 28; total records: 39 -> 38
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 37; total records: 38 -> 37
 FAIL battle t7a_lensrotates
-  turn 25, round 2, after activation x05; unit x03 (player i_song)
-  state.units[0].sec.mid.hp: 45 -> 49
-  later changed records: 12; total records: 38 -> 38
+  saved record count differs from manifest
 FAIL battle t7a_facetlit
-  turn 26, round 2, after activation x05; unit x03 (player i_song)
-  state.units[0].sec.eng.hp: 20 -> 27
-  later changed records: 8; total records: 35 -> 35
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 38; total records: 35 -> 39
 FAIL battle t7a_ledgerarcs
-  turn 20, round 2, after activation x05; unit x03 (player penitent)
-  state.units[0].sec.mid.hp: 57 -> 61
-  later changed records: 13; total records: 34 -> 34
+  saved record count differs from manifest
 FAIL battle t7a_grandledger
-  turn 21, round 2, after activation x05; unit x03 (player penitent)
-  state.units[0].sec.mid.hp: 58 -> 61
-  later changed records: 35; total records: 57 -> 57
+  saved record count differs from manifest
 FAIL battle t7a_lastaccount
-  turn 22, round 2, after activation x06; unit x03 (player penitent)
-  state.units[0].hp: 132 -> 131
-  later changed records: 22; total records: 45 -> 45
+  saved record count differs from manifest
+FAIL battle t7a_torpfirst
+  turn 36, round 3, after fire x05; unit x03 (player harrow)
+  state.units[0].hp: 83 -> 85
+  later changed records: 28; total records: 65 -> 65
 FAIL battle t7a_rearreckoning
-  turn 21, round 2, after fire x05; unit x03 (player harrow)
-  state.units[0].crew: 41 -> 42
-  later changed records: 21; total records: 36 -> 43
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 42; total records: 43 -> 43
 FAIL battle t7a_salvoend
-  turn 27, round 2, after activation x05; unit x03 (player harrow)
-  state.units[0].hp: 79 -> 81
-  later changed records: 50; total records: 77 -> 78
+  turn 0, round 1, after tick player; unit x07 (enemy bomber)
+  state.units[4].ev: 35 -> 25
+  later changed records: 78; total records: 78 -> 79
 FAIL battle t7a_wallearly
-  turn 35, round 3, after fire x05; unit x03 (player cathedral)
-  state.units[0].sec.eng.hp: 40 -> 61
-  later changed records: 5; total records: 41 -> 41
+  saved record count differs from manifest
 FAIL battle t7a_wallmoves
-  turn 19, round 2, after activation x05; unit x03 (player cathedral)
-  state.units[0].weapons[0].off: 0 -> 2
-  later changed records: 27; total records: 47 -> 46
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 45; total records: 46 -> 45
 FAIL battle t7b_ecl_formation_d
-  turn 38, round 2, after fire x09; unit x05 (player d_harvester)
-  state.units[0].hp: 168 -> 171
-  later changed records: 21; total records: 60 -> 60
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 59; total records: 60 -> 60
 FAIL battle t7b_ecl_shadow
-  turn 25, round 2, after fire x07; unit x04 (player d_harvester)
-  state.units[0].crew: 43 -> 44
-  later changed records: 39; total records: 53 -> 65
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 64; total records: 65 -> 65
 FAIL battle t7b_ecl_wall
-  turn 9, round 1, after fire x08; unit x04 (player d_harvester)
-  state.units[0].crew: 44 -> 45
-  later changed records: 102; total records: 112 -> 110
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 112; total records: 110 -> 113
 FAIL battle t7b_ecl_archive
-  turn 53, round 3, after activation x07; unit x04 (player d_harvester)
-  state.units[0].crew: 43 -> 44
-  later changed records: 24; total records: 78 -> 77
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 76; total records: 77 -> 77
 FAIL battle t7b_ecl_iterfire
-  turn 50, round 3, after fire x07; unit x04 (player d_harvester)
-  state.units[0].sec.mid.hp: 57 -> 65
-  later changed records: 57; total records: 108 -> 108
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 107; total records: 108 -> 108
 FAIL battle t7b_ecl_triage
-  turn 0, round 1, after tick player; unit x04 (player d_harvester)
-  state.units[0].facing: 0 -> 1
-  later changed records: 118; total records: 119 -> 109
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 108; total records: 109 -> 109
 FAIL battle t7b_ch_nine
-  turn 43, round 2, after activation x06; unit x04 (player b_drone)
-  state.units[1].crew: 30 -> 29
-  later changed records: 15; total records: 59 -> 59
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 58; total records: 59 -> 59
 FAIL battle t7b_ch_teeth
-  turn 25, round 2, after fire x05; unit x03 (player b_razor)
-  state.units[0].sec.eng.hp: 19 -> 28
-  later changed records: 78; total records: 97 -> 104
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 103; total records: 104 -> 94
 FAIL battle t7b_ch_tideearly
-  turn 44, round 2, after fire x08; unit x04 (player b_drone)
-  state.units[0].ev: 0 -> 15
-  later changed records: 54; total records: 99 -> 95
+  turn 0, round 1, after tick player; unit x09 (enemy bomber)
+  state.units[5].ev: 35 -> 25
+  later changed records: 94; total records: 95 -> 84
 FAIL battle t7b_ch_growth
-  turn 40, round 3, after fire x05; unit x03 (player b_razor)
-  state.units[0].hp: 115 -> 112
-  later changed records: 68; total records: 109 -> 101
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 100; total records: 101 -> 96
 FAIL battle t7b_ch_spat
-  turn 0, round 1, after tick player; unit x04 (player b_spitter)
-  state.units[1].name: "Mawling" -> "Shrieker"
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
   later changed records: 83; total records: 84 -> 84
 FAIL battle t7b_ecl_targetarchived
-  turn 45, round 3, after activation x07; unit x04 (player d_harvester)
-  state.units[0].sec.eng.hp: 19 -> 36
-  later changed records: 4; total records: 50 -> 50
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 49; total records: 50 -> 50
 FAIL battle t529_roles_screen
-  turn 35, round 2, after activation x06; unit x03 (player b_razor)
-  state.units[0].sec.mid.hp: 54 -> 61
-  later changed records: 43; total records: 76 -> 79
+  turn 0, round 1, after tick player; unit x07 (enemy bomber)
+  state.units[4].ev: 35 -> 25
+  later changed records: 83; total records: 79 -> 84
 FAIL battle t529_roles_mend
-  turn 74, round 5, after activation x05; unit x03 (player b_razor)
-  state.units[0].crew: 42 -> 43
-  later changed records: 6; total records: 81 -> 81
+  saved record count differs from manifest
 FAIL battle t529_roles_change
-  turn 34, round 2, after fire x07; unit x04 (player b_razor)
-  state.units[0].hp: 115 -> 111
-  later changed records: 54; total records: 89 -> 86
+  turn 0, round 1, after tick player; unit x09 (enemy bomber)
+  state.units[5].ev: 35 -> 25
+  later changed records: 85; total records: 86 -> 86
 FAIL battle t529_scent
-  turn 28, round 2, after activation x07; unit x04 (player b_razor)
-  state.units[0].sec.eng.hp: 27 -> 34
-  later changed records: 24; total records: 53 -> 53
+  saved record count differs from manifest
 FAIL battle t529_may_grow_no
-  turn 22, round 2, after fire x05; unit x03 (player b_razor)
-  state.units[0].crew: 45 -> 47
-  later changed records: 79; total records: 99 -> 102
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 101; total records: 102 -> 98
 FAIL battle s983_station_defend
-  turn 81, round 3, after fire x010; unit x05 (player penitent)
-  state.units[0].weapons[0].off: 0 -> 2
-  later changed records: 42; total records: 124 -> 121
+  turn 0, round 1, after tick player; unit x014 (enemy bomber)
+  state.units[9].ev: 35 -> 25
+  later changed records: 120; total records: 121 -> 119
 FAIL battle s983_station_plain
-  turn 39, round 2, after activation x08; unit x04 (player penitent)
-  state.units[0].crew: 51 -> 50
-  later changed records: 54; total records: 87 -> 94
+  turn 0, round 1, after tick player; unit x08 (enemy c_reaver)
+  state.units[4].weapons[1].arc: "S" -> "T"
+  later changed records: 93; total records: 94 -> 78
 FAIL battle s983_teaching_station_defend
-  turn 37, round 2, after activation x07; unit x04 (player harrow)
-  state.units[0].hp: 81 -> 80
-  later changed records: 94; total records: 67 -> 132
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 131; total records: 132 -> 132
 FAIL battle s1450_undo
-  turn 46, round 2, after activation x08; unit x04 (player harrow)
-  state.units[0].sec.mid.hp: 34 -> 38
-  later changed records: 231; total records: 278 -> 231
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 230; total records: 231 -> 231
 FAIL battle s1450_undo_chorus
-  turn 61, round 2, after activation x09; unit x04 (player b_razor)
-  state.units[0].hp: 114 -> 110
-  later changed records: 113; total records: 157 -> 175
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 174; total records: 175 -> 175
 FAIL battle s1450_undo_classic
-  turn 131, round 3, after fire x09; unit x06 (player penitent)
-  state.units[1].crew: 49 -> 50
-  later changed records: 289; total records: 349 -> 421
+  turn 0, round 1, after tick player; unit x016 (enemy bomber)
+  state.units[11].ev: 35 -> 25
+  later changed records: 420; total records: 421 -> 394
 FAIL battle s1447_ion_pulse
-  turn 8, round 1, after activation x09; unit x05 (player penitent)
-  state.units[0].hp: 134 -> 135
-  later changed records: 148; total records: 157 -> 99
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 133; total records: 99 -> 134
 FAIL battle s1480
-  turn 68, round 2, after activation x018; unit x06 (player cathedral)
-  state.units[0].hp: 203 -> 207
-  later changed records: 151; total records: 218 -> 220
+  turn 0, round 1, after tick player; unit x021 (enemy bomber)
+  state.units[15].ev: 35 -> 25
+  later changed records: 236; total records: 220 -> 237
 FAIL battle r1653_gunnery
-  turn 34, round 2, after activation x010; unit x05 (player penitent)
-  state.units[0].sec.mid.hp: 58 -> 61
-  later changed records: 159; total records: 194 -> 176
+  turn 0, round 1, after tick player; unit x013 (enemy bomber)
+  state.units[8].ev: 35 -> 25
+  later changed records: 175; total records: 176 -> 168
 FAIL battle r1653_afterburn
-  turn 53, round 2, after fire x010; unit x05 (player penitent)
-  state.units[0].sec.mid.hp: 50 -> 61
-  later changed records: 149; total records: 203 -> 117
+  turn 0, round 1, after tick player; unit x013 (enemy bomber)
+  state.units[8].ev: 35 -> 25
+  later changed records: 177; total records: 117 -> 178
 FAIL battle r1653_flankmark
-  turn 10, round 1, after activation x09; unit x05 (player c_marauder)
-  state.units[0].hp: 116 -> 117
-  later changed records: 159; total records: 135 -> 170
+  turn 0, round 1, after tick player; unit x06 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 182; total records: 170 -> 183
 FAIL battle r1653_lastlight
-  turn 10, round 1, after activation x011; unit x05 (player penitent)
-  state.units[0].sec.mid.hp: 58 -> 61
-  later changed records: 183; total records: 194 -> 193
+  turn 0, round 1, after tick player; unit x013 (enemy bomber)
+  state.units[8].ev: 35 -> 25
+  later changed records: 192; total records: 193 -> 173
 FAIL battle r1653_coolant
-  turn 32, round 2, after fire x08; unit x04 (player b_razor)
-  state.units[0].sec.mid.hp: 50 -> 57
-  later changed records: 142; total records: 171 -> 175
+  turn 0, round 1, after tick player; unit x011 (enemy bomber)
+  state.units[7].ev: 35 -> 25
+  later changed records: 174; total records: 175 -> 163
 FAIL battle r1653_spare
-  turn 70, round 3, after fire x010; unit x05 (player penitent)
-  state.units[0].crew: 48 -> 47
-  later changed records: 131; total records: 200 -> 202
+  turn 0, round 1, after tick player; unit x013 (enemy bomber)
+  state.units[8].ev: 35 -> 25
+  later changed records: 201; total records: 202 -> 127
 FAIL battle r1653_ram
-  turn 14, round 1, after activation x08; unit x04 (player c_marauder)
-  state.units[0].crew: 50 -> 51
-  later changed records: 152; total records: 167 -> 140
+  turn 0, round 1, after tick player; unit x06 (player c_reaver)
+  state.units[2].weapons[1].arc: "S" -> "T"
+  later changed records: 139; total records: 140 -> 131
 FAIL battle r1653_mirror
-  turn 94, round 4, after fire x09; unit x05 (player penitent)
-  state.units[0].weapons[0].off: 0 -> 2
-  later changed records: 58; total records: 153 -> 143
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 162; total records: 143 -> 163
 FAIL battle r1653_beacon
-  turn 21, round 1, after activation x09; unit x05 (player penitent)
-  state.units[0].crew: 48 -> 47
-  later changed records: 188; total records: 144 -> 210
+  turn 0, round 1, after tick player; unit x013 (enemy bomber)
+  state.units[8].ev: 35 -> 25
+  later changed records: 209; total records: 210 -> 144
 FAIL battle r1653_quiet
-  turn 89, round 3, after activation x012; unit x05 (player penitent)
-  state.units[0].hp: 127 -> 129
-  later changed records: 101; total records: 191 -> 162
+  turn 0, round 1, after tick player; unit x013 (enemy bomber)
+  state.units[8].ev: 35 -> 25
+  later changed records: 161; total records: 162 -> 153
 FAIL battle r1653_locker
-  turn 20, round 1, after fire x08; unit x05 (player c_marauder)
-  state.units[1].sec.mid.hp: 52 -> 54
-  later changed records: 139; total records: 160 -> 147
+  turn 0, round 1, after tick player; unit x06 (player c_reaver)
+  state.units[2].weapons[1].arc: "S" -> "T"
+  later changed records: 191; total records: 147 -> 192
 FAIL battle r1653_chaser
-  turn 74, round 3, after fire x010; unit x05 (player penitent)
-  state.units[0].crew: 50 -> 51
-  later changed records: 109; total records: 184 -> 163
+  turn 0, round 1, after tick player; unit x013 (enemy bomber)
+  state.units[8].ev: 35 -> 25
+  later changed records: 177; total records: 163 -> 178
 FAIL battle r1653_spill
-  turn 33, round 2, after fire x08; unit x04 (player h_vanguard)
-  state.units[0].sh[0]: 12 -> 26
-  later changed records: 91; total records: 125 -> 109
+  turn 0, round 1, after tick player; unit x08 (enemy c_reaver)
+  state.units[4].weapons[1].arc: "S" -> "T"
+  later changed records: 144; total records: 109 -> 145
 FAIL battle r1653_relay
-  turn 35, round 2, after fire x011; unit x05 (player penitent)
-  state.units[0].sec.eng.hp: 30 -> 34
-  later changed records: 166; total records: 202 -> 187
+  turn 0, round 1, after tick player; unit x012 (enemy bomber)
+  state.units[7].ev: 35 -> 25
+  later changed records: 188; total records: 187 -> 189
 FAIL battle s1649_fold
-  turn 70, round 3, after activation x09; unit x08 (player d_jackal)
-  state.units[3].sec.mid.hp: 33 -> 45
-  later changed records: 74; total records: 109 -> 145
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 144; total records: 145 -> 145
 FAIL battle s1649_frenzy
-  turn 67, round 3, after fire x07; unit x06 (player b_razor_s)
-  state.units[2].crew: 45 -> 46
-  later changed records: 51; total records: 119 -> 97
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 146; total records: 97 -> 147
 FAIL battle t7a_flightcast_m3
-  turn 52, round 3, after activation x05; unit x03 (player i_carrier)
-  state.units[0].shp: 23.223384974892063 [d:4037392fc1f99446] -> 22.735348063776826 [d:4036bc3fc54d1930]
-  later changed records: 44; total records: 97 -> 89
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 88; total records: 89 -> 75
 FAIL battle t_ecl_outshadow_m3
-  turn 7, round 1, after fire x07; unit x04 (player d_harvester)
-  state.units[0].sec.mid.hp: 59 -> 65
-  later changed records: 66; total records: 74 -> 74
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 73; total records: 74 -> 74
+FAIL battle t_hb_burncarry_m3
+  turn 32, round 2, after activation x08; unit x04 (player c_marauder)
+  state.units[0].sec.eng.hp: 28 -> 30
+  later changed records: 6; total records: 39 -> 39
 FAIL battle t_hb_warlordrun_m3
-  turn 9, round 1, after activation x07; unit x04 (player c_marauder)
-  state.units[0].hp: 116 -> 115
-  later changed records: 69; total records: 69 -> 79
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 78; total records: 79 -> 70
 FAIL battle t_heg_onevoice_m3
-  turn 14, round 1, after activation x09; unit x05 (player h_dominion)
-  state.units[0].sh[0]: 49 -> 56
-  later changed records: 53; total records: 68 -> 66
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "T"
+  later changed records: 65; total records: 66 -> 66
 FAIL battle t_ecl_tenthousand_m3
-  turn 91, round 3, after fire x011; unit x05 (player d_harvester)
-  state.units[0].hp: 168 -> 165
-  later changed records: 76; total records: 167 -> 168
+  turn 0, round 1, after tick player; unit x012 (enemy bomber)
+  state.units[7].ev: 35 -> 25
+  later changed records: 167; total records: 168 -> 166
 FAIL battle t_ecl_restoredfleet_m3
-  turn 32, round 2, after fire x08; unit x04 (player d_harvester)
-  state.units[0].crew: 44 -> 45
-  later changed records: 83; total records: 107 -> 116
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 115; total records: 116 -> 109
 FAIL battle t7a_salvoend_m3
-  turn 39, round 2, after fire x05; unit x03 (player harrow)
-  state.units[0].hp: 53 -> 49
-  later changed records: 95; total records: 99 -> 135
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[7].ev: 35 -> 25
+  later changed records: 134; total records: 135 -> 115
 FAIL battle t_namedprey_m3
-  turn 35, round 3, after fire x05; unit x03 (player harrow)
-  state.units[0].crew: 41 -> 42
-  later changed records: 28; total records: 62 -> 64
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 63; total records: 64 -> 63
 FAIL battle t_heg_standardcovers_m3
-  turn 56, round 2, after fire x010; unit x05 (player h_dominion)
-  state.units[0].sec.mid.hp: 122 -> 123
-  later changed records: 62; total records: 119 -> 109
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 108; total records: 109 -> 109
 FAIL battle t7b_ch_nine_m3
-  turn 40, round 2, after activation x06; unit x04 (player b_drone)
-  state.units[1].crew: 32 -> 34
-  later changed records: 65; total records: 106 -> 88
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 87; total records: 88 -> 88
 FAIL battle t_tideend_m3
-  turn 9, round 1, after activation x05; unit x03 (player b_razor)
-  state.units[0].crew: 46 -> 45
-  later changed records: 16; total records: 26 -> 26
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 25; total records: 26 -> 26
 FAIL battle t_tornback_m3
-  turn 106, round 6, after fire x07; unit x04 (player b_drone)
-  state.units[0].crew: 26 -> 25
-  later changed records: 27; total records: 134 -> 131
+  turn 0, round 1, after tick player; unit x08 (enemy bomber)
+  state.units[4].ev: 35 -> 25
+  later changed records: 130; total records: 131 -> 114
 FAIL battle t_wardglass_m3
-  turn 24, round 2, after fire x05; unit x03 (player i_song)
-  state.units[0].sec.eng.hp: 25 -> 27
-  later changed records: 46; total records: 71 -> 71
+  saved record count differs from manifest
 FAIL battle t7a_facetlit_m3
-  turn 26, round 2, after activation x05; unit x03 (player i_song)
-  state.units[0].sec.eng.hp: 22 -> 27
-  later changed records: 8; total records: 35 -> 35
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 38; total records: 35 -> 39
 FAIL battle t_hb_swarmscrap_m3
-  turn 28, round 2, after fire x05; unit x04 (player c_reaver)
-  state.units[1].crew: 44 -> 45
-  later changed records: 40; total records: 68 -> 69
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 68; total records: 69 -> 69
 FAIL battle t_ecl_tenthframe_m3
-  turn 19, round 1, after activation x07; unit x04 (player d_harvester)
-  state.units[0].st.fire: 2 -> 0
-  later changed records: 97; total records: 116 -> 117
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 116; total records: 117 -> 115
 FAIL battle t_ecl_earliercopy_m3
-  turn 70, round 4, after activation x07; unit x04 (player d_harvester)
-  state.units[0].hp: 138 -> 134
-  later changed records: 11; total records: 82 -> 82
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 81; total records: 82 -> 82
 FAIL battle t_throatred_m3
-  turn 28, round 2, after activation x08; unit x04 (player b_razor)
-  state.units[0].sec.eng.hp: 24 -> 34
-  later changed records: 38; total records: 56 -> 67
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 66; total records: 67 -> 66
 FAIL battle t_preyeverymouth_m3
-  turn 28, round 1, after activation x013; unit x06 (player b_razor)
-  state.units[0].crew: 44 -> 45
-  later changed records: 72; total records: 100 -> 101
+  turn 0, round 1, after tick player; unit x014 (enemy bomber)
+  state.units[8].ev: 35 -> 25
+  later changed records: 149; total records: 101 -> 150
 FAIL battle t_hb_darkknives_m3
-  turn 27, round 2, after activation x07; unit x04 (player c_reaver)
-  state.units[0].sec.mid.hp: 29 -> 31
-  later changed records: 31; total records: 59 -> 59
+  saved record count differs from manifest
 FAIL battle t_hb_cutfeeds_m3
-  turn 27, round 2, after activation x07; unit x04 (player c_reaver)
-  state.units[0].crew: 44 -> 45
-  later changed records: 37; total records: 65 -> 57
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "T"
+  later changed records: 71; total records: 57 -> 72
 FAIL battle t_ecl_onesuncopy_m3
-  turn 59, round 3, after activation x07; unit x04 (player d_harvester)
-  state.units[0].sec.eng.hp: 25 -> 36
-  later changed records: 7; total records: 67 -> 67
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 66; total records: 67 -> 67
 FAIL battle t_irontestament_m3
-  turn 33, round 3, after activation x05; unit x03 (player cathedral)
-  state.units[0].sec.mid.hp: 110 -> 112
-  later changed records: 11; total records: 45 -> 45
+  saved record count differs from manifest
 FAIL battle t7a_wallmoves_m3
-  turn 19, round 2, after activation x05; unit x03 (player cathedral)
-  state.units[0].weapons[0].off: 0 -> 2
-  later changed records: 27; total records: 47 -> 46
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 45; total records: 46 -> 45
 FAIL battle t7a_fleetelsewhere_m3
-  turn 42, round 3, after activation x05; unit x03 (player i_song)
-  state.units[0].crew: 33 -> 32
-  later changed records: 29; total records: 72 -> 71
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 70; total records: 71 -> 63
 FAIL battle t7a_sunlens_m3
-  turn 11, round 1, after activation x08; unit x04 (player i_song)
-  state.units[0].crew: 33 -> 32
-  later changed records: 29; total records: 41 -> 40
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 39; total records: 40 -> 37
 FAIL battle t_flawforever_m3
-  turn 29, round 2, after activation x07; unit x04 (player i_song)
-  state.units[0].crew: 30 -> 31
-  later changed records: 20; total records: 50 -> 50
+  saved record count differs from manifest
 FAIL battle t_hb_weldedwhole_m3
-  turn 20, round 2, after fire x05; unit x03 (player c_reaver)
-  state.units[0].crew: 43 -> 45
-  later changed records: 95; total records: 116 -> 112
+  turn 0, round 1, after tick player; unit x03 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "T"
+  later changed records: 111; total records: 112 -> 100
 FAIL battle t_hb_nothingbroken_m3
-  turn 65, round 5, after activation x05; unit x03 (player c_raider)
-  state.units[0].crew: 32 -> 36
-  later changed records: 43; total records: 92 -> 109
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 108; total records: 109 -> 92
 FAIL battle t7a_grandledger_m3
-  turn 21, round 2, after activation x05; unit x03 (player penitent)
-  state.units[0].sec.mid.hp: 58 -> 61
-  later changed records: 35; total records: 57 -> 57
+  saved record count differs from manifest
 FAIL battle t7a_lastaccount_m3
-  turn 34, round 2, after activation x05; unit x03 (player penitent)
-  state.units[0].sec.mid.hp: 58 -> 61
-  later changed records: 82; total records: 80 -> 117
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 132; total records: 117 -> 133
 FAIL battle t_volleygrows_m3
-  turn 47, round 3, after fire x05; unit x04 (player b_spitter)
-  state.units[1].sec.mid.hp: 5 -> 37
-  later changed records: 39; total records: 87 -> 84
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 84; total records: 84 -> 85
 FAIL battle t_mouthdeep_m3
-  turn 60, round 4, after fire x05; unit x03 (player b_spitter)
-  state.units[0].crew: 33 -> 35
-  later changed records: 25; total records: 86 -> 86
+  saved record count differs from manifest
 FAIL battle t_heg_permanentfile_m3
-  turn 18, round 1, after activation x012; unit x05 (player h_dominion)
-  state.units[0].sh[0]: 42 -> 49
-  later changed records: 161; total records: 132 -> 180
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "T"
+  later changed records: 194; total records: 180 -> 195
 FAIL battle t_heg_oneorder_m3
-  turn 20, round 1, after activation x012; unit x05 (player h_dominion)
-  state.units[0].route[0]: 1 -> 0
-  later changed records: 161; total records: 182 -> 163
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "T"
+  later changed records: 162; total records: 163 -> 158
 FAIL battle r1651_vex
-  turn 32, round 2, after activation x08; unit x04 (player penitent)
-  state.units[0].hp: 133 -> 132
-  later changed records: 92; total records: 125 -> 82
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 81; total records: 82 -> 76
 FAIL battle r1651_malek
-  turn 32, round 2, after activation x09; unit x05 (player harrow)
-  state.units[0].sec.mid.hp: 35 -> 38
-  later changed records: 77; total records: 110 -> 62
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 61; total records: 62 -> 62
 FAIL battle r1651_thale
-  turn 17, round 1, after activation x08; unit x04 (player penitent)
-  state.units[0].weapons[0].off: 0 -> 2
-  later changed records: 75; total records: 79 -> 93
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 98; total records: 93 -> 99
 FAIL battle r1651_kassar
-  turn 56, round 3, after activation x06; unit x03 (player h_vanguard)
-  state.units[0].crew: 42 -> 43
-  later changed records: 63; total records: 120 -> 111
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 110; total records: 111 -> 111
 FAIL battle r1651_vorn
-  turn 8, round 1, after activation x09; unit x05 (player h_interdictor)
-  state.units[0].crew: 34 -> 36
-  later changed records: 104; total records: 113 -> 97
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 103; total records: 97 -> 104
 FAIL battle r1651_reyes
-  turn 9, round 1, after fire x08; unit x04 (player h_vanguard)
-  state.units[0].sec.mid.hp: 52 -> 63
-  later changed records: 92; total records: 102 -> 94
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 93; total records: 94 -> 91
 FAIL battle r1651_maren
-  turn 71, round 4, after fire x05; unit x03 (player h_dominion)
-  state.units[0].sh[0]: 26 -> 37
-  later changed records: 63; total records: 135 -> 133
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 132; total records: 133 -> 133
 FAIL battle r1651_grax
-  turn 13, round 1, after activation x08; unit x04 (player c_marauder)
-  state.units[0].st.shieldOff: 2 -> 0
-  later changed records: 104; total records: 118 -> 113
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 135; total records: 113 -> 136
 FAIL battle r1651_sable
-  turn 35, round 2, after fire x09; unit x05 (player c_reaver)
-  state.units[0].hp: 60 -> 58
-  later changed records: 81; total records: 97 -> 117
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "T"
+  later changed records: 144; total records: 117 -> 145
 FAIL battle r1651_vesh
-  turn 89, round 4, after fire x05; unit x04 (player c_reaver)
-  state.units[1].crew: 32 -> 33
-  later changed records: 44; total records: 134 -> 111
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 182; total records: 111 -> 183
 FAIL battle r1651_razormaw
-  turn 11, round 1, after activation x07; unit x04 (player b_razor)
-  state.units[0].crew: 43 -> 45
-  later changed records: 95; total records: 107 -> 78
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 77; total records: 78 -> 78
 FAIL battle r1651_mending
-  turn 9, round 1, after activation x05; unit x03 (player b_razor)
-  state.units[0].crew: 45 -> 43
-  later changed records: 77; total records: 87 -> 76
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 75; total records: 76 -> 75
 FAIL battle r1651_voice
-  turn 9, round 1, after activation x07; unit x04 (player b_razor)
-  state.units[0].crew: 44 -> 47
-  later changed records: 72; total records: 66 -> 82
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 102; total records: 82 -> 103
+FAIL battle r1651_aelith
+  turn 72, round 3, after activation x05; unit x03 (player i_carrier)
+  state.units[0].sh[0]: 1 -> 8
+  later changed records: 30; total records: 103 -> 97
 FAIL battle r1651_vaelen
-  turn 18, round 1, after fire x05; unit x03 (player i_song)
-  state.units[0].route[0]: 1 -> 0
-  later changed records: 48; total records: 66 -> 67
+  turn 0, round 1, after tick player; unit x06 (enemy c_reaver)
+  state.units[3].weapons[1].arc: "S" -> "T"
+  later changed records: 66; total records: 67 -> 64
 FAIL battle r1651_thorne
-  turn 20, round 1, after fire x09; unit x05 (player i_blade)
-  state.units[0].sh[0]: 1 -> 9
-  later changed records: 135; total records: 156 -> 115
+  turn 0, round 1, after tick player; unit x010 (enemy c_reaver)
+  state.units[5].weapons[1].arc: "S" -> "T"
+  later changed records: 127; total records: 115 -> 128
+FAIL battle r1651_mirelle
+  turn 75, round 4, after activation x07; unit x04 (player i_song)
+  state.units[0].route[0]: 1 -> 0
+  later changed records: 27; total records: 103 -> 102
 FAIL battle r1651_sekhmar
-  turn 7, round 1, after fire x07; unit x04 (player d_harvester)
-  state.units[0].crew: 43 -> 44
-  later changed records: 105; total records: 40 -> 113
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 112; total records: 113 -> 113
 FAIL battle r1651_anuket
-  turn 58, round 3, after activation x09; unit x05 (player d_jackal)
-  state.units[0].sec.mid.hp: 37 -> 45
-  later changed records: 4; total records: 63 -> 63
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 62; total records: 63 -> 63
 FAIL battle r1651_khepra
-  turn 45, round 3, after fire x07; unit x04 (player d_jackal)
-  state.units[0].sec.mid.hp: 47 -> 54
-  later changed records: 53; total records: 92 -> 99
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 99; total records: 99 -> 100
 FAIL battle r1651_cmdoverride
-  turn 8, round 1, after fire x07; unit x04 (player penitent)
-  state.units[0].sec.mid.hp: 60 -> 61
-  later changed records: 80; total records: 88 -> 89
-FAIL file threat_s4.json
-  map.3.-1,10: "405e28f5c28f5c28" -> "4065e51eb851eb85"
-FAIL: saved Godot results; 379 battles checked, 276 changed, 1 other files changed, 277 failures; 54.141 s
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 117; total records: 89 -> 118
+FAIL file threat_s19.json
+  map.3.10,16: "406550a3d70a3d70" -> "4067eccccccccccc"
+FAIL: saved Godot results; 379 battles checked, 245 changed, 1 other files changed, 293 failures; 61.123 s
+
+Changes against main e23fe088
+Battle	Reason compared with main e23fe088	First changed record
+s1	Veteran section calls change aim, hit location, or a later action	round 2, activation x08
+s2	Veteran section calls change aim, hit location, or a later action	round 2, fire x010
+s3	Veteran section calls change aim, hit location, or a later action	round 2, fire x07
+s4	Veteran section calls change aim, hit location, or a later action	round 1, fire x025
+s5	Veteran section calls change aim, hit location, or a later action	round 3, activation x022
+s6	Veteran section calls change aim, hit location, or a later action	round 3, activation x012
+s7	Veteran section calls change aim, hit location, or a later action	round 2, activation x013
+s8	Veteran section calls change aim, hit location, or a later action	round 1, activation x010
+s10	Veteran section calls change aim, hit location, or a later action	round 3, activation x017
+s11	Veteran section calls change aim, hit location, or a later action	round 4, activation x012
+s12	Veteran section calls change aim, hit location, or a later action	round 1, fire x010
+s13	Veteran section calls change aim, hit location, or a later action	round 5, fire x012
+s14	Veteran section calls change aim, hit location, or a later action	round 1, fire x09
+s16	Veteran section calls change aim, hit location, or a later action	round 4, activation x09
+s17	Veteran section calls change aim, hit location, or a later action	round 1, fire x07
+s18	Veteran section calls change aim, hit location, or a later action	round 2, fire x010
+s19	Veteran section calls change aim, hit location, or a later action	round 2, activation x010
+s20	Veteran section calls change aim, hit location, or a later action	round 2, activation x07
+s23	Veteran section calls change aim, hit location, or a later action	round 4, activation x021
+s24	Veteran section calls change aim, hit location, or a later action	round 4, activation x022
+s25	Veteran section calls change aim, hit location, or a later action	round 2, fire x011
+s26	Veteran section calls change aim, hit location, or a later action	round 1, activation x013
+s28	Veteran section calls change aim, hit location, or a later action	round 2, activation x015
+s29	Veteran section calls change aim, hit location, or a later action	round 5, activation x012
+s31	Veteran section calls change aim, hit location, or a later action	round 3, move x011
+s32	Veteran section calls change aim, hit location, or a later action	round 3, fire x09
+s33	Veteran section calls change aim, hit location, or a later action	round 3, fire x010
+s34	Veteran section calls change aim, hit location, or a later action	round 2, fire x010
+s35	Veteran section calls change aim, hit location, or a later action	round 2, fire x019
+s36	Veteran section calls change aim, hit location, or a later action	round 5, fire x013
+s37	Veteran section calls change aim, hit location, or a later action	round 3, activation x09
+s38	Veteran section calls change aim, hit location, or a later action	round 5, fire x012
+s39	Veteran section calls change aim, hit location, or a later action	round 3, activation x017
+s40	Veteran section calls change aim, hit location, or a later action	round 2, fire x012
+s41	Veteran section calls change aim, hit location, or a later action	round 4, activation x09
+s42	Veteran section calls change aim, hit location, or a later action	round 2, fire x09
+s43	Veteran section calls change aim, hit location, or a later action	round 2, activation x08
+s44	Veteran section calls change aim, hit location, or a later action	round 1, activation x07
+s47	Veteran section calls change aim, hit location, or a later action	round 2, activation x06
+s48	Veteran section calls change aim, hit location, or a later action	round 2, fire x012
+s50	Veteran section calls change aim, hit location, or a later action	round 1, activation x05
+s51	Veteran section calls change aim, hit location, or a later action	round 5, activation x08
+s53	Veteran section calls change aim, hit location, or a later action	round 2, activation x09
+s54	Veteran section calls change aim, hit location, or a later action	round 1, activation x09
+s55	Veteran section calls change aim, hit location, or a later action	round 3, fire x07
+s57	Veteran section calls change aim, hit location, or a later action	round 2, fire x09
+t_longfocus	Veteran section calls change aim, hit location, or a later action	round 1, activation x07
+t_recordedangle	Veteran section calls change aim, hit location, or a later action	round 2, fire x07
+t_flawforever	Veteran section calls change aim, hit location, or a later action	round 2, activation x07
+t_mirrorturns	Veteran section calls change aim, hit location, or a later action	round 1, activation x05
+t_rechargelit	Veteran section calls change aim, hit location, or a later action	round 2, activation x05
+t_glasscorrected	Veteran section calls change aim, hit location, or a later action	round 2, fire x05
+t_hardlight	Veteran section calls change aim, hit location, or a later action	round 2, activation x05
+t_wardglass	Veteran section calls change aim, hit location, or a later action	round 2, fire x05
+t_heldaccount	Veteran section calls change aim, hit location, or a later action	round 2, activation x05
+t_namedledger	Veteran section calls change aim, hit location, or a later action	round 4, fire x05
+t_inheritedaim	Reseeded 31504 to 31505 to keep the named lineage effect firing	round 1, tick player
+t_everygun	Reseeded 37101 to 37102 to keep the named lineage effect firing	round 1, tick player
+t_sworndeploy	Veteran section calls change aim, hit location, or a later action	round 2, activation x05
+t_debtsreserve	Veteran section calls change aim, hit location, or a later action	round 2, activation x05
+t_standardreroll	Veteran section calls change aim, hit location, or a later action	round 2, activation x03
+t_preyname	Veteran section calls change aim, hit location, or a later action	round 2, activation x05
+t_salvotwohands	Veteran section calls change aim, hit location, or a later action	round 4, fire x05
+t_debthunts	Veteran section calls change aim, hit location, or a later action	round 2, activation x04
+t_twosalvos	Veteran section calls change aim, hit location, or a later action	round 3, fire x05
+t_namedprey	Veteran section calls change aim, hit location, or a later action	round 3, fire x05
+t_wingreserve	Veteran section calls change aim, hit location, or a later action	round 3, fire x05
+t_oathstillness	Veteran section calls change aim, hit location, or a later action	round 2, activation x05
+t_unpaid	Veteran section calls change aim, hit location, or a later action	round 5, fire x07
+t_wallanswers	Reseeded 37104 to 37114 to keep the named lineage effect firing	round 1, tick player
+t_irontestament	Veteran section calls change aim, hit location, or a later action	round 3, activation x05
+t_ecl_restoreninth	Veteran section calls change aim, hit location, or a later action	round 1, fire x07
+t_ecl_restoredbeyond	Veteran section calls change aim, hit location, or a later action	round 2, fire x07
+t_ecl_copiescontribute	Veteran section calls change aim, hit location, or a later action	round 3, fire x09
+t_ecl_tenthframe	Veteran section calls change aim, hit location, or a later action	round 1, activation x07
+t_ecl_arcswarm	Veteran section calls change aim, hit location, or a later action	round 2, activation x011
+t_ecl_copyfires	Reseeded 31900 to 31901 to keep the named lineage effect firing	round 1, tick player
+t_ecl_everyframe	Veteran section calls change aim, hit location, or a later action	round 2, activation x08
+t_ecl_onesuncopy	Veteran section calls change aim, hit location, or a later action	round 2, activation x09
+t_ecl_copiedbehind	Veteran section calls change aim, hit location, or a later action	round 5, activation x07
+t_ecl_unseenarchive	Veteran section calls change aim, hit location, or a later action	round 2, fire x07
+t_ecl_uncopiedtarget	Veteran section calls change aim, hit location, or a later action	round 3, activation x07
+t_ecl_iterationkill	Veteran section calls change aim, hit location, or a later action	round 4, activation x09
+t_ecl_silentarchive	Veteran section calls change aim, hit location, or a later action	round 2, activation x07
+t_ecl_outshadow	Veteran section calls change aim, hit location, or a later action	round 1, fire x07
+t_ecl_platesshadow	Veteran section calls change aim, hit location, or a later action	round 3, fire x07
+t_ecl_twicerestored	Veteran section calls change aim, hit location, or a later action	round 4, activation x09
+t_ecl_nolayer	Veteran section calls change aim, hit location, or a later action	round 3, fire x07
+t_ecl_stillness	Veteran section calls change aim, hit location, or a later action	round 2, activation x09
+t_ecl_tenthousand	Veteran section calls change aim, hit location, or a later action	round 3, fire x010
+t_ecl_restoredfleet	Veteran section calls change aim, hit location, or a later action	round 3, fire x07
+t_ecl_flagshipindex	Reseeded 31828 to 31829 to keep the named lineage effect firing	round 1, tick player
+t_choosebrood	Veteran section calls change aim, hit location, or a later action	round 2, activation x05
+t_rundown	Veteran section calls change aim, hit location, or a later action	round 2, fire x05
+t_razorprey	Veteran section calls change aim, hit location, or a later action	round 3, fire x05
+t_frenzyfeeds	Veteran section calls change aim, hit location, or a later action	round 3, activation x07
+t_breathbite	Veteran section calls change aim, hit location, or a later action	round 1, activation x012
+t_throatred	Veteran section calls change aim, hit location, or a later action	round 2, activation x08
+t_preyeverymouth	Veteran section calls change aim, hit location, or a later action	round 2, activation x07
+t_growhurts	Veteran section calls change aim, hit location, or a later action	round 3, fire x05
+t_skinthick	Veteran section calls change aim, hit location, or a later action	round 4, fire x05
+t_fleshknit	Veteran section calls change aim, hit location, or a later action	round 2, fire x05
+t_refuseholes	Veteran section calls change aim, hit location, or a later action	round 2, fire x07
+t_tideend	Veteran section calls change aim, hit location, or a later action	round 2, fire x05
+t_tornback	Veteran section calls change aim, hit location, or a later action	round 5, fire x07
+t_throatspits	Reseeded 37102 to 37113 to keep the named lineage effect firing	round 1, tick player
+t_burnstays	Veteran section calls change aim, hit location, or a later action	round 4, activation x05
+t_manymouths	Veteran section calls change aim, hit location, or a later action	round 4, fire x09
+t_volleygrows	Veteran section calls change aim, hit location, or a later action	round 2, activation x05
+t_mouthdeep	Veteran section calls change aim, hit location, or a later action	round 4, fire x05
+t_broodreserve	Veteran section calls change aim, hit location, or a later action	round 1, fire x05
+t_firstthroat	Veteran section calls change aim, hit location, or a later action	round 2, activation x05
+t_throatdeep	Veteran section calls change aim, hit location, or a later action	round 2, activation x05
+t_hb_packcloses	Veteran section calls change aim, hit location, or a later action	round 1, activation x07
+t_hb_allscars	Veteran section calls change aim, hit location, or a later action	round 2, fire x07
+t_hb_mawopens	Veteran section calls change aim, hit location, or a later action	round 1, activation x07
+t_hb_burncarry	Veteran section calls change aim, hit location, or a later action	round 2, fire x07
+t_hb_warlordrun	Veteran section calls change aim, hit location, or a later action	round 2, fire x07
+t_hb_knifeback	Veteran section calls change aim, hit location, or a later action	round 2, fire x07
+t_hb_darktorps	Veteran section calls change aim, hit location, or a later action	round 2, fire x07
+t_hb_secondknife	Veteran section calls change aim, hit location, or a later action	round 4, fire x07
+t_hb_smilecut	Veteran section calls change aim, hit location, or a later action	round 1, fire x07
+t_hb_everyknife	Veteran section calls change aim, hit location, or a later action	round 2, activation x09
+t_hb_darkknives	Veteran section calls change aim, hit location, or a later action	round 2, activation x07
+t_hb_cutfeeds	Veteran section calls change aim, hit location, or a later action	round 2, activation x07
+t_hb_patchedwing	Veteran section calls change aim, hit location, or a later action	round 2, activation x05
+t_hb_retasked	Veteran section calls change aim, hit location, or a later action	round 3, activation x05
+t_hb_wholeyard	Veteran section calls change aim, hit location, or a later action	round 2, activation x05
+t_hb_screaming	Veteran section calls change aim, hit location, or a later action	round 2, fire x05
+t_hb_swarmscrap	Veteran section calls change aim, hit location, or a later action	round 2, fire x05
+t_hb_weldmatters	Veteran section calls change aim, hit location, or a later action	round 2, activation x05
+t_hb_patchguns	Veteran section calls change aim, hit location, or a later action	round 3, fire x07
+t_hb_scrapfront	Veteran section calls change aim, hit location, or a later action	round 4, fire x05
+t_hb_weldedfight	Veteran section calls change aim, hit location, or a later action	round 6, fire x05
+t_hb_doublebolted	Veteran section calls change aim, hit location, or a later action	round 4, fire x05
+t_hb_packbites	Veteran section calls change aim, hit location, or a later action	round 2, activation x05
+t_hb_weldedwhole	Reseeded 37103 to 37101 to keep the named lineage effect firing	round 1, tick player
+t_hb_nothingbroken	Veteran section calls change aim, hit location, or a later action	round 4, activation x05
+t_hb_preyscent	Veteran section calls change aim, hit location, or a later action	round 2, fire x07
+t_hb_loosepack	Veteran section calls change aim, hit location, or a later action	round 1, fire x03
+t_heg_secondvolley	Veteran section calls change aim, hit location, or a later action	round 4, activation x07
+t_heg_irontempo	Veteran section calls change aim, hit location, or a later action	round 3, fire x07
+t_heg_livingrelay	Veteran section calls change aim, hit location, or a later action	round 2, fire x011
+t_heg_onevoice	Veteran section calls change aim, hit location, or a later action	round 1, activation x09
+t_heg_formation	Veteran section calls change aim, hit location, or a later action	round 1, activation x010
+t_heg_filedtriplicate	Veteran section calls change aim, hit location, or a later action	round 1, activation x010
+t_heg_strikebook	Veteran section calls change aim, hit location, or a later action	round 2, fire x011
+t_heg_filedbefore	Veteran section calls change aim, hit location, or a later action	round 3, activation x010
+t_heg_totalinterdiction	Veteran section calls change aim, hit location, or a later action	round 6, fire x09
+t_heg_sevenbreach	Veteran section calls change aim, hit location, or a later action	round 3, fire x09
+t_heg_permanentfile	Reseeded 15840 to 15844 to keep the named lineage effect firing	round 1, tick player
+t_heg_fullgroup	Veteran section calls change aim, hit location, or a later action	round 6, fire x03
+t_heg_escorts	Veteran section calls change aim, hit location, or a later action	round 3, fire x09
+t_heg_columnstraight	Veteran section calls change aim, hit location, or a later action	round 4, activation x010
+t_heg_bell	Veteran section calls change aim, hit location, or a later action	round 2, activation x011
+t_heg_rotation	Veteran section calls change aim, hit location, or a later action	round 5, activation x012
+t_heg_filedarmor	Veteran section calls change aim, hit location, or a later action	round 3, activation x010
+t_heg_standardcovers	Veteran section calls change aim, hit location, or a later action	round 2, fire x010
+t7a_replay	Veteran section calls change aim, hit location, or a later action	round 4, fire x05
+t7a_lighttogether	Reseeded 8 to 19 to keep the named lineage effect firing	round 1, tick player
+t7a_sunlens	Veteran section calls change aim, hit location, or a later action	round 1, fire x07
+t7a_fleetelsewhere	Veteran section calls change aim, hit location, or a later action	round 4, fire x05
+t7a_weakside	Veteran section calls change aim, hit location, or a later action	round 2, activation x05
+t7a_prismsface	Veteran section calls change aim, hit location, or a later action	round 1, activation x05
+t7a_facetlit	Veteran section calls change aim, hit location, or a later action	round 2, activation x05
+t7a_ledgerarcs	Veteran section calls change aim, hit location, or a later action	round 2, activation x05
+t7a_grandledger	Veteran section calls change aim, hit location, or a later action	round 2, activation x05
+t7a_lastaccount	Veteran section calls change aim, hit location, or a later action	round 2, activation x05
+t7a_torpfirst	Veteran section calls change aim, hit location, or a later action	round 3, fire x05
+t7a_rearreckoning	Veteran section calls change aim, hit location, or a later action	round 2, fire x05
+t7a_salvoend	Veteran section calls change aim, hit location, or a later action	round 2, activation x05
+t7a_wallmoves	Veteran section calls change aim, hit location, or a later action	round 2, activation x05
+t7b_ecl_formation_d	Veteran section calls change aim, hit location, or a later action	round 2, activation x09
+t7b_ecl_shadow	Veteran section calls change aim, hit location, or a later action	round 2, fire x07
+t7b_ecl_wall	Veteran section calls change aim, hit location, or a later action	round 1, fire x08
+t7b_ecl_archive	Veteran section calls change aim, hit location, or a later action	round 3, activation x07
+t7b_ecl_iterfire	Veteran section calls change aim, hit location, or a later action	round 3, fire x07
+t7b_ecl_triage	Reseeded 38216 to 38222 to keep the named lineage effect firing	round 1, tick player
+t7b_ch_nine	Veteran section calls change aim, hit location, or a later action	round 2, activation x06
+t7b_ch_teeth	Veteran section calls change aim, hit location, or a later action	round 2, activation x05
+t7b_ch_tideearly	Veteran section calls change aim, hit location, or a later action	round 3, fire x08
+t7b_ch_growth	Veteran section calls change aim, hit location, or a later action	round 2, fire x05
+t7b_ch_spat	Reseeded 38202 to 38205 to keep the named lineage effect firing	round 1, tick player
+t7b_ecl_targetarchived	Veteran section calls change aim, hit location, or a later action	round 3, activation x07
+t529_roles_screen	Veteran section calls change aim, hit location, or a later action	round 3, activation x06
+t529_roles_change	Veteran section calls change aim, hit location, or a later action	round 3, fire x07
+t529_scent	Reseeded 37107 to 37117 to keep the named lineage effect firing	round 1, tick player
+t529_may_grow_no	Veteran section calls change aim, hit location, or a later action	round 2, fire x05
+s983_station_defend	Veteran section calls change aim, hit location, or a later action	round 3, fire x010
+s983_station_plain	Veteran section calls change aim, hit location, or a later action	round 2, fire x08
+s983_teaching_station_defend	Veteran section calls change aim, hit location, or a later action	round 2, activation x07
+s1450_undo	Veteran section calls change aim, hit location, or a later action	round 2, activation x08
+s1450_undo_chorus	Veteran section calls change aim, hit location, or a later action	round 2, activation x09
+s1450_undo_classic	Veteran section calls change aim, hit location, or a later action	round 3, fire x09
+s1447_ion_pulse	Veteran section calls change aim, hit location, or a later action	round 1, activation x09
+s1480	Veteran section calls change aim, hit location, or a later action	round 2, activation x016
+r1653_gunnery	Veteran section calls change aim, hit location, or a later action	round 2, activation x010
+r1653_afterburn	Veteran section calls change aim, hit location, or a later action	round 3, fire x010
+r1653_flankmark	Veteran section calls change aim, hit location, or a later action	round 1, activation x09
+r1653_lastlight	Veteran section calls change aim, hit location, or a later action	round 1, activation x011
+r1653_coolant	Veteran section calls change aim, hit location, or a later action	round 2, fire x08
+r1653_spare	Veteran section calls change aim, hit location, or a later action	round 3, fire x010
+r1653_ram	Veteran section calls change aim, hit location, or a later action	round 1, fire x08
+r1653_mirror	Veteran section calls change aim, hit location, or a later action	round 4, activation x010
+r1653_beacon	Veteran section calls change aim, hit location, or a later action	round 1, fire x09
+r1653_quiet	Veteran section calls change aim, hit location, or a later action	round 6, fire x010
+r1653_locker	Veteran section calls change aim, hit location, or a later action	round 1, fire x08
+r1653_chaser	Veteran section calls change aim, hit location, or a later action	round 4, fire x010
+r1653_spill	Veteran section calls change aim, hit location, or a later action	round 2, fire x07
+r1653_relay	Veteran section calls change aim, hit location, or a later action	round 2, fire x011
+s1649_fold	Veteran section calls change aim, hit location, or a later action	round 3, activation x09
+s1649_frenzy	Veteran section calls change aim, hit location, or a later action	round 2, fire x08
+t_ecl_outshadow_m3	Veteran section calls change aim, hit location, or a later action	round 1, fire x07
+t_hb_burncarry_m3	Veteran section calls change aim, hit location, or a later action	round 2, activation x08
+t_hb_warlordrun_m3	Veteran section calls change aim, hit location, or a later action	round 1, activation x07
+t_heg_onevoice_m3	Veteran section calls change aim, hit location, or a later action	round 1, activation x09
+t_ecl_tenthousand_m3	Veteran section calls change aim, hit location, or a later action	round 3, fire x010
+t_ecl_restoredfleet_m3	Veteran section calls change aim, hit location, or a later action	round 3, fire x07
+t7a_salvoend_m3	Veteran section calls change aim, hit location, or a later action	round 2, fire x05
+t_namedprey_m3	Veteran section calls change aim, hit location, or a later action	round 3, fire x05
+t_heg_standardcovers_m3	Veteran section calls change aim, hit location, or a later action	round 2, fire x010
+t7b_ch_nine_m3	Veteran section calls change aim, hit location, or a later action	round 2, activation x06
+t_tideend_m3	Veteran section calls change aim, hit location, or a later action	round 1, activation x05
+t_tornback_m3	Veteran section calls change aim, hit location, or a later action	round 5, fire x07
+t_wardglass_m3	Veteran section calls change aim, hit location, or a later action	round 2, fire x05
+t7a_facetlit_m3	Veteran section calls change aim, hit location, or a later action	round 2, activation x05
+t_hb_swarmscrap_m3	Veteran section calls change aim, hit location, or a later action	round 2, fire x05
+t_ecl_tenthframe_m3	Veteran section calls change aim, hit location, or a later action	round 1, activation x07
+t_throatred_m3	Veteran section calls change aim, hit location, or a later action	round 2, activation x08
+t_preyeverymouth_m3	Veteran section calls change aim, hit location, or a later action	round 1, activation x011
+t_hb_darkknives_m3	Veteran section calls change aim, hit location, or a later action	round 2, activation x07
+t_ecl_onesuncopy_m3	Veteran section calls change aim, hit location, or a later action	round 3, activation x07
+t_irontestament_m3	Veteran section calls change aim, hit location, or a later action	round 3, activation x05
+t7a_wallmoves_m3	Veteran section calls change aim, hit location, or a later action	round 2, activation x05
+t7a_sunlens_m3	Veteran section calls change aim, hit location, or a later action	round 1, activation x08
+t_flawforever_m3	Veteran section calls change aim, hit location, or a later action	round 2, activation x07
+t_hb_weldedwhole_m3	Veteran section calls change aim, hit location, or a later action	round 2, fire x05
+t_hb_nothingbroken_m3	Veteran section calls change aim, hit location, or a later action	round 4, fire x05
+t7a_grandledger_m3	Veteran section calls change aim, hit location, or a later action	round 2, activation x05
+t7a_lastaccount_m3	Veteran section calls change aim, hit location, or a later action	round 2, activation x07
+t_volleygrows_m3	Veteran section calls change aim, hit location, or a later action	round 3, fire x05
+t_mouthdeep_m3	Veteran section calls change aim, hit location, or a later action	round 4, fire x05
+t_heg_permanentfile_m3	Veteran section calls change aim, hit location, or a later action	round 1, activation x012
+t_heg_oneorder_m3	Veteran section calls change aim, hit location, or a later action	round 1, activation x012
+r1651_vex	Veteran section calls change aim, hit location, or a later action	round 2, activation x08
+r1651_malek	Veteran section calls change aim, hit location, or a later action	round 2, activation x09
+r1651_thale	Veteran section calls change aim, hit location, or a later action	round 1, activation x08
+r1651_kassar	Veteran section calls change aim, hit location, or a later action	round 3, activation x06
+r1651_vorn	Veteran section calls change aim, hit location, or a later action	round 1, activation x09
+r1651_reyes	Veteran section calls change aim, hit location, or a later action	round 1, fire x08
+r1651_maren	Veteran section calls change aim, hit location, or a later action	round 4, fire x05
+r1651_grax	Veteran section calls change aim, hit location, or a later action	round 1, fire x07
+r1651_sable	Veteran section calls change aim, hit location, or a later action	round 2, fire x09
+r1651_vesh	Veteran section calls change aim, hit location, or a later action	round 3, fire x05
+r1651_razormaw	Veteran section calls change aim, hit location, or a later action	round 1, activation x07
+r1651_mending	Veteran section calls change aim, hit location, or a later action	round 1, activation x05
+r1651_voice	Veteran section calls change aim, hit location, or a later action	round 1, fire x07
+r1651_aelith	Veteran section calls change aim, hit location, or a later action	round 3, activation x05
+r1651_vaelen	Veteran section calls change aim, hit location, or a later action	round 1, fire x05
+r1651_thorne	Veteran section calls change aim, hit location, or a later action	round 1, fire x09
+r1651_mirelle	Veteran section calls change aim, hit location, or a later action	round 4, activation x07
+r1651_sekhmar	Veteran section calls change aim, hit location, or a later action	round 1, fire x07
+r1651_anuket	Veteran section calls change aim, hit location, or a later action	round 3, activation x09
+r1651_khepra	Veteran section calls change aim, hit location, or a later action	round 3, fire x07
+r1651_cmdoverride	Veteran section calls change aim, hit location, or a later action	round 1, fire x07

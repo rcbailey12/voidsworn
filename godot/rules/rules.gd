@@ -2875,7 +2875,9 @@ func torpImpact(S, wi, wGun, live, keep, b0) -> bool:
 	if t == null or jt(t.get("dead")): return false
 	var quad = shieldQuad(t, gh); var shBefore = float(z0(t.get("shp")))   # pool before the volley (R246)
 	var res = {"shield": 0, "hull": 0, "crits": 0, "hits": 0, "misses": 0, "sys": null}
-	var hc = clamp_(hitChance(gh, w, t) + (10 if jt(S.get("first")) else 0) + (15 if (jt(t.get("nem")) and nemWeak("torp")) else 0) - (calledAim() if jt(S.get("called")) else 0.0), 5, 95); var shots = []   # issue 2033: a called shot's aim cost
+	var called = S.get("called")
+	if called != null and not calledOk(t, called): called = null   # another gun may already have broken the section
+	var hc = clamp_(hitChance(gh, w, t) + (10 if jt(S.get("first")) else 0) + (15 if (jt(t.get("nem")) and nemWeak("torp")) else 0) - (calledAim() if called != null else 0.0), 5, 95); var shots = []   # issue 2033: a called shot's aim cost
 	for i in range(int(w["shots"])): shots.append(rnd() * 100.0 < hc)
 	var im = 0.5 if jt(S.get("dark")) else 1.0   # Sable T1b: torpedoes fired in the dark are intercepted at half the usual chance
 	if S["side"] == "player" and riderOn("malek"): riderFxOnce(t, "Point defense blind")   # issue 1651 Malek rider: no point defense or screening wings this round
@@ -2900,7 +2902,7 @@ func torpImpact(S, wi, wGun, live, keep, b0) -> bool:
 	var per = func(rear, first_rear): return S["base"] + ((S["rearAdd"] if first_rear else S.get("rearAddSpent", S["rearAdd"])) if rear else 0.0)
 	var g0 = []
 	for k in TORP_GHOST_KEYS: g0.append(gh.get(k))
-	landVolley(gh, w, t, {"quad": quad, "shBefore": shBefore, "shots": shots, "called": S.get("called"), "res": res, "torp": true, "per": per, "by": shooter})
+	landVolley(gh, w, t, {"quad": quad, "shBefore": shBefore, "shots": shots, "called": called, "res": res, "torp": true, "per": per, "by": shooter})
 	if shooter != null and shooter.has("spillReady"): shooter.erase("spillReady")   # issue 1653: the surge is spent on this attack
 	torpGhostBack(gh, g0, real)
 	if not jt(res.get("hits")) and reached > 0 and jt(g(gh.get("fx"), "spread")) and not jt(t.get("dead")):
@@ -3833,7 +3835,7 @@ func fireWeapon(u, wi: int, t, opts: Dictionary = {}) -> bool:
 	if not jt(opts.get("intercept")) and not jt(u.get("isSq")):
 		fstat(u["fac"], "shots")
 		if syncOn(u, t): fstat(u["fac"], "syncShots")
-	if called != null and jt(t.get("isSq")): called = null   # issue 2033: an escort wing took the hit, so nothing is called
+	if called != null and not calledOk(t, called): called = null   # another gun may have broken it, or an escort may have taken the hit
 	if called != null: hc = max(5.0, hc - calledAim())   # issue 2033: a called shot trades aim for the chosen section
 	var shots = []
 	for i in range(int(w["shots"])): shots.append(rnd() * 100.0 < hc)

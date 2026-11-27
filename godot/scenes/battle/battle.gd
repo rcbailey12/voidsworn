@@ -7564,7 +7564,7 @@ func _volley_preview(id: String, guns: Array, tid: String, st = null, sec := "")
 
 
 func _fire_preview(id: String, wi: int, tid: String) -> Dictionary:
-	return _volley_preview(id, [wi], tid)[wi]
+	return _volley_preview(id, [wi], tid, null, _aim_sec(tid))[wi]
 
 
 # The same single-gun preview from a planned hex, if the gun can fire there.

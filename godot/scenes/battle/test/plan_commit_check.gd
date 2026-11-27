@@ -127,16 +127,27 @@ func _called_volley() -> void:
 	var foe: Dictionary = b.api.unit(tid)
 	var shooter: Dictionary = b.api.unit(b.sel)
 	foe["hp"] = foe["maxHp"]
+	# Keep Engines intact for this routing check. The rules test covers the fallback after a break.
+	foe["sec"]["eng"]["hp"] = foe["maxHp"]
+	foe["sec"]["eng"]["max"] = foe["maxHp"]
 	shooter["aim"] = 45
 	b.V = b.api.view()
 	b._index_view()
 	_click_unit(tid)
 	var before := _rules()
 	var plain: int = b._target_info().hit
+	var wi: int = b.aims[0].guns[0]
+	var still := {"q": shooter.q, "r": shooter.r, "f": shooter.facing}
+	var plain_gun: float = b._fire_preview(b.sel, wi, tid).hit
 	_check(plain > 15 and b._aim_sec(tid) == "", "a planned volley starts on Any")
 	b.hud.action.emit("called", "eng")
 	_check(b._aim_sec(tid) == "eng" and b._target_info().hit == plain - 10 and _rules() == before,
 		"Engines changes the preview without changing the battle")
+	var here: Dictionary = b._fire_preview(b.sel, wi, tid)
+	var hovered: Dictionary = b._fire_preview_at(b.sel, wi, tid, still)
+	_check(plain_gun > 15.0 and is_equal_approx(here.hit, plain_gun - b.api.R.calledAim())
+		and is_equal_approx(here.hit, hovered.get("hit", -1.0)),
+		"the weapon list and hovered hex agree on the called-shot odds without moving")
 	b._on_key(KEY_BACKSPACE)
 	_check(b._aim_sec(tid) == "" and b._target_info().hit == plain, "Backspace restores the plain volley")
 	b.hud.action.emit("called", "eng")

@@ -40,6 +40,7 @@ func _init() -> void:
 		["the preview takes the aim cost off a called gun", c_preview],
 		["the preview never goes under 5 to hit", c_preview_floor],
 		["a called volley lands on its section only and gives the crit back", c_fire],
+		["later guns use normal aim and crit after the called section breaks", c_broken_between_guns],
 		["strike craft and destroyed sections cannot be called", c_ok],
 		["Standard AI never calls", c_standard],
 		["Veteran calls Engines on a ship under Full Ahead", c_vet_runner],
@@ -66,7 +67,10 @@ func c_preview() -> Array:
 	gun(u, 4)
 	var plain = float(R.previewVolley(u, [0], t)[0]["hit"])
 	var called = float(R.previewVolley(u, [0], t, "eng")[0]["hit"])
-	return [plain > 15.0 and near(called, plain - 10.0), "hit " + str(plain) + " plain, " + str(called) + " called"]
+	var still = R.stateView(u, {"q": u.q, "r": u.r, "f": u.facing})
+	var hovered = float(R.previewVolley(still, [0], t, "eng")[0]["hit"])
+	return [plain > 15.0 and near(called, plain - 10.0) and near(hovered, called),
+		"hit %s plain, %s called, %s called from current hex" % [plain, called, hovered]]
 
 func c_preview_floor() -> Array:
 	fresh(["penitent"], "hegemony", ["h_dominion"]); var u = P[0]; var t = E[0]
@@ -84,6 +88,39 @@ func c_fire() -> Array:
 	var eng = 99999 - float(t["sec"]["eng"]["hp"]); var prow = 99999 - float(t["sec"]["prow"]["hp"]); var mid = 99999 - float(t["sec"]["mid"]["hp"])
 	return [ok and eng > 0.0 and prow == 0.0 and mid == 0.0 and u["crit"] == crit0 and t.get("_calledSec") == null,
 		"fired " + str(ok) + ", eng " + str(eng) + ", prow " + str(prow) + ", mid " + str(mid) + ", crit " + str(crit0) + " -> " + str(u["crit"])]
+
+func c_broken_between_guns() -> Array:
+	for kind in ["battery", "torp"]:
+		# Seed 2 rolls 73.4 to hit (between called and plain aim); seed 13 rolls 56.6 to hit and 7.1 to crit.
+		for seed in [2, 13]:
+			fresh(["penitent"], "hegemony", ["h_dominion"]); var u = P[0]; var t = E[0]
+			gun(u, 1); u["aim"] = 200; u["crit"] = 0
+			var second = R.mkWeapon(kind, "F", {})
+			second["shots"] = 1; second["acc"] = 80; second["fall"] = 0; second["crit"] = 0
+			second["fired"] = false; second["cdLeft"] = 0; second["off"] = 0
+			u["weapons"].append(second)
+			t["shp"] = 0; R.syncShields(t); t["ev"] = 0; t["intercepts"] = 0
+			for f in range(6):
+				t["facing"] = f
+				if R.shieldQuad(t, u) == 0: break
+			t["sec"]["eng"]["hp"] = 1
+			R.rng.rnd_seed(7)
+			if not api.fire(u["id"], 0, t["id"], "eng") or not R.jt(t["sec"]["eng"]["broken"]):
+				return [false, "setup: gun 0 did not break Engines"]
+			u["aim"] = 0
+			u["aim"] = 80.0 - R.hitChance(u, second, t)
+			var natural = R.SEC_OF_QUAD[R.shieldQuad(t, u)]
+			if not R.canFire(u, second, t) or natural == "eng" or not near(R.hitChance(u, second, t), 80.0):
+				return [false, "setup: gun 1 needs 80 aim on a different section"]
+			R.events.clear(); R.rng.rnd_seed(seed)
+			api.fire(u["id"], 1, t["id"], "eng")
+			var hits := []
+			for e in R.events:
+				if e["t"] == "hit" and e["target"] == t["id"]:
+					hits.append([e["section"], e["crit"]])
+			if hits != [[natural, false]]:
+				return [false, "%s, seed %d: expected one normal hit on %s, got %s" % [kind, seed, natural, hits]]
+	return [true, ""]
 
 func c_ok() -> Array:
 	fresh(["penitent"], "hegemony", ["h_dominion"]); var t = E[0]
