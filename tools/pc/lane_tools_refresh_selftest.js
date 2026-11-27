@@ -116,22 +116,27 @@ assert.match(script, /if \(\$seat -eq 'work217'\) \{ \$checkoutLock = @\(Lock-Wo
     const ready = path.join(dir, 'ready'), release = path.join(dir, 'release'), done = path.join(dir, 'done');
     const sleep = ms => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
     const until = (test, ms) => { const end = Date.now() + ms; while (!test() && Date.now() < end) sleep(50); return test(); };
+    // A file the refresh writes is only ready once its whole text is there: existence alone can catch a file that is
+    // created but not yet flushed (the #2150 flake on the ready file), so wait on the text, never a fixed sleep.
+    const readText = file => { try { return fs.readFileSync(file, 'utf8'); } catch { return null; } };
     const launch = () => spawnSync(shell, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(__dirname, 'work_issue.ps1'),
       'run', '687', 'deepseek', 'dryrun', path.join(workRoot, 'slot_deepseek', 'repo')], { encoding: 'utf8', timeout: 60000 });
     let refresh;
     try {
       assert.ok(!fs.existsSync(workRoot), 'the slot folder does not exist when the refresh starts');
+      // Each signal is written to a temp name and renamed into place, so a reader that sees it sees the whole text.
       refresh = spawn(shell, ['-NoProfile', '-Command', `${fn[0]}\n$h = @(Lock-WorkhorseSlots $env:FIX_ROOT)\n` +
-        `[IO.File]::WriteAllText($env:FIX_READY, [string]$h.Count)\n` +
+        `$tmp = $env:FIX_READY + '.tmp'\n[IO.File]::WriteAllText($tmp, [string]$h.Count)\n[IO.File]::Move($tmp, $env:FIX_READY)\n` +
         `$end = [DateTime]::UtcNow.AddSeconds(60); while (-not (Test-Path -LiteralPath $env:FIX_RELEASE) -and [DateTime]::UtcNow -lt $end) { Start-Sleep -Milliseconds 50 }\n` +
-        `foreach ($x in $h) { $x.Dispose() }\n[IO.File]::WriteAllText($env:FIX_DONE, 'released')`], { env: { ...process.env, FIX_ROOT: workRoot, FIX_READY: ready, FIX_RELEASE: release, FIX_DONE: done }, stdio: 'ignore' });
-      assert.ok(until(() => fs.existsSync(ready), 30000), 'paused refresh never took the slot locks');
-      assert.equal(fs.readFileSync(ready, 'utf8'), '14', 'seven arms, live and dry run');
+        `foreach ($x in $h) { $x.Dispose() }\n$tmp = $env:FIX_DONE + '.tmp'\n[IO.File]::WriteAllText($tmp, 'released')\n[IO.File]::Move($tmp, $env:FIX_DONE)`], { env: { ...process.env, FIX_ROOT: workRoot, FIX_READY: ready, FIX_RELEASE: release, FIX_DONE: done }, stdio: 'ignore' });
+      assert.ok(until(() => readText(ready) !== null, 30000), 'paused refresh never took the slot locks');
+      assert.ok(until(() => (readText(ready) || '').length > 0, 30000), 'paused refresh wrote no slot count');
+      assert.equal(readText(ready), '14', 'seven arms, live and dry run');
       const first = launch();
       assert.equal(first.status, 14, first.stdout + first.stderr);
       assert.match(first.stdout, /workhorse slot busy/, 'a first launch during the refresh is refused');
       fs.writeFileSync(release, 'go');
-      assert.ok(until(() => fs.existsSync(done), 30000), 'paused refresh did not release its locks');
+      assert.ok(until(() => readText(done) === 'released', 30000), 'paused refresh did not release its locks');
       if (process.platform !== 'win32') {
         // Off Windows there is no cmd to start, so a free slot gets past the lock and stops at the batch launch.
         const after = launch();
