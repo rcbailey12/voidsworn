@@ -2,8 +2,8 @@ extends SceneTree
 # godot --headless --path godot --script res://fx/test/frame_rate_steady_check.gd
 # Issue 1467 (Astra pass 2, findings 4, 5 and 8): effects keep the same timeline at 15, 30 and 144 fps.
 # 1. Hull recoil integrates the whole effect second (1.00 s) and lands in the same pose at every frame rate.
-# 2. The fallback torpedo exhaust (_projectile_exhaust, used when a round has no kit trail) gives 14 puffs a second
-#    (10 for rockets) within 1, and a hitch drops the overdue puffs instead of repeating bursts.
+# 2. The shared exhaust clock gives 14 ordinary puffs a second (24 for rocket smoke) within 1, and a hitch drops
+#    the overdue puffs instead of repeating bursts.
 # 3. The hit-fragment pool uploads its texture only when pieces are added, never on an expiry, and nothing once all
 #    pieces are gone. Prints the upload count for one staggered salvo.
 
@@ -126,7 +126,7 @@ func _run() -> void:
 		var torp := _puffs(fps, "torp")
 		var rock := _puffs(fps, "rockets")
 		_check(absi(torp - 14) <= 1, "%d fps: %d torpedo puffs in one second (14)" % [fps, torp])
-		_check(absi(rock - 10) <= 1, "%d fps: %d rocket puffs in one second (10)" % [fps, rock])
+		_check(absi(rock - 24) <= 1, "%d fps: %d rocket puffs in one second (24)" % [fps, rock])
 	# 1.5 s with a 0.5 s stall at 0.5 s: 7 puffs, 3 at the stall (cap), 7 after = 17. Banking the 4 overdue puffs
 	# would add them as extra bursts after the stall (21).
 	var hitched := _puffs(60, "torp", 0.5, 1.5)

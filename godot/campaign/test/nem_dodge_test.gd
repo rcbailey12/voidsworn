@@ -18,7 +18,7 @@ func _init() -> void:
 	var dodge := 0; var total := 0; var boss_bad := 0; var tag_bad := 0; var h := 0
 	for s in [1, 2, 3]:
 		for i in range(PER_SECTOR):
-			JSM.rnd_seed(1175000 + s * 10000 + i)
+			C.rng.rnd_seed(1175000 + s * 10000 + i)
 			C.RUN = null
 			var m = C.genSector(s)
 			C.RUN = {"sector": s, "map": m, "nemStrike": false}
@@ -63,7 +63,7 @@ func _play_rest_meetings() -> int:
 	var bad := 0
 	for kind in ["shipyard", "drydock", "field", "event"]:
 		var C = CampaignScript.new(); C.load_tables(); C.fixed_clock = true
-		JSM.rnd_seed(1175)
+		C.rng.rnd_seed(1175)
 		C.newRun("vex", "voidsworn")
 		var cols: Array = C.RUN["map"]["cols"]; var c4: Array = cols[cols.size() - 3]
 		var n = c4[0]; n["type"] = kind
@@ -108,7 +108,7 @@ func _play_rest_meetings() -> int:
 			bad += 1; printerr("FAIL: using the %s did not finish the stop" % kind)
 	# the flagship fight uses the objective and board its stop showed
 	var D = CampaignScript.new(); D.load_tables(); D.fixed_clock = true
-	JSM.rnd_seed(11751)
+	D.rng.rnd_seed(11751)
 	D.newRun("vex", "voidsworn")
 	var dc: Array = D.RUN["map"]["cols"]; var boss = dc[dc.size() - 1][0]
 	boss["enc"] = "ambush"; boss["shape"] = "hourglass"
@@ -143,7 +143,7 @@ func _fresh():
 func _reload_meetings() -> int:
 	var bad := 0
 	for legacy in [false, true]:
-		var C = _fresh(); JSM.rnd_seed(11752)
+		var C = _fresh(); C.rng.rnd_seed(11752)
 		C.newRun("vex", "voidsworn")
 		var cols: Array = C.RUN["map"]["cols"]; var n = cols[cols.size() - 3][0]; n["type"] = "shipyard"
 		for k in ["enc", "shape", "arch", "mod", "rw", "seed"]: n.erase(k)
@@ -155,17 +155,17 @@ func _reload_meetings() -> int:
 		else: C.mapScreen()      # a map made now: opening it gives every column 4 stop its seed
 		var text0: String = C.save_text()
 		if legacy:   # the first Continue of the old save opens the map, which gives the stop its seed and saves it
-			var L = _fresh(); JSM.rnd_seed(77)
+			var L = _fresh(); L.rng.rnd_seed(77)
 			L.load_save_text(text0); L.titleScreen(); L.act("continueRun"); text0 = L.save_text()
 		var tag := "old map" if legacy else "new map"
 		var prints: Array = []
 		for i in range(2):
-			var A = _fresh(); JSM.rnd_seed(500 + i)   # different random state each time: only the saved seed may decide
+			var A = _fresh(); A.rng.rnd_seed(500 + i)   # different random state each time: only the saved seed may decide
 			A.load_save_text(text0); A.titleScreen(); A.act("continueRun"); A.act("enterNode", n["id"])
 			prints.append(_fight_print(A))
 			if i == 0:
 				var mid: String = A.save_text()
-				var Bc = _fresh(); JSM.rnd_seed(900)
+				var Bc = _fresh(); Bc.rng.rnd_seed(900)
 				Bc.load_save_text(mid); Bc.titleScreen(); Bc.act("continueRun")
 				if Bc.page.get("kind") == "map" and Bc.availableNodes().has(n["id"]): Bc.act("enterNode", n["id"])   # closed mid-fight: Continue, then the same stop
 				prints.append(_fight_print(Bc))

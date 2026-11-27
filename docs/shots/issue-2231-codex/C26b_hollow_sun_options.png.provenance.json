@@ -1,0 +1,68 @@
+{
+  "source_commit": "bfb6c28c240a45fcf53ced87a58cc7d489efa8ba",
+  "source_dirty": true,
+  "source_diff_sha256": "a96ac51738d118b8177bcd4c2ae4c0d21bbcd288c57d3dc25aa54e539d6aae05",
+  "source_dirty_files": {
+    "godot/main/README.md": "e4b1cf2225f76dcbfab9b339bd7964d9979a11be",
+    "godot/main/load_screen.gd": "2fdf45d17359c8bc7210bd0ecc4a644a282969ee",
+    "godot/main/main.gd": "85611c672965c79dca47bfd3736a208993ccc8b0",
+    "godot/main/test/background_work_1437_check.gd": "383f9a9b85dae9d7bafa0f7ba90c5d329c613175",
+    "godot/main/test/retire_scene_check.gd": "1046caf4d733c8fffd62857679a23a7b1cb3ed06",
+    "godot/main/test/showcase_quiet_check.gd": "6f5be2a1e899b8da14d39d1315900fb27e637b90",
+    "godot/main/test/title_settings_test.gd": "11411b36e95d59886ca5ac8decfb4388997c621f",
+    "godot/main/title.gd": "17065eca74928acea13076d8cd3c7defc1294c91",
+    "godot/scenes/battle/battle.gd": "1fd5070812b54758549e971b46b772dde199222d",
+    "godot/tools/ci/godot_checks.txt": "6cf7fd67f831313454b1e4ad8f516605df7ae452",
+    "godot/ui/battle/hud.gd": "3f49af113b0aba003642a263f42e10129ab1fd9d",
+    "godot/ui/campaign/campaign_ui.gd": "f64071d1a11741c83e3aa75d269adb1ac6367ba2",
+    "godot/ui/campaign/map3d.gd": "93a8a5e9a744d84aa6c00aa0839d2d0d9fcda38f",
+    "godot/ui/test/front_end_test.gd": "41f1cac07f99f29973ec399a988b9d1877ef6a3e"
+  },
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "C26b_hollow_sun_options.png",
+  "date": "2026-11-26T01:01:11Z",
+  "sources": [
+    {
+      "source_commit": "bfb6c28c240a45fcf53ced87a58cc7d489efa8ba",
+      "source_dirty": true,
+      "source_diff_sha256": "a96ac51738d118b8177bcd4c2ae4c0d21bbcd288c57d3dc25aa54e539d6aae05",
+      "source_dirty_files": {
+        "godot/main/README.md": "e4b1cf2225f76dcbfab9b339bd7964d9979a11be",
+        "godot/main/load_screen.gd": "2fdf45d17359c8bc7210bd0ecc4a644a282969ee",
+        "godot/main/main.gd": "85611c672965c79dca47bfd3736a208993ccc8b0",
+        "godot/main/test/background_work_1437_check.gd": "383f9a9b85dae9d7bafa0f7ba90c5d329c613175",
+        "godot/main/test/retire_scene_check.gd": "1046caf4d733c8fffd62857679a23a7b1cb3ed06",
+        "godot/main/test/showcase_quiet_check.gd": "6f5be2a1e899b8da14d39d1315900fb27e637b90",
+        "godot/main/test/title_settings_test.gd": "11411b36e95d59886ca5ac8decfb4388997c621f",
+        "godot/main/title.gd": "17065eca74928acea13076d8cd3c7defc1294c91",
+        "godot/scenes/battle/battle.gd": "1fd5070812b54758549e971b46b772dde199222d",
+        "godot/tools/ci/godot_checks.txt": "6cf7fd67f831313454b1e4ad8f516605df7ae452",
+        "godot/ui/battle/hud.gd": "3f49af113b0aba003642a263f42e10129ab1fd9d",
+        "godot/ui/campaign/campaign_ui.gd": "f64071d1a11741c83e3aa75d269adb1ac6367ba2",
+        "godot/ui/campaign/map3d.gd": "93a8a5e9a744d84aa6c00aa0839d2d0d9fcda38f",
+        "godot/ui/test/front_end_test.gd": "41f1cac07f99f29973ec399a988b9d1877ef6a3e"
+      },
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    602,
+    564,
+    700
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "0b8b4b5b0c5066a7d7ad1de0ffcfe54ef3ab8fd6f7db1fadf03d204a078c56f4"
+  ],
+  "stamp_template_sha256": "0b8b4b5b0c5066a7d7ad1de0ffcfe54ef3ab8fd6f7db1fadf03d204a078c56f4",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAYAAABHw0nAAAAB0UlEQVR4nO3WsQ3AIADAMMoFqFv/PxSOYKgi2RdkzLPebw8AgLD5dwAAwC1DAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAQJ6hAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAQJ6hAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAQJ6hAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAQJ6hAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgFF3ADBtAf5LHciZAAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "d79a227b45560b90aac042ec8dbd190099a5bf45c6660fcfb43ddc4831ff509c"
+}

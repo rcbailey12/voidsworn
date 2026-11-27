@@ -34,6 +34,8 @@ const BOARD_LOOKS := {
 	5: {"bake": -1, "flat": Vector3(0.36, 0.35, 0.34), "clouds": false, "desat": 0.65, "atmo": Vector3(0.6, 0.62, 0.7), "atmo_k": 0.0, "tints": [Vector3(0.9, 0.9, 0.92), Vector3(0.98, 0.9, 0.82), Vector3(0.82, 0.84, 0.88)], "gain": 1.35, "stand_gain": 0.33},
 }
 const BOARD_SIZE := Vector2i(4096, 2048)
+const MM_DETAIL_TILES := {1: "terran", 4: "volcanic"}
+const MM_TRIAL := preload("res://render/mm_trial.gd")
 # R01 longitudes (u) whose equator band is clean of remix swirls, judged on the colour map (issue 1765)
 const R01_CLEAN := [[0.05, 0.28]]
 
@@ -131,8 +133,19 @@ static func install_board(planet: MeshInstance3D, air: MeshInstance3D, look_kind
 	stand_in.set_shader_parameter("tex_b", baker.texture(maps[1]))
 	stand_in.set_shader_parameter("tex_h", baker.texture(maps[2]))
 	stand_in.set_shader_parameter("map_scale", float(size.x) / TAU)
+	var tile := trial_detail_tile(look_kind)
+	if tile != null:
+		stand_in.set_shader_parameter("mm_detail_tile", tile)
+		stand_in.set_shader_parameter("mm_detail", true)
 	stand_in.set_shader_parameter("has_tex", 1.0)
 	SKEEP.event("board planet maps set")
+
+
+static func trial_detail_tile(look_kind: int) -> Texture2D:
+	if not MM_TRIAL.enabled() or not MM_DETAIL_TILES.has(look_kind):
+		return null
+	var code: String = MM_DETAIL_TILES[look_kind]
+	return MM_TRIAL.load_tile(code, "res://world/detail/mm_trial/%s.png" % code)
 
 
 # The board planet's bake request for a baked look (terran, ice, volcanic).
@@ -397,6 +410,8 @@ uniform vec3 lava_col = vec3(1.0, 0.36, 0.08);
 // camera never shimmers. 0 turns it off (the stand-in and the rocky worlds never use it).
 uniform float detail = 0.0;
 uniform float detail_grain = 0.0;
+uniform sampler2D mm_detail_tile : filter_linear_mipmap_anisotropic, repeat_enable;
+uniform bool mm_detail = false;
 // Ryan (Nov 24): terran clouds need more detail. Live fine noise frays thin cloud into wisps while thick cores stay
 // solid, and each cloud is shaded by its own thickness toward the sun, so its sunward edge is bright and its far side
 // falls into shade. Same fade as the ground detail. 0 turns it off.
@@ -422,6 +437,12 @@ vec4 bp_sample(sampler2D map, vec3 d, float lod) {
 	uv.y = clamp(uv.y, pole_pad, 1.0 - pole_pad);
 	return textureLod(map, uv, lod);
 }
+vec4 bp_detail_tile(vec3 p, vec3 dx, vec3 dy, vec3 weight) {
+	// Explicit gradients keep mip selection valid where the octave branches diverge across pixels.
+	return textureGrad(mm_detail_tile, p.yz, dx.yz, dy.yz) * weight.x
+		 + textureGrad(mm_detail_tile, p.xz, dx.xz, dy.xz) * weight.y
+		 + textureGrad(mm_detail_tile, p.xy, dx.xy, dy.xy) * weight.z;
+}
 void vertex() {
 	local_direction = normalize(VERTEX);
 	world_point = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
@@ -430,7 +451,10 @@ void vertex() {
 }
 void fragment() {
 	vec3 d = bp_spin(bp_tilt(normalize(local_direction)), turn);
-	float lod = clamp(log2(max(length(dFdx(d)), length(dFdy(d))) * map_scale), 0.0, 10.0);
+	vec3 d_dx = dFdx(d);
+	vec3 d_dy = dFdy(d);
+	float cells = max(length(d_dx), length(d_dy)) * map_scale;
+	float lod = clamp(log2(cells), 0.0, 10.0);
 	vec3 n = normalize(world_point - world_centre);
 	vec3 v = normalize(CAMERA_POSITION_WORLD - world_point);
 	vec3 l = normalize(sun);
@@ -451,7 +475,6 @@ void fragment() {
 		vec3 toward_light = bp_spin(bp_tilt(normalize(normalize(local_direction) + normalize(local_light) * 0.012)), turn);
 		shadow = bp_sample(tex_b, bp_spin(toward_light, TIME * cloud_rate), lod).r;
 		// lattice cells per screen pixel at the map's own scale; each octave of live detail fades out before it can alias
-		float cells = max(length(dFdx(d)), length(dFdy(d))) * map_scale;
 		if (cloud_detail > 0.0) {
 			vec3 cq = bp_spin(d, TIME * cloud_rate) * map_scale;
 			float c_raw = cloud;   // the map's own thickness, compared with the sunward sample on the same scale (Artoo)
@@ -475,7 +498,30 @@ void fragment() {
 			// billows: the same fine noise lights and shades the cloud's own top
 			cloud_lit = clamp(cloud_lit + (c1 * 0.6 + c2 * 0.4) * 0.9, 0.0, 1.0);
 		}
-		if (detail > 0.0) {
+		if (detail > 0.0 && mm_detail) {
+			float w_coarse = 1.0 - smoothstep(0.25, 0.5, cells * 1.3);
+			float w_fine = 1.0 - smoothstep(0.25, 0.5, cells * 4.0);
+			if (w_coarse > 0.0) {
+				vec3 weight = abs(d);
+				weight *= weight;
+				weight *= weight;
+				weight /= dot(weight, vec3(1.0));
+				float coarse_scale = map_scale * 1.3;
+				vec4 coarse = bp_detail_tile(d * coarse_scale, d_dx * coarse_scale, d_dy * coarse_scale, weight);
+				float dh = (coarse.r - 0.5) * w_coarse * 0.65;
+				float grain = (coarse.a - 0.5) * w_coarse * 0.65;
+				if (w_fine > 0.0) {
+					float fine_scale = map_scale * 4.0;
+					vec4 fine = bp_detail_tile(d * fine_scale, d_dx * fine_scale, d_dy * fine_scale, weight);
+					dh += (fine.b - 0.5) * w_fine * 0.35;
+					grain += (fine.a - 0.5) * w_fine * 0.35;
+				}
+				float land = 1.0 - ocean;
+				h += dh * detail * land;
+				alb *= 1.0 + grain * detail_grain * land;
+				alb *= mix(1.0, coarse.g, w_coarse * detail_grain * land);
+			}
+		} else if (detail > 0.0) {
 			vec3 dp = d * map_scale;
 			float n1 = 0.0;
 			float n2 = 0.0;
@@ -592,14 +638,16 @@ float craters_r(vec3 d, float scale, float dens, inout float ray) {
 		float size = hh(c + 7.7);
 		float r = (0.18 + 0.3 * size) / scale;
 		float u = acos(clamp(dot(d, cp), -1.0, 1.0)) / r;
-		h += (u < 1.0 ? -(1.0 - u * u) : 0.0) * 0.6 + exp(-pow((u - 1.0) / 0.2, 2.0)) * 0.25;
+		float uc = (u - 1.0) / 0.2;
+		h += (u < 1.0 ? -(1.0 - u * u) : 0.0) * 0.6 + exp(-(uc * uc)) * 0.25;
 		h += exp(-pow(u / 0.16, 2.0)) * 0.3 * smoothstep(0.5, 0.9, size);
 		if (hh(c + 9.3) < 0.18 && u > 0.9 && u < 2.4) {
 			vec3 e1 = normalize(cross(abs(cp.y) > 0.95 ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0), cp));
 			vec3 e2 = cross(cp, e1);
 			float ang = atan(dot(d, e2), dot(d, e1));
 			float streak = smoothstep(0.62, 0.92, wvn3(vec3(cos(ang) * 5.0, sin(ang) * 5.0, hh(c + 3.7) * 40.0)));
-			ray += streak * exp(-pow((u - 1.0) / 0.55, 2.0)) * smoothstep(0.9, 1.1, u);
+			float ur = (u - 1.0) / 0.55;
+			ray += streak * exp(-(ur * ur)) * smoothstep(0.9, 1.1, u);
 		}
 	}
 	return h;
@@ -994,7 +1042,8 @@ void fragment() {
 	dens = clamp(dens / 1.9, 0.0, 1.0);
 	dens *= smoothstep(0.0, 0.04, u) * (1.0 - smoothstep(0.94, 1.0, u));
 	// a dark gap two thirds of the way out (Cassini-like) and a thin faint inner ring
-	dens *= 1.0 - 0.9 * exp(-pow((u - 0.66) / 0.018, 2.0));
+	float ug = (u - 0.66) / 0.018;
+	dens *= 1.0 - 0.9 * exp(-(ug * ug));
 	dens *= mix(0.35, 1.0, smoothstep(0.08, 0.2, u));
 	vec3 L = normalize(sun);
 	vec3 V = normalize(CAMERA_POSITION_WORLD - vW);

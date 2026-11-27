@@ -88,7 +88,7 @@ func _run() -> void:
 	c.fixed_clock = true
 	c.teaching_tips = false
 	for seed_value in range(1, 40):
-		Campaign.JSM.rnd_seed(seed_value)
+		c.rng.rnd_seed(seed_value)
 		c.newRun("vex", "voidsworn")
 		c.ACT_enterNode(c.availableNodes()[0])
 		if c.availableNodes().size() >= 4: break

@@ -1,0 +1,86 @@
+{
+ "about": "Issue 2022. One matched strip per hull: opening shortly after split, exposed interior, and cold seam after the late joint has had time to cool. Glasswright and Chorus keep their own break looks.",
+ "cameras": [170, 60, 26],
+ "cell": [384, 216],
+ "crop": {"170": [384, 216], "60": [768, 432], "26": [1152, 648]},
+ "rows": [
+  {
+   "id": "wreck2022_h4_11",
+   "strict": true,
+   "group": "Wreck breaks 2022",
+   "label": "H4_11 Meridian Directorate break: opening, exposed structure, cold",
+   "att": ["voidsworn", "Cruiser"],
+   "tgt": ["hegemony", "Super-dreadnought"],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "windows": [["split", 0.16, 1], ["split", 1.3, 1], ["split", 4.4, 1]],
+   "key": 1
+  },
+  {
+   "id": "wreck2022_v1b_r_23",
+   "strict": true,
+   "group": "Wreck breaks 2022",
+   "label": "V1b_r_23 Sunward Crusade break: opening, exposed structure, cold",
+   "att": ["voidsworn", "Cruiser"],
+   "tgt": ["voidsworn", "Dreadnought"],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "windows": [["split", 0.16, 1], ["split", 1.3, 1], ["split", 4.4, 1]],
+   "key": 1
+  },
+  {
+   "id": "wreck2022_c19_51",
+   "strict": true,
+   "group": "Wreck breaks 2022",
+   "label": "C19_51 Ashfall Hullbreakers break: opening, exposed structure, cold",
+   "att": ["voidsworn", "Cruiser"],
+   "tgt": ["corsair", "Battle-barge"],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "windows": [["split", 0.16, 1], ["split", 1.3, 1], ["split", 4.4, 1]],
+   "key": 1
+  },
+  {
+   "id": "wreck2022_d22_23",
+   "strict": true,
+   "group": "Wreck breaks 2022",
+   "label": "D22_23 Eclipse break: opening, exposed structure, cold",
+   "att": ["voidsworn", "Cruiser"],
+   "tgt": ["deathless", "Tomb-ark"],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "windows": [["split", 0.16, 1], ["split", 1.3, 1], ["split", 4.4, 1]],
+   "key": 1
+  },
+  {
+   "id": "wreck2022_i15_11",
+   "strict": true,
+   "group": "Wreck breaks 2022",
+   "label": "I15_11 Glasswrights break: opening, exposed structure, cold",
+   "att": ["voidsworn", "Cruiser"],
+   "tgt": ["ithar", "Cruiser"],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "windows": [["split", 0.16, 1], ["split", 1.3, 1], ["split", 4.4, 1]],
+   "key": 1
+  },
+  {
+   "id": "wreck2022_b21_11",
+   "strict": true,
+   "group": "Wreck breaks 2022",
+   "label": "B21_11 Chorus break: opening, exposed structure, cold",
+   "att": ["voidsworn", "Cruiser"],
+   "tgt": ["chorus", "Cruiser"],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "windows": [["split", 0.16, 1], ["split", 1.3, 1], ["split", 4.4, 1]],
+   "key": 1
+  }
+ ]
+}

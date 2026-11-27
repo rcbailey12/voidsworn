@@ -44,6 +44,12 @@ ZONES = {
 SEAFOAM = (0.35, 1.0, 0.64)
 
 
+def mat_of(name):
+    """a sheet material by name (kit.mat: the one registered by stack.setup, made once)"""
+    import kit
+    return kit.mat(name)
+
+
 def gw_kit(name):
     """load a Glasswright kit module by path under its own name (another kit's parts.py may already be imported as `parts`)"""
     import importlib.util
@@ -90,7 +96,7 @@ def tube_mesh(points, radii, n=10):
     return vv, ff
 
 
-def thick_shell(ob, t, centre):
+def thick_shell(ob, t, centre, back=None):
     """give an open surface real thickness t without a solidify modifier (CD5 r5c: a solidify is the contract's 'skin' and the
     export lines its back with a dark inside material that tears from its piece at every break). Back layer along the vertex
     normals (inward, or split either side when `centre`), walls on the open edges; point attributes copied to the back."""
@@ -136,6 +142,11 @@ def thick_shell(ob, t, centre):
         new.attributes[name].data.foreach_set('value' if kind == 'FLOAT' else 'color', vals + vals)
     for p in new.polygons:
         p.use_smooth = True
+    if back is not None:      # R421 smoked lining: the back layer (and nothing else) takes its own material
+        new.materials.append(back)
+        nf = len(me.polygons)
+        for p in new.polygons[nf:2 * nf]:
+            p.material_index = len(new.materials) - 1
     ob.data = new
     new.update()
 
@@ -218,7 +229,7 @@ def bow_gather(x0, x1, targets, strength=0.85):
 
 
 def mosaic_core(K, name, skin, x0, x1, gap_of, nu=200, nv=128, thick=0.04, seed=0, light=None, v0=0.0, v1=TAU, wrap=True,
-                grp=None, even=0.0, streak=False):
+                grp=None, even=0.0, streak=False, smoke_back=True):
     """the opaque glowing mosaic core. light(x, a) -> 0..1 blends the panel to seafoam stored light (a cleft, a bay floor).
     even (0..1) evens each panel's glow toward a steady middle tone, so a pane-heavy hull (the Prism) reads as rows of lit
     panes rather than lit spots; 0 is the CD5 panel (hot middle, dark border). streak=True is parts.mosaic_tint's streak style
@@ -248,7 +259,9 @@ def mosaic_core(K, name, skin, x0, x1, gap_of, nu=200, nv=128, thick=0.04, seed=
                 g = g + (1.0 - g) * w
         tint.data[i].color = tuple(rgb) + (1,)
         glow.data[i].value = g
-    thick_shell(hull, thick, centre=False)
+    # R421/R427 (issue 1743): the panes' back is the smoked inner lining, never the bright mosaic seen from behind
+    thick_shell(hull, thick, centre=False, back=mat_of('gw_smoke') if smoke_back else None)
+    gw_kit('rooms').register_skin(K, hull, skin)
     return hull
 
 
@@ -734,6 +747,49 @@ def launch_tunnel(K, fid, c, R, facing=-1, s=1.0):
 
 
 # ------------------------------------------------------------------------------------------------------------ insides
+def prism_nodes(points, centre, size):
+    """faceted glass prisms (six-sided bipyramids) at points, each pointing from the frame in toward centre (issue 1743)"""
+    from mathutils import Vector
+    vv, ff = [], []
+    c = Vector(centre)
+    for p in points:
+        p = Vector(p); ax = (c - p); ax.x = 0.0
+        ax = ax.normalized() if ax.length > 1e-6 else Vector((0, 0, 1))
+        u = ax.cross(Vector((1, 0, 0))).normalized(); w = ax.cross(u)
+        o = len(vv)
+        vv.append(tuple(p - ax * size * 0.35)); vv.append(tuple(p + ax * size * 1.1))
+        for j in range(6):
+            a = j * TAU / 6
+            vv.append(tuple(p + ax * size * 0.25 + (u * math.cos(a) * 1.0 + w * math.sin(a) * 0.7) * size * 0.45))
+        for j in range(6):
+            a, b = o + 2 + j, o + 2 + (j + 1) % 6
+            ff += [(o, b, a), (o + 1, a, b)]
+    return vv, ff
+
+
+def lens_collars(points, r, every=4, fits=None):
+    """collared lens rings round a light core: a square-section glass ring every few points along it (issue 1743)"""
+    from mathutils import Vector
+    vv, ff = [], []
+    points = [Vector(p) for p in points]
+    for i in range(every // 2, len(points) - 1, every):
+        p = points[i]; d = (points[i + 1] - points[i - 1 if i else 0]).normalized()
+        q = d.cross(Vector((0, 0, 1)))
+        q = (q if q.length > 0.1 else d.cross(Vector((0, 1, 0)))).normalized(); w = d.cross(q).normalized()
+        o = len(vv); n = 12; ring = []
+        for s_ in (-0.9 * r, 0.9 * r):
+            for rr in (1.15 * r, 1.75 * r):
+                ring += [tuple(p + d * s_ + (q * math.cos(j * TAU / n) + w * math.sin(j * TAU / n)) * rr) for j in range(n)]
+        if fits is not None and not all(fits(*v) for v in ring):
+            continue
+        vv.extend(ring)
+        for j in range(n):
+            k = (j + 1) % n
+            ff += [(o + n + j, o + n + k, o + 3 * n + k, o + 3 * n + j), (o + k, o + j, o + 2 * n + j, o + 2 * n + k),
+                   (o + j, o + k, o + n + k, o + n + j), (o + 3 * n + j, o + 3 * n + k, o + 2 * n + k, o + 2 * n + j)]
+    return vv, ff
+
+
 def insides(K, half_w, half_h, x0, x1, breaks, breach_x, decks=(-0.3, 0.2), frames=8, cores=True, s=1.0, y0=0.0, tag=''):
     """layered glass and light through the whole hull (R209): shaped decks (one span per compartment, a gap at every break),
     open annealed frames (off every break and breach bite), three braided light cores. half_w(x), half_h(x) are the core's
@@ -763,8 +819,16 @@ def insides(K, half_w, half_h, x0, x1, breaks, breach_x, decks=(-0.3, 0.2), fram
             continue
         pts = [(x, y0 + 0.8 * half_w(x) * math.cos(a), 0.8 * half_h(x) * math.sin(a)) for a in [TAU * j / 48 for j in range(49)]]
         K._obj('in%s_frame_%02d' % (tag, i), *tube_mesh(pts, [0.012 * K.length] * len(pts), 8), 'gw_in_frame', inside=True)
+        # Interior Kit V2 (issue 1743): faceted prism nodes along the annealed frame, the same glass, pointing in toward the core
+        K._obj('in%s_frame_%02d_prisms' % (tag, i), *prism_nodes(pts[:-1:6], (x, y0, 0.0), 0.022 * K.length), 'gw_in_frame', inside=True)
         K.inside.append(dict(kind='bulkhead', name='%sannealed frame %02d' % (tag and tag + ' ', i), x=x, note='open structural glass frame'))
     if cores:
+        skins = getattr(K, 'gw_skins', ())
+        inner = min(skins, key=lambda skin: abs(skin.y0 - y0), default=None)
+        # A lens collar at the glass can be caught by a shatter tooth even
+        # when the waveguide beneath it fits. Omit the whole ring there.
+        collar_clearance = 0.022 * K.length
+        fits = None if inner is None else lambda x, y, z: inner.overrun(x, y, z) <= -collar_clearance
         for k, col in enumerate(('amber', 'violet', 'green')):
             for si, (a, b) in enumerate(spans):
                 n = max(4, int(50 * (b - a) / K.length))
@@ -773,6 +837,11 @@ def insides(K, half_w, half_h, x0, x1, breaks, breach_x, decks=(-0.3, 0.2), fram
                         0.30 * half_h(p[0]) * math.sin(p[0] * 2.2 / K.length * 6 + k * 2.1)) for p in pts]
                 K._obj('in%s_light_core_%s_%d' % (tag, col, si), *tube_mesh(pts, [0.012 * K.length] * len(pts), 10), 'gw_in_' + col,
                        inside=True, smooth=True)
+                # Interior Kit V2 (issue 1743): collared lens rings along the waveguide, in the frame's glass
+                if len(pts) >= 5:
+                    v, f = lens_collars(pts, 0.012 * K.length, every=max(2, len(pts) // 5), fits=fits)
+                    if f:
+                        K._obj('in%s_light_core_%s_%d_collars' % (tag, col, si), v, f, 'gw_in_frame', inside=True, smooth=True)
         K.inside.append(dict(kind='space', name='%scontinuous light core' % (tag and tag + ' '), x=(x0, x1), y=(y0 - 0.3, y0 + 0.3),
                              z=(-0.3, 0.3), mat='layered glass and light', note='three braided waveguides of amber, violet and green light'))
     return spans

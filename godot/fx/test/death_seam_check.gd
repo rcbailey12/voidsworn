@@ -229,6 +229,9 @@ func _run() -> void:
 	var outside := 0
 	var outside_whole := 0
 	var frag_inside := 0
+	var fit_outside := 0
+	var fitted := 0
+	var kit_pieces := 0
 	for pi in pieces.size():
 		var pc: Dictionary = pieces[pi]
 		if pi >= n_main:
@@ -238,6 +241,19 @@ func _run() -> void:
 		var faces := _skin_faces(pieces, pi, n_main)
 		var tm := TriangleMesh.new()
 		if faces.size() >= 3: tm.create_from_faces(faces)
+		if pc.has("cap"):
+			var cap: Array = pc["cap"]
+			var verts: PackedVector3Array = cap[Mesh.ARRAY_VERTEX]
+			var colors: PackedColorArray = cap[Mesh.ARRAY_COLOR]
+			var roles := {}
+			for i in verts.size():
+				var role := colors[i].r
+				if role < DEATH.CAP_RIB.r or role > DEATH.CAP_WALL.r: continue
+				roles[role] = true
+				fitted += 1
+				if not _enclosed(whole, verts[i], tol): fit_outside += 1
+			if roles.has(DEATH.CAP_WALL.r) and roles.has(DEATH.CAP_DECK.r) and roles.has(DEATH.CAP_RIB.r):
+				kit_pieces += 1
 		for sd in pc["surfs"]:
 			if not bool(sd.get("interior", false)): continue
 			var v: PackedVector3Array = sd["arrays"][Mesh.ARRAY_VERTEX]
@@ -257,11 +273,15 @@ func _run() -> void:
 	var cut_ms := float(job.get("cut_usec", -1)) / 1000.0
 	print("DEATH_SEAM machines=%d machines_split=%d %s" % [sets.size(), split, str(names)])
 	print("DEATH_SEAM inside_triangles=%d inside_outside_hull=%d fragment_inside_triangles=%d pieces=%d main=%d (outside the whole ship before the break, a sheet matter: %d)" % [inside_total, outside, frag_inside, pieces.size(), n_main, outside_whole])
+	print("DEATH_SEAM fitted_vertices=%d fitted_outside=%d pieces_with_bulkhead_decks_ribs=%d" % [fitted, fit_outside, kit_pieces])
 	print("DEATH_SEAM cut_worker_ms=%.1f main_thread_ms piece_build=%.1f (most in one frame %.1f; headless also builds the geometry here, a game window builds it on the worker) death=%.1f break_up=%.1f" % [cut_ms,
 		float(prof.get("piece_meshes", 0)) / 1000.0, float(job.get("build_max_usec", 0)) / 1000.0, float(prof2.get("death", 0)) / 1000.0, float(prof2.get("break_up", 0)) / 1000.0])
 	check(split == 0, "machines split across pieces: %d %s" % [split, str(names)])
 	check(outside == 0, "inside triangles outside their own piece's hull: %d" % outside)
 	check(inside_total > 0, "the pieces carry inside triangles")
+	check(fit_outside == 0, "generated kit interiors beyond the hull envelope: %d" % fit_outside)
+	if args.is_empty() or args[0].get_file().begins_with("C19_51"):
+		check(n_main > 0 and kit_pieces == n_main, "every A16 main piece carries a bulkhead, deck and rib (%d of %d)" % [kit_pieces, n_main])
 	fx.remove_ship("a16")
 	world.queue_free()
 	print("DEATH_SEAM failures=%d" % failures)

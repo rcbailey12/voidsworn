@@ -362,22 +362,28 @@ void fragment() {
 const DUST_SHADER := """
 shader_type spatial;
 render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+// Issue 2048: layered debris dust flecks with slow tumble and warm sun glints, plus wispy tan haze clouds.
 // Linear #d4bf86, with actual alpha rather than the old grey additive specks.
 uniform vec3 col = vec3(0.658, 0.521, 0.238);
 varying vec2 vQ;
 varying vec3 vW;
 varying flat vec2 vHex;
 varying flat float vA;
+varying flat float vSize;
+varying flat float vSeed;
 void vertex() {
 	vHex = INSTANCE_CUSTOM.zw;
-	vec3 origin = MODEL_MATRIX[3].xyz;
+	vec3 base_pos = MODEL_MATRIX[3].xyz;
+	vSeed = fract(sin(dot(base_pos, vec3(12.9898, 78.233, 37.719))) * 43758.5453);
+	vec3 origin = base_pos;
 	// 20 percent of the recorded gas drift (0.193 u/s). Wrap only behind a faded footprint edge.
 	origin.xz = vHex + mod(origin.xz - vHex + vec2(0.032, 0.018667) * TIME + 10.0, 20.0) - 10.0;
 	origin.y = mod(origin.y + 0.010667 * TIME + 5.0, 7.0) - 5.0;
 	vec4 c = VIEW_MATRIX * vec4(origin, 1.0);
 	vA = INSTANCE_CUSTOM.y;
+	vSize = INSTANCE_CUSTOM.x;
 	vQ = VERTEX.xy * 2.0;
-	c.xy += VERTEX.xy * INSTANCE_CUSTOM.x;
+	c.xy += VERTEX.xy * vSize;
 	vW = (INV_VIEW_MATRIX * c).xyz;
 	POSITION = PROJECTION_MATRIX * c;
 }
@@ -388,8 +394,29 @@ void fragment() {
 	float edge = 8.660254 - max(p.x, p.x * 0.5 + p.y * 0.8660254);
 	if (edge <= 0.0) { discard; }
 	float high = smoothstep(-4.0, 2.0, vW.y);
-	ALBEDO = col * mix(0.38, 0.85, high);
-	ALPHA = vA * exp(-r * r * 4.0) * smoothstep(0.0, 0.9, edge) * mix(1.0, 0.25, high);
+	float edge_fade = smoothstep(0.0, 0.9, edge) * mix(1.0, 0.25, high);
+	vec3 base_c = col * mix(0.38, 0.85, high);
+	if (vSize < 1.5) {
+		// Fine suspended mineral and metal flecks: tumbling micro-flake core, soft dust halo and subtle individual sun glint.
+		float ang = vSeed * 6.2831853 + TIME * (0.25 + 0.40 * fract(vSeed * 13.7));
+		float cs = cos(ang);
+		float sn = sin(ang);
+		vec2 rq = vec2(cs * vQ.x - sn * vQ.y, sn * vQ.x + cs * vQ.y);
+		float flake_r = length(vec2(rq.x * 0.82, rq.y * 1.48));
+		float flake = 1.0 - smoothstep(0.28, 0.72, flake_r);
+		float halo = exp(-r * r * 3.6);
+		float glint_wave = 0.5 + 0.5 * sin(TIME * (0.85 + fract(vSeed * 7.3) * 1.35) + vSeed * 43.0);
+		float glint = pow(glint_wave, 10.0) * step(0.45, fract(vSeed * 19.3)) * exp(-flake_r * flake_r * 7.5);
+		ALBEDO = base_c * (0.85 + 0.35 * flake) + vec3(1.0, 0.92, 0.76) * glint * 1.15;
+		ALPHA = clamp(vA * (halo * 0.65 + flake * 0.75 + glint * 0.85) * edge_fade, 0.0, 1.0);
+	} else {
+		// Broad sparse tan haze clouds: organic multi-lobe wisp instead of a plain Gaussian circle.
+		float ang = atan(vQ.y, vQ.x) + vSeed * 6.2831853;
+		float wisp = 0.68 + 0.20 * sin(ang * 3.0 + r * 2.4) + 0.12 * cos(ang * 5.0 - vSeed * 9.0);
+		float body = exp(-r * r * 3.2) * wisp * (1.0 - smoothstep(0.70, 1.0, r));
+		ALBEDO = base_c * (0.88 + 0.22 * wisp);
+		ALPHA = vA * body * edge_fade;
+	}
 }
 """
 
@@ -455,10 +482,13 @@ void fragment() {
 const INFALL_SHADER := """
 shader_type spatial;
 render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+// Issue 2048: motion-stretched tidal embers spiralling into the Dead Star accretion disc (core + ember tail + tidal heat).
 uniform vec3 well = vec3(0.0);
 uniform float r_out = 87.0;
 varying vec2 vQ;
 varying float fade;
+varying float vHeat;
+varying float vSeed;
 void vertex() {
 	float inner = 20.0;
 	float cycle = r_out * 0.5 * log((3.0 * r_out - 2.0 * inner) / r_out);
@@ -466,18 +496,44 @@ void vertex() {
 	float radius = r_out * 1.5 - r_out * 0.5 * exp(2.0 * phase * cycle / r_out);
 	// dr/dt = -(3 - 2r/R); the tangential speed is one fifth of the inward speed.
 	float angle = INSTANCE_CUSTOM.z * 6.2831853 + 0.2 * log(r_out / radius);
-	vec3 p = well + vec3(cos(angle) * radius, 9.0 + INSTANCE_CUSTOM.w * 3.0, sin(angle) * radius);
+	vec2 rad_dir = vec2(cos(angle), sin(angle));
+	vec2 tan_dir = vec2(-rad_dir.y, rad_dir.x);
+	vec3 p = well + vec3(rad_dir.x * radius, 9.0 + INSTANCE_CUSTOM.w * 3.0, rad_dir.y * radius);
+	// Analytical inward-spiral velocity projected into view space to stretch each ember along its plunge.
+	vec3 vel_w = vec3(-rad_dir.x + 0.2 * tan_dir.x, -0.06, -rad_dir.y + 0.2 * tan_dir.y);
+	vec2 sv = (VIEW_MATRIX * vec4(vel_w, 0.0)).xy;
+	float sl = length(sv);
+	vec2 ax = sl > 0.0001 ? sv / sl : vec2(1.0, 0.0);
+	vec2 ay = vec2(-ax.y, ax.x);
+	float heat = clamp((r_out - radius) / max(r_out - inner, 1.0), 0.0, 1.0);
+	float stretch = mix(2.2, 5.2, heat * heat);
+	float width = mix(0.48, 0.34, heat);
 	vec4 c = VIEW_MATRIX * vec4(p, 1.0);
 	vQ = VERTEX.xy * 2.0;
-	c.xy += VERTEX.xy * INSTANCE_CUSTOM.x;
+	c.xy += (ax * VERTEX.x * stretch + ay * VERTEX.y * width) * INSTANCE_CUSTOM.x;
 	POSITION = PROJECTION_MATRIX * c;
-	fade = smoothstep(0.0, 0.08, phase) * (1.0 - smoothstep(0.85, 1.0, phase));
+	fade = smoothstep(0.0, 0.08, phase) * (1.0 - smoothstep(0.86, 1.0, phase));
+	vHeat = heat;
+	vSeed = INSTANCE_CUSTOM.z;
 }
 void fragment() {
-	float r = length(vQ);
-	if (r > 1.0) { discard; }
-	ALBEDO = vec3(0.32, 0.17, 0.12);
-	ALPHA = 0.15 * fade * exp(-r * r * 4.0);
+	// vQ.x runs -1 (trailing tail) to +1 (leading plunge head); vQ.y is transverse.
+	if (abs(vQ.x) > 1.0 || abs(vQ.y) > 1.0) { discard; }
+	float head_d = length(vec2((vQ.x - 0.32) * 1.45, vQ.y * 1.55));
+	float core = exp(-head_d * head_d * 3.2);
+	// Tapered ember tail behind the leading head.
+	float along = clamp((vQ.x + 1.0) * 0.5, 0.0, 1.0);
+	float tail_w = mix(0.18, 0.78, along) * (1.0 - smoothstep(0.72, 1.0, along));
+	float td = abs(vQ.y) / max(tail_w, 0.08);
+	float sheath = exp(-td * td * 2.6) * smoothstep(0.0, 0.35, along) * (1.0 - smoothstep(0.78, 1.0, along));
+	float twinkle = 0.80 + 0.20 * sin(TIME * (2.6 + fract(vSeed * 17.3) * 2.0) + vSeed * 41.0);
+	vec3 outer_c = vec3(0.38, 0.20, 0.13);
+	vec3 hot_c = vec3(0.95, 0.54, 0.22);
+	vec3 ember_c = mix(outer_c, hot_c, smoothstep(0.15, 0.92, vHeat));
+	vec3 core_c = mix(ember_c, vec3(1.0, 0.88, 0.66), 0.35 + 0.50 * vHeat);
+	float body = max(core * 0.95, sheath * 0.55);
+	ALBEDO = mix(ember_c, core_c, core) * (0.9 + 0.45 * vHeat) * twinkle;
+	ALPHA = clamp(mix(0.16, 0.46, vHeat) * fade * body, 0.0, 0.85);
 }
 """
 
@@ -1618,12 +1674,11 @@ func _install_chunks() -> void:
 	var holder := Node3D.new()
 	holder.name = "HullDebris"
 	add_child(holder)
-	# LOAD37: warm the distinct material/layout pairs on a triangle with no visible draw.
-	# The LOAD36 proxy used one full chunk and its 11 placeholder surfaces, so its first
-	# real material could still hold the frame and trigger a scene-wide pass expansion.
+	# LOAD38: give each material/layout pair a lit draw and a shadow pass before
+	# the real chunk joins, without showing the proxy in the live scene.
 	if not _wreck_slots.is_empty() and sliced:
 		var stage := STAGE_IN.new()
-		if not await stage.warm_meshes(holder, meshes, "debris"):
+		if not await stage.warm_meshes(holder, meshes, "debris", Callable(), true):
 			_installing = false
 			return
 	var index := 0

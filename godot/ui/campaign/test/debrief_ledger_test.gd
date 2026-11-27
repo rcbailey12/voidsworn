@@ -19,7 +19,7 @@ func frames(n := 4) -> void:
 	for i in n: await process_frame
 
 func fixture(state: String, fac := "voidsworn", admiral := "vex") -> void:
-	JSM.rnd_seed(805)
+	C.rng.rnd_seed(805)
 	C.META = C.migrateMeta(C.defaultMeta()); C.META["opts"]["playtestAll"] = false
 	C.META["renown"] = 34; C.META["stats"]["losses"] = 0 if state == "first_loss" else 2
 	C.META["stats"]["wins"] = 1
@@ -40,7 +40,7 @@ func fixture(state: String, fac := "voidsworn", admiral := "vex") -> void:
 		ui._end_live_run = R; ui._end_last_flagship = flag.duplicate(true)
 		R["fleet"] = []
 	if state == "empty": R["fleet"] = []; ui._end_last_flagship = {}
-	R["fallen"] = [{"name": "Ilse Marrow", "ship": "Last Light", "fac": fac, "rank": 1, "sector": 2}]
+	R["fallen"] = C._migrate_fallen([{"name": "Ilse Marrow", "ship": "Last Light", "fac": fac, "rank": 1, "sector": 2}], fac, "test")
 	for i in 6:
 		R["sector"] = 1 + i / 2 if state == "win" else 1 + i / 3
 		C.tel("battle_end", {"kind": "boss" if i == 3 else "battle", "result": "win", "lost": 1 if i in [2, 4] else 0})
@@ -190,7 +190,7 @@ func run() -> void:
 			for card in UI.CampaignTips.CARDS:
 				if card[0] == "c_loss": check(text.contains(str(card[2])), "record keeps original next-run teaching card")
 		if code == KEY_F:
-			for fallen in run_data["fallen"]: check(text.contains(str(fallen["name"])), "fleet keeps each lost captain")
+			for fallen in run_data["fallen"]: check(text.contains(str(fallen["cap"]["full_name"])), "fleet keeps each lost captain")
 		key(KEY_ESCAPE); await frames()
 	key(KEY_P); await frames(); check(C.page["kind"] == "legacy" and C.prog_tab == "legacy", "P opens actual renown spending")
 	ui._campaign_action("title"); await frames()
@@ -237,7 +237,7 @@ func run() -> void:
 	var long_run = C.page["data"]["run"]
 	for ship in long_run["fleet"]:
 		if ship["uid"] == long_run["flagUid"]: ship["name"] = "Sunward Martyr of the Ninth Pyre"
-	for i in 20: long_run["fallen"].append({"name": "Fallen captain " + str(i)})
+	for i in 20: long_run["fallen"].append({"cap": {"full_name": "Fallen captain " + str(i)}})
 	for i in range(20 - long_run["fleet"].size()):
 		var ship = C.newShip(long_run["fleet"][0]["tpl"]); ship["name"] = "Ledger escort " + str(i); long_run["fleet"].append(ship)
 	ui.render(); await frames(); readability("long flagship, 20 ships")

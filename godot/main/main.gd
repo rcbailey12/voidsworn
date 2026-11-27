@@ -466,6 +466,12 @@ func show_title(music_after_draw := false) -> void:
 		if ResourceLoader.load_threaded_get_status(HOST_SCRIPT) != ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
 			_host_script = ResourceLoader.load_threaded_get(HOST_SCRIPT)   # read by now: no wait; held, so load() finds it cached
 	_clear()
+	# C32: set the title's AA before its first draw. The deferred backdrop must not rebuild live render buffers.
+	var vp := get_viewport()
+	if vp.msaa_3d != Viewport.MSAA_DISABLED:
+		vp.msaa_3d = Viewport.MSAA_DISABLED
+	if vp.use_taa:
+		vp.use_taa = false
 	if music != null:
 		if music_after_draw and DisplayServer.window_can_draw():
 			_title_music_after_draw()   # issue 1519: the music starts after the title's first frame, not inside it
@@ -548,13 +554,20 @@ func _start_showcase() -> void:
 		var t_wait: Node = title
 		if not await battle_parts_ready():
 			return
-		if title != t_wait or showcase != null or title == null or not is_instance_valid(title):
-			return   # the title was left, or a backdrop started, meanwhile
+		if title != t_wait or showcase != null or title == null or not is_instance_valid(title) or not _showcase_wanted():
+			return   # the title was left, a backdrop started, or Low was selected meanwhile
+	# issue 1519: a battle just left is still being freed in slices behind this title: the backdrop's build waits for
+	# that to end, so the two never share a frame and the 3D is back on (off while the old battle is parked)
+	if retire_pending():
+		var t_slices: Node = title
+		while not quitting and retire_pending():
+			await get_tree().process_frame
+		if quitting or title != t_slices or showcase != null or title == null or not is_instance_valid(title) or not _showcase_wanted():
+			return
 	showcase = _battle_packed().instantiate()
 	showcase.showcase = true
 	showcase.title_backdrop = true   # issue 1434: capped at High, silent, no combat warm-up
-	showcase.args["quality"] = str(settings["quality"])
-	showcase.args["taa"] = bool(settings.get("taa", false))
+	showcase.args["quality"] = "high"
 	showcase.args["fac"] = next_showcase_fac()
 	showcase.args["map"] = ["open", "planet", "station", "storm"][randi() % 4]  # open fields: the dense belts hide the ships at this height
 	add_child(showcase)
@@ -582,12 +595,13 @@ func _start_showcase() -> void:
 		quit_clean(0)
 
 
-# Issue 1437 (review on PR 1607): Graphics or TAA changed on the title: the battle behind the menu is rebuilt with the new
-# setting (Low has none), so what shows is what the setting gives
+# Graphics changed on the title: Low has no 3D backdrop, High and Max both use the same High backdrop.
 var _showcase_gen := 0   # bumped by each rebuild request, so only the newest pending one starts a battle
 
 
 func restart_showcase() -> void:
+	if is_instance_valid(showcase) and _showcase_wanted():
+		return   # switching between High and Max never changes the backdrop or rebuilds it
 	_showcase_gen += 1
 	if showcase != null and is_instance_valid(showcase):
 		if showcase.has_method("stop_build"):
@@ -777,12 +791,13 @@ func quick_battle() -> void:
 
 
 # LOAD36: removing the battle from the tree took 440 ms before the first title frame, even without freeing it.
-# Park rendering and input, paint the title, then detach and free after the second painted title frame.
-# Only quick battle takes this route. The campaign still owns its battle hand-off.
+# Park rendering and input, paint the title, then free it after the second painted title frame, in slices (issue 1519,
+# _free_in_slices). Only quick battle takes this route. The campaign still owns its battle hand-off.
 func _retire_battle(b: Node, parts: Dictionary) -> void:
 	if b == null or not is_instance_valid(b):
 		return
 	var t := Time.get_ticks_usec()
+	_retire_t0 = t
 	if b.has_method("stop_build"):
 		b.stop_build()
 	if "quitting" in b:
@@ -794,7 +809,7 @@ func _retire_battle(b: Node, parts: Dictionary) -> void:
 		b.queue_free()
 		return
 	var vp := get_viewport()
-	var restore_3d := vp.disable_3d
+	var restore_3d := _take_parked(vp.disable_3d)
 	vp.disable_3d = true   # simply hiding Battle still drew its sky and world
 	b.process_mode = Node.PROCESS_MODE_DISABLED
 	if "hud" in b and is_instance_valid(b.hud):
@@ -802,6 +817,18 @@ func _retire_battle(b: Node, parts: Dictionary) -> void:
 	parts["battle_park"] = Time.get_ticks_usec() - t
 	_retired = b
 	_free_after_title_draws(b, parts, vp, restore_3d)
+
+
+# issue 1519: an older battle still parked (its title was left before it drew) is freed whole now, and the 3D setting
+# it saved is the one to give back; returns that setting
+func _take_parked(now_3d: bool) -> bool:
+	var restore := now_3d
+	if retire_pending():
+		restore = _retire_3d
+		_retired.free()
+	_retired = null
+	_retire_3d = restore
+	return restore
 
 
 func _free_after_title_draws(b: Node, parts: Dictionary, vp: Viewport, restore_3d: bool) -> void:
@@ -816,18 +843,75 @@ func _free_after_title_draws(b: Node, parts: Dictionary, vp: Viewport, restore_3
 			# The player left the title after its first draw. Do not keep the next screen's 3D off.
 			if draws > 0:
 				break
-	var t := Time.get_ticks_usec()
-	if b.get_parent() != null:
-		b.get_parent().remove_child(b)
-	var t1 := Time.get_ticks_usec()
-	parts["battle_out"] = t1 - t
-	b.free()
-	parts["battle_free"] = Time.get_ticks_usec() - t1
+	if not await _free_in_slices(b, parts):
+		return   # quit_clean owns the rest of the parked battle now
 	_retired = null
 	vp.disable_3d = restore_3d
 
 
-var _retired: Node = null   # parked battle waiting for the title paints or a close
+var _retired: Node = null   # parked battle waiting for the title paints, its slices or a close
+var _retire_t0 := 0         # when the battle was parked (the leave), for the slices' [main] line
+var _retire_3d := false     # the viewport's disable_3d before the park, given back when the parked battle is gone
+
+
+# Issue 1519: LOAD36's 440 ms detach and the free after it, split across frames behind the painted title. The parked
+# battle stays in the tree, switched off (its awaits stop at their next step: battle.gd _left, and _parked in fx.gd,
+# board.gd and world.gd), and is freed children first, about RETIRE_BUDGET_US of work a frame, the battle node itself
+# last (its _exit_tree still drains its worker tasks). One node's free cannot be split, so a slice ends as soon as it
+# has spent the budget. Leaving the title meanwhile frees the rest at once (the next screen needs its 3D back); a close
+# hands the rest to quit_clean (returns false then). retire_stats keeps the last battle's numbers.
+const RETIRE_BUDGET_US := 6000
+var retire_stats := {}
+
+
+func _free_in_slices(b: Node, parts: Dictionary) -> bool:
+	var t_walk := Time.get_ticks_usec()
+	var order: Array = [b]   # parents before their children, so taking from the back frees children first
+	var i := 0
+	while i < order.size():
+		order.append_array((order[i] as Node).get_children())   # internal children go with their owner
+		i += 1
+	parts["battle_walk"] = Time.get_ticks_usec() - t_walk
+	var st := {"nodes": order.size(), "freed": 0, "slices": 0, "free_us": 0, "worst_us": 0, "battle_us": 0, "flushed": false}
+	retire_stats = st
+	while true:
+		if quitting or _retired != b or not is_instance_valid(b):
+			return false
+		var flush := not _title_up()   # the title was left: the next screen needs the 3D back now
+		st["flushed"] = st["flushed"] or flush
+		var t0 := Time.get_ticks_usec()
+		while not order.is_empty():
+			var n = order.pop_back()
+			# a node moved out of the battle since the walk is no longer the battle's to free
+			if is_instance_valid(n) and (n == b or b.is_ancestor_of(n)):
+				var tn := Time.get_ticks_usec()
+				(n as Node).free()
+				st["freed"] += 1
+				if n == b:
+					st["battle_us"] = Time.get_ticks_usec() - tn
+			if not flush and Time.get_ticks_usec() - t0 >= RETIRE_BUDGET_US:
+				break
+		var spent := Time.get_ticks_usec() - t0
+		st["slices"] += 1
+		st["free_us"] += spent
+		st["worst_us"] = maxi(int(st["worst_us"]), spent)
+		if order.is_empty():
+			break
+		await get_tree().process_frame
+	parts["battle_free"] = st["free_us"]
+	parts["battle_slice_worst"] = st["worst_us"]
+	print("[main] battle to title: old battle freed in %d slices, %d nodes, freeing %.1f ms in all, longest slice %.1f ms (battle node %.1f ms)%s, done %.1f ms after the leave" % [
+		st["slices"], st["freed"], st["free_us"] / 1000.0, st["worst_us"] / 1000.0, st["battle_us"] / 1000.0,
+		", the rest at once: the title was left" if st["flushed"] else "", (Time.get_ticks_usec() - _retire_t0) / 1000.0])
+	return true
+
+
+func _title_up() -> bool:
+	return title != null and is_instance_valid(title) and title.is_inside_tree() and not title.is_queued_for_deletion()
+
+
+func retire_pending() -> bool:
+	return _retired != null and is_instance_valid(_retired)
 
 
 # Issue 1435: how long leaving a battle holds the player: the leave frame itself (the battle is freed at its end, which

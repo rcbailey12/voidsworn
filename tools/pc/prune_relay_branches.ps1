@@ -23,10 +23,13 @@ $source = 'https://github.com/rcbailey12/voidsworn'
 if ($test) { $source = $env:PC_TEST_SOURCE }
 $unix = $PSVersionTable.Platform -eq 'Unix'
 $gitExe = 'git.exe'; if ($unix) { $gitExe = @(Get-Command git -CommandType Application)[0].Source }
+. (Join-Path $PSScriptRoot 'runner_common.ps1') publication-library
+Set-PCGitNonInteractive
+$net = @(PCGitNetworkOptions)
 $days = 3
 function Run-Git {
   $ErrorActionPreference = 'Continue'
-  $out = & $gitExe @args 2>&1 | ForEach-Object { "$_" }
+  $out = & $gitExe @net @args 2>&1 | ForEach-Object { "$_" }
   if ($LASTEXITCODE -ne 0) { throw ('git failed: ' + ($args -join ' ') + ': ' + ($out -join ' ')) }; $out }
 if ($Mode -and $Mode -ne 'live') { throw "the only mode is live (no argument is a dry run), got: $Mode" }
 $live = $Mode -eq 'live'
@@ -145,7 +148,7 @@ if ($live) {
     if ($fresh.Prune -notcontains "$($r.Name) $($r.Sha)") { Say "kept (no longer on a fresh dry-run list): $($r.Name)"; $kept++; continue }
     # only if GitHub still has it at the listed commit (a lease, so a branch a job pushed again since stays)
     $ErrorActionPreference = 'Continue'
-    $o = & $gitExe push -q "--force-with-lease=refs/heads/$($r.Name):$($r.Sha)" $source ":refs/heads/$($r.Name)" 2>&1 | ForEach-Object { "$_" }
+    $o = & $gitExe @net push -q "--force-with-lease=refs/heads/$($r.Name):$($r.Sha)" $source ":refs/heads/$($r.Name)" 2>&1 | ForEach-Object { "$_" }
     $ok = $LASTEXITCODE -eq 0; $ErrorActionPreference = 'Stop'
     if ($ok) { $done++; Add-Content -LiteralPath $log -Value "deleted $($r.Name) $($r.Sha)" } else { $kept++; Say "kept (GitHub refused: $($o -join ' ')): $($r.Name)" }
   }

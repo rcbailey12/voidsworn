@@ -33,22 +33,29 @@ var _queue: Array = []        # instance ids, oldest first
 var _seen := {}               # material and format key -> true, already given back once
 var _pre_us := 0
 var _draw_ms := 0.0
-var _warmed := {}            # shader variant and vertex layout, local to this build
+var _warmed := {}            # shader variant, vertex layout and pass, local to this build
 
 
 # Forward+ prepares surface pipelines even outside a camera's layers. Present a tiny triangle with
-# the real vertex layout and material before the real mesh enters the scenario. No siblings, full
-# mesh buffers, shadows or visible draw to wait on. The live mesh still gets its original materials.
-func warm_meshes(host: Node3D, nodes: Array, label: String, keep_going := Callable()) -> bool:
+# the real vertex layout and material before the real mesh enters the scenario.
+func warm_meshes(host: Node3D, nodes: Array, label: String, keep_going := Callable(), lit := false) -> bool:
 	if DisplayServer.get_name() == "headless" or RenderingServer.get_current_rendering_method() != "forward_plus":
 		return true
+	# Directional shadow culling also checks the drawing camera's mask in Godot 4.7. Use
+	# a private viewport whose camera and light both see layer 20. The live camera and
+	# shadow atlas never see these triangles, and regular stage-in stays untouched.
+	var viewport: SubViewport = _warm_viewport(host) if lit else null
 	var warm := MeshInstance3D.new()
 	warm.name = "PipelineWarm"
 	warm.layers = BIT
-	warm.scale = Vector3.ONE * 0.001
-	warm.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	warm.scale = Vector3.ONE * (0.3 if lit else 0.001)
+	warm.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if lit else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	warm.set_meta(&"pipeline_warm", true)
-	host.add_child(warm)
+	if viewport != null:
+		viewport.add_child(warm)
+	else:
+		host.add_child(warm)
+	var cleanup: Node = viewport if viewport != null else warm
 	var tree := host.get_tree()
 	for source in nodes:
 		var mi := source as MeshInstance3D
@@ -62,7 +69,7 @@ func warm_meshes(host: Node3D, nodes: Array, label: String, keep_going := Callab
 			var mat := mi.get_active_material(surface) if mi != null else mesh.surface_get_material(surface)
 			if mat == null:
 				continue
-			var key := "%s:%d" % [_warm_material_key(mat), fmt]
+			var key := "%s:%d:%s" % [_warm_material_key(mat), fmt, lit]
 			if _warmed.has(key):
 				continue
 			var proxy := _triangle(fmt)
@@ -70,17 +77,46 @@ func warm_meshes(host: Node3D, nodes: Array, label: String, keep_going := Callab
 				continue
 			warm.mesh = proxy
 			warm.material_override = mat
+			if viewport != null:
+				viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
 			SKEEP.event("%s warm %s surface %d/%d (%s fmt %x)" % [
 				label, mi.name if mi != null else mesh.resource_name, surface, mesh.get_surface_count(), _warm_shader_name(mat), fmt])
 			await tree.process_frame
-			if (not is_instance_valid(warm) or not is_instance_valid(host) or not host.is_inside_tree()
+			if (not is_instance_valid(warm) or not is_instance_valid(host) or not host.is_inside_tree() or not host.can_process()
 					or host.is_queued_for_deletion() or (keep_going.is_valid() and not keep_going.call())):
-				if is_instance_valid(warm):
-					warm.queue_free()
+				if is_instance_valid(cleanup):
+					cleanup.queue_free()
 				return false
 			_warmed[key] = true
-	warm.queue_free()
+	cleanup.queue_free()
 	return true
+
+
+static func _warm_viewport(host: Node3D) -> SubViewport:
+	var source := host.get_viewport()
+	var vp := SubViewport.new()
+	vp.size = Vector2i(64, 64)
+	vp.world_3d = World3D.new()
+	vp.render_target_update_mode = SubViewport.UPDATE_DISABLED
+	vp.msaa_3d = source.msaa_3d
+	vp.screen_space_aa = source.screen_space_aa
+	vp.use_taa = source.use_taa
+	vp.scaling_3d_mode = source.scaling_3d_mode
+	vp.scaling_3d_scale = source.scaling_3d_scale
+	host.add_child(vp)
+	var camera := Camera3D.new()
+	camera.cull_mask = BIT
+	camera.environment = host.get_world_3d().environment
+	camera.position = Vector3(0, 0, 2)
+	vp.add_child(camera)
+	camera.make_current()
+	var light := DirectionalLight3D.new()
+	light.set_meta(&"pipeline_warm", true)
+	light.light_cull_mask = BIT
+	light.shadow_caster_mask = BIT
+	light.shadow_enabled = true
+	vp.add_child(light)
+	return vp
 
 
 # The PSO needs the vertex layout, not the authored data. Skip unusual formats instead of
@@ -235,7 +271,7 @@ func _unhook() -> void:
 
 
 func _added(n: Node) -> void:
-	if root == null or not is_instance_valid(root) or not root.is_ancestor_of(n):
+	if root == null or not is_instance_valid(root) or not root.is_ancestor_of(n) or n.has_meta(&"pipeline_warm"):
 		return
 	if n is Light3D:
 		hide_layer_from(null, [n])   # a light added during the load (the world's) never draws a waiting mesh either

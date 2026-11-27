@@ -21,14 +21,22 @@ api.new_battle(run, cfg)              # run = the campaign run dict (admiral, fa
                                       # cfg = {kind, fac, col, seed, obj, shape, map, dep, arch, mod, enemies?, campaign?, event_force?, alt?}
 ```
 
-- **Fleet:** without `cfg.enemies`, the enemy fleet is generated exactly as the game does (`genEnemyFleet`: archetype `arch` = swarm, heavy or carrier, `mod` = bounty, the sector ramp, your fleet's power, the AI level and heat). Two or more carriers on your side (a carrier admiral or the hive aspect counts as one more) draw point-defence refits and a fighter screen.
+- **Fleet:** without `cfg.enemies`, `genEnemyFleet` uses the encounter budget, sector ship cap, archetype and modifier. Glasswrights use a heavy formation in place of swarm. If the cap blocks an otherwise affordable purchase, the remaining budget can upgrade generated escorts to elite without adding ships. Two or more carriers on your side (a carrier admiral or the hive aspect counts as one more) draw point-defence refits and a fighter screen.
 - **Campaign battles:** pass `cfg.campaign = true` as campaign3d.js does. The rules then roll the mid-battle event (reinforcements for either side, or a solar flare) from the seeded generator; `cfg.event_force` forces one (`"reinf_enemy"`, `"reinf_ally"`, `"flare"`), as the campaign does in sectors at war. Both keys are removed from `cfg` before the battle starts.
 - **Classic mode:** `cfg.alt = false` plays whole turns instead of alternating activations (the game's setup option). See "Classic mode" below.
 - **AI level:** `api.R.AI_LEVEL` is `"veteran"` (the game's default) or `"standard"`. Set it before `new_battle`.
 - **Opening state:** after setup, `api.phase` is `"player"`, and the event stream holds `round 1` and `side player`.
-- **Deployment choices (issue 1870).** The human battle sets `api.interactive_deployment = true` before setup. With Iteration Swap and at least two deployed ships, the API pauses in `"deployment"`. `view().skill_target` supplies the skill name, prompt, valid targets (`id`, `name`, `q`, `r`) and the first pick. Send each target ID to `pick_skill_target(id)`, or an empty string to skip. The second pick swaps the two hexes and finishes setup. The round-one snapshot is taken after deployment and restores the resulting positions. Automated callers use their usual deployment by default.
+- **Deployment choices (issues 1870 and 2206).** Set `api.interactive_deployment = true` before setup for a human battle. The API pauses in `"deployment"` when a skill has legal choices. `view().skill_target` supplies the prompt, eligible ships (`id`, `name`, `q`, `r`) and the first pick. Send each ship ID to `pick_skill_target(id)`, or an empty string to skip. Iteration Swap and Casting Corrected swap the two chosen ships. Sworn Deployment and Deployment Read instead supply zone `hexes` (`q`, `r`, `open`). Choose a ship and call `pick_skill_hex(q, r)` with an open zone hex. Invalid picks keep deployment open. Round one is saved only after the choice or skip. Automated callers choose without a prompt.
 
 ## The turn flow (alternating activations, as the game plays by default)
+
+`view().units[].captain` is a copy of CaptainData for a fleet ship, or null. `combat_report()` returns a separate copy of
+`combat_events`, `ship_rollups` (keyed by battle unit ID), and `lost_ship_records`. A CombatEvent is one landed hit or
+separate damage effect. Its timestamp is the 1-based event order in that battle. Applied damage is actual shield spend
+plus applied hull, including temporary grown hull. A hull section shutting down the shield is not a second hit. Carrier
+ships get credit for their wings' attacks, with the wing retained as the source unit. Hazards have no attacker ID.
+The campaign records the captain XP earned at settlement without changing how XP is awarded. A fleet ship's killmail
+is also copied into `RUN.timeline` at the kill.
 
 `api.phase` is one of:
 - `"deployment"`: waiting for a deployment skill choice before round one;
@@ -38,7 +46,7 @@ api.new_battle(run, cfg)              # run = the campaign run dict (admiral, fa
 - `"halted"`: a hard stop (see "Errors and the hard stop" below); nothing more happens until the next `new_battle`.
 
 1. **Player phase.** The player picks one of their ships that has not yet acted this round. The first command a ship receives makes it the active ship.
-   - Ships move, then fire (the game's v54 doctrine): once a ship has fired it cannot move, except Ithar hulls (and any ship with the Slip the Net boon), which may still use half the movement they had left, without climbing over or diving under. `reach()` and `view().units[].moveLeft` already account for it.
+   - Ships move, then fire: once a ship has fired it cannot move, except Glasswright hulls, which may still use half the movement they had left, without climbing over or diving under. `reach()` and `view().units[].moveLeft` already account for it.
    - The active ship can move, fire each ready gun, use its ability and give an order until it is done.
    - The activation ends by itself when the ship has no movement left and no gun that can fire, or when it dies. Otherwise call `end_activation()` ("End activation").
    - With no ship active, `end_activation(id)` passes that ship ("holds position"). `end_activation()` with no id passes the turn when nothing is pending.

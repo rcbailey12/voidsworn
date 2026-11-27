@@ -18,7 +18,7 @@ const WORDS := {"newRunScreen": "New run", "continueRun": "Continue run", "start
 	"pickFaction": "Faction", "pickAspect": "Aspect", "eventChoice": "Choose", "eventBack": "Back", "prizeStep": "Decide on the prize ships", "prizeSet": "Set", "prizeConfirm": "Confirm",
 	"salvageStep": "Salvage", "takeSalvage": "Take", "rewardNext": "Continue", "takeMod": "Take module", "takeBoon": "Take protocol", "takeRelic": "Take salvage",
 	"takePerk": "Take perk", "c3continue": "Continue", "c3retreat": "Retreat", "c3retreatYes": "Retreat", "c3retreatNo": "Stay", "saveQuit": "Save and quit",
-	"abandonRun": "Abandon run", "buyVariant": "Unlock", "progTab": "Tab", "optAlt": "Alternate start", "optCmd": "Alternate Command", "optHeat": "Heat",
+	"abandonRun": "Abandon run", "discardBrokenRun": "Discard the broken run", "buyVariant": "Unlock", "progTab": "Tab", "optAlt": "Alternate start", "optCmd": "Alternate Command", "optHeat": "Heat",
 	"battle": "Battle", "yardFleet": "Fleet"}
 
 var C
