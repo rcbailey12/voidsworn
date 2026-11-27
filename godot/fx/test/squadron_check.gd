@@ -38,7 +38,9 @@ func _run() -> void:
 		var wing: Dictionary = api.R.makeUnit("enemy", kind, {"fac": faction})
 		var view := {"id": tpl, "fac": faction, "tpl": wing.tpl, "cls": "Squadron", "facing": 0}
 		check(CRAFT.kind_for(view) == kind, "%s launches %s" % [tpl, kind])
-		check(kind == api.R.FACTIONS[faction].get("sq") if api.R.FACTIONS[faction].has("sq") else kind in ["fighter", "bomber"], "%s matches faction sq or Crusade adaptive role" % tpl)
+		var home: String = api.R.FACTIONS[faction].get("sq", "fighter")
+		var expected := "bomber" if home == "fighter" else home
+		check(kind == expected, "%s uses its faction's first wing, on either side" % tpl)
 		carriers += 1
 	check(carriers > 5, "all launch hull entries covered")
 	check(api.R.FACTIONS.deathless.sq == null, "Eclipse has no craft")

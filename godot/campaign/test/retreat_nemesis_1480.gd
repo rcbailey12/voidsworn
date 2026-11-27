@@ -24,7 +24,7 @@ func _check(ok: bool, what: String) -> void:
 
 
 func _fresh(fx: Dictionary) -> Array:
-	JSM.rnd_seed(int(fx["seed"]))
+	c.rng.rnd_seed(int(fx["seed"]))
 	c.META["admirals"][fx["admiral"]] = true
 	c.newRun(fx["admiral"], fx["fac"])
 	var all: Array = []

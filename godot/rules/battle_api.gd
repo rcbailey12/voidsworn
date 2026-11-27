@@ -125,7 +125,7 @@ func _i_new_battle_scenario(sc, seed_override: int = -1) -> void:
 	if sc is String:
 		S = JSON.parse_string(FileAccess.get_file_as_string("res://rules/test/scenarios.json"))[sc]
 	var seed := int(S.seed) if seed_override < 0 else seed_override
-	R.UID = 1; JSM.rnd_seed(seed)
+	R.UID = 1; R.rng.rnd_seed(seed)
 	R.AI_LEVEL = S.get("ai") if S.get("ai") != null else "veteran"
 	var boons := []
 	for x in S.get("boons", []): boons.append(x.duplicate())
@@ -216,6 +216,9 @@ func _i_new_battle(run: Dictionary, cfg: Dictionary) -> void:
 	_alt = not R.js_false(cfg.get("alt"))   # JS cfg.alt!==false (type-safe: any other value, even a Dictionary, means alternating)
 	cfg = cfg.duplicate(); cfg.erase("campaign"); cfg.erase("event_force"); cfg.erase("event_war"); cfg.erase("alt")
 	R.startBattle(cfg, interactive_deployment)
+	if R.B == null:
+		_halt(R.not_ported)
+		return
 	_hexes = []
 	for h in R.boardHexes(): _hexes.append({"q": int(h.q), "r": int(h.r)})
 	_pending_start = {}
@@ -243,6 +246,14 @@ func _finish_setup(start: Dictionary) -> void:
 func pick_skill_target(id: String) -> bool:
 	_enter()
 	var accepted: bool = halted == "" and phase == "deployment" and R.pickSkillTarget(id)
+	return _resolve_skill_pick(accepted)
+
+func pick_skill_hex(q: int, r: int) -> bool:
+	_enter()
+	var accepted: bool = halted == "" and phase == "deployment" and R.pickSkillHex(q, r)
+	return _resolve_skill_pick(accepted)
+
+func _resolve_skill_pick(accepted: bool) -> bool:
 	if accepted and not R.B.has("skillTarget"):
 		_finish_setup(_pending_start)
 		_pending_start = {}
@@ -273,6 +284,19 @@ func _i_unit(id: String) -> Variant:
 func view() -> Dictionary:
 	_enter()
 	var r = _i_view(); _leave(false); return r
+
+# Kept out of view() so drawing the HUD does not copy the hit history on every call.
+func combat_report() -> Dictionary:
+	_enter()
+	var out := {}
+	if R != null and R.B != null:
+		var battle: Dictionary = R.B
+		out = {"combat_events": battle.get("combat_events", []).duplicate(true),
+			"ship_rollups": R.CombatRecords.rollups(battle),
+			"lost_ship_records": battle.get("lost_ship_records", []).duplicate(true)}
+	_leave(false)
+	return out
+
 func _i_view() -> Dictionary:
 	var B = R.B; var us := []
 	for u in B["units"]:
@@ -282,6 +306,7 @@ func _i_view() -> Dictionary:
 			var w = u["weapons"][i]
 			ws.append({"i": i, "id": w["id"], "name": w.get("n"), "kind": w["k"], "arc": w["arc"], "range": w["r"], "ready": R.weaponReady(w), "cd": w.get("cdLeft"), "off": w.get("off")})   # get(): B-20 refits lack them
 		us.append({"id": u["id"], "side": u["side"], "tpl": u["tpl"], "name": u["name"], "cls": u.get("cls"), "fac": u["fac"], "size": u["size"], "squadron": R.jt(u.get("isSq")),
+			"captain": u["ship"]["cap"].duplicate(true) if u.get("ship") is Dictionary else null,
 			"q": int(u["q"]), "r": int(u["r"]), "facing": int(u["facing"]), "hp": u["hp"], "maxHp": u["maxHp"], "sh": u["sh"].duplicate(), "shMax": u["shMax"], "shp": u.get("shp"),
 			"route": u["route"].duplicate() if u.get("route") is Array else [0, 0, 0, 0], "cov": u["cov"].duplicate() if u.get("cov") is Array else null,   # issue 1446: R246 shield routing for the HUD and the bubble
 			"regenLock": R.jt(u.get("regenLock")), "st": {"acid": R.z0(u["st"].get("acid"))},
@@ -353,7 +378,7 @@ func _after_act() -> void: # ui3d.js act(): end the activation once the acting s
 	if R.jt(B.get("alt")) and a != null and (R.jt(a.get("dead")) or _done_raw(a)): end_activation()
 func _done_raw(u) -> bool: # ui3d.js isDoneRaw
 	if R.jt(u.get("dead")) or R.jt(u.get("braced")): return true
-	if u["mp"] > 0: return false
+	if u["mp"] > 0 or (u.has("warlordBoard") and not R.boardTargets(u).is_empty()): return false
 	for w in u["weapons"]:
 		if R.weaponReady(w):
 			for t in R.alive("enemy"):
@@ -464,9 +489,9 @@ func order(id: String, kind: String) -> bool:
 	_enter()
 	if halted != "": var h = false; _leave(false); return h
 	var r = _i_order(id, kind); _leave(true); return r
-func _i_order(id: String, kind: String) -> bool:       # "brace" | "full" | "lock" | "helm"
+func _i_order(id: String, kind: String) -> bool:       # "brace"
 	var u = unit(id)
-	if not _guard(u) or not R.canOrder(u, kind): return false
+	if u == null or not R.canOrder(u, kind) or not _guard(u): return false
 	R.B["busy"] = true; R.giveOrder(u, kind); _after_act(); return true
 func ram(id: String) -> bool:
 	_enter()
@@ -632,7 +657,7 @@ func _i_in_reach(id: String, wi: int, target_id: String, state = null) -> bool:
 
 # ---------------- UI state for one ship (read-only, fresh copies) ----------------
 # ui_info(id): everything the ship's buttons, tooltips and target markers need, so the scene never reads rules.gd directly.
-#   orders {brace, full, lock, helm}: can give it; rotate, stance, command: can use; ram: the run-up {target, path, dmg, recoil, soak, section} or null;
+#   orders {brace}: can give it; rotate, stance, command: can use; ram: the run-up {target, path, dmg, recoil, soak, section} or null;
 #   board: [{target, chance, kill, loss, capture}]; ability {id, ready, cooldown, hexes: [{q, r}] for nova and blink};
 #   weapons: [{i, ready, targets: [{id, can, range, inRange, inArc, los, hit, shield, hull, quad, rear, dmgMult}]}] against every living enemy.
 func ui_info(id: String) -> Dictionary:
@@ -646,7 +671,7 @@ func _ui_info_raw(id: String) -> Dictionary:
 	var u = unit(id)
 	if u == null: return {}
 	var o := {"orders": {}, "rotate": R.canRotate(u), "stance": R.canStance(u), "command": can_command()}
-	for k in ["brace", "full", "lock", "helm"]: o["orders"][k] = R.canOrder(u, k)
+	for k in R.ORDERS: o["orders"][k] = R.canOrder(u, k)
 	var ri = R.ramInfo(u)
 	if ri != null:
 		var e = R.ramEstimate(u, ri.t, ri.path.size())
@@ -896,23 +921,7 @@ func _ai_activate(u) -> void:
 			if (cr != null and (R.B["round"] == cr or (R.spareReady() and R.B["round"] == cr + 1))) or (cr == null and ((off and (near >= 2 or R.B["round"] >= 4)) or (id == "restore" and hpR < 0.6) or (id == "iron" and (hurt or near >= 2)) or R.B["round"] >= 6)):
 				command()
 	if gone.call(): return
-	if R.jt(u.get("ab")) and R.canAbility(u) and _can_use(u):
-		var arg = null; var skip = false
-		if u["ab"] == "launch":
-			var hs = R.launchHexes(u)
-			if hs.size() > 0: arg = {"hex": hs[0], "kind": ("fighter" if R.rnd() < 0.5 else "bomber") if u["fac"] == "voidsworn" else R.wingKind(u)}
-			else: skip = true
-		elif u["ab"] == "nova":
-			skip = true
-			for h in R.novaTargets(u):
-				var e1 = false; var p1 = false
-				for e in R.alive("enemy"):
-					if R.hdist(e, h) <= 1: e1 = true
-				for p in R.alive("player"):
-					if R.hdist(p, h) <= 1: p1 = true
-				if e1 and not p1:
-					arg = {"hex": h}; skip = false; break
-		if not skip: ability(u["id"], arg)
+	_bot_ability(u, false)
 	if gone.call(): return
 	if not R.jt(u.get("isSq")) and R.ramInfo(u) != null: _bot_act(u, func(): return R.tacticRam(u))
 	if gone.call(): return
@@ -945,6 +954,12 @@ func _ai_activate(u) -> void:
 		if R.jt(b):
 			if not gone.call(): end_activation(u["id"])
 			pass; return
+	_bot_ability(u, true)
+	if gone.call(): return
+	if R.botShouldBrace(u):
+		order(u["id"], "brace")
+		if not gone.call(): end_activation(u["id"])
+		return
 	for i in range(u["weapons"].size()):
 		if gone.call(): return
 		var bt = null; var bv = 0.0
@@ -956,12 +971,13 @@ func _ai_activate(u) -> void:
 		if bt != null: fire(u["id"], i, bt["id"])
 		pass
 	if gone.call(): return
-	var anyFired = false
-	for w in u["weapons"]:
-		if R.jt(w.get("fired")): anyFired = true
-	if not R.jt(u.get("isSq")) and not anyFired and u["hp"] < u["maxHp"] * 0.5 and R.canOrder(u, "brace") and R.evalThreat(u, R.alive("enemy")) > 10: order(u["id"], "brace")
 	if not gone.call() and not R.jt(u.get("isSq")) and R.canFade(u): _bot_act(u, func(): return R.fadeMove(u))
 	if not gone.call(): end_activation(u["id"])
+
+func _bot_ability(u, after_move: bool) -> void:
+	if not _can_use(u): return
+	var arg: Variant = R.botAbility(u, after_move)
+	if arg != null: ability(u["id"], arg)
 
 # A rules call run as one player action, with the same guard and auto end as the commands (ai_activate's rams and boarding).
 func _bot_act(u, fn: Callable) -> Variant:
@@ -1150,7 +1166,7 @@ func _round_capture() -> void:
 	if not R.deferred.is_empty():
 		round_snap = PackedByteArray(); round_snap_error = "round %d started with deaths still pending" % int(R.B["round"]); return
 	var root := {"v": SNAP_V, "run": R.RUN, "B": R.B, "arena": R.ARENA, "cut": R.CUT, "solid": R.SOLID, "tmeta": R.TERRAIN_META, "meta": R.META,
-		"uid": R.UID, "ai": R.AI_LEVEL, "rng": JSM.rng_s, "phase": phase, "queue": _queue, "hexes": _hexes, "alt": _alt,
+		"uid": R.UID, "ai": R.AI_LEVEL, "rng": R.rng.rng_s, "phase": phase, "queue": _queue, "hexes": _hexes, "alt": _alt,
 		"c": [_c_order, _c_i, _c_g, _c_done]}
 	var p := Snap.pack(root)
 	if p.has("error"):
@@ -1173,7 +1189,8 @@ func take_round_snapshot() -> Dictionary:
 static func snapshot_fingerprint() -> String:
 	if _fp_cache != "": return _fp_cache
 	var parts := ["snap%d" % SNAP_V]
-	for f in ["res://rules/data/tables.json", "res://rules/rules.gd", "res://rules/battle_api.gd", "res://rules/battle_snapshot.gd", "res://rules/jsm.gd"]:
+	for f in ["res://rules/data/tables.json", "res://rules/rules.gd", "res://rules/battle_api.gd", "res://rules/battle_snapshot.gd",
+			"res://rules/jsm.gd", "res://rules/combat_records.gd", "res://rules/captain_data.gd"]:
 		if FileAccess.file_exists(f): parts.append(FileAccess.get_file_as_string(f).md5_text().left(12))
 	if FileAccess.file_exists("res://build_info.json"):
 		var bi = JSON.parse_string(FileAccess.get_file_as_string("res://build_info.json"))
@@ -1198,7 +1215,7 @@ func _i_restore_round(bytes: PackedByteArray, size: int, fp: String) -> String:
 	R.not_ported = ""
 	R.RUN = S["run"]; R.B = S["B"]; R.ARENA = S["arena"]; R.CUT = S["cut"]; R.SOLID = S["solid"]; R.TERRAIN_META = S["tmeta"]; R.META = S["meta"]
 	R.end_cause = ""
-	R.UID = S["uid"]; R.AI_LEVEL = S["ai"]; JSM.rng_s = int(S["rng"])
+	R.UID = S["uid"]; R.AI_LEVEL = S["ai"]; R.rng.rng_s = int(S["rng"])
 	R.deferred = []; R.events.clear(); R._runfx = null; R._ob.clear()
 	phase = str(S["phase"]); _queue = S["queue"]; _hexes = S["hexes"]; _alt = bool(S["alt"])
 	_c_order = S["c"][0]; _c_i = int(S["c"][1]); _c_g = int(S["c"][2]); _c_done = S["c"][3]

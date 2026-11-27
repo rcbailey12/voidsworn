@@ -1,10 +1,2212 @@
-Saved manifest before: 0d9420f884f9ead96d7da348c273a0b1398db9689d89d182a58a694adf5be82c
-Saved manifest after: 16675d25392c1d73e07c43ffa8297d2bb13a1d50151f3521f7e160916daa2129
+Run 4: #2205 combined with R460 (#2206)
+
+All 379 battles were played on the combined rules, not copied from either side.
+These 59 records changed against the runner checkout at 700e6cfe. For seven, the
+old archive and merged manifest disagreed about the count. Those records were
+rebuilt too. PRNG, math and threat records reproduced without changes.
+
+Saved manifest before: a48d2c33f12f46becc58ee85ee82c98d2489bb976c87b1c2882b6c8baef8fd11
+Saved manifest after: 0331863d3c38cfe53bc375d1b0d534ae1c83a042fe56db394cd87d51c03bf6ad
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
-FAIL battle t_ecl_iterationswap
+Changed battle s8
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.enemy: 11 -> 15
+  later changed records: 123; total records: 123 -> 124
+Changed battle s10
+  Reason: Cap-blocked enemy hull budget becomes elite upgrades.
+  turn 0, round 1, after tick player; unit x09 (enemy b_spitter)
+  state.units[4].aim: 0 -> 6
+  later changed records: 333; total records: 334 -> 214
+Changed battle s14
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.enemy: 10 -> 14
+  later changed records: 145; total records: 144 -> 146
+Changed battle s25
+  Reason: Cap-blocked enemy hull budget becomes elite upgrades.
+  turn 0, round 1, after tick player; unit x012 (enemy h_interdictor)
+  state.units[6].aim: 0 -> 6
+  later changed records: 470; total records: 471 -> 464
+Changed battle s27
+  Reason: Struck Glasswright ships get normal regeneration instead of a refill.
+  turn 0, round 1, after tick player; unit x010 (player i_wisp)
+  state.units[4].shHit[0]: 0 -> 1
+  later changed records: 224; total records: 225 -> 199
+Changed battle s29
+  Reason: Slip the Net no longer grants post-fire movement.
+  turn 0, round 1, after tick player; unit x06 (player cathedral)
+  state.units[0].fx.fade: 0.5 [d:3fe0000000000000] -> <missing>
+  later changed records: 206; total records: 199 -> 207
+Changed battle s33
+  Reason: Heavier Glasswright roster changes the ships and their deployment.
+  turn 0, round 1, after tick player; unit x06 (player penitent)
+  state.units[1].q: 1 -> -1
+  later changed records: 309; total records: 310 -> 153
+Changed battle s35
+  Reason: Cap-blocked enemy hull budget becomes elite upgrades.
+  turn 0, round 1, after tick player; unit x015 (enemy c_raider)
+  state.units[9].aim: 8 -> 14
+  later changed records: 256; total records: 257 -> 243
+Changed battle s36
+  Reason: Heavier Glasswright roster changes the ships and their deployment.
+  turn 0, round 1, after tick player; unit x08 (player penitent)
+  state.units[1].q: 0 -> 1
+  later changed records: 486; total records: 196 -> 487
+Changed battle s39
+  Reason: Cap-blocked enemy hull budget becomes elite upgrades.
+  turn 0, round 1, after tick player; unit x013 (enemy d_scythe)
+  state.units[6].aim: 0 -> 6
+  later changed records: 503; total records: 421 -> 504
+Changed battle s43
+  Reason: Heavier Glasswright roster changes the ships and their deployment.
+  turn 0, round 1, after tick player; unit x05 (player b_drone)
+  state.units[1].q: 3 -> 0
+  later changed records: 120; total records: 121 -> 111
+Changed battle s45
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.enemy: 8 -> 10
+  later changed records: 124; total records: 125 -> 118
+Changed battle s55
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 11 -> 12
+  later changed records: 196; total records: 196 -> 197
+Changed battle s56
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 11 -> 12
+  later changed records: 201; total records: 202 -> 158
+Changed battle t_casttwice
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 7
+  later changed records: 116; total records: 89 -> 117
+Changed battle t_flakskip
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  saved record count differs from manifest
+Changed battle t_lensaloft
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 7
+  later changed records: 50; total records: 51 -> 51
+Changed battle t_recordedangle
+  Reason: Struck Glasswright ships get normal regeneration instead of a refill.
+  turn 40, round 3, after tick player; unit x04 (player i_song)
+  state.units[0].sh[0]: 25 -> 23
+  later changed records: 10; total records: 51 -> 51
+Changed battle t_burnflaw
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 10 -> 11
+  later changed records: 31; total records: 32 -> 32
+Changed battle t_longlight
+  Reason: Struck Glasswright ships get normal regeneration instead of a refill.
+  turn 32, round 3, after fire x03; unit x03 (player i_song)
+  state.units[0].shHit[0]: 0 -> 1
+  later changed records: 4; total records: 37 -> 37
+Changed battle t_flawforever
+  Reason: Struck Glasswright ships get normal regeneration instead of a refill.
+  turn 37, round 3, after tick player; unit x04 (player i_song)
+  state.units[0].sh[0]: 25 -> 16
+  later changed records: 9; total records: 47 -> 47
+Changed battle t_twoimages
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 74; total records: 68 -> 75
+Changed battle t_angles
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit x07 (enemy d_boss)
+  state.units[3].hp: 132 -> 240
+  later changed records: 78; total records: 77 -> 79
+Changed battle t_refraction
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 2 -> 4
+  later changed records: 81; total records: 82 -> 82
+Changed battle t_mirrorturns
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  saved record count differs from manifest
+Changed battle t_falsehulls
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 69; total records: 70 -> 70
+Changed battle t_rechargelit
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 37; total records: 38 -> 38
+Changed battle t_glasscorrected
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  saved record count differs from manifest
+Changed battle t_hardlight
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 60; total records: 61 -> 61
+Changed battle t_wardglass
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 68; total records: 69 -> 69
+Changed battle t_deployread
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 22; total records: 23 -> 23
+Changed battle t_castcorrected
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 32; total records: 32 -> 33
+Changed battle t_firstlight
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 61; total records: 54 -> 62
+Changed battle t7a_flightpaths
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  saved record count differs from manifest
+Changed battle t7a_replay
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  saved record count differs from manifest
+Changed battle t7a_starlings
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  saved record count differs from manifest
+Changed battle t7a_flightcast
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 7
+  later changed records: 109; total records: 110 -> 99
+Changed battle t7a_forgeahead
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 7
+  later changed records: 120; total records: 100 -> 121
+Changed battle t7a_onelens
+  Reason: Struck Glasswright ships get normal regeneration instead of a refill.
+  turn 26, round 2, after tick player; unit x04 (player i_song)
+  state.units[0].sh[0]: 25 -> 14
+  later changed records: 12; total records: 38 -> 39
+Changed battle t7a_lighttogether
+  Reason: Struck Glasswright ships get normal regeneration instead of a refill.
+  turn 18, round 2, after tick player; unit x04 (player i_song)
+  state.units[0].sh[0]: 25 -> 15
+  later changed records: 10; total records: 28 -> 29
+Changed battle t7a_mirroraside
+  Reason: The #2206 seed still proves Mirror Aside fires on the combined rules.
+  turn 0, round 1, after tick player; unit x03 (player i_song)
+  state.units[0].name: "Starfall" -> "Glass Heron"
+  later changed records: 75; total records: 65 -> 76
+Changed battle t7a_splitthree
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 62; total records: 62 -> 63
+Changed battle t7a_fleetelsewhere
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 70; total records: 70 -> 71
+Changed battle t7a_weakside
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 37; total records: 38 -> 38
+Changed battle t7a_prismsface
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 37; total records: 38 -> 38
+Changed battle t7a_lensrotates
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 36; total records: 37 -> 37
+Changed battle t7a_facetlit
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 34; total records: 34 -> 35
+Changed battle t7a_flightcast_m3
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 7
+  later changed records: 102; total records: 103 -> 75
+Changed battle t7a_forgeahead_m3
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 7
+  later changed records: 116; total records: 94 -> 117
+Changed battle t529_nostop_m3
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.enemy: 6 -> 12
+  later changed records: 63; total records: 64 -> 64
+Changed battle t_wardglass_m3
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 68; total records: 69 -> 69
+Changed battle t7a_facetlit_m3
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 34; total records: 34 -> 35
+Changed battle t7a_fleetelsewhere_m3
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 69; total records: 70 -> 63
+Changed battle t_falsehulls_m3
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 5 -> 6
+  later changed records: 104; total records: 94 -> 105
+Changed battle t_flawforever_m3
+  Reason: Struck Glasswright ships get normal regeneration instead of a refill.
+  turn 37, round 3, after tick player; unit x04 (player i_song)
+  state.units[0].sh[0]: 25 -> 16
+  later changed records: 9; total records: 47 -> 47
+Changed battle r1651_aelith
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  saved record count differs from manifest
+Changed battle r1651_vaelen
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 7
+  later changed records: 68; total records: 65 -> 69
+Changed battle r1651_thorne
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 10
+  later changed records: 126; total records: 127 -> 127
+Changed battle r1651_mirelle
+  Reason: Higher Glasswright light-hull CP changes starting fleet strength.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.cp0.player: 6 -> 8
+  later changed records: 105; total records: 106 -> 103
+FAIL: saved Godot results; 379 battles checked, 52 changed, 0 other files changed, 59 failures; 32.658 s
+
+Earlier #2205 comparison follows.
+
+Saved manifest before (main b193fe726): 9332e6dba44a7f292f10c3c35693f1c78e2eea75e50ab3854292a6e29b5f60a3
+Saved manifest after: 735f6af8ae2f00ea84d7e366d5a34103af3b138fdb88e1001c62646073df32fa
+
+Issue 2205 changes versus main
+This report records the first differing state in every changed fixture, not
+necessarily the first change to the outcome. The removed trace fields and
+stable biome choice can change hashes without changing the winner. The Reaver's
+Scatter now comes from its existing spine turrets. Only the replays and auxiliary
+records changed by the scoped fixes were refreshed. See tree_fixtures_2205.txt
+for adjusted triggers, and the campaign and map trial reports for those tapes.
+
+Saved Godot results: changed battles
+Later differences count changed records after the first, aligned by turn index.
+FAIL battle s1
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 169; total records: 170 -> 170
+FAIL battle s2
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 158; total records: 159 -> 159
+FAIL battle s3
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x08 (enemy c_reaver)
+  state.units[4].weapons[1].arc: "S" -> "T"
+  later changed records: 133; total records: 118 -> 134
+FAIL battle s4
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 271; total records: 272 -> 272
+FAIL battle s5
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x024 (enemy c_reaver)
+  state.units[13].weapons[1].arc: "S" -> "T"
+  later changed records: 386; total records: 323 -> 387
+FAIL battle s6
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x013 (enemy c_reaver)
+  state.units[7].weapons[1].arc: "S" -> "T"
+  later changed records: 222; total records: 198 -> 223
+FAIL battle s7
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x022 (enemy bomber)
+  state.units[17].ev: 35 -> 25
+  later changed records: 383; total records: 356 -> 384
+FAIL battle s8
+  Reason: W1/M4 filter and stabilize the starting captain perk draw.
+  turn 0, round 1, after tick player; unit x05 (player cathedral)
+  state.units[0].aim: 10 -> 0
+  later changed records: 128; total records: 129 -> 123
+FAIL battle s9
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 381; total records: 339 -> 382
+FAIL battle s10
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 346; total records: 347 -> 334
+FAIL battle s11
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x014 (enemy bomber)
+  state.units[9].ev: 35 -> 25
+  later changed records: 131; total records: 131 -> 132
+FAIL battle s12
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "T"
+  later changed records: 167; total records: 168 -> 120
+FAIL battle s13
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 246; total records: 247 -> 247
+FAIL battle s14
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 143; total records: 134 -> 144
+FAIL battle s15
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 175; total records: 173 -> 176
+FAIL battle s16
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x017 (enemy bomber)
+  state.units[12].ev: 35 -> 25
+  later changed records: 323; total records: 324 -> 301
+FAIL battle s17
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x08 (enemy c_reaver)
+  state.units[4].weapons[1].arc: "S" -> "T"
+  later changed records: 118; total records: 98 -> 119
+FAIL battle s18
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x013 (enemy bomber)
+  state.units[8].ev: 35 -> 25
+  later changed records: 273; total records: 274 -> 254
+FAIL battle s19
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 197; total records: 179 -> 198
+FAIL battle s20
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 141; total records: 140 -> 142
+FAIL battle s21
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x016 (enemy bomber)
+  state.units[11].ev: 35 -> 25
+  later changed records: 256; total records: 199 -> 257
+FAIL battle s22
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x08 (enemy c_reaver)
+  state.units[4].weapons[1].arc: "S" -> "T"
+  later changed records: 136; total records: 110 -> 137
+FAIL battle s23
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x040 (enemy bomber)
+  state.units[29].ev: 35 -> 25
+  later changed records: 653; total records: 654 -> 585
+FAIL battle s24
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x032 (enemy bomber)
+  state.units[25].ev: 35 -> 25
+  later changed records: 647; total records: 498 -> 648
+FAIL battle s25
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x09 (player c_reaver)
+  state.units[3].weapons[1].arc: "S" -> "T"
+  later changed records: 470; total records: 334 -> 471
+FAIL battle s26
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x017 (enemy bomber)
+  state.units[11].ev: 35 -> 25
+  later changed records: 229; total records: 230 -> 191
+FAIL battle s27
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 239; total records: 240 -> 225
+FAIL battle s28
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 340; total records: 341 -> 336
+FAIL battle s29
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x016 (enemy bomber)
+  state.units[10].ev: 35 -> 25
+  later changed records: 198; total records: 163 -> 199
+FAIL battle s30
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 319; total records: 320 -> 285
+FAIL battle s31
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x015 (enemy bomber)
+  state.units[9].ev: 35 -> 25
+  later changed records: 164; total records: 165 -> 164
+FAIL battle s32
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x09 (enemy c_reaver)
+  state.units[5].weapons[1].arc: "S" -> "T"
+  later changed records: 115; total records: 116 -> 88
+FAIL battle s33
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x018 (enemy bomber)
+  state.units[13].ev: 35 -> 25
+  later changed records: 309; total records: 244 -> 310
+FAIL battle s34
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 186; total records: 179 -> 187
+FAIL battle s35
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[5].weapons[1].arc: "S" -> "T"
+  later changed records: 256; total records: 215 -> 257
+FAIL battle s36
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x027 (enemy bomber)
+  state.units[12].ev: 35 -> 25
+  later changed records: 272; total records: 273 -> 196
+FAIL battle s37
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x017 (enemy bomber)
+  state.units[12].ev: 35 -> 25
+  later changed records: 297; total records: 298 -> 275
+FAIL battle s38
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x020 (enemy bomber)
+  state.units[14].ev: 35 -> 25
+  later changed records: 252; total records: 151 -> 253
+FAIL battle s39
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 420; total records: 366 -> 421
+FAIL battle s40
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 291; total records: 271 -> 292
+FAIL battle s41
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x018 (enemy bomber)
+  state.units[13].ev: 35 -> 25
+  later changed records: 333; total records: 334 -> 311
+FAIL battle s42
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x09 (enemy c_reaver)
+  state.units[4].weapons[1].arc: "S" -> "T"
+  later changed records: 180; total records: 141 -> 181
+FAIL battle s43
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x014 (enemy bomber)
+  state.units[10].ev: 35 -> 25
+  later changed records: 147; total records: 148 -> 121
+FAIL battle s44
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 127; total records: 123 -> 128
+FAIL battle s45
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x014 (enemy bomber)
+  state.units[10].ev: 35 -> 25
+  later changed records: 128; total records: 129 -> 125
+FAIL battle s46
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 208; total records: 209 -> 114
+FAIL battle s47
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 51; total records: 52 -> 52
+FAIL battle s48
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "T"
+  later changed records: 144; total records: 144 -> 145
+FAIL battle s49
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 196; total records: 197 -> 197
+FAIL battle s50
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x05 (enemy c_reaver)
+  state.units[2].weapons[1].arc: "S" -> "T"
+  later changed records: 100; total records: 101 -> 92
+FAIL battle s51
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 137; total records: 138 -> 138
+FAIL battle s52
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 156; total records: 157 -> 157
+FAIL battle s53
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 86; total records: 87 -> 87
+FAIL battle s54
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 55; total records: 56 -> 56
+FAIL battle s55
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x014 (enemy bomber)
+  state.units[10].ev: 35 -> 25
+  later changed records: 195; total records: 149 -> 196
+FAIL battle s56
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x014 (enemy bomber)
+  state.units[10].ev: 35 -> 25
+  later changed records: 204; total records: 205 -> 202
+FAIL battle s57
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 71; total records: 72 -> 70
+FAIL battle t_casttwice
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 89; total records: 90 -> 89
+FAIL battle t_flakskip
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 105; total records: 106 -> 106
+FAIL battle t_lensaloft
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 50; total records: 51 -> 51
+FAIL battle t_longfocus
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 39; total records: 40 -> 37
+FAIL battle t_recordedangle
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 53; total records: 54 -> 51
+FAIL battle t_burnflaw
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 33; total records: 34 -> 32
+FAIL battle t_longlight
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 38; total records: 39 -> 37
+FAIL battle t_flawforever
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 49; total records: 50 -> 47
+FAIL battle t_twoimages
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 69; total records: 70 -> 68
+FAIL battle t_angles
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 77; total records: 78 -> 77
+FAIL battle t_refraction
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 82; total records: 83 -> 82
+FAIL battle t_mirrorturns
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 56; total records: 57 -> 57
+FAIL battle t_falsehulls
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 71; total records: 72 -> 70
+FAIL battle t_rechargelit
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 38; total records: 39 -> 38
+FAIL battle t_glasscorrected
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 111; total records: 112 -> 112
+FAIL battle t_hardlight
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 70; total records: 71 -> 61
+FAIL battle t_wardglass
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 70; total records: 71 -> 69
+FAIL battle t_deployread
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 23; total records: 24 -> 23
+FAIL battle t_castcorrected
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 32; total records: 33 -> 32
+FAIL battle t_flagshiplens
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 36; total records: 37 -> 35
+FAIL battle t_firstlight
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 65; total records: 66 -> 54
+FAIL battle t_heldaccount
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 41; total records: 42 -> 42
+FAIL battle t_namedledger
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 57; total records: 58 -> 56
+FAIL battle t_inheritedaim
+  Reason: Skill fixture still proves the same trigger after the bot/wing changes. seed 31503 to 31504, Command round 4 to 4.
+  turn 0, round 1, after tick player; unit x02 (player penitent)
+  state.units[0].name: "Long Watch" -> "Pale Sentinel"
+  later changed records: 84; total records: 85 -> 74
+FAIL battle t_everygun
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 101; total records: 81 -> 102
+FAIL battle t_sworndeploy
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 39; total records: 40 -> 33
+FAIL battle t_debtsreserve
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 27; total records: 28 -> 28
+FAIL battle t_flagshipLedger
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 33; total records: 34 -> 34
+FAIL battle t_standardreroll
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 77; total records: 53 -> 78
+FAIL battle t_preyname
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 63; total records: 55 -> 64
+FAIL battle t_salvotwohands
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 64; total records: 63 -> 65
+FAIL battle t_debthunts
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 52; total records: 53 -> 52
+FAIL battle t_twosalvos
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 62; total records: 63 -> 62
+FAIL battle t_namedprey
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 61; total records: 62 -> 62
+FAIL battle t_escortname
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 36; total records: 37 -> 36
+FAIL battle t_firstwave
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 45; total records: 46 -> 45
+FAIL battle t_wingreserve
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 59; total records: 60 -> 60
+FAIL battle t_generation
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 28; total records: 29 -> 28
+FAIL battle t_wingsdebt
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x09 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 88; total records: 89 -> 72
+FAIL battle t_rollwings
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x09 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 81; total records: 80 -> 82
+FAIL battle t_oathwings
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x06 (enemy c_reaver)
+  state.units[3].weapons[1].arc: "S" -> "T"
+  later changed records: 71; total records: 70 -> 72
+FAIL battle t_holdcounted
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 39; total records: 40 -> 40
+FAIL battle t_oathstillness
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 40; total records: 41 -> 35
+FAIL battle t_unpaid
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x09 (enemy bomber)
+  state.units[5].ev: 35 -> 25
+  later changed records: 122; total records: 123 -> 120
+FAIL battle t_wallanswers
+  Reason: Skill fixture still proves the same trigger after the bot/wing changes. seed 37101 to 37104, Command round 2 to 2.
+  turn 0, round 1, after tick player; unit x03 (player warden)
+  state.units[0].name: "Unpaid Debt" -> "Resolve of the Reach"
+  later changed records: 84; total records: 85 -> 76
+FAIL battle t_irontestament
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 44; total records: 45 -> 38
+FAIL battle t_ecl_restoreninth
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 81; total records: 82 -> 82
+FAIL battle t_ecl_restoredbeyond
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 133; total records: 134 -> 119
+FAIL battle t_ecl_copiescontribute
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 69; total records: 70 -> 70
+FAIL battle t_ecl_tenthframe
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 115; total records: 116 -> 111
+FAIL battle t_ecl_earliercopy
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 80; total records: 81 -> 81
+FAIL battle t_ecl_arcswarm
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 73; total records: 74 -> 74
+FAIL battle t_ecl_noonchoice
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 86; total records: 87 -> 87
+FAIL battle t_ecl_copyfires
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 62; total records: 57 -> 63
+FAIL battle t_ecl_coronashadow
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 55; total records: 56 -> 56
+FAIL battle t_ecl_everyframe
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 73; total records: 74 -> 74
+FAIL battle t_ecl_noonrepeat
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 67; total records: 68 -> 68
+FAIL battle t_ecl_onesuncopy
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 62; total records: 63 -> 63
+FAIL battle t_ecl_copiedbehind
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 123; total records: 124 -> 124
+FAIL battle t_ecl_unseenarchive
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 59; total records: 60 -> 60
+FAIL battle t_ecl_uncopiedtarget
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 79; total records: 80 -> 80
+FAIL battle t_ecl_iterationkill
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 94; total records: 95 -> 95
+FAIL battle t_ecl_silentarchive
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 93; total records: 94 -> 94
+FAIL battle t_ecl_outshadow
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 73; total records: 74 -> 74
+FAIL battle t_ecl_longcopy
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 66; total records: 67 -> 67
+FAIL battle t_ecl_platesshadow
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 83; total records: 84 -> 84
+FAIL battle t_ecl_twicerestored
+  Reason: Skill fixture still proves the same trigger after the bot/wing changes. seed 31823 to 31824, Command round 3 to 3.
+  turn 0, round 1, after tick player; unit x04 (player d_harvester)
+  state.units[0].name: "Ninth Shade" -> "Silent Heir"
+  later changed records: 109; total records: 110 -> 105
+FAIL battle t_ecl_layersshift
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 75; total records: 76 -> 76
+FAIL battle t_ecl_nolayer
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 105; total records: 106 -> 98
+FAIL battle t_ecl_stillness
+  Reason: Skill fixture still proves the same trigger after the bot/wing changes. seed 37113 to 37116, Command round 2 to 2.
   turn 0, round 1, after tick player; unit x05 (player d_harvester)
-  state.units[0].q: 2 -> 1
-  later changed records: 49; total records: 49 -> 50
-FAIL: saved Godot results; 354 battles checked, 1 changed, 0 other files changed, 1 failures; 27.201 s
+  state.units[0].facing: 3 -> 5
+  later changed records: 132; total records: 133 -> 89
+FAIL battle t_ecl_tenthousand
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x012 (enemy bomber)
+  state.units[7].ev: 35 -> 25
+  later changed records: 169; total records: 169 -> 170
+FAIL battle t_ecl_restoredfleet
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 107; total records: 108 -> 108
+FAIL battle t_ecl_iterationswap
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 49; total records: 50 -> 50
+FAIL battle t_ecl_flagshipindex
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 64; total records: 65 -> 65
+FAIL battle t_ecl_framezero
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 116; total records: 61 -> 117
+FAIL battle t_choosebrood
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 52; total records: 53 -> 53
+FAIL battle t_sporetide
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 34; total records: 35 -> 35
+FAIL battle t_everythroat
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 48; total records: 49 -> 49
+FAIL battle t_secondthroat
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[7].ev: 35 -> 25
+  later changed records: 104; total records: 101 -> 105
+FAIL battle t_rundown
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 86; total records: 78 -> 87
+FAIL battle t_razorprey
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 93; total records: 94 -> 91
+FAIL battle t_frenzyfeeds
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x09 (enemy bomber)
+  state.units[5].ev: 35 -> 25
+  later changed records: 135; total records: 125 -> 136
+FAIL battle t_breathbite
+  Reason: Skill fixture still proves the same trigger after the bot/wing changes. seed 37129 to 37129, Command round 5 to 3, line to ambush deployment.
+  turn 0, round 1, after tick player; unit x06 (player b_razor)
+  state.units[0].q: 1 -> 5
+  later changed records: 138; total records: 139 -> 117
+FAIL battle t_throatred
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 66; total records: 67 -> 66
+FAIL battle t_preyeverymouth
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x08 (enemy bomber)
+  state.units[4].ev: 35 -> 25
+  later changed records: 108; total records: 108 -> 109
+FAIL battle t_growhurts
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 103; total records: 104 -> 95
+FAIL battle t_skinthick
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 67; total records: 68 -> 67
+FAIL battle t_fleshknit
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 53; total records: 54 -> 53
+FAIL battle t_refuseholes
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x08 (enemy bomber)
+  state.units[4].ev: 35 -> 25
+  later changed records: 137; total records: 93 -> 138
+FAIL battle t_tideend
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 42; total records: 43 -> 43
+FAIL battle t_tornback
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x08 (enemy bomber)
+  state.units[4].ev: 35 -> 25
+  later changed records: 133; total records: 134 -> 119
+FAIL battle t_acidbeforeaim
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 61; total records: 62 -> 62
+FAIL battle t_throatspits
+  Reason: Skill fixture still proves the same trigger after the bot/wing changes. seed 37104 to 37102, Command round 6 to 6.
+  turn 0, round 1, after tick player; unit x02 (player b_brood)
+  state.units[0].name: "Shrieking Coil" -> "Sour Gut"
+  later changed records: 148; total records: 141 -> 149
+FAIL battle t_burnstays
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 84; total records: 85 -> 82
+FAIL battle t_acidseams
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 47; total records: 48 -> 48
+FAIL battle t_manymouths
+  Reason: Skill fixture still proves the same trigger after the bot/wing changes. seed 31721 to 31720, Command round 3 to 5.
+  turn 0, round 1, after tick player; unit x05 (player b_spitter)
+  state.units[0].facing: 1 -> 0
+  later changed records: 90; total records: 66 -> 91
+FAIL battle t_volleygrows
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 88; total records: 89 -> 88
+FAIL battle t_mouthdeep
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 85; total records: 86 -> 81
+FAIL battle t_broodreserve
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 40; total records: 41 -> 41
+FAIL battle t_firstthroat
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 63; total records: 61 -> 64
+FAIL battle t_throatdeep
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 31; total records: 32 -> 32
+FAIL battle t_hb_runbigger
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 46; total records: 47 -> 41
+FAIL battle t_hb_railboarding
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x06 (player c_reaver)
+  state.units[2].weapons[1].arc: "S" -> "T"
+  later changed records: 81; total records: 82 -> 76
+FAIL battle t_hb_packcloses
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 45; total records: 46 -> 46
+FAIL battle t_hb_rushrail
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 85; total records: 73 -> 86
+FAIL battle t_hb_allscars
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 67; total records: 62 -> 68
+FAIL battle t_hb_mawopens
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 54; total records: 54 -> 55
+FAIL battle t_hb_burncarry
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 71; total records: 72 -> 60
+FAIL battle t_hb_warlordrun
+  Reason: W2 leaves the flagship able to move again after its first board.
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 55; total records: 56 -> 56
+FAIL battle t_hb_knifeback
+  Reason: Skill fixture still proves the same trigger after the bot/wing changes. seed 37102 to 37103, the Reaver turret changes the first legal rear attack.
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].name: "Chain of Teeth" -> "Cold Trail"
+  later changed records: 45; total records: 40 -> 46
+FAIL battle t_hb_darktorps
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "T"
+  later changed records: 68; total records: 68 -> 69
+FAIL battle t_hb_cutturn
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "T"
+  later changed records: 71; total records: 70 -> 72
+FAIL battle t_hb_secondknife
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "T"
+  later changed records: 74; total records: 75 -> 73
+FAIL battle t_hb_smilecut
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 36; total records: 37 -> 37
+FAIL battle t_hb_everyknife
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 43; total records: 44 -> 44
+FAIL battle t_hb_darkknives
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "T"
+  later changed records: 75; total records: 76 -> 73
+FAIL battle t_hb_cutfeeds
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "T"
+  later changed records: 74; total records: 75 -> 67
+FAIL battle t_hb_patchedwing
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 56; total records: 57 -> 47
+FAIL battle t_hb_hulkmore
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 30; total records: 31 -> 31
+FAIL battle t_hb_retasked
+  Reason: Skill fixture still proves the same trigger after the bot/wing changes. seed 37107 to 37105, Command round 2 to 2.
+  turn 0, round 1, after tick player; unit x03 (player c_hulk)
+  state.units[0].name: "Bad Omen" -> "Bent Crown"
+  later changed records: 86; total records: 87 -> 76
+FAIL battle t_hb_wreckline
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 27; total records: 28 -> 28
+FAIL battle t_hb_wholeyard
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 66; total records: 58 -> 67
+FAIL battle t_hb_screaming
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 167; total records: 115 -> 168
+FAIL battle t_hb_swarmscrap
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 65; total records: 66 -> 66
+FAIL battle t_hb_privatewing
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 59; total records: 60 -> 60
+FAIL battle t_hb_weldmatters
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 139; total records: 109 -> 140
+FAIL battle t_hb_patchguns
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "T"
+  later changed records: 154; total records: 155 -> 143
+FAIL battle t_hb_scrapfront
+  Reason: Skill fixture still proves the same trigger after the bot/wing changes. seed 33027 to 33026, Command round 5 to 5.
+  turn 0, round 1, after tick player; unit x03 (player c_hulk)
+  state.units[0].name: "Cold Trail" -> "Cinder Wolf"
+  later changed records: 143; total records: 144 -> 117
+FAIL battle t_hb_weldedfight
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 159; total records: 106 -> 160
+FAIL battle t_hb_doublebolted
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 154; total records: 148 -> 155
+FAIL battle t_hb_packbites
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x03 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "T"
+  later changed records: 134; total records: 135 -> 112
+FAIL battle t_hb_weldedwhole
+  Reason: Skill fixture still proves the same trigger after the bot/wing changes. seed 37102 to 37103, the Reaver turret changes whether the fleet reaches the repair trigger.
+  turn 0, round 1, after tick player; unit x03 (player c_reaver)
+  state.units[0].name: "Chain of Teeth" -> "Cold Trail"
+  later changed records: 112; total records: 106 -> 113
+FAIL battle t_hb_nothingbroken
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 91; total records: 92 -> 81
+FAIL battle t_hb_preyscent
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 54; total records: 55 -> 47
+FAIL battle t_hb_loosepack
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 29; total records: 30 -> 30
+FAIL battle t_hb_firstscar
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x06 (player c_reaver)
+  state.units[2].weapons[1].arc: "S" -> "T"
+  later changed records: 47; total records: 48 -> 48
+FAIL battle t_hb_trophystandard
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 34; total records: 35 -> 35
+FAIL battle t_heg_widenet
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "T"
+  later changed records: 67; total records: 68 -> 61
+FAIL battle t_heg_secondvolley
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 130; total records: 131 -> 131
+FAIL battle t_heg_sharedsolution
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "T"
+  later changed records: 54; total records: 54 -> 55
+FAIL battle t_heg_colddrill
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "T"
+  later changed records: 52; total records: 52 -> 53
+FAIL battle t_heg_rollingfire
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "T"
+  later changed records: 57; total records: 58 -> 58
+FAIL battle t_heg_irontempo
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x011 (enemy bomber)
+  state.units[7].ev: 35 -> 25
+  later changed records: 220; total records: 193 -> 221
+FAIL battle t_heg_livingrelay
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "T"
+  later changed records: 80; total records: 81 -> 57
+FAIL battle t_heg_onevoice
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "T"
+  later changed records: 69; total records: 70 -> 68
+FAIL battle t_heg_formation
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "T"
+  later changed records: 57; total records: 58 -> 49
+FAIL battle t_heg_drill
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "T"
+  later changed records: 66; total records: 67 -> 67
+FAIL battle t_heg_beacon
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "T"
+  later changed records: 43; total records: 43 -> 44
+FAIL battle t_heg_stdforward
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "T"
+  later changed records: 43; total records: 43 -> 44
+FAIL battle t_heg_filedtriplicate
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "T"
+  later changed records: 55; total records: 56 -> 55
+FAIL battle t_heg_strikebook
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "T"
+  later changed records: 82; total records: 83 -> 78
+FAIL battle t_heg_crossfire
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "T"
+  later changed records: 66; total records: 67 -> 66
+FAIL battle t_heg_filedbefore
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x012 (enemy bomber)
+  state.units[7].ev: 35 -> 25
+  later changed records: 121; total records: 122 -> 112
+FAIL battle t_heg_totalinterdiction
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 123; total records: 114 -> 124
+FAIL battle t_heg_sevenbreach
+  Reason: W5 limits the disabling hit to the Strike round.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 116; total records: 117 -> 104
+FAIL battle t_heg_permanentfile
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "T"
+  later changed records: 67; total records: 68 -> 68
+FAIL battle t_heg_oneorder
+  Reason: M2 lets One Order reuse a spent mount without clearing its cooldown.
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "T"
+  later changed records: 71; total records: 72 -> 71
+FAIL battle t_heg_cruisers
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x09 (enemy c_reaver)
+  state.units[5].weapons[1].arc: "S" -> "T"
+  later changed records: 81; total records: 82 -> 81
+FAIL battle t_heg_launchorder
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x09 (enemy c_reaver)
+  state.units[5].weapons[1].arc: "S" -> "T"
+  later changed records: 50; total records: 51 -> 51
+FAIL battle t_heg_secondwave
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x09 (enemy c_reaver)
+  state.units[5].weapons[1].arc: "S" -> "T"
+  later changed records: 74; total records: 70 -> 75
+FAIL battle t_heg_rehearsed
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x09 (enemy c_reaver)
+  state.units[5].weapons[1].arc: "S" -> "T"
+  later changed records: 96; total records: 97 -> 83
+FAIL battle t_heg_fullgroup
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 118; total records: 119 -> 119
+FAIL battle t_heg_escorts
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x09 (enemy c_reaver)
+  state.units[5].weapons[1].arc: "S" -> "T"
+  later changed records: 91; total records: 91 -> 92
+FAIL battle t_heg_onetarget
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x09 (enemy c_reaver)
+  state.units[5].weapons[1].arc: "S" -> "T"
+  later changed records: 52; total records: 53 -> 53
+FAIL battle t_heg_standinggroup
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x09 (enemy c_reaver)
+  state.units[5].weapons[1].arc: "S" -> "T"
+  later changed records: 72; total records: 73 -> 72
+FAIL battle t_heg_columnstraight
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 124; total records: 125 -> 125
+FAIL battle t_heg_overflow
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 154; total records: 130 -> 155
+FAIL battle t_heg_bell
+  Reason: W3 spends the Chime only on a blow that reaches hull.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 133; total records: 134 -> 107
+FAIL battle t_heg_rotation
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 158; total records: 145 -> 159
+FAIL battle t_heg_columnendures
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 106; total records: 98 -> 107
+FAIL battle t_heg_filedarmor
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 149; total records: 136 -> 150
+FAIL battle t_heg_standardcovers
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 124; total records: 125 -> 125
+FAIL battle t_heg_flagshipstandard
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 135; total records: 136 -> 136
+FAIL battle t7a_flightpaths
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 88; total records: 89 -> 89
+FAIL battle t7a_replay
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 109; total records: 110 -> 110
+FAIL battle t7a_starlings
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 103; total records: 104 -> 104
+FAIL battle t7a_flightcast
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 109; total records: 95 -> 110
+FAIL battle t7a_forgeahead
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 102; total records: 103 -> 100
+FAIL battle t7a_onelens
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 40; total records: 41 -> 38
+FAIL battle t7a_lighttogether
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 30; total records: 31 -> 28
+FAIL battle t7a_sunlens
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 40; total records: 41 -> 38
+FAIL battle t7a_mirroraside
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 66; total records: 67 -> 65
+FAIL battle t7a_splitthree
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 63; total records: 64 -> 62
+FAIL battle t7a_fleetelsewhere
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 71; total records: 72 -> 70
+FAIL battle t7a_weakside
+  Reason: H3 selects by the single shield pool, not the sum of side catches.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 38; total records: 39 -> 38
+FAIL battle t7a_prismsface
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 38; total records: 39 -> 38
+FAIL battle t7a_lensrotates
+  Reason: Skill fixture still proves the same trigger after the bot/wing changes. seed 37118 to 37118, Command round 1 to 2.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 37; total records: 38 -> 37
+FAIL battle t7a_facetlit
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 34; total records: 35 -> 34
+FAIL battle t7a_ledgerarcs
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 34; total records: 34 -> 35
+FAIL battle t7a_debtdue
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 50; total records: 51 -> 51
+FAIL battle t7a_grandledger
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 56; total records: 57 -> 56
+FAIL battle t7a_lastaccount
+  Reason: Skill fixture still proves the same trigger after the bot/wing changes. seed 37112 to 37113, Command round 3 to 3.
+  turn 0, round 1, after tick player; unit x03 (player penitent)
+  state.units[0].name: "Burning Spire" -> "Merciless Frost"
+  later changed records: 44; total records: 45 -> 38
+FAIL battle t7a_torpfirst
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 64; total records: 64 -> 65
+FAIL battle t7a_rearreckoning
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 35; total records: 36 -> 36
+FAIL battle t7a_salvoend
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x07 (enemy bomber)
+  state.units[4].ev: 35 -> 25
+  later changed records: 76; total records: 77 -> 75
+FAIL battle t7a_accountsplits
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 98; total records: 99 -> 98
+FAIL battle t7a_screensshift
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 46; total records: 47 -> 41
+FAIL battle t7a_wallearly
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 40; total records: 41 -> 34
+FAIL battle t7a_wallmoves
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 46; total records: 47 -> 47
+FAIL battle t7b_ecl_formation_a
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 94; total records: 95 -> 95
+FAIL battle t7b_ecl_formation_b
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 81; total records: 82 -> 82
+FAIL battle t7b_ecl_formation_c
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 56; total records: 57 -> 57
+FAIL battle t7b_ecl_formation_d
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 59; total records: 60 -> 60
+FAIL battle t7b_ecl_shadow
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 52; total records: 53 -> 53
+FAIL battle t7b_ecl_wall
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 112; total records: 112 -> 113
+FAIL battle t7b_ecl_archive
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 77; total records: 78 -> 78
+FAIL battle t7b_ecl_iterfire
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 107; total records: 108 -> 108
+FAIL battle t7b_ecl_triage
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 118; total records: 119 -> 117
+FAIL battle t7b_ch_broodsplits
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 60; total records: 61 -> 61
+FAIL battle t7b_ch_nine
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 58; total records: 59 -> 59
+FAIL battle t7b_ch_teeth
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 96; total records: 97 -> 83
+FAIL battle t7b_ch_tideearly
+  Reason: Skill fixture still proves the same trigger after the bot/wing changes. begins with an injured flagship, then restores before further hull damage to preserve the 10-point repair bonus proof.
+  turn 0, round 1, after tick player; unit x09 (enemy bomber)
+  state.units[5].ev: 35 -> 25
+  later changed records: 98; total records: 99 -> 83
+FAIL battle t7b_ch_growth
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 108; total records: 109 -> 100
+FAIL battle t7b_ch_spat
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 85; total records: 84 -> 86
+FAIL battle t7b_ecl_targetarchived
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 49; total records: 50 -> 50
+FAIL battle t529_roles_strike
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 67; total records: 68 -> 68
+FAIL battle t529_roles_screen
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x07 (enemy bomber)
+  state.units[4].ev: 35 -> 25
+  later changed records: 83; total records: 76 -> 84
+FAIL battle t529_roles_mend
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 80; total records: 81 -> 80
+FAIL battle t529_roles_change
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x09 (enemy bomber)
+  state.units[5].ev: 35 -> 25
+  later changed records: 88; total records: 89 -> 86
+FAIL battle t529_spawned
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 67; total records: 68 -> 68
+FAIL battle t529_nostop
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 98; total records: 99 -> 99
+FAIL battle t529_scent
+  Reason: Skill fixture still proves the same trigger after the bot/wing changes. seed 37102 to 37107, Command round 2 to 2.
+  turn 0, round 1, after tick player; unit x04 (player b_razor)
+  state.units[0].name: "Sour Gut" -> "Tidehunger"
+  later changed records: 53; total records: 53 -> 54
+FAIL battle t529_may_debt_no
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 44; total records: 45 -> 45
+FAIL battle t529_may_grow_no
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 98; total records: 99 -> 94
+FAIL battle s983_station_defend
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x014 (enemy bomber)
+  state.units[9].ev: 35 -> 25
+  later changed records: 123; total records: 124 -> 119
+FAIL battle s983_station_plain
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x08 (enemy c_reaver)
+  state.units[4].weapons[1].arc: "S" -> "T"
+  later changed records: 86; total records: 87 -> 83
+FAIL battle s983_teaching_station_defend
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 66; total records: 67 -> 67
+FAIL battle s1450_undo
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 277; total records: 278 -> 278
+FAIL battle s1450_undo_chorus
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 156; total records: 157 -> 157
+FAIL battle s1450_undo_classic
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x016 (enemy bomber)
+  state.units[11].ev: 35 -> 25
+  later changed records: 426; total records: 349 -> 427
+FAIL battle s1447_ion_pulse
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 165; total records: 157 -> 166
+FAIL battle s1480
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x021 (enemy bomber)
+  state.units[15].ev: 35 -> 25
+  later changed records: 217; total records: 218 -> 195
+FAIL battle r1653_gunnery
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x013 (enemy bomber)
+  state.units[8].ev: 35 -> 25
+  later changed records: 193; total records: 194 -> 178
+FAIL battle r1653_afterburn
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x013 (enemy bomber)
+  state.units[8].ev: 35 -> 25
+  later changed records: 202; total records: 203 -> 180
+FAIL battle r1653_flankmark
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x06 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 177; total records: 135 -> 178
+FAIL battle r1653_spotter
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x019 (enemy bomber)
+  state.units[14].ev: 35 -> 25
+  later changed records: 187; total records: 188 -> 166
+FAIL battle r1653_lastlight
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x013 (enemy bomber)
+  state.units[8].ev: 35 -> 25
+  later changed records: 193; total records: 194 -> 176
+FAIL battle r1653_coolant
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x011 (enemy bomber)
+  state.units[7].ev: 35 -> 25
+  later changed records: 170; total records: 171 -> 166
+FAIL battle r1653_spare
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x013 (enemy bomber)
+  state.units[8].ev: 35 -> 25
+  later changed records: 199; total records: 200 -> 175
+FAIL battle r1653_ram
+  Reason: W10 gives the bot an open approach and requires one recorded player ram.
+  turn 0, round 1, after tick player; unit x06 (player c_reaver)
+  state.units[2].weapons[1].arc: "S" -> "T"
+  later changed records: 166; total records: 167 -> 121
+FAIL battle r1653_mirror
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 152; total records: 153 -> 150
+FAIL battle r1653_beacon
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x013 (enemy bomber)
+  state.units[8].ev: 35 -> 25
+  later changed records: 188; total records: 144 -> 189
+FAIL battle r1653_quiet
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x013 (enemy bomber)
+  state.units[8].ev: 35 -> 25
+  later changed records: 190; total records: 191 -> 153
+FAIL battle r1653_locker
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x06 (player c_reaver)
+  state.units[2].weapons[1].arc: "S" -> "T"
+  later changed records: 159; total records: 160 -> 138
+FAIL battle r1653_chaser
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x013 (enemy bomber)
+  state.units[8].ev: 35 -> 25
+  later changed records: 183; total records: 184 -> 179
+FAIL battle r1653_spill
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x08 (enemy c_reaver)
+  state.units[4].weapons[1].arc: "S" -> "T"
+  later changed records: 135; total records: 125 -> 136
+FAIL battle r1653_relay
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x012 (enemy bomber)
+  state.units[7].ev: 35 -> 25
+  later changed records: 201; total records: 202 -> 197
+FAIL battle s1649_fold
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 108; total records: 109 -> 109
+FAIL battle s1649_frenzy
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 141; total records: 119 -> 142
+FAIL battle t7a_flightcast_m3
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 102; total records: 97 -> 103
+FAIL battle t7a_forgeahead_m3
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 101; total records: 102 -> 94
+FAIL battle t_ecl_outshadow_m3
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 73; total records: 74 -> 74
+FAIL battle t_ecl_longcopy_m3
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 66; total records: 67 -> 67
+FAIL battle t_rollwings_m3
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x09 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 76; total records: 77 -> 75
+FAIL battle t_oathwings_m3
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x06 (enemy c_reaver)
+  state.units[3].weapons[1].arc: "S" -> "T"
+  later changed records: 66; total records: 67 -> 67
+FAIL battle t_hb_burncarry_m3
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 49; total records: 50 -> 39
+FAIL battle t_hb_warlordrun_m3
+  Reason: W2 allows another move and a second boarding against a fresh target.
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 74; total records: 69 -> 75
+FAIL battle t_heg_livingrelay_m3
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x019 (enemy c_reaver)
+  state.units[10].weapons[1].arc: "S" -> "T"
+  later changed records: 72; total records: 72 -> 73
+FAIL battle t_heg_onevoice_m3
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "T"
+  later changed records: 67; total records: 68 -> 68
+FAIL battle t_ecl_tenthousand_m3
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x012 (enemy bomber)
+  state.units[7].ev: 35 -> 25
+  later changed records: 166; total records: 167 -> 164
+FAIL battle t_ecl_restoredfleet_m3
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 107; total records: 107 -> 108
+FAIL battle t7a_salvoend_m3
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[7].ev: 35 -> 25
+  later changed records: 115; total records: 99 -> 116
+FAIL battle t_namedprey_m3
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 61; total records: 62 -> 62
+FAIL battle t_heg_standardcovers_m3
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 118; total records: 119 -> 119
+FAIL battle t_heg_flagshipstandard_m3
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 119; total records: 120 -> 120
+FAIL battle t7b_ch_nine_m3
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 105; total records: 106 -> 106
+FAIL battle t529_nostop_m3
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 87; total records: 88 -> 64
+FAIL battle t_tideend_m3
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 25; total records: 26 -> 26
+FAIL battle t_tornback_m3
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x08 (enemy bomber)
+  state.units[4].ev: 35 -> 25
+  later changed records: 133; total records: 134 -> 119
+FAIL battle t_wardglass_m3
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 70; total records: 71 -> 69
+FAIL battle t7a_facetlit_m3
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 34; total records: 35 -> 34
+FAIL battle t_hb_swarmscrap_m3
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 67; total records: 68 -> 68
+FAIL battle t_hb_privatewing_m3
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 110; total records: 111 -> 97
+FAIL battle t_ecl_tenthframe_m3
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x010 (enemy bomber)
+  state.units[6].ev: 35 -> 25
+  later changed records: 115; total records: 116 -> 114
+FAIL battle t_ecl_earliercopy_m3
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 81; total records: 82 -> 82
+FAIL battle t_throatred_m3
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 55; total records: 56 -> 50
+FAIL battle t_preyeverymouth_m3
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x014 (enemy bomber)
+  state.units[8].ev: 35 -> 25
+  later changed records: 125; total records: 100 -> 126
+FAIL battle t_heg_onetarget_m3
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x09 (enemy c_reaver)
+  state.units[5].weapons[1].arc: "S" -> "T"
+  later changed records: 50; total records: 51 -> 51
+FAIL battle t_heg_standinggroup_m3
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x09 (enemy c_reaver)
+  state.units[5].weapons[1].arc: "S" -> "T"
+  later changed records: 78; total records: 70 -> 79
+FAIL battle t_hb_darkknives_m3
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "T"
+  later changed records: 58; total records: 59 -> 58
+FAIL battle t_hb_cutfeeds_m3
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "T"
+  later changed records: 71; total records: 65 -> 72
+FAIL battle t_ecl_noonrepeat_m3
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 52; total records: 53 -> 53
+FAIL battle t_ecl_onesuncopy_m3
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 66; total records: 67 -> 67
+FAIL battle t_irontestament_m3
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 44; total records: 45 -> 38
+FAIL battle t7a_wallmoves_m3
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 46; total records: 47 -> 47
+FAIL battle t7a_fleetelsewhere_m3
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 71; total records: 72 -> 70
+FAIL battle t_falsehulls_m3
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 95; total records: 96 -> 94
+FAIL battle t7a_sunlens_m3
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 40; total records: 41 -> 38
+FAIL battle t_flawforever_m3
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 49; total records: 50 -> 47
+FAIL battle t_hb_weldedwhole_m3
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x03 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "T"
+  later changed records: 115; total records: 116 -> 111
+FAIL battle t_hb_nothingbroken_m3
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 91; total records: 92 -> 72
+FAIL battle t7a_grandledger_m3
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 56; total records: 57 -> 56
+FAIL battle t7a_lastaccount_m3
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 82; total records: 80 -> 83
+FAIL battle t_volleygrows_m3
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 86; total records: 87 -> 84
+FAIL battle t_mouthdeep_m3
+  Reason: H1 makes the opening enemy wing use the same faction role choice as the player.
+  turn 0, round 1, after tick player; unit x06 (enemy bomber)
+  state.units[3].ev: 35 -> 25
+  later changed records: 85; total records: 86 -> 80
+FAIL battle t_heg_permanentfile_m3
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "T"
+  later changed records: 155; total records: 132 -> 156
+FAIL battle t_heg_oneorder_m3
+  Reason: M2 lets One Order reuse a spent mount without clearing its cooldown.
+  turn 0, round 1, after tick player; unit x011 (enemy c_reaver)
+  state.units[6].weapons[1].arc: "S" -> "T"
+  later changed records: 181; total records: 182 -> 176
+FAIL battle r1651_vex
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 124; total records: 125 -> 87
+FAIL battle r1651_malek
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "crystal" -> "stone"
+  later changed records: 109; total records: 110 -> 110
+FAIL battle r1651_ashgrove
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 103; total records: 103 -> 104
+FAIL battle r1651_thale
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 78; total records: 79 -> 70
+FAIL battle r1651_kassar
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 119; total records: 120 -> 120
+FAIL battle r1651_vorn
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 114; total records: 113 -> 115
+FAIL battle r1651_reyes
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 101; total records: 102 -> 101
+FAIL battle r1651_maren
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 134; total records: 135 -> 135
+FAIL battle r1651_grax
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 136; total records: 118 -> 137
+FAIL battle r1651_sable
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x05 (player c_reaver)
+  state.units[0].weapons[1].arc: "S" -> "T"
+  later changed records: 114; total records: 97 -> 115
+FAIL battle r1651_mott
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 94; total records: 95 -> 93
+FAIL battle r1651_vesh
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[1].weapons[1].arc: "S" -> "T"
+  later changed records: 172; total records: 134 -> 173
+FAIL battle r1651_matriarch
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 59; total records: 60 -> 60
+FAIL battle r1651_razormaw
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 112; total records: 107 -> 113
+FAIL battle r1651_mending
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 121; total records: 87 -> 122
+FAIL battle r1651_voice
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 67; total records: 66 -> 68
+FAIL battle r1651_aelith
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x06 (enemy c_reaver)
+  state.units[3].weapons[1].arc: "S" -> "T"
+  later changed records: 90; total records: 91 -> 91
+FAIL battle r1651_vaelen
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x06 (enemy c_reaver)
+  state.units[3].weapons[1].arc: "S" -> "T"
+  later changed records: 65; total records: 66 -> 65
+FAIL battle r1651_thorne
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x010 (enemy c_reaver)
+  state.units[5].weapons[1].arc: "S" -> "T"
+  later changed records: 155; total records: 156 -> 127
+FAIL battle r1651_mirelle
+  Reason: M5 moves the Reaver Scatter to the existing spine turrets.
+  turn 0, round 1, after tick player; unit x08 (enemy c_reaver)
+  state.units[4].weapons[1].arc: "S" -> "T"
+  later changed records: 107; total records: 108 -> 106
+FAIL battle r1651_nekhet
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 63; total records: 64 -> 64
+FAIL battle r1651_sekhmar
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "carbon" -> "iron"
+  later changed records: 39; total records: 40 -> 40
+FAIL battle r1651_anuket
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "ice" -> "crystal"
+  later changed records: 62; total records: 63 -> 63
+FAIL battle r1651_khepra
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "iron" -> "ice"
+  later changed records: 103; total records: 92 -> 104
+FAIL battle r1651_cmdoverride
+  Reason: M4 makes the seeded biome draw independent of dictionary insertion order.
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.biome.rock: "stone" -> "carbon"
+  later changed records: 91; total records: 88 -> 92
+FAIL file threat_s19.json
+  Reason: H1/H5 and W10 change the ships, open lanes, or bot positions used in the threat forecast.
+  map.3.10,16: "4067eccccccccccc" -> "406550a3d70a3d70"
+FAIL file threat_s23.json
+  Reason: H1/H5 and W10 change the ships, open lanes, or bot positions used in the threat forecast.
+  map.1.10,11: "406bd70a3d70a3d7" -> "4072200000000000"
+FAIL: saved Godot results; 379 battles checked, 379 changed, 2 other files changed, 381 failures; 76.560 s

@@ -73,7 +73,7 @@ func _run() -> void:
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED); DisplayServer.window_set_size(Vector2i(int(wh[0]), int(wh[1])))
 			await _frames(2)
 	print("window ", DisplayServer.window_get_size(), " viewport ", root.get_visible_rect().size, " k ", ui.k)
-	BattleAPI.JSM.rnd_seed(4242)
+	C.rng.rnd_seed(4242)
 	C.playtest_default = false
 	C.META = C.migrateMeta(C.defaultMeta())
 	C.META["opts"]["playtestAll"] = false   # the real game after the playtest phase: renown buys things
@@ -89,7 +89,7 @@ func _run() -> void:
 	for i in range(fl.size()):
 		fl[i]["car"] = {"dealt": [612, 344, 188, 90, 40][i % 5], "kills": [7, 4, 2, 1, 0][i % 5], "battles": 6}
 	for i in range(1, fl.size()): fl[i]["hp"] = 0   # one hull limps home
-	R["fallen"] = [{"name": "Captain Ilse Marrow"}, {"name": "Commander Tobin Reyes"}, {"name": "Lieutenant Aster Vale"}]
+	R["fallen"] = C._migrate_fallen([{"name": "Captain Ilse Marrow"}, {"name": "Commander Tobin Reyes"}, {"name": "Lieutenant Aster Vale"}], R["fac"], "mock")
 	var N = C.nemActive(); N["met"] = 1; N["beaten"] = 1   # this run's hunter (#120 commander registry)
 	if N["weak"].size() > 0 and not N["revealed"].has(N["weak"][0]): N["revealed"].append(N["weak"][0])
 	var nem = {"full": C.nemFull(), "weak": str(C.NEM_WEAK[N["weak"][0]]["n"]) if N["weak"].size() > 0 else "", "fac": str(N["fac"])}
@@ -220,10 +220,10 @@ func _mock(d: Dictionary, nem: Dictionary, first: bool) -> Control:
 		v.add_child(ui.lbl("Still flying", 20, GILT, ui.font_semi))
 		for x in alive:
 			var p = ui.panel(GILT, UIScript.GLASS, 8); var r = ui.hbox()
-			r.add_child(ui.rich("[b]" + ui.esc(x["name"]) + "[/b] " + ui.c(ui.esc(C.HULLS[x["tpl"]]["n"]), BONE3) + "\n" + ui.c(ui.esc(C.rankName(x["cap"])) + " " + ui.esc(x["cap"]["name"]), BONE3), 15))
+			r.add_child(ui.rich("[b]" + ui.esc(x["name"]) + "[/b] " + ui.c(ui.esc(C.HULLS[x["tpl"]]["n"]), BONE3) + "\n" + ui.c(ui.esc(C.rankName(x["cap"])) + " " + ui.esc(x["cap"]["full_name"]), BONE3), 15))
 			r.add_child(ui.rich("[right]" + C.numstr(x["car"]["kills"]) + " kills\n" + ui.c(C.numstr(x["car"]["dealt"]) + " dmg", BONE3) + "[/right]", 15)); p.add_child(r); v.add_child(p)
 	var nm = []
-	for f in R["fallen"]: nm.append(f["name"])
+	for f in R["fallen"]: nm.append(f["cap"]["full_name"])
 	if nm.size() > 0: v.add_child(ui.lbl("Captains lost this run: " + ", ".join(PackedStringArray(nm)) + ".", 16, BONE2))
 	v.add_child(ui.lbl("Best so far: sector " + C.roman(min(3, float(C.META["stats"]["best"]))), 20, GILT))
 	# 7. exits, last; keyboard focus starts on the primary exit

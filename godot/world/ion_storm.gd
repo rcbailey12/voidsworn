@@ -53,15 +53,18 @@ void fragment() {
 	float radius = length(disc);
 	if (radius > 1.0) { discard; }
 	vec2 mask0 = storm_foot(world.xz);
-	if (mask0.r <= 0.0005 && mask0.g <= 0.001) { discard; }
+	if (mask0.g <= 0.001 && mask0.r <= 0.003) { discard; }
+	float cam_d = length(CAMERA_POSITION_WORLD - world);
+	float near_cam = smoothstep(10.0, 32.0, cam_d);
+	if (near_cam <= 0.001) { discard; }
 	float band = floor(cloud.w);
 	float layer = gas_layer(band, world.y / height_scale);
 	float rs = 1.0 - smoothstep(0.06, 1.0, radius);
 	float shape = rs * rs * (3.0 - 2.0 * rs) * layer;
 #ifdef HIGH_GAS_CARDS
-	if (shape * cloud.z < GAS_DENSITY_BOUND) { discard; }
+	if (shape * near_cam * cloud.z < GAS_DENSITY_BOUND) { discard; }
 #else
-	if (shape * cloud.z <= 0.0) { discard; }
+	if (shape * near_cam * cloud.z <= 0.0) { discard; }
 #endif
 	float depth = texture(depth_tex, SCREEN_UV).r;
 	vec4 view_pos = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, depth, 1.0);
@@ -75,15 +78,12 @@ void fragment() {
 	vec2 edge_shift;
 	gas_layer_style(band, layer_scale, layer_offset, edge_shift);
 	vec3 pl = p * layer_scale + layer_offset;
-	float warp = gas_macro3(pl * 0.52 + 4.0);
-	float warp2 = gas_macro3(pl * 0.44 - 5.2);
+	float warp = wvn3(gas_rot0(pl * 0.54 + vec3(4.0, 1.3, -2.1)));
+	float warp2 = wvn3(gas_rot0(pl * 0.46 - vec3(5.2, -2.7, 3.4)));
 	// Organic domain-warped footprint so storm boundaries never echo hex lines.
 	vec2 wv = vec2(warp - 0.5, warp2 - 0.5) * 9.0 + edge_shift;
 	vec2 fmask = storm_foot(world.xz + wv);
 	if (fmask.g <= 0.001) { discard; }
-	float cam_d = length(CAMERA_POSITION_WORLD - world);
-	float near_cam = smoothstep(10.0, 32.0, cam_d);
-	if (near_cam <= 0.001) { discard; }
 	float close_k = 1.0 - smoothstep(45.0, 150.0, cam_d);
 	vec3 warp_v = vec3(warp - 0.5, (warp + warp2 - 1.0) * 0.5, warp2 - 0.5) * 1.10;
 	vec2 cn = gas_cloud3(pl + warp_v, close_k);
@@ -96,10 +96,10 @@ void fragment() {
 	float density = shape * foot * field * near_cam * cloud.z;
 	density *= clamp((-view_pos.z / view_pos.w + VERTEX.z) / 5.0, 0.0, 1.0);
 	if (density < MIN_GAS_DENSITY) { discard; }
-	float sun_macro = gas_macro3(pl + warp_v + vec3(0.24, 0.38, 0.28));
-	float rim = clamp(0.50 + (n_macro - sun_macro) * 2.6, 0.0, 1.0);
+	float sun_macro = wvn3(gas_rot0(pl + warp_v + vec3(0.24, 0.38, 0.28)));
+	float rim = clamp(0.50 + (n_macro - sun_macro) * 2.4, 0.0, 1.0);
 	// Broad rolling charge lobes (no grainy high-frequency static at battle distance).
-	float charge_lobe = gas_macro3(pl * 1.18 + vec3(3.7, 1.2, 7.4));
+	float charge_lobe = wvn3(gas_rot0(pl * 1.18 + vec3(3.7, 1.2, 7.4)));
 	float charge = smoothstep(0.46, 0.72, charge_lobe) * smoothstep(0.36, 0.68, n_macro);
 	// Vertical stratification: dark brooding under-stratum below ships, steel-blue rolling core, cool sunlit upper wisps.
 	float alt_k = clamp((world.y / height_scale + 6.0) / 22.0, 0.0, 1.0);
@@ -131,35 +131,40 @@ uniform float gain_a = 1.0;
 uniform vec4 flashes[8];
 """ + TICK_SHADER + """
 void fog() {
-	vec3 p = WORLD_POSITION * vec3(0.016, 0.022, 0.016) + vec3(0.0021, 0.00075, 0.0012) * gas_time;
-	// Altitude wind shear separates lower dark storm deck from upper drifting wisps.
-	float alt = clamp((WORLD_POSITION.y + 7.0) / 38.5, 0.0, 1.0);
-	vec3 p_alt = p + vec3(0.06, -0.02, 0.04) * alt + vec3(0.0016, 0.0, 0.0009) * gas_time * (alt - 0.35);
-	float warp = texture(noise_tex, p_alt * 0.55 + 0.31).r;
-	float warp2 = texture(noise_tex, p_alt * 0.45 - vec3(0.23, 0.41, 0.17)).r;
-	float n = texture(noise_tex, p_alt + vec3(warp - 0.5) * 0.18).r;
-	float detail = texture(noise_tex, p_alt * 1.65 + vec3(0.37, 0.12, 0.74)).r;
-	n = mix(n, detail, 0.16);
-	vec2 wv = vec2(warp - 0.5, warp2 - 0.5) * 9.0 + vec2(alt - 0.5, 0.5 - alt) * 3.0;
-	vec2 uv = (WORLD_POSITION.xz + wv - mask_box.xy) * mask_box.zw;
-	vec2 foot = texture(mask_tex, uv).rg;
-	foot *= step(vec2(0.0), uv).x * step(vec2(0.0), uv).y * step(uv, vec2(1.0)).x * step(uv, vec2(1.0)).y;
+	DENSITY = 0.0;
+	ALBEDO = vec3(0.0);
+	EMISSION = vec3(0.0);
 	float height = smoothstep(-7.0, -1.5, WORLD_POSITION.y) * (1.0 - smoothstep(22.0, 31.5, WORLD_POSITION.y));
-	// Soft multi-deck vertical density profile instead of a uniform extruded box.
-	float strata = 0.78 + 0.22 * cos((alt - 0.28) * 6.28318);
-	float field = smoothstep(0.42, 0.64, n);
-	float shape = foot.g * smoothstep(0.08, 0.62, foot.r) * height * strata;
-	float charge = smoothstep(0.48, 0.68, detail) * field;
-	float flash = tick_light(WORLD_POSITION.xz);
-	for (int i = 0; i < 8; i++) {
-		vec3 delta = WORLD_POSITION - flashes[i].xyz;
-		flash += exp(-dot(delta, delta) / 240.0) * flashes[i].w;
+	// Issue 2035 (run 4): skip 3D noise fetches for froxels outside the rounded storm footprint.
+	vec2 uv0 = (WORLD_POSITION.xz - mask_box.xy) * mask_box.zw;
+	vec2 foot0 = texture(mask_tex, uv0).rg * step(0.0, uv0.x) * step(0.0, uv0.y) * step(uv0.x, 1.0) * step(uv0.y, 1.0);
+	if (height > 0.001 && (foot0.g > 0.001 || foot0.r > 0.002)) {
+		vec3 p = WORLD_POSITION * vec3(0.016, 0.022, 0.016) + vec3(0.0021, 0.00075, 0.0012) * gas_time;
+		// Altitude wind shear separates lower dark storm deck from upper drifting wisps.
+		float alt = clamp((WORLD_POSITION.y + 7.0) / 38.5, 0.0, 1.0);
+		vec3 p_alt = p + vec3(0.06, -0.02, 0.04) * alt + vec3(0.0016, 0.0, 0.0009) * gas_time * (alt - 0.35);
+		float warp = texture(noise_tex, p_alt * 0.55 + 0.31).r;
+		float n = texture(noise_tex, p_alt + vec3(warp - 0.5) * 0.18).r;
+		vec2 wv = vec2(warp - 0.5, n - 0.5) * 9.0 + vec2(alt - 0.5, 0.5 - alt) * 3.0;
+		vec2 uv = (WORLD_POSITION.xz + wv - mask_box.xy) * mask_box.zw;
+		vec2 foot = texture(mask_tex, uv).rg;
+		foot *= step(vec2(0.0), uv).x * step(vec2(0.0), uv).y * step(uv, vec2(1.0)).x * step(uv, vec2(1.0)).y;
+		// Soft multi-deck vertical density profile instead of a uniform extruded box.
+		float strata = 0.78 + 0.22 * cos((alt - 0.28) * 6.28318);
+		float field = smoothstep(0.42, 0.64, n);
+		float shape = foot.g * smoothstep(0.08, 0.62, foot.r) * height * strata;
+		float charge = smoothstep(0.50, 0.72, n) * field;
+		float flash = tick_light(WORLD_POSITION.xz);
+		for (int i = 0; i < 8; i++) {
+			vec3 delta = WORLD_POSITION - flashes[i].xyz;
+			flash += exp(-dot(delta, delta) / 240.0) * flashes[i].w;
+		}
+		DENSITY = field * shape * 0.046 * gain_a;
+		ALBEDO = mix(vec3(0.04, 0.085, 0.14), vec3(0.12, 0.36, 0.46), charge);
+		EMISSION = mix(vec3(0.006, 0.014, 0.022), vec3(0.015, 0.05, 0.085), field) * mix(0.70, 1.0, alt);
+		EMISSION += vec3(0.04, 0.20, 0.27) * charge * mix(0.70, 1.0, alt);
+		EMISSION += vec3(0.12, 0.50, 1.0) * flash * field * 2.5;
+		EMISSION += combat_scatter(WORLD_POSITION, field) * field * 0.48;
 	}
-	DENSITY = field * shape * 0.046 * gain_a;
-	ALBEDO = mix(vec3(0.04, 0.085, 0.14), vec3(0.12, 0.36, 0.46), charge);
-	EMISSION = mix(vec3(0.006, 0.014, 0.022), vec3(0.015, 0.05, 0.085), field) * mix(0.70, 1.0, alt);
-	EMISSION += vec3(0.04, 0.20, 0.27) * charge * mix(0.70, 1.0, alt);
-	EMISSION += vec3(0.12, 0.50, 1.0) * flash * field * 2.5;
-	EMISSION += combat_scatter(WORLD_POSITION, field) * field * 0.48;
 }
 """

@@ -12,10 +12,12 @@ rem   LB_HOME      the bench folder (default Downloads\voidsworn_test\look_bench
 rem   LB_TOOL_REF  where the bench script itself comes from (default origin/main): the bench runs from that version on
 rem                every commit, so commits made before the bench existed can be benched too
 rem   LB_ARGS      extra bench words, e.g. --part moments --moments res://bench/look_moments_acid_thorn.json (issue 1877)
+rem   LB_MOMENTS   full path to a rows file, runs only those moments on both revisions (overrides LB_ARGS)
 rem   LB_SHIPS     a godot folder that has the PC-built hulls (gen, assets\ships, .godot) to copy from (copy only)
 rem   LB_PRE_RUN   a .bat called with the game checkout's folder after checkout (bench proofs: change one number)
 rem   LB_RUN_NAME  the run folder name for AFTER instead of its commit (use with LB_PRE_RUN)
 rem   LB_QUIET     1: do not open the sheets folder at the end
+rem   LB_SHEETS    optional parent folder for the revision-labelled sheets
 rem Issue 1194: every step runs through job_wrap.bat (the installed main watchdog in tools_live, a GPU label on each claim,
 rem PC_GPU_ISSUE, default look_bench). Godot and a Python with Pillow are checked before any clone; a failed step stops it.
 rem LB_HOME\done.txt says PASS or FAILED: <steps> and the exit code is 0 only on PASS.
@@ -23,6 +25,14 @@ setlocal enabledelayedexpansion
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
 if "%LB_HOME%"=="" set "LB_HOME=%VT%\look_bench"
 if "%LB_TOOL_REF%"=="" set "LB_TOOL_REF=origin/main"
+if "%LB_SHEETS%"=="" set "LB_SHEETS=%LB_HOME%\sheets"
+if not defined LB_MOMENTS goto rows_ok
+if not exist "%LB_MOMENTS%" (
+  echo FAILED: look bench rows file missing: "%LB_MOMENTS%"
+  exit /b 2
+)
+set LB_ARGS=--part moments --moments "%LB_MOMENTS%"
+:rows_ok
 rem Built ships: the shared PC build (build\godot), else the old audit2 checkout. LB_SHIPS overrides both (issue 1223).
 if "%LB_SHIPS%"=="" if exist "%VT%\build\godot\gen" set "LB_SHIPS=%VT%\build\godot"
 if "%LB_SHIPS%"=="" set "LB_SHIPS=%VT%\audit2\repo\godot"
@@ -75,37 +85,13 @@ timeout /t 60 /nobreak > nul
 goto gowait
 :gook
 
-rem ---- the bench tool and game use separate checkouts from the same refreshed PC mirror
+rem ---- seed local checkouts once under the mirror lock, then fetch just the requested pins without it
 set "TOOL=%LB_HOME%\tool"
 set "R=%LB_HOME%\repo"
-set "MIRROR=%VT%\repo-mirror.git"
-rem Use the same mirror lock as runner_common.ps1 around refresh and local Git reads.
-powershell -NoProfile -Command ^
-  "$ErrorActionPreference = 'Stop'; $mirror = $env:MIRROR; $source = 'https://github.com/rcbailey12/voidsworn';" ^
-  "function Run-Git { & git.exe @args; if ($LASTEXITCODE -ne 0) { throw ('git failed: ' + ($args -join ' ')) } }" ^
-  "$lock = $null; $deadline = [DateTime]::UtcNow.AddMinutes(30);" ^
-  "while (-not $lock) { try { $lock = [IO.File]::Open($mirror + '.lock', 'OpenOrCreate', 'ReadWrite', 'None') }" ^
-  "  catch [IO.IOException] { if ([DateTime]::UtcNow -ge $deadline) { throw 'shared repo copy stayed locked for 30 minutes' }; Start-Sleep -Milliseconds 500 } }" ^
-  "try {" ^
-  "  if (-not (Test-Path -LiteralPath (Join-Path $mirror 'HEAD'))) { Run-Git init --bare $mirror; Run-Git --git-dir $mirror remote add --mirror=fetch origin $source }" ^
-  "  if ((Run-Git --git-dir $mirror config --get remote.origin.url) -ne $source) { throw 'shared repo copy has an unexpected origin; kept unchanged' }" ^
-  "  Write-Output ('refreshing shared mirror ' + $mirror);" ^
-  "  Run-Git --git-dir $mirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch --prune origin;" ^
-  "  Run-Git --git-dir $mirror symbolic-ref HEAD refs/heads/main;" ^
-  "  foreach ($checkout in @($env:TOOL, $env:R)) {" ^
-  "    if (-not (Test-Path -LiteralPath (Join-Path $checkout '.git'))) { Write-Output ('local clone ' + $checkout); Run-Git -c core.autocrlf=false clone --local -q $mirror $checkout }" ^
-  "    Run-Git -C $checkout fetch --no-tags $mirror '+refs/heads/*:refs/remotes/origin/*' 'refs/tags/*:refs/tags/*';" ^
-  "  }" ^
-  "} finally { $lock.Dispose() }" > "%LB_HOME%\git_tool.txt" 2>&1
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0..\runner_common.ps1" look-bench-checkout "%TEMP%\look_bench_pins.txt" > "%LB_HOME%\git_tool.txt" 2>&1
 if errorlevel 1 (
-  echo FAILED: shared mirror clone or fetch, see git_tool.txt >> "%ST%"
-  call "%JW%" fail "mirror clone or fetch"
-  goto finish
-)
-call :checkout "%TOOL%" "%LB_TOOL_REF%" >> "%LB_HOME%\git_tool.txt" 2>&1
-if errorlevel 1 (
-  echo FAILED: cannot check out %LB_TOOL_REF%, see git_tool.txt >> "%ST%"
-  call "%JW%" fail "tool checkout"
+  echo FAILED: bench pin setup, see git_tool.txt >> "%ST%"
+  call "%JW%" fail "bench pin setup"
   goto finish
 )
 if not exist "%TOOL%\godot\bench\look_bench.gd" (
@@ -114,29 +100,34 @@ if not exist "%TOOL%\godot\bench\look_bench.gd" (
   call "%JW%" fail "no bench script"
   goto finish
 )
-if "%BEFORE%"=="" set /p BEFORE=<"%TOOL%\docs\shots\look_bench\BASELINE.txt"
+for /f "usebackq tokens=1,2" %%A in ("%TEMP%\look_bench_pins.txt") do (
+  set "AFTER_PIN=%%A"
+  set "BEFORE_PIN=%%B"
+)
 
 set "RUN_A="
 set "RUN_B="
-call :bench "%AFTER%" "%LB_RUN_NAME%" "%LB_PRE_RUN%"
+call :bench "%AFTER_PIN%" "%LB_RUN_NAME%" "%LB_PRE_RUN%"
 if errorlevel 1 goto finish
 set "RUN_A=%RUNDIR%"
 set "NAME_A=%RUNNAME%"
-if /i "%BEFORE%"=="none" goto sheets
-call :bench "%BEFORE%" "" ""
+set "LABEL_A=%SHA%"
+if /i "%BEFORE_PIN%"=="none" goto sheets
+call :bench "%BEFORE_PIN%" "" ""
 if errorlevel 1 goto finish
 set "RUN_B=%RUNDIR%"
 set "NAME_B=%RUNNAME%"
+set "LABEL_B=%SHA%"
 
 :sheets
 rem ---- the sheet maker needs Python with Pillow: the preflight found one (JW_PIL) before anything ran
 set "PY=%JW_PIL%"
 if "%RUN_B%"=="" (
-  set "S=%LB_HOME%\sheets\%NAME_A%"
-  set "SARGS=--after "%RUN_A%" --out "!S!""
+  set "S=%LB_SHEETS%\%NAME_A%"
+  set "SARGS=--after "%RUN_A%" --out "!S!" --label-after %LABEL_A%"
 ) else (
-  set "S=%LB_HOME%\sheets\%NAME_B%_vs_%NAME_A%"
-  set "SARGS=--after "%RUN_A%" --before "%RUN_B%" --out "!S!" --label-after %NAME_A% --label-before %NAME_B%"
+  set "S=%LB_SHEETS%\%NAME_B%_vs_%NAME_A%"
+  set "SARGS=--after "%RUN_A%" --before "%RUN_B%" --out "!S!" --label-after %LABEL_A% --label-before %LABEL_B%"
 )
 if not exist "%S%" mkdir "%S%"
 set "JW_STEP=sheets" & call "%JW%" run 1800 "%PY%" "%TOOL%\tools\pc\jobs\look_bench_sheets.py" %SARGS% > "%S%\sheets_log.txt" 2>&1
@@ -165,6 +156,21 @@ if errorlevel 1 (
 )
 for /f %%H in ('git -C "%R%" rev-parse --short^=8 HEAD') do set "SHA=%%H"
 if "%RUNNAME%"=="" set "RUNNAME=%SHA%"
+if defined LB_MOMENTS (
+  set "LB_ROWS_KEY="
+  for /f %%H in ('git hash-object "%LB_MOMENTS%"') do set "LB_ROWS_KEY=%%H"
+  set "LB_TOOL_SHA="
+  for /f %%H in ('git -C "%TOOL%" rev-parse --short^=8 HEAD') do set "LB_TOOL_SHA=%%H"
+  if not defined LB_ROWS_KEY (
+    call "%JW%" fail "cannot hash custom rows"
+    exit /b 1
+  )
+  if not defined LB_TOOL_SHA (
+    call "%JW%" fail "cannot read bench tool revision"
+    exit /b 1
+  )
+  set "RUNNAME=!RUNNAME!_!LB_TOOL_SHA!_!LB_ROWS_KEY:~0,8!"
+)
 set "RUNDIR=%LB_HOME%\runs\%RUNNAME%"
 if exist "%RUNDIR%\DONE.txt" (
   echo reuse %RUNDIR% >> "%ST%"
@@ -191,7 +197,7 @@ set "JW_STEP=import %SHA%" & call "%JW%" run 1800 "%G%" --headless --path "%R%\g
 if errorlevel 1 exit /b 1
 echo imported %REF% %SHA% %date% %time% >> "%ST%"
 rem R276: tmo claims a shared slot for these stills; timing scripts claim solo automatically.
-set "JW_STEP=bench %SHA%" & set "JW_EXPECT=%RUNDIR%" & call "%JW%" run 3600 "%G%" --path "%R%\godot" --rendering-method forward_plus --fixed-fps 60 --disable-vsync --windowed --resolution 1920x1080 res://bench/look_bench.tscn -- --out "%RUNDIR%" --commit %SHA% %LB_ARGS% > "%RUNDIR%\bench_log.txt" 2>&1
+set "JW_STEP=bench %SHA%" & set "JW_EXPECT=%RUNDIR%\bench.json" & call "%JW%" run 3600 "%G%" --path "%R%\godot" --rendering-method forward_plus --fixed-fps 60 --disable-vsync --windowed --resolution 1920x1080 res://bench/look_bench.tscn -- --out "%RUNDIR%" --commit %SHA% %LB_ARGS% > "%RUNDIR%\bench_log.txt" 2>&1
 set "BX=%ERRORLEVEL%"
 if not "%BX%"=="0" exit /b 1
 echo bench exit %BX% %REF% %date% %time% >> "%ST%"
@@ -212,12 +218,16 @@ if errorlevel 1 (
   call "%JW%" fail "bench %SHA% did not finish"
   exit /b 1
 )
+if defined LB_MOMENTS (
+  findstr /c:"SCRIPT ERROR" /c:"LOOK_BENCH CODE MISMATCH" /c:"a window never opened" "%RUNDIR%\bench_log.txt" > nul
+  if not errorlevel 1 (
+    call "%JW%" fail "capture errors in %SHA%; see bench_log.txt"
+    exit /b 1
+  )
+)
 echo %SHA% > "%RUNDIR%\DONE.txt"
 exit /b 0
 
 :checkout
-rem A bare branch name follows the refreshed mirror branch. Commit hashes, tags and origin/branch still work.
-set "LB_REF=%~2"
-git -C "%~1" show-ref --verify --quiet "refs/remotes/origin/%LB_REF%" && set "LB_REF=refs/remotes/origin/%LB_REF%"
-git -C "%~1" checkout -f --detach "%LB_REF%"
+git -C "%~1" checkout -f --detach "%~2"
 exit /b %ERRORLEVEL%

@@ -46,7 +46,7 @@ func _init() -> void:
 func _run(write_ok: bool) -> void:
 	var tag := "write ok" if write_ok else "write fails"
 	var C = _fresh()
-	API.JSM.rnd_seed(11); C.META = C.defaultMeta(); C.newRun("vex", "voidsworn", {})
+	C.rng.rnd_seed(11); C.META = C.defaultMeta(); C.newRun("vex", "voidsworn", {})
 	var node = C.RUN["map"]["cols"][0][0]
 	for n in C.RUN["map"]["cols"][0]:
 		if n["type"] == "battle": node = n

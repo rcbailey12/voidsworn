@@ -54,6 +54,8 @@ func start(m: Node, o: Dictionary) -> void:
 	C.battle_setup = _setup_battle
 	C.battle_restore = _restore_battle   # issue 1451: Continue into the saved round
 	C.battle_requested.connect(_on_battle)
+	if not bot:
+		C.fleet_results.connect(_on_fleet_results)
 	# the campaign's random stream: the browser seeds it at random on every load (core.js RNG_S, nothing saved), so a new
 	# or continued run gets fresh draws each launch; bot runs seed it from --seed so each run differs and repeats exactly
 	if o.has("player_path_seed"):
@@ -105,10 +107,7 @@ func start(m: Node, o: Dictionary) -> void:
 
 
 func _seed_campaign(s: int) -> void:
-	if C.has_method("seed_rng"):
-		C.seed_rng(s & 0xFFFFFFFF)
-	else:
-		load("res://rules/jsm.gd").rnd_seed(s & 0xFFFFFFFF)  # fallback until campaign.seed_rng() lands (G3)
+	C.seed_rng(s & 0xFFFFFFFF)
 
 
 static func has_save(path: String = Campaign.SAVE_PATH) -> bool:
@@ -143,6 +142,20 @@ func _on_changed() -> void:
 	# back on the title page (the player left the run, or the run ended and they pressed Title): hand back to main's title
 	if not bot and C.page.get("kind", "") == "title" and C.modal_d == null:
 		run_over.emit({"result": "title"})
+
+
+func _on_fleet_results(lost: bool, ranked_up: bool) -> void:
+	if lost:
+		Kit.play("ui_ship_lost")
+	if ranked_up:
+		if lost:
+			get_tree().create_timer(1.8).timeout.connect(_play_rank_up)
+		else:
+			_play_rank_up()
+
+
+func _play_rank_up() -> void:
+	Kit.play("ui_rank_up")
 
 
 # The enemy AI level from the settings ("standard" or "veteran"; bot runs default to Veteran in main.gd), issue 1336.
@@ -240,7 +253,8 @@ func _play_battle() -> void:
 			ui.visible = true
 		in_battle = false
 		_music_page = ""   # issue 1482
-		_save_round()   # the newest round start the rules packed, if the scene had not written it yet
+		if a.phase != "halted":
+			_save_round()   # keep the last safe checkpoint if the rules stopped with an error
 		C.leave_battle_saved()
 		return
 	battles += 1

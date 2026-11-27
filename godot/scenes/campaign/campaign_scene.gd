@@ -40,7 +40,7 @@ func _ready() -> void:
 		C.save_path = "user://ui344_rollout_save.json"; _briefing(a[1]); return
 	if a.size() >= 2 and a[0] == "bot":
 		C.save_path = "user://campaign_bot_save.json"; _bot(int(a[1])); return
-	JSM.rnd_seed(int(Time.get_unix_time_from_system()) & 0xFFFFFFFF)   # the browser seeds its PRNG at random on load
+	C.rng.rnd_seed(int(Time.get_unix_time_from_system()) & 0xFFFFFFFF)   # the browser seeds its PRNG at random on load
 	C.persist_on = true; C.persist_load()
 	C.titleScreen()
 
@@ -70,11 +70,11 @@ func _covered(n: Node) -> bool:
 # A scripted run that visits every screen kind once and saves a picture of each.
 func _shots(dir: String) -> void:
 	DirAccess.make_dir_recursive_absolute(dir)
-	JSM.rnd_seed(4242)
+	C.rng.rnd_seed(4242)
 	var M = C.META
 	M["renown"] = 95; M["stats"]["runs"] = 6; M["stats"]["best"] = 3; M["stats"]["wins"] = 1; M["stats"]["wonFacs"] = ["voidsworn"]
 	M["mastery"]["vex"] = 34; M["favour"]["iron"] = 13; M["favour"]["storm"] = 5
-	M["fallen"] = [{"name": "Casimir Holloway", "rank": 2, "fac": "voidsworn", "ship": "Banked Fire", "sector": 2}]
+	M["fallen"] = C._migrate_fallen([{"name": "Casimir Holloway", "rank": 2, "fac": "voidsworn", "ship": "Banked Fire", "sector": 2}], "voidsworn", "mock")
 	C.titleScreen(); await _shot(dir, "01_title")
 	C.act("legacy"); await _shot(dir, "02_progression")
 	C.act("progTab", "favour"); await _shot(dir, "03_progression_favour")
@@ -100,7 +100,7 @@ func _shots(dir: String) -> void:
 	get_tree().quit(0)
 func _mapshots(dir: String) -> void:
 	DirAccess.make_dir_recursive_absolute(dir)
-	JSM.rnd_seed(4242)
+	C.rng.rnd_seed(4242)
 	C.titleScreen(); C.act("newRunScreen"); C.act("startRun"); C.act("pickAspect", C.W["aspOffer"][0]); C.act("closeModal")
 	await _frames(2); _close_story_dialogs()
 	await _shot(dir, "m1_map")
@@ -167,7 +167,7 @@ func _bot(runs: int) -> void:
 	var bad = 0
 	for r in range(runs):
 		var seed = 1000 + r
-		JSM.rnd_seed(seed); C.META = C.defaultMeta(); C.SAVED_RUN = null; C.ended = false
+		C.rng.rnd_seed(seed); C.META = C.defaultMeta(); C.SAVED_RUN = null; C.ended = false
 		var s = seed; var streak = 0
 		C.titleScreen()
 		var steps = 0
@@ -262,7 +262,7 @@ func _ro_window() -> void:
 func _rollout(dir: String) -> void:
 	_ro_dir = dir; DirAccess.make_dir_recursive_absolute(dir)
 	await _ro_window()
-	JSM.rnd_seed(344)
+	C.rng.rnd_seed(344)
 	C.titleScreen(); C.act("newRunScreen"); C.act("startRun")
 	if C.page.get("kind") == "aspect": C.act("pickAspect", C.W["aspOffer"][0])
 	if _ro_kind() == "intro": await _ro_shot("02_intro"); _ro_seen["intro"] = true
@@ -332,7 +332,7 @@ func _br_hover(id: String) -> void:
 func _briefing(dir: String) -> void:
 	_ro_dir = dir; DirAccess.make_dir_recursive_absolute(dir)
 	await _ro_window()
-	JSM.rnd_seed(344)
+	C.rng.rnd_seed(344)
 	_ro_seen = {"fleet": true, "retreat": true}   # this run goes straight on: no fleet page detour, no retreat dialog
 	C.titleScreen(); C.act("newRunScreen"); C.act("startRun")
 	if C.page.get("kind") == "aspect": C.act("pickAspect", C.W["aspOffer"][0])

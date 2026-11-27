@@ -88,6 +88,8 @@ func _check_layers(living, quality: String) -> void:
 				"%s/%s: rotated multi-octave noise active (no axis-aligned square tiles)" % [quality, node_name])
 			_check(code.contains("span * 0.44") and code.contains("near_cam = smoothstep("),
 				"%s/%s: smooth vertical bell rolloff and near-camera lens fade active" % [quality, node_name])
+			_check(code.contains("if (close_k > 0.01)"),
+				"%s/%s: 4th octave gated behind close_k for 1080p battle budget" % [quality, node_name])
 			if not is_storm:
 				_check(not code.contains("flashes["), "%s/Nebula: calm gas has no storm lightning array" % quality)
 			if quality == "max":
@@ -96,6 +98,8 @@ func _check_layers(living, quality: String) -> void:
 					var fcode: String = (patch.fog_mat as ShaderMaterial).shader.code
 					_check(not fcode.contains("%COMBAT_LIGHTS%") and fcode.contains("combat_scatter("),
 						"%s/%s: fog shader carries combat scatter" % [quality, node_name])
+					_check(fcode.contains("if (height > 0.001 && (foot0.g > 0.001 || foot0.r > 0.002))"),
+						"%s/%s: fog shader gates 3D noise fetches on footprint" % [quality, node_name])
 		if quality == "max":
 			var mm_cards := 0
 			for mmi in mmis:
@@ -232,6 +236,22 @@ func _check_combat_lights() -> void:
 	_check(int(neb_patch.fog_mat.get_shader_parameter("combat_light_count")) == 0, "expired flash clears nebula fog")
 	_check(int(storm_patch.mat.get_shader_parameter("combat_light_count")) == 0, "expired flash clears storm cards")
 	_check(int(storm_patch.fog_mat.get_shader_parameter("combat_light_count")) == 0, "expired flash clears storm fog")
+
+	# 7. Same-position, same-intensity green-channel replacement must invalidate the combat-light hash (Artoo on PR 2050).
+	living.set_combat_lights([{"pos": neb_pos, "col": Color(1.0, 0.0, 0.0), "energy": 6.0, "range": 32.0}])
+	living._process(0.0)
+	var red_card: PackedVector4Array = neb_patch.mat.get_shader_parameter("combat_col")
+	var red_fog: PackedVector4Array = neb_patch.fog_mat.get_shader_parameter("combat_col")
+	_check(red_card[0].x > 0.9 and red_card[0].y < 0.01 and red_fog[0].y < 0.01,
+		"pure red flash uploaded to both nebula cards and fog")
+	living.set_combat_lights([{"pos": neb_pos, "col": Color(1.0, 1.0, 0.0), "energy": 6.0, "range": 32.0}])
+	living._process(0.0)
+	var yel_card: PackedVector4Array = neb_patch.mat.get_shader_parameter("combat_col")
+	var yel_fog: PackedVector4Array = neb_patch.fog_mat.get_shader_parameter("combat_col")
+	_check(yel_card[0].y > 0.9 and yel_fog[0].y > 0.9,
+		"green-only colour replacement updated both nebula cards (%.3f) and fog (%.3f)" % [yel_card[0].y, yel_fog[0].y])
+	living.set_combat_lights([])
+	living._process(0.0)
 	f.host.free()
 
 

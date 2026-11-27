@@ -1,9 +1,11 @@
 # Shared PC runner steps (issue 687; issue 722 adds space, hashwrite, hashcheck and model). PowerShell 5.1.
 # No model calls except preflight.
 # init <out> <branch>; wait <out>; checkout <repo> <out> <branch> <sparse>;
+# look-bench-checkout <pins file>: prepare LB_HOME's tool and write the two exact game pins.
 # preflight <out> <repo> <opencode|kimi|codex> <exe> <model> <variant>;
 # scratch <out> [repo]: create and record the run's private TEMP directory and profile cache redirects.
 # finish <out> <exit> <partial> <push mode> <checks ok> [repo].
+# push <repo> <branch> <real|dry|test>: non-interactive push with HTTP and hard ceilings.
 # space <out> <settings file> <target path>: refuse to start when the target's drive has less than min_free_gb
 #   (default 60) free; one line in result.txt, status failed. Test knobs: PC_TEST_SETTINGS, PC_TEST_SPACE_FREE_MB.
 # hashwrite <tools dir> <hash file>: the Board writes SHA-256 of the runner and watchdog files after copying them.
@@ -24,7 +26,10 @@ function Public-RunnerText($status, $reason, $code, $folder) {
   switch ($status) {
     'running' { return 'claimed before checkout and model calls' }
     'checked_push' { return 'non-partial push confirmed and runner checks passed' }
-    'unverified' { return 'dry/test push or checks did not pass; chain stays stopped' }
+    'unverified' {
+      if ($reason -eq 'non-partial push confirmed but local checks did not pass') { return 'non-partial push confirmed but local checks did not pass' }
+      return 'dry/test push or checks did not pass; chain stays stopped'
+    }
     'no_changes' { return 'no changes pushed' }
     'partial' {
       switch -Exact ($reason) {
@@ -62,6 +67,16 @@ function Public-RunnerText($status, $reason, $code, $folder) {
 # file (a test fixture, hashwrite) still runs; without it sizes count every listed byte, as before.
 $diskSpaceHelpers = Join-Path $PSScriptRoot 'disk_space.ps1'
 if (Test-Path -LiteralPath $diskSpaceHelpers) { . $diskSpaceHelpers }
+function Set-PCGitNonInteractive {
+  $env:GIT_TERMINAL_PROMPT = '0'
+  $env:GCM_INTERACTIVE = 'never'
+  $env:GIT_ASKPASS = ''
+  $env:SSH_ASKPASS = ''
+  $env:SSH_ASKPASS_REQUIRE = 'never'
+}
+function PCGitNetworkOptions {
+  '-c','credential.interactive=false','-c','core.askPass=','-c','http.lowSpeedLimit=1000','-c','http.lowSpeedTime=60'
+}
 if ($args[0] -eq 'publication-library') { return }
 $ErrorActionPreference = 'Stop'
 $mode = $args[0]
@@ -80,12 +95,13 @@ function Log($line) {
   try { Add-Content -LiteralPath (Join-Path $script:out 'result.txt') -Value $line -Encoding UTF8 -ErrorAction Stop } catch { }
   Write-Host $line
 }
-function State($status, $reason) {
+function State($status, $reason, $confirmed = '') {
   $p = Join-Path $script:out 'status.json'
   $s = Get-Content -LiteralPath $p -Raw | ConvertFrom-Json
   $s.status = $status; $s.reason = $reason
   $s.finished = if ($status -eq 'running') { '' } else { [DateTime]::UtcNow.ToString('o') }
   $s.commit = Read (Join-Path $script:out 'run_commit.txt')
+  $s | Add-Member -NotePropertyName confirmed_commit -NotePropertyValue $confirmed -Force
   Save-State $s
 }
 function Save-State($s) {
@@ -103,6 +119,10 @@ function Git([string[]]$words) {
   if ($test -and $env:PC_TEST_GIT) { $exe = $env:PC_TEST_GIT }
   $lines = @(& $exe @words 2>&1); $script:gitExit = $LASTEXITCODE
   $ErrorActionPreference = $ea
+  Write-GitLog $lines
+  return @($lines | ForEach-Object { [string]$_ })
+}
+function Write-GitLog($lines) {
   # Writing the log must never fail the job (Nov 16: four starts died when another process briefly held git_log.txt,
   # 'The process cannot access the file because it is being used by another process'). One append, retried, never thrown.
   $text = (@($lines | ForEach-Object { [string]$_ }) -join "`r`n")
@@ -110,15 +130,18 @@ function Git([string[]]$words) {
     $gl = Join-Path $script:out 'git_log.txt'
     for ($t = 0; $t -lt 40; $t++) { try { [IO.File]::AppendAllText($gl, $text + "`r`n", $utf8); break } catch { Start-Sleep -Milliseconds 500 } }
   }
-  return @($lines | ForEach-Object { [string]$_ })
 }
 function Read-CleanupGit([string[]]$words) {
   # Status must neither refresh the index nor start a filesystem monitor in the checkout.
   Git (@('--no-optional-locks','-c','core.fsmonitor=false') + $words)
 }
 function Must-Git([string[]]$words) {
-  $null = Git $words
-  if ($script:gitExit -ne 0) { throw "git $($words[0]) failed (exit $script:gitExit); see git_log.txt" }
+  $lines = @(Git $words)
+  if ($script:gitExit -ne 0) {
+    if ($script:out) { throw "git $($words[0]) failed (exit $script:gitExit); see git_log.txt" }
+    $lines | ForEach-Object { Write-Host $_ }
+    throw "git $($words[0]) failed (exit $script:gitExit)"
+  }
 }
 function Retry-Git($label, [string[]]$words) {
   $delay = 120
@@ -343,7 +366,15 @@ function Get-RepoCleanupStatus($repo) {
 function Reuse-Caches($repo, $status = @(Get-RepoCleanupStatus $repo), $allowWork = $false, $forRemoval = $false) {
   foreach ($line in $status) {
     # These installer leftovers can be untracked or ignored, depending on the checkout's ignore rules.
+    # PR 2077 ignores flat ships manifest backups (manifest.json.bak_<stamp>) beside the older manifest.bak_* folders.
     if ($line -match '^(?:!!|\?\?) ("?)(godot/(?:\.stage7-replaced-[^/"\\:\r\n]+|assets/ships/manifest\.bak_[^/"\\:\r\n]+)/[^"\\:\r\n]+)(?<!/)\1$' -and
+        (Test-Path -LiteralPath (Join-Path $repo $Matches[2]) -PathType Leaf)) {
+      $Matches[2]
+      continue
+    }
+    # Issue 2091: a flat manifest backup is unique, so reuse may leave it in place but the janitor must keep its checkout.
+    if (-not $forRemoval -and
+        $line -match '^(?:!!|\?\?) ("?)(godot/assets/ships/manifest\.json\.bak_[^/"\\:\r\n]+)(?<!/)\1$' -and
         (Test-Path -LiteralPath (Join-Path $repo $Matches[2]) -PathType Leaf)) {
       $Matches[2]
       continue
@@ -829,21 +860,59 @@ function Open-CleanupLock($path, $existingOnly = $false) {
   if ($existingOnly) { return [IO.File]::Open($path, 'Open', 'Read', 'None') }
   return [IO.File]::Open($path, 'OpenOrCreate', 'ReadWrite', 'None')
 }
-function Open-MirrorWriterLock($mirror) {
-  # Issue 1396 (Artoo on PR 1592): every writer of the shared mirror (lane fetch and clone, the job head, helper_clone,
-  # ship_job, look_bench) holds <mirror>.lock alone. A live removal holds it from its last mirror proof through the
-  # delete, so no fetch or prune can drop the ref that proved the removal in between. Waits up to 10 minutes
-  # (PC_MIRROR_LOCK_WAIT_SECONDS), then keeps the candidate.
-  $wait = 600; if ("$env:PC_MIRROR_LOCK_WAIT_SECONDS" -match '\A[0-9]{1,5}\z') { $wait = [int]$env:PC_MIRROR_LOCK_WAIT_SECONDS }
+function Get-MirrorProcessStart([int]$processId) {
+  if ($IsLinux) {
+    # .NET converts Linux start ticks to wall time using a boot-time estimate that can differ by reader.
+    $stat = [IO.File]::ReadAllText("/proc/$processId/stat")
+    $fields = $stat.Substring($stat.LastIndexOf(')') + 2) -split ' '
+    # Fields after the parenthesized process name start at field 3. Field 22 is the start tick.
+    if ($fields[0] -in @('Z', 'X') -or $fields[19] -notmatch '\A[0-9]+\z') { throw 'no live process start tick' }
+    $boot = [IO.File]::ReadAllText('/proc/sys/kernel/random/boot_id').Trim()
+    return "$boot/$($fields[19])"
+  }
+  return [string](Get-Process -Id $processId -ErrorAction Stop).StartTime.ToUniversalTime().Ticks
+}
+function Read-MirrorLockOwner($mirror) {
+  try {
+    $owner = Get-Content -LiteralPath "$mirror.lock.owner" -Raw -Encoding UTF8 | ConvertFrom-Json
+    if ($owner.pid -gt 0 -and (Get-MirrorProcessStart $owner.pid) -ceq $owner.processStart) {
+      $since = $owner.since
+      if ($since -is [DateTime]) { $since = $since.ToUniversalTime().ToString('o') }
+      return "PID $($owner.pid), job $($owner.job), command $($owner.command), since $since"
+    }
+  } catch { }
+  return 'holder PID, job, command and start unavailable (no live owner record)'
+}
+function Open-MirrorWriterLock($mirror, $job = 'cleanup', $command = 'verify and remove kept checkout', $wait = 600, [switch]$ReportWait) {
+  # Live removal still holds the same file lock from proof through removal (issue 1396). Ordinary fetches FROM
+  # the mirror do not write to it. Local hardlink clones still serialize with writers.
+  if ("$env:PC_MIRROR_LOCK_WAIT_SECONDS" -match '\A[0-9]{1,5}\z') { $wait = [int]$env:PC_MIRROR_LOCK_WAIT_SECONDS }
   if (-not (Test-Path -LiteralPath (Split-Path -Parent $mirror) -PathType Container)) { throw "no folder for the shared repo copy lock: $mirror" }
-  $deadline = [DateTime]::UtcNow.AddSeconds($wait)
+  $clock = [Diagnostics.Stopwatch]::StartNew()
   while ($true) {
-    try { return [IO.File]::Open("$mirror.lock", 'OpenOrCreate', 'ReadWrite', 'None') }
+    try { $lock = [IO.File]::Open("$mirror.lock", 'OpenOrCreate', 'ReadWrite', 'None'); break }
     catch [IO.IOException] {
-      if ([DateTime]::UtcNow -ge $deadline) { throw "shared repo copy stayed locked for $wait s (a mirror fetch is running)" }
+      if ($clock.Elapsed.TotalSeconds -ge $wait) { throw "shared repo copy stayed locked for $wait s; $(Read-MirrorLockOwner $mirror)" }
+      if ($ReportWait) { Log 'waiting for the shared repo copy'; $ReportWait = $false }
       Start-Sleep -Milliseconds 500
     }
   }
+  try {
+    $owner = @{
+      pid = $PID
+      processStart = Get-MirrorProcessStart $PID
+      job = $job -replace '[\r\n]', ' '
+      command = $command -replace '[\r\n]', ' '
+      since = [DateTime]::UtcNow.ToString('o')
+    }
+    Put "$mirror.lock.owner" ($owner | ConvertTo-Json -Compress)
+    # Clear while still holding the mutex, not after release. Old installed tools still contend on the same file.
+    $lease = [pscustomobject]@{ Stream = $lock; OwnerPath = "$mirror.lock.owner" }
+    $lease | Add-Member -MemberType ScriptMethod -Name Dispose -Value {
+      try { [IO.File]::WriteAllText($this.OwnerPath, '') } finally { $this.Stream.Dispose() }
+    }
+    return $lease
+  } catch { $lock.Dispose(); throw }
 }
 function Assert-NoGitLocalState($candidate) {
   $gitDir = Join-Path $candidate '.git'
@@ -963,6 +1032,180 @@ function Remove-OlderKeptRepos($board, $mirror, $dryRun = $false, $now = [DateTi
 }
 # Windows command line quoting, including trailing backslashes. Inputs are argument values, never shell snippets.
 function Quote($value) { return '"' + ([regex]::Replace(([string]$value), '(\\*)"', '$1$1\"') -replace '(\\+)$', '$1$1') + '"' }
+function Invoke-BoundedMirrorGit([string[]]$words, $seconds, $step = 'mirror fetch', [switch]$NativeGit) {
+  $exe = 'git.exe'
+  $windows = [Environment]::OSVersion.Platform -eq 'Win32NT'
+  if (-not $windows) { $exe = @(Get-Command git -CommandType Application -ErrorAction Stop)[0].Source }
+  if ($test -and $env:PC_TEST_GIT -and -not $NativeGit) { $exe = $env:PC_TEST_GIT }
+  $argLine = ($words | ForEach-Object { Quote $_ }) -join ' '
+  if ($windows) {
+    # The existing watchdog's Job Object stops Git and its children before unlocking.
+    . (Join-Path $PSScriptRoot 'run_timeout.ps1') -LibraryOnly
+    Initialize-RunTree
+    $target = (Get-Command -Name $exe -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
+    $command = (Quote $target) + ' ' + $argLine
+    if ($target -match '\.(bat|cmd)$') { $command = (Quote $env:ComSpec) + ' /d /s /c "' + $command + '"' }
+    $spool = Join-Path (Get-ScratchParent) ('mirror-git-' + [guid]::NewGuid().ToString('N'))
+    $stdout = "$spool.stdout"
+    $stderr = "$spool.stderr"
+    $tree = [RunnerStep]::new($command, (Get-Location).Path, $stdout, $stderr)
+    $proc = $null
+    try {
+      $proc = [Diagnostics.Process]::GetProcessById($tree.Pid)
+      $null = $proc.Handle
+      $clock = [Diagnostics.Stopwatch]::StartNew()
+      $tree.Resume()
+      while ($tree.ReadUsage().Active -and $clock.Elapsed.TotalSeconds -lt $seconds) { Start-Sleep -Milliseconds 50 }
+    } finally {
+      try {
+        $stopped = [bool]$tree.ReadUsage().Active
+        if ($stopped) { Stop-StepTree $tree "$spool.kill" $step | ForEach-Object { Write-Host $_ } }
+        $code = if ($stopped) { 124 } else { $proc.ExitCode }
+      } finally {
+        $tree.Dispose()
+        if ($proc) { $proc.Dispose() }
+      }
+    }
+    return @{ Code = $code; Lines = @(Get-Content -LiteralPath $stdout, $stderr) }
+  }
+  $start = New-Object Diagnostics.ProcessStartInfo
+  $start.FileName = $exe; $start.Arguments = $argLine; $start.UseShellExecute = $false
+  $start.RedirectStandardOutput = $true; $start.RedirectStandardError = $true
+  $proc = [Diagnostics.Process]::Start($start)
+  try {
+    $clock = [Diagnostics.Stopwatch]::StartNew()
+    $stdout = $proc.StandardOutput.ReadToEndAsync()
+    $stderr = $proc.StandardError.ReadToEndAsync()
+    if (-not $proc.WaitForExit($seconds * 1000)) {
+      $proc.Kill($true)
+      if (-not $proc.WaitForExit(5000)) { throw "could not stop timed-out $step" }
+      return @{ Code = 124; Lines = @() }
+    }
+    $left = [int][Math]::Max(0, $seconds * 1000 - $clock.ElapsedMilliseconds)
+    if (-not [Threading.Tasks.Task]::WaitAll([Threading.Tasks.Task[]]@($stdout, $stderr), $left)) {
+      return @{ Code = 124; Lines = @() }
+    }
+    return @{ Code = $proc.ExitCode; Lines = @($stdout.Result, $stderr.Result) }
+  } finally { $proc.Dispose() }
+}
+function Update-SharedMirror($mirror, $source, $job, $attempts = 1, $wait = 1800, [switch]$ReportWait) {
+  $seconds = 180; $delay = 120
+  if ($test -and $env:PC_TEST_MIRROR_FETCH_SECONDS) { $seconds = [int]$env:PC_TEST_MIRROR_FETCH_SECONDS }
+  if ($test -and $env:PC_TEST_RETRY_SECONDS) { $delay = [int]$env:PC_TEST_RETRY_SECONDS }
+  for ($attempt = 1; $attempt -le $attempts; $attempt++) {
+    $lock = Open-MirrorWriterLock $mirror $job 'git fetch --prune origin' $wait -ReportWait:$ReportWait
+    try {
+      if (-not (Test-Path -LiteralPath (Join-Path $mirror 'HEAD'))) {
+        Must-Git @('init','-q','--bare',$mirror)
+        Must-Git @('--git-dir',$mirror,'remote','add','--mirror=fetch','origin',$source)
+      }
+      $url = @(Git @('--git-dir',$mirror,'remote','get-url','origin'))
+      if ($gitExit -ne 0 -or $url[0] -ne $source) { throw 'shared repo copy has an unexpected origin; kept unchanged' }
+      $fetch = Invoke-BoundedMirrorGit @('--git-dir',$mirror,'-c','http.lowSpeedLimit=1000','-c','http.lowSpeedTime=60',
+        '-c','fetch.writeCommitGraph=false','fetch','--no-auto-maintenance','--prune','origin') $seconds
+      if ($fetch.Code -eq 0) { Must-Git @('--git-dir',$mirror,'symbolic-ref','HEAD','refs/heads/main') }
+    } finally { $lock.Dispose() }
+    Write-GitLog $fetch.Lines
+    if ($fetch.Code -eq 0) { return }
+    $reason = if ($fetch.Code -eq 124) { "timed out after $seconds s" } else { "exit $($fetch.Code)" }
+    if ($attempt -lt $attempts) {
+      Log "mirror fetch attempt $attempt/$attempts failed ($reason); lock released, retry in $delay seconds"
+      Start-Sleep -Seconds $delay
+    } else {
+      if (-not $script:out) { $fetch.Lines | ForEach-Object { Write-Host $_ } }
+      if ($attempts -eq 1) { throw "mirror fetch failed ($reason)" }
+      throw "mirror fetch failed after $attempts attempts ($reason); see git_log.txt"
+    }
+  }
+}
+function Initialize-LookBenchCheckout($checkout, $mirror, $source) {
+  $gitDir = Join-Path $checkout '.git'
+  $alternate = Join-Path $gitDir 'objects/info/alternates'
+  if ((Test-Path -LiteralPath $gitDir) -and -not (Test-Path -LiteralPath $alternate)) { return }
+
+  # Stage beside the checkout so a failed or interrupted clone never becomes the active repo.
+  $checkout = [IO.Path]::GetFullPath($checkout)
+  $null = [IO.Directory]::CreateDirectory((Split-Path -Parent $checkout))
+  $stage = "$checkout-seed-$([guid]::NewGuid().ToString('N'))"
+  $hasMirror = Test-Path -LiteralPath (Join-Path $mirror 'HEAD')
+  if ($hasMirror) {
+    $step = 'look bench local clone'
+    $lock = Open-MirrorWriterLock $mirror 'look bench' $step
+    try {
+      $hasMirror = Test-Path -LiteralPath (Join-Path $mirror 'HEAD')
+      if ($hasMirror) {
+        # Explicit --local hardlinks the immutable objects. Bound the locked step even if disk I/O hangs.
+        $clone = Invoke-BoundedMirrorGit @('-c','core.autocrlf=false','clone','-q','--local','--no-checkout',
+          '--no-tags','--single-branch','--origin','origin',$mirror,$stage) 180 $step -NativeGit
+      }
+    } finally { $lock.Dispose() }
+  }
+  if ($hasMirror) {
+    $clone.Lines | ForEach-Object { Write-Host $_ }
+    if ($clone.Code -eq 124) { throw "$step timed out after 180 s" }
+    if ($clone.Code -ne 0) { throw "$step failed (git exit $($clone.Code))" }
+    if (Test-Path -LiteralPath (Join-Path $stage '.git/objects/info/alternates')) {
+      throw 'the shared mirror has alternates; the staged bench checkout was not installed'
+    }
+    # Keep the objects, not the mirror's branch refs. Only the requested bench pins will be stored.
+    Must-Git @('-C',$stage,'remote','remove','origin')
+    Must-Git @('-C',$stage,'update-ref','-d','HEAD')
+  } else {
+    # The bench can still run before any lane has built the mirror.
+    Must-Git @('init','-q',$stage)
+  }
+  Must-Git @('-C',$stage,'config','core.autocrlf','false')
+  Must-Git @('-C',$stage,'config','remote.origin.url',$source)
+  if (Test-Path -LiteralPath $checkout) {
+    # Keep the old alternate-based checkout and its worktree intact. Never use it for new pins.
+    $kept = "$checkout-kept-$([guid]::NewGuid().ToString('N'))"
+    [IO.Directory]::Move($checkout, $kept)
+    Write-Host "kept previous look bench checkout at $kept"
+  }
+  [IO.Directory]::Move($stage, $checkout)
+}
+function Get-LookBenchPin($ref, $checkout, $source) {
+  if ($ref -match '\A[0-9a-fA-F]{4,40}\z') {
+    $sha = @(Git @('-C',$checkout,'rev-parse','--verify','--quiet',"${ref}^{commit}"))
+    if ($gitExit -eq 0) { return $sha[0] }
+    if ($ref.Length -eq 40) { return $ref.ToLowerInvariant() }
+  }
+  # Refresh just the requested names against origin. The bench deliberately never updates the shared mirror.
+  $refs = if ($ref -match '\A(?:refs/remotes/)?origin/(.+)\z') { @("refs/heads/$($Matches[1])") }
+          elseif ($ref -match '\Arefs/(?:heads|tags)/') { @($ref) }
+          else { @("refs/heads/$ref","refs/tags/$ref") }
+  foreach ($name in $refs) { Must-Git @('check-ref-format',$name) }
+  $names = @($refs) + @($refs | Where-Object { $_.StartsWith('refs/tags/') } | ForEach-Object { "${_}^{}" })
+  $rows = @(Git (@('-c','http.lowSpeedLimit=1000','-c','http.lowSpeedTime=60','ls-remote','--exit-code',$source) + $names))
+  if ($gitExit -ne 0) { throw "cannot resolve look bench ref $ref at origin (git exit $gitExit)" }
+  foreach ($name in $refs) {
+    foreach ($wanted in @("${name}^{}", $name)) {
+      foreach ($row in $rows) {
+        $sha, $advertised = $row -split "`t", 2
+        if ($advertised -ceq $wanted -and $sha -match '\A[0-9a-f]{40}\z') { return $sha }
+      }
+    }
+  }
+  throw "origin did not report an exact match for look bench ref $ref"
+}
+function Fetch-LookBenchPin($checkout, $mirror, $source, $pin, $slot) {
+  $destination = "refs/look-bench/$slot"
+  $null = Git @('--git-dir',$mirror,'cat-file','-e',"${pin}^{commit}")
+  if ($gitExit -eq 0) { $from = $mirror }
+  else {
+    $null = Git @('-C',$checkout,'cat-file','-e',"${pin}^{commit}")
+    if ($gitExit -eq 0) {
+      Must-Git @('-C',$checkout,'update-ref',$destination,$pin)
+      return
+    }
+    $from = $source
+  }
+  # A mirror miss fetches only this pin into the bench checkout. It never becomes a shared writer.
+  Write-Host "look bench $slot $pin from $from"
+  Must-Git @('-C',$checkout,'-c','http.lowSpeedLimit=1000','-c','http.lowSpeedTime=60','fetch',
+    '--no-tags','--no-prune','--no-prune-tags','--no-auto-maintenance','--no-write-fetch-head',$from,"+${pin}:${destination}")
+  Must-Git @('-C',$checkout,'cat-file','-e',"${pin}^{commit}")
+}
 # Final reporting is best effort. Start validation and claiming must fail closed.
 function Invoke-Gh($method, $endpoint, $payload = $null, $pages = $false) {
   $script:ghOK = $false
@@ -1195,6 +1438,64 @@ function Issue-Lock($issue) {
     }
   }
 }
+function Read-ClaimReceipt($issue) {
+  $path = "$(Issue-LockPath $issue).claim.json"
+  if (-not (Test-Path -LiteralPath $path)) { return $null }
+  $item = Get-Item -LiteralPath $path -Force
+  if ($item -isnot [IO.FileInfo] -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw 'claim receipt is not a plain file' }
+  return (Get-Content -LiteralPath $path -Raw | ConvertFrom-Json)
+}
+function Save-ClaimReceipt($issue, $receipt) {
+  # Only the issue lock holder writes this receipt. Replace it atomically so a dead writer cannot leave partial proof.
+  $path = "$(Issue-LockPath $issue).claim.json"
+  $tmp = "$path.$([guid]::NewGuid().ToString('N')).tmp"
+  Put $tmp ($receipt | ConvertTo-Json -Compress)
+  if (Test-Path -LiteralPath $path) { [IO.File]::Replace($tmp, $path, [NullString]::Value) }
+  else { [IO.File]::Move($tmp, $path) }
+}
+function Test-ClaimComment($comment, $receipt) {
+  $lines = [string]$comment.body -split '\r?\n'
+  return ($comment.id -eq $receipt.comment -and $lines[0] -ceq "<!-- voidsworn-runner-status branch=$($receipt.branch) -->" -and
+    $lines -ccontains "- Run: $($receipt.run)")
+}
+function Find-DeadClaim($issue, $state, $comments) {
+  # The caller holds the same exclusive issue lock the runner and its child processes hold for the whole run.
+  # A public comment alone is not ownership proof: it must also match this PC's receipt for the same issue and branch.
+  $receipt = Read-ClaimReceipt $issue
+  # Before receipts were added, the old run's local status.json was the only ownership record.
+  if ($null -eq $receipt -and $state.prior_claim.issue -eq $issue) { $receipt = $state.prior_claim }
+  if ($null -eq $receipt -or $receipt.branch -cne $state.branch -or $receipt.run -cnotmatch '\A[0-9a-f]{32}\z' -or
+      $receipt.comment -notmatch '\A[1-9][0-9]*\z') { return $null }
+  $mine = @($comments | Where-Object { Test-ClaimComment $_ $receipt })
+  if ($mine.Count -ne 1 -or @($comments | Where-Object {
+    $_.id -ne $receipt.comment -and $_.body -cmatch '(?m)^Runner status: running\r?$'
+  }).Count) { return $null }
+  $current = Require-Gh 'GET' "issues/comments/$($receipt.comment)"
+  if (-not (Test-ClaimComment $current $receipt)) { return $null }
+  return $receipt
+}
+function Archive-CodexRecord($folder) {
+  # Keep each prior record separately, including a failed push patch. Clear stale current output only after all copies land.
+  Assert-PlainDirectory (Get-Item -LiteralPath $folder -Force)
+  $names = @('last.md','result.txt','log.txt','status.json','CODEX_TASK.md','push.txt','push_failed.patch','limit_wip.patch',
+    'resume.txt','stop_reason.txt','confirmed_commit.txt','run_commit.txt','checks_node.txt','checks_parity.txt')
+  $files = @(foreach ($name in $names) {
+    $file = Get-Item -LiteralPath (Join-Path $folder $name) -Force -ErrorAction SilentlyContinue
+    if ($file) {
+      if ($file -isnot [IO.FileInfo] -or ($file.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw "run record is not a plain file: $name" }
+      $file
+    }
+  })
+  if (-not $files.Count) { return }
+  $runs = [IO.Directory]::CreateDirectory((Join-Path $folder 'runs'))
+  Assert-PlainDirectory $runs
+  $stamp = [DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss')
+  $previous = $runs.CreateSubdirectory("previous-$stamp-$([guid]::NewGuid().ToString('N'))")
+  foreach ($file in $files) { $null = $file.CopyTo((Join-Path $previous.FullName $file.Name)) }
+  foreach ($file in $files) {
+    if ($file.Name -in @('last.md','log.txt','CODEX_TASK.md','push.txt','push_failed.patch','limit_wip.patch')) { $file.Delete() }
+  }
+}
 function Open-HeldLock($path) {
   # An exclusive lock that child processes inherit. Windows releases it only when every process holding the handle has
   # exited, so a run whose waiting PowerShell dies keeps its lock while the batch and its tools still work (Artoo, PR 1250).
@@ -1240,13 +1541,29 @@ function End-Announcement($s) {
     if ($g.comment) { $null = Invoke-Gh 'PATCH' "issues/comments/$($g.comment)" @{ body = (Status-Body $s $label $code) } }
     # Clearing the owned label must still be attempted when editing the comment fails.
     $null = Invoke-Gh 'DELETE' "issues/$($g.issue)/labels/running"
-    if ($ghOK) { $g.claimed = $false; Save-State $s }
+    if ($ghOK) {
+      $g.claimed = $false; Save-State $s
+      $receipt = Read-ClaimReceipt $g.issue
+      if ($receipt.run -ceq $s.run) { Save-ClaimReceipt $g.issue @{} }
+    }
   } catch { Log "WARNING: GitHub final status failed: $($_.Exception.Message)" }
 }
 try {
   if ($mode -eq 'init') {
     $script:out = $args[1]
+    if ($args[3] -eq 'archive-codex') { Archive-CodexRecord $out }
     $s = @{ run = [guid]::NewGuid().ToString('N'); branch = $args[2]; status = 'running'; reason = ''; commit = ''; started = [DateTime]::UtcNow.ToString('o'); finished = '' }
+    $oldState = Join-Path $out 'status.json'
+    if (Test-Path -LiteralPath $oldState -PathType Leaf) {
+      try {
+        $old = Get-Content -LiteralPath $oldState -Raw | ConvertFrom-Json
+        if ($old.branch -ceq $s.branch) {
+          if ($old.github.claimed) {
+            $s.prior_claim = @{ issue = $old.github.issue; run = $old.run; branch = $old.branch; comment = $old.github.comment }
+          } elseif ($old.prior_claim) { $s.prior_claim = $old.prior_claim }
+        }
+      } catch { Log 'prior run status unreadable; no local claim recovered from it' }
+    }
     Put (Join-Path $out 'status.json') ($s | ConvertTo-Json)
     # Keep any earlier resume note aside. The current run writes a note only when it has resume context.
     $resumePath = Join-Path $out 'resume.txt'
@@ -1286,16 +1603,50 @@ try {
     Log "chain waiting for $p"
     $run = ''
     while ($true) {
-      if (-not (Test-Path -LiteralPath $p)) { throw 'chain stopped: predecessor status.json is missing; text results cannot prove a checked push' }
+      if (-not (Test-Path -LiteralPath $p)) { throw 'chain stopped: predecessor status.json is missing; text results cannot prove a confirmed push' }
       $s = Get-Content -LiteralPath $p -Raw | ConvertFrom-Json
       if (-not $run) { $run = $s.run }
       if (-not $run -or $run -ne $s.run) { throw 'chain stopped: predecessor run changed while waiting' }
       if ($env:PC_WAIT_RUN -and $s.run -ne $env:PC_WAIT_RUN) { throw 'chain stopped: predecessor run id does not match PC_WAIT_RUN' }
       if ($s.status -eq 'checked_push' -and $s.commit -match '^[0-9a-f]{40,64}$') { Log "chain released: checked push $($s.branch) $($s.commit)"; exit 0 }
+      if ($s.status -eq 'unverified' -and $s.commit -match '^[0-9a-f]{40,64}$' -and $s.confirmed_commit -eq $s.commit) {
+        Log "chain released: confirmed push with unverified local checks $($s.branch) $($s.commit)"
+        exit 0
+      }
       if ($s.status -ne 'running') { throw "chain stopped: predecessor ended $($s.status): $($s.reason)" }
       if ([DateTime]::UtcNow -ge $end) { throw 'chain stopped: predecessor did not finish before the wait limit' }
       Start-Sleep -Milliseconds 500
     }
+  }
+  elseif ($mode -eq 'look-bench-checkout') {
+    $mirror = Repo-Mirror
+    $source = 'https://github.com/rcbailey12/voidsworn'
+    if ($test) {
+      if (-not $env:PC_TEST_SOURCE -or -not $mirror) { throw 'test checkout requires PC_TEST_SOURCE and PC_TEST_MIRROR (no live network)' }
+      $source = $env:PC_TEST_SOURCE
+    }
+    $tool = Join-Path $env:LB_HOME 'tool'
+    $repo = Join-Path $env:LB_HOME 'repo'
+    Initialize-LookBenchCheckout $tool $mirror $source
+    $toolPin = Get-LookBenchPin $env:LB_TOOL_REF $tool $source
+    Fetch-LookBenchPin $tool $mirror $source $toolPin 'tool'
+    Must-Git @('-C',$tool,'checkout','-f','--detach',$toolPin)
+    $before = $env:BEFORE
+    if (-not $before) {
+      $baseline = @(Git @('-C',$tool,'show','HEAD:docs/shots/look_bench/BASELINE.txt'))
+      if ($gitExit -ne 0 -or -not $baseline.Count -or -not $baseline[0].Trim()) { throw 'the selected bench tool has no baseline pin' }
+      $before = $baseline[0].Trim()
+    }
+    Initialize-LookBenchCheckout $repo $mirror $source
+    $afterPin = if ($env:AFTER -ceq $env:LB_TOOL_REF) { $toolPin } else { Get-LookBenchPin $env:AFTER $repo $source }
+    Fetch-LookBenchPin $repo $mirror $source $afterPin 'after'
+    $beforePin = 'none'
+    if ($before -ne 'none') {
+      $beforePin = if ($before -ceq $env:AFTER) { $afterPin } elseif ($before -ceq $env:LB_TOOL_REF) { $toolPin }
+                   else { Get-LookBenchPin $before $repo $source }
+      if ($beforePin -ne $afterPin) { Fetch-LookBenchPin $repo $mirror $source $beforePin 'before' }
+    }
+    Put $args[1] "$afterPin $beforePin`r`n"
   }
   elseif ($mode -eq 'checkout') {
     $repo = $args[1]; $script:out = $args[2]; $br = $args[3]
@@ -1319,31 +1670,12 @@ try {
     }
     $parent = Split-Path -Parent $mirror
     $null = New-Item -ItemType Directory -Force -Path $parent
-    $lock = $null; $deadline = [DateTime]::UtcNow.AddMinutes(30); $said = $false
-    while (-not $lock) {
-      try { $lock = [IO.File]::Open("$mirror.lock", 'OpenOrCreate', 'ReadWrite', 'None') }
-      catch [IO.IOException] {
-        if (-not $said) { Log 'waiting for the shared repo copy'; $said = $true }
-        if ([DateTime]::UtcNow -ge $deadline) { throw 'shared repo copy stayed locked for 30 minutes' }
-        Start-Sleep -Milliseconds 500
-      }
+    Update-SharedMirror $mirror $source $br 3 -ReportWait
+    $reuse = Can-ReuseRepo $repo $mirror $patterns
+    if ($reuse) {
+      # --prune: a reused slot must drop a branch GitHub deleted, or a rerun would continue its stale tip (PR 1804).
+      Retry-Git 'checkout fetch' @('-C',$repo,'fetch','--no-tags','--no-auto-maintenance','--prune',$mirror,'+refs/heads/*:refs/remotes/origin/*')
     }
-    try {
-      if (-not (Test-Path -LiteralPath (Join-Path $mirror 'HEAD'))) {
-        Must-Git @('init','--bare',$mirror)
-        Must-Git @('--git-dir',$mirror,'remote','add','--mirror=fetch','origin',$source)
-      }
-      $url = @(Git @('--git-dir',$mirror,'remote','get-url','origin'))
-      if ($gitExit -ne 0 -or $url[0] -ne $source) { throw 'shared repo copy has an unexpected origin; kept unchanged' }
-      Retry-Git 'mirror fetch' @('--git-dir',$mirror,'-c','http.lowSpeedLimit=1000','-c','http.lowSpeedTime=60','fetch','--prune','origin')
-      # The remote default branch may not yet be set by init --bare.
-      Must-Git @('--git-dir',$mirror,'symbolic-ref','HEAD','refs/heads/main')
-      $reuse = Can-ReuseRepo $repo $mirror $patterns
-      if ($reuse) {
-        # --prune: a reused slot must drop a branch GitHub deleted, or a rerun would continue its stale tip (Artoo on PR 1804).
-        Retry-Git 'checkout fetch' @('-C',$repo,'fetch','--no-tags','--prune',$mirror,'+refs/heads/*:refs/remotes/origin/*')
-      }
-    } finally { $lock.Dispose() }
     # A pinned lane must not hold the shared mirror lock for the ten-minute preservation wait.
     if (-not $reuse) { Keep-Repo $repo 'kept' }
     Warn-KeptRepos $repo
@@ -1351,14 +1683,7 @@ try {
     for ($attempt = 1; -not $reuse -and $attempt -le 3; $attempt++) {
         Log "local clone attempt $attempt/3"
         # Reacquire around each local clone: mirror fetch and hardlink cloning must still serialize.
-        $lock = $null
-        while (-not $lock) {
-          try { $lock = [IO.File]::Open("$mirror.lock", 'OpenOrCreate', 'ReadWrite', 'None') }
-          catch [IO.IOException] {
-            if ([DateTime]::UtcNow -ge $deadline) { throw 'shared repo copy stayed locked for 30 minutes' }
-            Start-Sleep -Milliseconds 500
-          }
-        }
+        $lock = Open-MirrorWriterLock $mirror $br 'git clone --local --no-checkout' 1800 -ReportWait
         try { $null = Git @('clone','-q','-c','core.autocrlf=false','--local','--no-checkout',$mirror,$repo) }
         finally { $lock.Dispose() }
         if ($gitExit -eq 0) { break }
@@ -1486,19 +1811,32 @@ try {
     if ($issue -notmatch '^[1-9][0-9]*$') { throw 'invalid job issue number; no agent started' }
     if ($test -and (-not $env:PC_TEST_GH -or -not $env:PC_TEST_GH_DB)) { throw 'test claim requires fake gh and PC_TEST_GH_DB (no live GitHub); no agent started' }
     $lock = $null
-    if (($args[7] -eq 'real' -or $test) -and $env:PC_RUNNER_LOCKED_ISSUE -ne $issue) { $lock = Issue-Lock $issue }
+    $canClaim = $args[7] -eq 'real' -or $test
+    $holdsRunLock = $env:PC_RUNNER_LOCKED_ISSUE -eq $issue
+    if ($canClaim -and -not $holdsRunLock) { $lock = Issue-Lock $issue }
     try {
       $s = Get-Content -LiteralPath (Join-Path $out 'status.json') -Raw | ConvertFrom-Json
       $repo = $args[4]
       $i = Require-Gh 'GET' "issues/$issue"
       if ($i.state -ne 'open' -or $i.pull_request) { throw "job refused: issue #$issue is not an open job (state: $($i.state)); no agent started" }
-      if (@($i.labels | Where-Object { $_.name -eq 'running' -or $_ -eq 'running' }).Count) { throw "job refused: issue #$issue already carries running; another run owns the claim; no agent started" }
       $launchBranch = $args[8]
       if (-not $launchBranch) { $launchBranch = $s.branch }
+      $comments = $null
+      $stale = $null
+      if (@($i.labels | Where-Object { $_.name -eq 'running' -or $_ -eq 'running' }).Count) {
+        # A lock held only for this announce step does not prove the old agent has stopped.
+        if ($canClaim -and $holdsRunLock) {
+          $comments = @(Gh-Pages "issues/$issue/comments?per_page=100")
+          $stale = Find-DeadClaim $issue $s $comments
+        }
+        if (-not $stale) { throw "job refused: issue #$issue already carries running; another run owns the claim; no agent started" }
+        # Validate the new assignment before changing the stale claim. Keep every other label intact.
+        $i.labels = @($i.labels | Where-Object { $_.name -ne 'running' -and $_ -ne 'running' })
+      }
       $pulls = @(Gh-Pages 'pulls?state=open&per_page=100')
       $branches = @(Gh-Pages 'branches?per_page=100')
       $body = Validate-Job $i $issue $args[3] $pulls $branches $launchBranch
-      $comments = @(Gh-Pages "issues/$issue/comments?per_page=100")
+      if ($null -eq $comments) { $comments = @(Gh-Pages "issues/$issue/comments?per_page=100") }
       # Snapshot exactly what was validated. Prep must never re-fetch a possibly changed or older brief.
       Put (Join-Path $out 'validated_issue.json') (@{ number = $issue; title = $i.title; body = $body; run = $s.run } | ConvertTo-Json)
       $s | Add-Member -NotePropertyName instruction_run -NotePropertyValue $s.run -Force
@@ -1518,6 +1856,18 @@ try {
         start_commit = $head; claimed = $false; marker = "<!-- voidsworn-runner-status branch=$($s.branch) -->" }
       $s | Add-Member -NotePropertyName github -NotePropertyValue $g -Force
       Save-State $s
+      if ($stale) {
+        # Re-read under the lock after validation. A comment replaced by another run is not ours to clear.
+        $comments = @(Gh-Pages "issues/$issue/comments?per_page=100")
+        $checked = Find-DeadClaim $issue $s $comments
+        if (-not $checked -or $checked.run -cne $stale.run -or $checked.comment -ne $stale.comment) {
+          throw 'job refused: stale claim changed during validation; no agent started'
+        }
+        $null = Invoke-Gh 'DELETE' "issues/$issue/labels/running"
+        if (-not $ghOK) { throw 'could not clear this PC''s dead claim; no agent started' }
+        Save-ClaimReceipt $issue @{}
+        Log "cleared this PC's dead claim for issue #$issue, run $($stale.run)"
+      }
       $null = Invoke-Gh 'GET' 'labels/running'
       if (-not $ghOK) { $null = Require-Gh 'POST' 'labels' @{ name = 'running'; color = '1D76DB'; description = 'An agent is working this issue' } }
       $null = Require-Gh 'POST' "issues/$issue/labels" @{ labels = @('running') }
@@ -1529,6 +1879,7 @@ try {
         if ($g.comment) { $null = Require-Gh 'PATCH' "issues/comments/$($g.comment)" $payload }
         else { $reply = Require-Gh 'POST' "issues/$issue/comments" $payload; $g.comment = $reply.id }
         if (-not $g.comment) { throw 'claim comment has no id; no agent started' }
+        if ($holdsRunLock) { Save-ClaimReceipt $issue @{ run = $s.run; branch = $s.branch; comment = $g.comment } }
         $claimedIssue = Require-Gh 'GET' "issues/$issue"
         $claimedComment = Require-Gh 'GET' "issues/comments/$($g.comment)"
         if (-not @($claimedIssue.labels | Where-Object { $_.name -eq 'running' -or $_ -eq 'running' }).Count -or
@@ -1539,6 +1890,7 @@ try {
       } catch {
         # Still under the issue lock: no other local seat can have acquired this label in between.
         $null = Invoke-Gh 'DELETE' "issues/$issue/labels/running"
+        if ($ghOK -and $holdsRunLock) { Save-ClaimReceipt $issue @{} }
         $g.claimed = $false; Save-State $s
         throw
       }
@@ -1548,7 +1900,20 @@ try {
   }
   elseif ($mode -eq 'fetch') {
     $repo = $args[1]; $script:out = $args[2]
-    Retry-Git 'branch fetch' @('-C',$repo,'fetch','-q','origin',$args[3])
+    Set-PCGitNonInteractive
+    Retry-Git 'branch fetch' (@(PCGitNetworkOptions) + @('-C',$repo,'fetch','-q','origin',$args[3]))
+  }
+  elseif ($mode -eq 'push') {
+    $repo = $args[1]; $branch = $args[2]; $pushMode = $args[3]
+    if ($pushMode -notin @('real','dry','test')) { throw 'invalid push mode' }
+    Set-PCGitNonInteractive
+    $words = @(PCGitNetworkOptions) + @('-C',$repo,'push')
+    if ($pushMode -eq 'dry') { $words += '--dry-run' }
+    $words += @('origin',"HEAD:refs/heads/$branch")
+    $result = Invoke-BoundedMirrorGit $words 900 'branch push'
+    $result.Lines | Write-Output
+    if ($result.Code -eq 124) { Write-Output 'push timed out after 900 seconds' }
+    exit $result.Code
   }
   elseif ($mode -eq 'preflight') {
     $script:out = $args[1]; $repo = $args[2]; $kind = $args[3]; $exe = $args[4]; $model = $args[5]; $variant = $args[6]
@@ -1557,7 +1922,7 @@ try {
     switch ($kind) {
       'opencode' { $words = @('run','--auto','--format','json','-m',$model,'--dir',$probe); if ($variant) { $words += @('--variant',($variant -replace '^--variant\s+','')) }; $words += $prompt }
       'kimi' { $words = @('-m',$model,'--output-format','text','-p',$prompt) }
-      'codex' { $words = @('exec','-m',$model,'-c','model_reasoning_effort=low','--ephemeral','--skip-git-repo-check','--color','never','-C',$probe,'-o',(Join-Path $probe 'reply.txt'),$prompt) }
+      'codex' { $words = @('exec','--ignore-user-config','-c','windows.sandbox=unelevated','-m',$model,'-c','model_reasoning_effort=low','--ephemeral','--skip-git-repo-check','--color','never','-C',$probe,'-o',(Join-Path $probe 'reply.txt'),$prompt) }
       default { throw "unknown preflight harness $kind" }
     }
     if ($test -and $env:PC_TEST_PREFLIGHT) { $exe = $env:PC_TEST_PREFLIGHT }
@@ -1566,12 +1931,14 @@ try {
     $psi.FileName = $exe; $psi.Arguments = ($words | ForEach-Object { Quote $_ }) -join ' '
     if ($exe -match '\.(cmd|bat)$') { $psi.FileName = $env:COMSPEC; $psi.Arguments = '/d /s /c ""' + $exe + '" ' + $psi.Arguments + '"' }
     $psi.WorkingDirectory = $probe; $psi.UseShellExecute = $false; $psi.CreateNoWindow = $true
+    $psi.RedirectStandardInput = $true
     $psi.RedirectStandardOutput = $true; $psi.RedirectStandardError = $true
     # The probe must use the same verified kill as an agent, including when taskkill cannot enumerate its tree.
     . (Join-Path $PSScriptRoot 'run_timeout.ps1') -LibraryOnly
     Initialize-RunTree
     $p = New-Object Diagnostics.Process; $p.StartInfo = $psi
-    $null = $p.Start(); $stdout = $p.StandardOutput.ReadToEndAsync(); $stderr = $p.StandardError.ReadToEndAsync()
+    $null = $p.Start(); try { $p.StandardInput.Close() } catch { }
+    $stdout = $p.StandardOutput.ReadToEndAsync(); $stderr = $p.StandardError.ReadToEndAsync()
     $null = $p.Handle
     $tree = @{}; $tree[$p.Id] = $p
     try {
@@ -1985,16 +2352,25 @@ try {
     $script:out = $args[1]; $code = $args[2]; $partial = $args[3]; $push = $args[4]; $checks = $args[5]
     $old = Get-Content -LiteralPath (Join-Path $out 'status.json') -Raw | ConvertFrom-Json
     $status = 'failed'; $reason = "runner exit $code"
+    $confirmedPush = ''
     if ($old.status -eq 'failed' -and $old.reason) { $reason = $old.reason }
     if ($code -eq '0' -and -not $partial) {
       $commit = Read (Join-Path $out 'run_commit.txt')
       $confirmed = Read (Join-Path $out 'confirmed_commit.txt')
-      if ($push -eq 'real' -and $checks -eq '1' -and $commit -match '^[0-9a-f]{40,64}$' -and $confirmed -eq $commit) { $status = 'checked_push'; $reason = 'non-partial push confirmed and runner checks passed' }
+      if ($push -eq 'real' -and $commit -match '^[0-9a-f]{40,64}$' -and $confirmed -eq $commit) {
+        $confirmedPush = $confirmed
+        if ($checks -eq '1') { $status = 'checked_push'; $reason = 'non-partial push confirmed and runner checks passed' }
+        else { $status = 'unverified'; $reason = 'non-partial push confirmed but local checks did not pass' }
+      }
       else { $status = 'unverified'; $reason = 'dry/test push or checks did not pass; chain stays stopped' }
     }
     elseif ($partial) { $status = 'partial'; $reason = $partial }
     elseif ($code -eq '7') { $status = 'no_changes'; $reason = 'no changes pushed' }
     Log "runner status: $status ($reason)"
+    State $status $reason $confirmedPush
+    # State is authoritative. Release the claim before cleanup, which can scan several large checkouts.
+    $s = Get-Content -LiteralPath (Join-Path $out 'status.json') -Raw | ConvertFrom-Json
+    End-Announcement $s
     if ($push -eq 'real') {
       try {
         if (Cleanup-Paused) { Log 'run cleanup skipped during the PC pause' }
@@ -2012,10 +2388,6 @@ try {
         }
       } catch { Log "run cleanup stopped: $($_.Exception.Message)" }
     }
-    State $status $reason
-    # State is authoritative; reporting errors never change it or the runner exit code.
-    $s = Get-Content -LiteralPath (Join-Path $out 'status.json') -Raw | ConvertFrom-Json
-    End-Announcement $s
     exit 0
   }
   else { throw "unknown runner step $mode" }
