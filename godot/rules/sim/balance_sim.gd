@@ -403,6 +403,8 @@ func _fmatrix(count: int) -> void:
 	var factions: Array = campaign.RUN_FACTIONS
 	var rows := OS.get_environment("FROWS")
 	var player_factions: Array = Array(rows.split(",")) if not rows.is_empty() else factions
+	var cols := OS.get_environment("FCOLS")
+	var enemy_factions: Array = Array(cols.split(",")) if not cols.is_empty() else factions
 	var budget_text := OS.get_environment("CPT")
 	if not budget_text.is_empty() and (not budget_text.is_valid_int() or int(budget_text) <= 0):
 		_fail("CPT must be a positive integer.")
@@ -412,15 +414,22 @@ func _fmatrix(count: int) -> void:
 		if faction not in factions:
 			_fail("Unknown FROWS faction: " + faction)
 			return
+	for faction in enemy_factions:
+		if faction not in factions:
+			_fail("Unknown FCOLS faction: " + faction)
+			return
 	var result := {}
+	var exchanges := {}
 	battle.matrix = true
 	var no_admiral := not OS.get_environment("NOADM").is_empty()
 	for player in player_factions:
 		var row := {}
 		result[player] = row
+		exchanges[player] = {}
 		var admirals: Array = battle.ADMIRALS.keys().filter(func(id): return battle.ADMIRALS[id].get("fac", "voidsworn") == player)
-		for enemy in factions:
+		for enemy in enemy_factions:
 			var wins := 0
+			var damage := Vector2.ZERO
 			for trial in range(count):
 				_next_pair()
 				var admiral: String = "none" if no_admiral else battle.pick(admirals)
@@ -440,10 +449,14 @@ func _fmatrix(count: int) -> void:
 					"shape": shape, "map": "random", "enemies": enemies.map(func(tpl): return {"tpl": tpl})})
 				battle.fight(bot, alternating)
 				battle.collect_matrix()
-				wins += int(battle.B.over == "win")
+				for unit in battle.B.units:
+					if unit.side == "player": damage.x += float(unit.dealt)
+					else: damage.y += float(unit.dealt)
+				wins += int(battle.js_eq(battle.B.over, "win"))
 			row[enemy] = JSM.jsround(float(wins) / count * 100)
+			exchanges[player][enemy] = {"dealt": damage.x, "taken": damage.y}
 	print("FM " + JSON.stringify({"out": result, "st": battle.matrix_stats, "hull": battle.hulls,
-		"weap": battle.weapons, "ab": battle.abilities}, "", false))
+		"weap": battle.weapons, "ab": battle.abilities, "exchange": exchanges, "fades": battle.fades}, "", false))
 	print("FID " + JSON.stringify(battle.faction_report(), "", false))
 
 

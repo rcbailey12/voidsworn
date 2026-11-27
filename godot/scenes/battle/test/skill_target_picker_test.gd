@@ -149,5 +149,33 @@ func _run() -> void:
 	var automatic = _api(false)
 	_check(automatic.phase == "player" and _hex(automatic.unit(other["id"])) == _hex(second) and _hex(automatic.unit(second["id"])) == _hex(other), "the automatic path still swaps the first two ships")
 	var unrelated = _api(true, "t_glasscorrected")
-	_check(unrelated.phase == "player" and unrelated.view()["skill_target"].is_empty(), "the other deployment swap still runs automatically")
+	_check(unrelated.phase == "player" and unrelated.view()["skill_target"].is_empty(), "the unrelated skill does not open a deployment picker")
+	await _placement_picker()
 	quit(0 if failures == 0 else 1)
+
+
+func _placement_picker() -> void:
+	var api = _api(true, "t_sworndeploy")
+	var b := _battle(api)
+	await process_frame
+	var picker: Dictionary = api.view()["skill_target"]
+	var ships: Array = picker.get("targets", [])
+	var open: Array = picker.get("hexes", []).filter(func(h): return h.open)
+	var grid = b._deploy_grid
+	_check(grid.visible and grid.ships.values().any(func(unit): return unit.side == "enemy"),
+		"Sworn Deployment shows enemy positions before the ship pick")
+	_check(not ships.is_empty() and not open.is_empty(), "Sworn Deployment shows the initial fleet and legal landing hexes")
+	if ships.is_empty() or open.is_empty():
+		b.free()
+		return
+	var chosen: Dictionary = ships.back()
+	var destination: Vector2i = _hex(open.back())
+	_check(_click_hud(b, "pick", chosen.id) and b._deploy_grid.visible, "fleet click opens the deployment hex preview")
+	var clicked: Vector2 = grid.get_global_transform_with_canvas() * grid.centre(destination)
+	_click_at(clicked)
+	_check(api.phase == "player" and _hex(api.unit(chosen.id)) == destination, "clicking a lit hex places the chosen ship and starts the battle")
+	_check(b._deploy_grid == null and not api.take_round_snapshot().is_empty(), "placement closes the grid and saves round one")
+	while b.warming or b.busy or b._threat_busy:
+		await process_frame
+	_check(b.board.built == 1, "placement builds the full battle once")
+	b.free()

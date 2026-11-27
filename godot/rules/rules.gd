@@ -456,7 +456,6 @@ func boon_fx(id, m: float) -> Dictionary:
 		"s_chain": return {"chainSh": m / 3.0}
 		"h_brood": return {"broodTithe": 1, "broodRepair": 0.1 * (m - 1)}
 		"a_mark": return {"markLance": m}
-		"r_slip": return {"fade": 0.9 if m >= 2 else (0.7 if m >= 1.5 else 0.5)}
 		"e_spread": return {"spread": 0.3 * m}
 		"L_iron": return {"lastStand": 1}
 		"L_storm": return {"stormRegen": 1}
@@ -1037,11 +1036,15 @@ func deploy(units: Array, side, zoneFn = null) -> void:
 		h["c"] = h.q + floor(h.r / 2.0)
 		if zone.call(h) and free.call(h): cand.append(h)
 	if cand.size() < capsl.size() + 1:
+		zone = func(h): return h.c < BW / 2.0 - 1 if side == "player" else h.c >= BW / 2.0 + 1
 		cand = []
 		for h in boardHexes():
 			h["c"] = h.q + floor(h.r / 2.0)
-			var half: bool = h.c < BW / 2.0 - 1 if side == "player" else h.c >= BW / 2.0 + 1
-			if half and free.call(h): cand.append(h)
+			if zone.call(h) and free.call(h): cand.append(h)
+	if side == "player" and _deploy_move_skill() != "":
+		B["skillDeployZone"] = boardHexes().filter(func(h):
+			var cell := {"q": h.q, "r": h.r, "c": h.q + floor(h.r / 2.0)}
+			return zone.call(cell))
 	var sq = 0.0; var sr = 0.0
 	for h in cand: sq += h.q
 	for h in cand: sr += h.r
@@ -1161,6 +1164,8 @@ func _map_trial_hunt(player: Array, enemy: Array) -> void:
 		_map_trial_spot(u, func(h):
 			return -8 * absf(hdist(h, quarry) - gap) - 4 * absf(h.r - start_row) - 40 * maxf(0, _map_trial_col(h) - (bb.c0 + 13)), 0)
 		_map_trial_face(u, quarry)
+	if _deploy_move_skill() != "":
+		B["skillDeployZone"] = boardHexes().filter(func(h): return _map_trial_col(h) <= bb.c0 + 13)
 
 	var aim := offToAx(bb.c0, JSM.jsround(bb.r0 + (bb.r1 - bb.r0) * 0.15))
 	var open := boardHexes().filter(func(h): return not blocks(terr(h.q, h.r)))
@@ -1497,7 +1502,8 @@ func startBattle(cfg: Dictionary, pick_skills := false) -> void:
 	for ship in RUN["fleet"]:
 		if ship["hp"] <= 0: continue
 		B["units"].append(makeUnit("player", ship["tpl"], {"ship": ship}))
-	var eList = cfg["enemies"] if jt(cfg.get("enemies")) else genEnemyFleet(cfg["fac"], s, cfg["col"], cfg.get("kind"), cfg.get("arch"), cfg.get("mod"), is_teaching_encounter(cfg.get("teachingBattle")))
+	var blocked := {"cp": 0.0}
+	var eList = cfg["enemies"] if jt(cfg.get("enemies")) else genEnemyFleet(cfg["fac"], s, cfg["col"], cfg.get("kind"), cfg.get("arch"), cfg.get("mod"), is_teaching_encounter(cfg.get("teachingBattle")), blocked)
 	var sc = 1.0 + 0.12 * (s - 1); var dm = 1.0 + 0.08 * (s - 1)
 	var bf = at([0, 6, 9, 12], s); var bossFit: float = max(0.55, min(1.0, playerStrength() / (bf if jt(bf) else 12)))
 	var eliteIdx: Variant = null
@@ -1520,6 +1526,12 @@ func startBattle(cfg: Dictionary, pick_skills := false) -> void:
 			for i in range(eList.size()): pr.append([i, HULLS[eList[i]["tpl"]]["cp"] if jt(HULLS[eList[i]["tpl"]].get("cp")) else 1])
 			JSM.ssort(pr, func(x, y): return y[1] - x[1])
 			elite = ei == pr[0][0]
+		# Use the existing elite package. Only generated, non-elite escorts can be upgraded.
+		if not elite and not isb and blocked.cp > 0:
+			var price := maxf(1.0, ceilf(float(HULLS[e["tpl"]]["cp"]) * 0.5))
+			if price <= blocked.cp:
+				blocked.cp -= price
+				elite = true
 		B["units"].append(makeUnit("enemy", e["tpl"], {"scale": scale, "dmg": dmg, "elite": elite, "fac": cfg["fac"]}))
 	# issue 1480 (R384): a Nemesis in a boss fight (the revived Eclipse rival's last fight) comes in on his own flagship, his faction's biggest hull, beside the boss
 	if cfg.get("kind") == "boss" and jt(cfg.get("nemesis")) and FACTIONS.has(cfg["nemesis"].get("fac")):
@@ -1630,6 +1642,7 @@ func startBattle(cfg: Dictionary, pick_skills := false) -> void:
 
 func _finishBattleSetup(enemy_count: int) -> void:
 	var cfg: Dictionary = B["cfg"]
+	B.erase("skillDeployZone")
 	deployWings()
 	B["cp0"] = {"player": sideCP("player"), "enemy": sideCP("enemy")}
 	B["usage"] = {"fire": {}, "aim": 0, "ab": {}, "ord": {}, "cmd": 0, "moves": 0, "cant": {}}
@@ -1669,11 +1682,15 @@ func _has_flak(u) -> bool:
 		if w["k"] == "flak": return true
 	return false
 func effArch(arch, fac):
+	return enemy_archetype(arch, fac, FACTIONS, HULLS)
+
+static func enemy_archetype(arch, fac, factions: Dictionary, hulls: Dictionary) -> Variant:
+	if arch == "swarm" and fac == "ithar": return "heavy"
 	if arch == "carrier":
-		var F = FACTIONS.get(fac); var any = false
+		var F = factions.get(fac); var any = false
 		if F != null:
 			for id in F["roster"]:
-				if HULLS.has(id) and HULLS[id].get("ab") == "launch": any = true
+				if hulls.has(id) and hulls[id].get("ab") == "launch": any = true
 		if not any: return "heavy"
 	return arch if jt(arch) else null
 const ENCOUNTER_CURVE_V1 := 1
@@ -1714,7 +1731,7 @@ static func encounter_budget(ramp: Dictionary, run, s: int, col: float, kind, ai
 func enemy_budget(s: int, col: float, kind, mod, teaching: bool = false) -> float:
 	return encounter_budget(RAMP, RUN, s, col, kind, AI_LEVEL, fleetPower, mod, teaching)
 
-func genEnemyFleet(fac, s, col, kind, arch, mod, teaching: bool = false) -> Array:
+func genEnemyFleet(fac, s, col, kind, arch, mod, teaching: bool = false, blocked: Dictionary = {}) -> Array:
 	arch = effArch(arch, fac)
 	var F = FACTIONS[fac]; s = int(s)
 	var budget = enemy_budget(s, col, kind, mod, teaching)
@@ -1768,16 +1785,20 @@ func genEnemyFleet(fac, s, col, kind, arch, mod, teaching: bool = false) -> Arra
 		for sh in RUN["fleet"]:
 			if sh["hp"] > 0: nlive += 1
 	var ceil_ = RAMP.ceil[s] - (min(7, nlive) if hasFleet else 4)
-	while budget >= 1 and list.size() < max(4, ceil_):
+	var limit: int = maxi(4, int(ceil_))
+	while budget >= 1:
 		g += 1
 		if g > 80: break
 		var opts = []
 		for x in roster:
 			if x.cp <= budget + 0.3: opts.append(x)
 		if opts.size() == 0: break
+		if list.size() >= limit:
+			blocked["cp"] = budget
+			break
 		var wts = []
 		for x in opts:
-			if arch == "heavy": wts.append(JSM.pow(x.cp, 1.6))
+			if arch == "heavy" or fac == "ithar": wts.append(JSM.pow(x.cp, 1.6))
 			else: wts.append((1.1 if x.cp == 1 else min(2.0, budget / (x.cp * 2.0)) + 0.35) * (RAMP.light[s] if (x.cp <= 2 and arch != "swarm") else 1.0))
 		var tot = 0.0
 		for w in wts: tot += w
@@ -1787,6 +1808,8 @@ func genEnemyFleet(fac, s, col, kind, arch, mod, teaching: bool = false) -> Arra
 			if r <= 0:
 				ch = opts[i]; break
 		list.append({"tpl": ch.id}); budget -= ch.cp
+	# Raised CP prices must still leave a contact on a low-budget encounter.
+	if list.is_empty() and fac == "ithar": list.append({"tpl": "i_wisp"})
 	return list
 
 func gainResolve(side, n) -> void:
@@ -2211,7 +2234,7 @@ func undoMove(u) -> bool:
 	emit({"t": "undo", "unit": u["id"], "q": int(u["q"]), "r": int(u["r"]), "f": int(u["facing"]), "active": B.get("activeUnit") != null})
 	hook("undo", u); return true
 # ======================= B3 faction identity, travelling torpedoes, B4 Nemesis, verbs, wing doctrines, v54 doctrines =======================
-func canFade(u) -> bool: return u["fac"] == "ithar" or jt(g(u.get("fx"), "fade"))
+func canFade(u) -> bool: return u["fac"] == "ithar"
 func treeFullFade(u) -> bool: return treeSkill("splitThree") != null and u != null and u["side"] == "player" and not jt(u.get("isSq")) and not jt(u.get("dead")) and cmdActive(u["side"], "surge")   # Vell T2b
 func postFireMp(u): return min(u["mp"], z0(u.get("postMp"))) if jt(u.get("postFire")) else u["mp"]
 func fstat(fac, k, n = null) -> void: # telemetry counters in B.fstat (never read by rules, but part of the battle state)
@@ -2319,16 +2342,13 @@ func syncPull(u, v) -> float:
 func ithChargeTurn(u) -> void:
 	if u["fac"] != "ithar" or not (u["shMax"] > 0) or jt(u.get("isSq")): return
 	var hit = u["shHit"] if u.get("shHit") != null else [0, 0, 0, 0]
-	if not (z0(u["st"].get("shieldOff")) > 0):
-		var gg = 0; var rg = JSM.jsround(u["regen"] * (B["condRegen"] if (B != null and jt(B.get("condRegen"))) else 1))
-		if float(z0(u.get("chainCut"))) > 0: rg = JSM.jsround(rg * (1.0 - float(u["chainCut"])))
-		var struck = jt(hit[0]) or jt(hit[1]) or jt(hit[2]) or jt(hit[3])
-		if not jt(u.get("regenLock")):
-			var add = (u["shMax"] - float(z0(u.get("shp")))) if not struck else min(rg, u["shMax"] - float(z0(u.get("shp"))))
-			if add > 0:
-				gg += add; u["shp"] = float(z0(u.get("shp"))) + add
-		if gg > 0: fstat("ithar", "charge", gg); syncShields(u)
 	u["shHit"] = [0, 0, 0, 0]
+	if z0(u["st"].get("shieldOff")) > 0 or jt(u.get("regenLock")) or hit.any(func(n): return jt(n)): return
+	var add: float = u["shMax"] - float(z0(u.get("shp")))
+	if add > 0:
+		u["shp"] = u["shMax"]
+		fstat("ithar", "charge", add)
+		syncShields(u)
 func chorusFeed(t, by) -> void:
 	if B == null or t == null or jt(t.get("isSq")): return
 	var side = by["side"] if by != null else ("enemy" if t["side"] == "player" else "player")
@@ -2765,11 +2785,11 @@ func aiHurtW(u, prof) -> float:
 	var k = 1.0 if jt(u.get("aiHurt")) else clamp_((0.6 - f) / 0.3, 0.0, 1.0); var x = k * k * (3.0 - 2.0 * k)
 	return 0.32 + (0.6 * prof["hurt"] - 0.32) * x
 func fadeMove(u) -> bool:
-	if u == null or jt(u.get("dead")) or jt(u.get("isSq")) or not jt(u.get("postFire")) or postFireMp(u) < 1: return false
+	if u == null or not canFade(u) or jt(u.get("dead")) or jt(u.get("isSq")) or not jt(u.get("postFire")) or postFireMp(u) < 1: return false
 	var foes = alive("enemy" if u["side"] == "player" else "player")
 	if foes.size() == 0: return false
 	var here = evalThreat(u, foes)
-	if here < 5: return false
+	if here < 1.0: return false
 	var best = null; var bv = here
 	eval_begin()
 	for st in computeReach(u).states:
@@ -2778,7 +2798,7 @@ func fadeMove(u) -> bool:
 		if th < bv:
 			bv = th; best = st
 	eval_end()
-	if best == null or bv > here * 0.75: return false
+	if best == null or bv > here * 0.95: return false
 	moveUnit(u, best); fstat(u["fac"], "fade"); return true
 func rocketDefense(w, t, shots: Array, res, mult = null) -> void:
 	if not jt(w.get("rockets")) or jt(t.get("isSq")): return
@@ -3369,6 +3389,8 @@ func _spend_shield(t, quad: int, damage: float) -> void:
 func shieldDrained(t, before, quad = 0, mark: int = -1) -> void:   # mark: skip when this unit's break was already sent since it (a section loss inside applyHit)
 	if t == null or jt(t.get("isSq")) or not (float(z0(t.get("shMax"))) > 0): return
 	var p := float(z0(t.get("shp")))
+	if p < float(before) and t.get("fac") == "ithar":
+		_mark_shield_strike(t, int(quad) if quad != null else 0)
 	if p > 0 and p < 1: t["shp"] = 0; syncShields(t)   # the site already synced; only a clamp changes the sides
 	if float(before) > 0 and float(t["shp"]) <= 0 and not jt(t.get("dead")) and not (mark >= 0 and _shDownSince(t["id"], mark)):
 		emit({"t": "shield_down", "unit": t["id"], "quad": int(quad) if quad != null else 0})
@@ -3391,6 +3413,8 @@ func _combat_source(att, w: Dictionary, hazard := "") -> Dictionary:
 
 func _combat_hull(t: Dictionary, damage: float, origin: Dictionary) -> Dictionary:
 	var hull := clampf(damage, 0.0, maxf(0.0, float(t["hp"])))
+	if hull > 0 and t.get("fac") == "ithar" and not jt(t.get("isSq")):
+		_mark_shield_strike(t, 0)
 	t["hp"] = t["hp"] - damage
 	return CombatRecords.hit(B, origin, t, 0.0, hull)
 
@@ -3407,6 +3431,10 @@ func _combat_tick(t: Dictionary, kind: String, name: String, damage: float) -> D
 	if not jt(t["st"].get(kind)): B.get("combat_status", {}).get(t["id"], {}).erase(kind)
 	return hit
 
+func _mark_shield_strike(t, quad: int) -> void:
+	if t.get("shHit") == null: t["shHit"] = [0, 0, 0, 0]
+	t["shHit"][quad] = 1
+
 func applyHit(att, w, t, dmg: float, quad: int, combat_origin: Dictionary = {}) -> Dictionary:
 	var of = ownerFx(att); var rear = treeIsRear(att, t, quad); var pierce = 1.0 if (w.get("k") == "lance" and jt(of.get("lanceSure"))) else z0(w.get("pierce")); var ion = ionVs(att, w, t)
 	if jt(t.get("_treePierce")): pierce = 1.0; t["_treePierce"] = 0
@@ -3421,8 +3449,7 @@ func applyHit(att, w, t, dmg: float, quad: int, combat_origin: Dictionary = {}) 
 		else: pierce = 1.0   # Vex capstone 1
 	var locks_regen := false
 	if not jt(t.get("isSq")):
-		if t.get("shHit") == null: t["shHit"] = [0, 0, 0, 0]
-		t["shHit"][quad] = 1
+		_mark_shield_strike(t, quad)
 		if jt(w.get("ion")) and att != null and att.get("fac") == "hegemony" and t["shMax"] > 0:
 			t["regenLock"] = 1   # v54 doctrine (decided): Hegemony ion stops the pool's regen for a turn
 			locks_regen = true
@@ -3647,8 +3674,7 @@ func fireWeapon(u, wi: int, t, opts: Dictionary = {}) -> bool:
 		if jt(w.get("ion")): B["usage"]["ion"] = z0(B["usage"].get("ion")) + 1
 	if not jt(opts.get("intercept")) and not jt(u.get("isSq")) and w["k"] != "flak" and not jt(u.get("postFire")):
 		u["postFire"] = true
-		var ff = z0(g(u.get("fx"), "fade")); if ff <= 0.0: ff = 0.5
-		u["postMp"] = (u["mp"] if treeFullFade(u) else floor(u["mp"] * ff)) if canFade(u) else 0
+		u["postMp"] = (u["mp"] if treeFullFade(u) else floor(u["mp"] * 0.5)) if canFade(u) else 0
 		if treeFullFade(u): treeFx(u, "splitThree", "the light splits three ways")
 	if not jt(opts.get("intercept")) and u["side"] == "player" and not jt(u.get("isSq")) and (u.get("ab") == "launch" or z0(u.get("hangar")) > 0): B["tr"]["carrierLast"][u["id"]] = t["id"]   # Tamsa T1a
 	if not jt(opts.get("intercept")) and torpSalvo(w, u):   # R364: torpedoes fire now
@@ -4270,6 +4296,7 @@ func ramUnit(u) -> bool:
 		shield_applied = maxf(0.0, shR - float(t["shp"]))
 		ramEv["sh"] = t["sh"].duplicate()   # the scene's shield readout after the ram (played after this step returns)
 		shieldDrained(t, shR, qd)
+	if t["fac"] == "ithar" and e.dmg > 0: _mark_shield_strike(t, qd)
 	var ram := {"id": "ram", "n": "Ram"}
 	var ram_hit := CombatRecords.hit(B, _combat_source(u, ram), t, shield_applied, clampf(e.dmg, 0.0, maxf(0.0, float(t["hp"]))))
 	t["hp"] = t["hp"] - e.dmg; u["dealt"] = u["dealt"] + e.dmg; damageSection(t, e.sec, e.dmg, u)
@@ -5729,38 +5756,51 @@ func treeRoundStart() -> void:
 			var u6 = hurt[0]
 			var want = min(JSM.jsround(u6["maxHp"] * float(rh["n"])), max(0, int(ceil(u6["maxHp"] / 2.0)) - int(u6["hp"])))
 			if want > 0: u6["hp"] = min(u6["maxHp"], u6["hp"] + want); treeFx(u6, "refuseHoles", "the throat refuses holes")
-func treeDeployMove(kind, txt) -> void:
-	if B == null or B.get("tree") == null or B["tree"].size() == 0: return
-	if treeSkill(kind) == null: return
+func _deploy_move_skill() -> String:
+	if treeSkill("deployRead") != null: return "deployRead"
+	if treeSkill("swornDeploy") != null: return "swornDeploy"
+	return ""
+
+func _deploy_choices() -> Array:
+	var occ: Dictionary = occMap()
+	var choices := []
+	for h in B.get("skillDeployZone", []):
+		var q := int(h.q); var r := int(h.r)
+		choices.append({"q": q, "r": r, "open": not blocks(terr(q, r)) and not occ.has(hkey(q, r))})
+	return choices
+
+func _deploy_move(who: Dictionary, kind: String, q: int, r: int) -> void:
+	who["q"] = q; who["r"] = r
+	treeFx(who, kind, "redeployed from the shards" if kind == "deployRead" else "sworn into place")
+
+func _auto_deploy_move(kind: String, choices: Array) -> void:
 	var who = treeChoice("ship")
-	if who == null: return
-	var bb = boardBounds(); var occ = occMap(); var best = null; var bd = 1e9
-	for h in boardHexes():
-		var c = float(h["q"]) + floor(float(h["r"]) / 2.0)
-		if c > bb["c0"] + 2: continue
-		if blocks(terr(h["q"], h["r"])) or occ.has(hkey(h["q"], h["r"])): continue
-		var d = hdist(h, who)
-		if d > 0 and d < bd: bd = d; best = h
-	if best != null:
-		who["q"] = best["q"]; who["r"] = best["r"]; treeFx(who, kind, txt)
+	if who == null or not JSM.has_same(caps("player"), who): return
+	var best: Dictionary = {}; var distance := INF
+	for h in choices:
+		if not h.open: continue
+		var d := float(hdist(h, who))
+		if d < distance:
+			best = h; distance = d
+	if not best.is_empty(): _deploy_move(who, kind, best.q, best.r)
+
 func treeBattleStart(pick_skills := false) -> void:
 	if B == null or B.get("tree") == null or B["tree"].size() == 0: return
-	treeDeployMove("deployRead", "redeployed from the shards")
-	treeDeployMove("swornDeploy", "sworn into place")
-	if treeSkill("castCorrected") != null:
-		var l = []
-		for x in alive("player"):
-			if not jt(x.get("isSq")): l.append(x)
-		if l.size() >= 2:
-			var a = l[0]; var b2 = l[1]; var q = a["q"]; var r = a["r"]
-			a["q"] = b2["q"]; a["r"] = b2["r"]; b2["q"] = q; b2["r"] = r; treeFx(a, "castCorrected", "the cast is corrected")
-	if treeSkill("iterationSwap") != null:
+	var move_kind := _deploy_move_skill()
+	if move_kind != "":
+		var choices := _deploy_choices()
+		if pick_skills and not caps("player").is_empty() and choices.any(func(h): return h.open):
+			B["skillTarget"] = {"first": "", "move": true, "kind": move_kind}
+		else:
+			_auto_deploy_move(move_kind, choices)
+	var swap_kind := "castCorrected" if treeSkill("castCorrected") != null else "iterationSwap"
+	if treeSkill(swap_kind) != null and not B.has("skillTarget"):
 		var ships := caps("player")
 		if ships.size() >= 2:
 			if pick_skills:
-				B["skillTarget"] = {"first": ""}
+				B["skillTarget"] = {"first": "", "kind": swap_kind}
 			else:
-				_iterationSwap(ships[0], ships[1])
+				_deploy_swap(ships[0], ships[1], swap_kind)
 	if treeSkill("debtsReserve") != null:
 		var who = treeChoice("reserve")
 		if who != null:
@@ -5783,14 +5823,14 @@ func treeBattleStart(pick_skills := false) -> void:
 		var ePS = treeChoice("enemy"); B["tr"]["scent"] = ePS["id"] if ePS != null else null
 		if ePS != null: treeFx(treeFlagUnit() if treeFlagUnit() != null else ePS, "preyScent", "the pack names its prey")   # Hullbreakers shared B1a
 
-func _iterationSwap(first: Dictionary, second: Dictionary) -> void:
+func _deploy_swap(first: Dictionary, second: Dictionary, kind: String) -> void:
 	var q = first["q"]
 	var r = first["r"]
 	first["q"] = second["q"]
 	first["r"] = second["r"]
 	second["q"] = q
 	second["r"] = r
-	treeFx(first, "iterationSwap", "the copy is swapped")
+	treeFx(first, kind, "the cast is corrected" if kind == "castCorrected" else "the copy is swapped")
 
 func skillTargetView() -> Dictionary:
 	var pending = B.get("skillTarget")
@@ -5804,7 +5844,10 @@ func skillTargetView() -> Dictionary:
 			picked = target
 		else:
 			targets.append(target)
-	var key: String = treeSkill("iterationSwap")["key"]
+	var key: String = treeSkill(pending["kind"])["key"]
+	if pending.get("move", false):
+		var move_prompt := "Pick a fleet ship below. Rings mark enemy ships." if picked.is_empty() else "Place %s on a lit hex." % picked["name"]
+		return {"key": key, "n": treeName(key), "q": move_prompt, "targets": targets, "picked": picked, "hexes": _deploy_choices()}
 	var prompt := "Pick the first ship to swap." if picked.is_empty() else "Pick a second ship to swap with %s." % picked["name"]
 	return {"key": key, "n": treeName(key), "q": prompt, "targets": targets, "picked": picked}
 
@@ -5818,14 +5861,26 @@ func pickSkillTarget(id: String) -> bool:
 			if ship["id"] == pending["first"]: first = ship
 			if ship["id"] == id: second = ship
 		if second.is_empty() or id == pending["first"]: return false
-		if pending["first"] == "":
+		if pending["first"] == "" or pending.get("move", false):
 			pending["first"] = id
 			return true
 		if first.is_empty(): return false
-		_iterationSwap(first, second)
+		_deploy_swap(first, second, pending["kind"])
 	B.erase("skillTarget")
 	_finishBattleSetup(int(pending["enemyCount"]))
 	return true
+
+func pickSkillHex(q: int, r: int) -> bool:
+	var pending = B.get("skillTarget")
+	if pending == null or not pending.get("move", false) or pending["first"] == "": return false
+	if not _deploy_choices().any(func(h): return h.q == q and h.r == r and h.open): return false
+	for ship in caps("player"):
+		if ship["id"] == pending["first"]:
+			_deploy_move(ship, pending["kind"], q, r)
+			B.erase("skillTarget")
+			_finishBattleSetup(int(pending["enemyCount"]))
+			return true
+	return false
 func treeAfterMove(u) -> void:
 	if B == null or B.get("tree") == null or B["tree"].size() == 0 or u == null or jt(u.get("isSq")): return
 	if treeSkill("mirrorTurns") != null and cmdActive(u["side"], "surge") and not jt(u.get("treeMirrorUsed")):
@@ -7536,8 +7591,7 @@ func aiRamLeft(u, ready, left):
 	if not armed: return left
 	if not canFade(u): return 0
 	if treeFullFade(u): return left
-	var ff = z0(g(u.get("fx"), "fade")); if ff <= 0.0: ff = 0.5
-	return floor(left * ff)
+	return floor(left * 0.5)
 func ramSetup(v, u, left = null) -> float:
 	if left == null: left = u["speed"] if jt(u.get("speed")) else 2
 	if left < 1: return 0.0
