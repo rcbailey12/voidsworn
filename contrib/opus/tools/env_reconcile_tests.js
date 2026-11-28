@@ -96,7 +96,7 @@ check(ext === 2.0, `library rocks are 2.0 units long at scale 1 (got ${ext}); th
 for (const [name, v] of [['living debris rock', living], ['plain debris rock', plain], ['hero wreck piece', hero]])
   check(v <= CAP, `${name} largest length ${v} is within the AS18 cap ${CAP} (reconciliation section 3; if the formula changed, update this check and section 2)`);
 // 5. BD16: zone tints of record (section 4)
-const zt = /const ZONE_TINT := \{"neb": Color\(0\.69, 0\.49, 1\.0, ([\d.]+)\), "debris": Color\(0\.83, 0\.75, 0\.53, ([\d.]+)\), "storm": Color\(1\.0, 0\.91, 0\.4, ([\d.]+)\)\}/.exec(board);
+const zt = /const ZONE_TINT := \{"neb": Color\(LS\.ROLE\["edge_neb"\], ([\d.]+)\), "debris": Color\(0\.83, 0\.75, 0\.53, ([\d.]+)\), "storm": Color\(1\.0, 0\.91, 0\.4, ([\d.]+)\)\}/.exec(board);
 check(zt && zt[1] === '0.075' && zt[2] === '0.065' && zt[3] === '0.065', 'ZONE_TINT alphas are 0.075, 0.065, 0.065; change reconciliation section 4 with them');
 // 6. R191 (4): visual tuning reports must never stop a map build (section 7).
 check(!/assert\([^\n]*(?:BACKDROP_ROCK_ANGLE|_planet_ang)/.test(world) && has(world, 'AS1 largest backdrop rock') && has(world, 'PL8 planet/rock diameter'), 'AS1 and PL8 report measured values and targets instead of asserting (R191)');

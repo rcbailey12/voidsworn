@@ -53,7 +53,7 @@ const ROLE := {
 	"danger": Color(1.0, 0.12, 0.18, 1.0),
 	"blocker": Color(1.0, 0.38, 0.08, 1.0),
 	# terrain, hazard and objective edges, by kind
-	"edge_neb": Color(0.72, 0.52, 1.0, 0.75),
+	"edge_neb": Color(0.93, 0.55, 0.65, 0.75),   # R353: rose, like the lit nebula
 	"edge_storm": Color(1.0, 0.88, 0.45, 0.7),
 	"edge_debris": Color(0.86, 0.77, 0.56, 0.6),
 	"edge_rock": Color(0.72, 0.76, 0.84, 0.45),

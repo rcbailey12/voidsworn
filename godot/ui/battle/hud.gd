@@ -795,8 +795,7 @@ func set_chip(txt: String) -> void:
 
 
 # ---------------------------------------------------------------- terrain legend (ui3d.js refreshLegend)
-# Only what is on this battlefield: the encounter, its zones and its terrain. Closed it is one line under the Nemesis, top
-# right: the encounter's name and a swatch per terrain; a click opens the names and what each does, another click closes.
+# The closed key shows named swatches for this battlefield under the Nemesis. A click opens the encounter and terrain effects.
 
 func _build_legend() -> void:
 	legend = PanelContainer.new()
@@ -842,15 +841,19 @@ func _draw_legend() -> void:
 		return
 	legend.visible = true
 	if not legend_open:
-		legend.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
-		var h := HBoxContainer.new()
-		h.add_theme_constant_override("separation", s(8))
-		h.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		h.alignment = BoxContainer.ALIGNMENT_END
-		h.add_child(_label(title if title != "" else "Terrain", 19, S_TEXT2, font_semi))
+		legend.add_theme_stylebox_override("panel", _tipbox(10, 6))
+		var key := VBoxContainer.new()
+		key.add_theme_constant_override("separation", s(2))
+		key.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		key.add_child(_label("Terrain key", 19, S_TEXT, font_name))
 		for r in rows:
+			var h := HBoxContainer.new()
+			h.add_theme_constant_override("separation", s(8))
+			h.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			h.add_child(_swatch(str(r[1])))
-		legend.add_child(h)
+			h.add_child(_label(str(r[0]), 17, S_TEXT2))
+			key.add_child(h)
+		legend.add_child(key)
 		legend.size = Vector2.ZERO
 		legend.reset_size()
 		return
@@ -1098,6 +1101,8 @@ var bars: Array = []
 
 func letterbox(on: bool) -> void:
 	_last["letterbox"] = on
+	banner_lbl.visible = not on
+	toast_lbl.visible = not on
 	if bars.is_empty():
 		for top_bar in [true, false]:
 			var b := ColorRect.new()
@@ -1126,6 +1131,8 @@ func letterbox(on: bool) -> void:
 		tip.visible = false
 		dtip.visible = false
 	_sync_tipcard()
+	if not on:
+		_layout()
 
 
 # issue 1559 item 19: the teaching tip card is hidden (kept, not dismissed) under the end card and during a cut-in
@@ -1244,8 +1251,6 @@ func _process(dt: float) -> void:
 		if _resize_t <= 0.0 or Engine.get_process_frames() < 30:
 			_resize_t = -1.0
 			_rebuild()
-	if root != null:
-		_layout()
 	if _banner_dur > 0.0:
 		_banner_t += dt
 		var a := 1.0
@@ -1259,6 +1264,8 @@ func _process(dt: float) -> void:
 	if _toast_t > 0.0:
 		_toast_t -= dt
 		toast_lbl.modulate.a = clampf(_toast_t / 0.4, 0.0, 1.0)
+	if root != null:
+		_layout()
 
 
 # Every frame: keep each part in its region (see the top of this file). Cheap: a handful of rects.
@@ -1285,11 +1292,12 @@ func _layout() -> void:
 			tipcard.position.x = roundf(maxf(col.x, log_panel.get_global_rect().position.x - tipcard.size.x - s(16)))   # item 10
 	# toasts: centred in the clear part, near the top, below the tip card if they would meet
 	# the big banner: centred in the clear part
-	if banner_lbl.modulate.a > 0.0:
+	var banner_up := banner_lbl.visible and banner_lbl.modulate.a > 0.0 and banner_lbl.text != ""
+	if banner_up:
 		banner_lbl.reset_size()
 		var w := banner_lbl.size.x
 		banner_lbl.position = Vector2(clampf((col.x + col.y) * 0.5 - w * 0.5, col.x, maxf(col.x, col.y - w)), s(72)).round()
-	if toast_lbl.modulate.a > 0.0:
+	if toast_lbl.visible and toast_lbl.modulate.a > 0.0:
 		# issue 1559 item 17: no wider than the band between the two corner clusters (a long reinforcement list wraps
 		# instead of running off the edge or over the corner words)
 		var room := clampf(col.y - col.x - s(40), float(s(200)), float(s(720)))
@@ -1300,9 +1308,9 @@ func _layout() -> void:
 		toast_lbl.reset_size()
 		w = toast_lbl.size.x
 		var p := Vector2(clampf((col.x + col.y) * 0.5 - w * 0.5, col.x, maxf(col.x, col.y - w)), s(96))
-		# issue 1559 item 11: below the big banner when both show (REINFORCEMENTS and its sentence fire together)
-		if banner_lbl.modulate.a > 0.0 and banner_lbl.text != "" and Rect2(p, toast_lbl.size).intersects(banner_lbl.get_global_rect()):
-			p.y = banner_lbl.get_global_rect().end.y + s(8)
+		# Reserve the banner's full height, including its halo. Lay out after the fade updates so the first frame fits.
+		if banner_up:
+			p.y = maxf(p.y, banner_lbl.get_global_rect().end.y + s(12))
 		if tipcard != null and is_instance_valid(tipcard) and tipcard.visible and Rect2(p, toast_lbl.size).intersects(tipcard.get_global_rect()):
 			p.x = maxf(col.x, tipcard.get_global_rect().position.x - w - s(16))
 		toast_lbl.position = p.round()
