@@ -154,13 +154,13 @@ const look = fs.readFileSync(LOOK, 'utf8');
 for (const [name, script, root] of [['ship job', text, '%V%']]) {
   assert(script.includes(`set "MIRROR=${root}\\repo-mirror.git"`), `${name} uses the shared PC mirror`);
   const lock = script.indexOf("[IO.File]::Open($mirror + '.lock', 'OpenOrCreate', 'ReadWrite', 'None')");
-  const refresh = script.indexOf('fetch --prune --no-auto-maintenance origin');
+  const refresh = script.indexOf("fetch --prune --no-auto-maintenance --no-tags --refmap= origin '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*'");
   const head = script.indexOf('symbolic-ref HEAD refs/heads/main');
   const clone = script.indexOf('clone --local');
   const fetch = script.indexOf('fetch -', clone);
   const unlock = script.indexOf('finally { $lock.Dispose() }');
   assert(lock >= 0 && lock < refresh && refresh < head && head < clone && clone < fetch && fetch < unlock,
-    `${name} refreshes, clones and fetches in order while holding the mirror lock`);
+    `${name} refreshes only heads and tags, then clones and fetches under the mirror lock`);
   assert(!/\bclone [^\r\n]*https?:|\bclone [^\r\n]*--depth/i.test(script), `${name} never clones from GitHub or uses a shallow clone`);
 }
 assert(text.includes("fetch -q --no-tags @depth $mirror ('refs/heads/' + $env:BRANCH)"), 'ship job fetches the requested branch from the mirror');

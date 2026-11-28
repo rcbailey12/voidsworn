@@ -11,7 +11,7 @@ rem  the guard step refuses ship, gen, .uid, .import and oversized files (copies
 rem  about files outside the issue's Deliver to; one checked commit keeps the branch's earlier tip as a parent, so the push
 rem  needs no force; GitHub's branch must then carry exactly out\diffstat.txt, or the run stops loudly (DIFF MISMATCH).
 rem Runner 3 (issue 722, audit 706 findings 6 and 7), the same start checks as work_issue.bat: refuse to start below
-rem the min_free_gb free-space floor (work217\runner_settings.txt, default 60), warn in result.txt when this tools
+rem the min_free_gb free-space floor (work217\runner_settings.txt, default 60), stop when this tools
 rem folder's runner and watchdog files differ from the Board's work217\runner_hashes.txt, and stamp the resolved model
 rem (CODEX_MODEL, default gpt-6.2-sol since Nov 17 2026) into out\status.json and result.txt.
 rem Test mode (for the Board's dry runs): CODEX_TEST_ROOT moves repo and out folders there, CODEX_TEST_AGENT is a .bat run
@@ -101,7 +101,8 @@ rem (1739) lane_tools_refresh.ps1 writes each lane's own hashes beside its tools
 if exist "%ROOT%\%LANEDIR%\runner_hashes.txt" set "HASHF=%ROOT%\%LANEDIR%\runner_hashes.txt"
 %COMMON% space "%O%" "%SETF%" "%ROOT%" "%PUSHMODE%"
 if errorlevel 1 exit /b 14
-%COMMON% hashcheck "%O%" "%TPC%" "%HASHF%"
+%COMMON% hashcheck "%O%" "%TPC%" "%HASHF%" strict-runner
+if errorlevel 1 exit /b 14
 rem (1194) Every tmo.bat step runs the canonical watchdog in tools_live: stop when its files differ from its hashes.
 set "TLV="
 if not "%PC_RUNNER_TEST%"=="1" if exist "%ROOT%\tools_live\current.txt" set /p TLV=<"%ROOT%\tools_live\current.txt"

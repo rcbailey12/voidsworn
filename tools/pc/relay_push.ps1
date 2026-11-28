@@ -2,7 +2,8 @@
 # branch pc-out-<job>, with the attempt folder at <attempt folder name>/ in its tree, instead of a board/pc-out branch of
 # the main repo (22.66 GB with 316 such branches on Nov 22). The layout is the one opus_job_head.ps1 proves before it
 # removes a checkout (relay_branch.txt "relay/pc-out-<job> <attempt folder name>").
-#   relay_push.bat <job> <attempt folder> [dry | leftovers]
+#   relay_push.bat <job> <attempt folder> [dry | leftovers | results]
+# results includes top-level media and result subfolders for the janitor's exact-file proof.
 # leftovers adds only checkout_leftovers to an existing private relay. It checks that all other
 # attempt results are already there. For a custom location, pass the branch suffix as <job> and -TreePath to the ps1.
 # Sends out and out_* folders and the small text files at the attempt's top (status, done, logs). When the attempt is
@@ -98,9 +99,10 @@ function Assert-BackfillSource($parent) {
   }
 }
 
-if ($Mode -and $Mode -notin @('dry', 'leftovers')) { throw "the third argument may only be dry or leftovers, got: $Mode" }
+if ($Mode -and $Mode -notin @('dry', 'leftovers', 'results')) { throw "the third argument may only be dry, leftovers or results, got: $Mode" }
 $dry = $Mode -eq 'dry'
 $leftovers = $Mode -eq 'leftovers'
+$allResults = $Mode -eq 'results'
 if (($TreePath -or $ProvenTip) -and -not $leftovers) { throw 'TreePath and ProvenTip require leftovers mode' }
 if ($ProvenTip -and $ProvenTip -cnotmatch '\A[0-9a-f]{40}\z') { throw 'invalid proven relay tip' }
 if ($Job -notmatch '\A[A-Za-z0-9._-]{1,80}\z' -or $Job.Contains('..')) { throw "not a job name: $Job" }
@@ -143,7 +145,11 @@ foreach ($e in @($at.EnumerateFiles())) {
     if ($ProvenTip) { continue }
     if ($e.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "a link in the results: $($e.FullName)" }
     $originals.Add($e)
-  } elseif ($e.Extension -in @('.txt', '.log', '.json', '.csv', '.md') -and -not ($e.Attributes -band [IO.FileAttributes]::ReparsePoint)) { $files.Add($e) }
+  } elseif ($allResults -or $e.Extension -in @('.txt', '.log', '.json', '.csv', '.md')) {
+    if ($e.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+      if ($allResults) { throw "a link in the results: $($e.FullName)" }
+    } else { $files.Add($e) }
+  }
 }
 if ($ProvenTip) { $roots = @($at.EnumerateDirectories('out_*')) }
 else {
@@ -153,7 +159,7 @@ else {
     if ($leftovers -and ($d.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw "a link in the results: $($d.FullName)" }
     $skippedCaches.Add($d.Name)
   }
-  $useSubfolders = $leftovers -or $at.Name -eq 'out' -or $at.Name -like 'out_*'
+  $useSubfolders = $leftovers -or $allResults -or $at.Name -eq 'out' -or $at.Name -like 'out_*'
   $roots = @($top | Where-Object { $_.Name -notin $cacheNames -and
     ($useSubfolders -or $_.Name -eq 'out' -or $_.Name -like 'out_*') })
 }
@@ -169,7 +175,7 @@ foreach ($d in $roots) {
   } else { $pending.Push($d) }
   while ($pending.Count) {
     $dir = $pending.Pop()
-    if (-not $leftovers -and ($dir.Name -in $leftoverNames -or (Test-CheckoutRoot $dir))) { continue }
+    if (-not $leftovers -and ((-not $allResults -and $dir.Name -in $leftoverNames) -or (Test-CheckoutRoot $dir))) { continue }
     $relDir = $dir.FullName.Substring($full.Length + 1).Replace('\', '/')
     $savedFiles = $relDir -match '\Aout_[^/]+/checkout_leftovers(?:/|\z)'
     if ($leftovers -and -not $savedFiles -and (Test-Path -LiteralPath (Join-Path $dir.FullName '.git') -PathType Container)) { continue }
@@ -251,7 +257,7 @@ try {
   for ($b = 0; $b -lt $batches.Count; $b++) {
     $part = @($batches[$b]); $last = $b -eq $batches.Count - 1
     for ($try = 0; $try -lt 2; $try++) {
-      Run-Git --git-dir $relayMirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune origin | Out-Null
+      Run-Git --git-dir $relayMirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune --no-auto-maintenance --no-tags --refmap= origin '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*' | Out-Null
       $ErrorActionPreference = 'Continue'
       $parent = (& $gitExe @gitLongPaths --git-dir $relayMirror rev-parse --verify -q "refs/heads/$branch^{commit}" 2>$null) | Select-Object -Last 1
       $ErrorActionPreference = 'Stop'

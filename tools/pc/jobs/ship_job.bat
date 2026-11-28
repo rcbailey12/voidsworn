@@ -141,7 +141,7 @@ powershell -NoProfile -Command ^
   "  if (-not (Test-Path -LiteralPath (Join-Path $mirror 'HEAD'))) { Run-Git init --bare $mirror; Run-Git --git-dir $mirror remote add --mirror=fetch origin $source }" ^
   "  if ((Run-Git --git-dir $mirror config --get remote.origin.url) -ne $source) { throw 'shared repo copy has an unexpected origin; kept unchanged' }" ^
   "  Write-Output ('refreshing shared mirror ' + $mirror);" ^
-  "  $try = 0; while ($true) { $try++; & git.exe --git-dir $mirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch --prune --no-auto-maintenance origin; if ($LASTEXITCODE -eq 0) { break };" ^
+  "  $try = 0; while ($true) { $try++; & git.exe --git-dir $mirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch --prune --no-auto-maintenance --no-tags --refmap= origin '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*'; if ($LASTEXITCODE -eq 0) { break };" ^
   "    if ($try -ge 3) { throw ('mirror fetch failed ' + $try + ' times') }; $wait = 30 * $try * $try; Write-Output ('mirror fetch try ' + $try + ' failed, retrying in ' + $wait + ' s'); Start-Sleep -Seconds $wait };" ^
   "  Run-Git --git-dir $mirror symbolic-ref HEAD refs/heads/main;" ^
   "  if (-not (Test-Path -LiteralPath (Join-Path $env:C '.git'))) { Write-Output ('local clone ' + $env:C); Run-Git -c core.autocrlf=false clone --local -q $mirror $env:C }" ^

@@ -124,7 +124,7 @@ function Update-RelayMirror {
       Run-Git --git-dir $relayMirror remote add --mirror=fetch origin $relaySource | Out-Null
     }
     if ((Run-Git --git-dir $relayMirror config --get remote.origin.url) -ne $relaySource) { throw 'relay repo copy has an unexpected origin' }
-    Run-Git --git-dir $relayMirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune origin | Out-Null
+    Run-Git --git-dir $relayMirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune --no-auto-maintenance --no-tags --refmap= origin '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*' | Out-Null
   } finally { if ($lock) { $lock.Dispose() } }
 }
 $gitExe = 'git.exe'; if ($unix) { $gitExe = @(Get-Command git -CommandType Application)[0].Source }
@@ -439,7 +439,7 @@ function Update-Mirror {
   # Under a removal's held lock (Lock-Mirror), fetch in it rather than wait on our own handle.
   if ($script:mirrorLock) {
     if ((Run-Git --git-dir $mirror config --get remote.origin.url) -ne $source) { throw 'shared repo copy has an unexpected origin' }
-    Run-Git --git-dir $mirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune --no-auto-maintenance origin | Out-Null
+    Run-Git --git-dir $mirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune --no-auto-maintenance --no-tags --refmap= origin '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*' | Out-Null
     return
   }
   $lock = $null; $deadline = [DateTime]::UtcNow.AddMinutes(30)
@@ -449,7 +449,7 @@ function Update-Mirror {
   }
   try {
     if ((Run-Git --git-dir $mirror config --get remote.origin.url) -ne $source) { throw 'shared repo copy has an unexpected origin' }
-    Run-Git --git-dir $mirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune --no-auto-maintenance origin | Out-Null
+    Run-Git --git-dir $mirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune --no-auto-maintenance --no-tags --refmap= origin '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*' | Out-Null
   } finally { $lock.Dispose() }
 }
 function Read-RelayReceipt($folder, $name = 'relay_receipt.txt') {
@@ -873,7 +873,7 @@ function Invoke-WithPinnedMirror($pin, [scriptblock]$then) {
     $ErrorActionPreference = 'Stop'
     if (-not $have) {
       Write-Output "fetching the shared mirror for $pin"
-      Run-Git --git-dir $mirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune --no-auto-maintenance origin | Out-Null
+      Run-Git --git-dir $mirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch -q --prune --no-auto-maintenance --no-tags --refmap= origin '+refs/heads/*:refs/heads/*' '+refs/tags/*:refs/tags/*' | Out-Null
       Run-Git --git-dir $mirror symbolic-ref HEAD refs/heads/main | Out-Null
     }
     Run-Git --git-dir $mirror cat-file -e "$pin^{commit}" | Out-Null

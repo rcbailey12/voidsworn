@@ -126,7 +126,24 @@ async function main() {
   git('-C', seed, 'checkout', '-q', 'main');
   git('clone', '-q', '--bare', seed, source);
   git('clone', '-q', '--mirror', source, mirror);
+  git('--git-dir', source, 'update-ref', 'refs/pull/2181/head', after);
+  git('--git-dir', source, 'update-ref', 'refs/heads/board/pc-out-2181', after);
   git('--git-dir', mirror, 'repack', '-ad');
+
+  pass(await lane('storage').done);
+  const slot = path.join(tmp, 'storage', 'repo');
+  const mirrorRefs = prefix => git('--git-dir', mirror, 'for-each-ref', '--format=%(refname)', prefix);
+  const laneRelays = () => git('-C', slot, 'for-each-ref', '--format=%(refname)', 'refs/remotes/origin/board/pc-out-*');
+  assert.match(mirrorRefs('refs/tags/'), /refs\/tags\/bench-tools/);
+  assert.equal(mirrorRefs('refs/pull/'), '', 'legacy wildcard mirror config must not pull PR refs');
+  assert.equal(mirrorRefs('refs/heads/board/pc-out-*'), 'refs/heads/board/pc-out-2181');
+  assert.equal(laneRelays(), '', 'new lane clone and fetch exclude relay refs');
+  assert.equal(git('-C', slot, 'rev-parse', 'origin/unrelated'), after, 'normal lane refs still fetched');
+  assert.equal(git('-C', slot, 'rev-parse', 'bench-tools^{commit}'), tool, 'new lanes still have mirror tags');
+  git('--git-dir', source, 'update-ref', 'refs/heads/board/pc-out-new', after);
+  pass(await lane('storage').done);
+  assert.equal(laneRelays(), '', 'reused lane excludes newly relayed refs');
+  assert.match(git('-C', slot, 'config', '--get-all', 'remote.origin.fetch'), /\^refs\/heads\/board\/pc-out-\*/);
 
   const hook = path.join(tmp, 'git-hook.js');
   const shim = path.join(tmp, windows ? 'fixture-git.cmd' : 'fixture-git');
@@ -140,6 +157,11 @@ async function main() {
 const fs = require('node:fs');
 const { spawnSync } = require('node:child_process');
 const args = process.argv.slice(2);
+// The Windows fixture .cmd strips an unquoted caret. The unshimmed lane tests above check the real refspec.
+if (process.platform === 'win32') {
+  const excluded = args.indexOf('refs/heads/board/pc-out-*');
+  if (excluded >= 0 && (args.includes('fetch') || args.includes('remote.origin.fetch'))) args[excluded] = '^' + args[excluded];
+}
 const gate = process.env.FETCH_GATE;
 if (args.includes('fetch') && (process.env.FETCH_KIND === 'writer' ? args[0] === '--git-dir' : args.some(x => x.endsWith(':refs/look-bench/after')))) {
   fs.writeFileSync(gate + '.entering', JSON.stringify({ args, pid: process.pid }));
