@@ -94,7 +94,11 @@ func _run() -> void:
 	var anchor := _ship(battle, "anchor", "hegemony")
 	var eclipse := _ship(battle, "eclipse", "deathless")
 	battle.wrecked["anchor"] = Vector2i.ZERO
-	battle.hud.set_plate("never-made", Vector2.ZERO, false, "", true, false, 0, 1, 0, 0)
+	battle.V = {"units": battle.VU.values()}
+	battle._index_view()
+	for unit in battle.V["units"]:
+		battle.disp[unit["id"]] = battle._display_snapshot(unit)
+	battle.hud.plates_root.set_ship("never-made", Vector2.ZERO, {}, false, battle.cam.r, battle.hud.k, 0)
 	_check(not battle.hud.plates.has("never-made"), "F2: hiding an absent HUD plate does not allocate it")
 	battle._process(0.016)
 	_check(battle.hud.plates.has_all(["wing", "scout", "anchor", "eclipse"]), "F2: fixture has live nameplates")

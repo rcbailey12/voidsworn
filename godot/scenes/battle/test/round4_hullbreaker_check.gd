@@ -33,10 +33,10 @@ class Replay extends "res://scenes/battle/battle.gd":
 			salvos[e["unit"]] = [e["target"], e["shots"].size(), int(e.get("pd", 0))]
 		await super._play_fire(e, group)
 
-	func _play_event(e: Dictionary, batch_view := {}) -> void:
+	func _play_event(e: Dictionary, batch_view := {}, breaking_hit := false) -> void:
 		if int(V.get("round", 0)) == 4 and e["t"] == "ability" and e.get("unit") == "x06" and e.get("ab") == "evasive":
 			evasive = true
-		await super._play_event(e, batch_view)
+		await super._play_event(e, batch_view, breaking_hit)
 
 
 func _init() -> void:

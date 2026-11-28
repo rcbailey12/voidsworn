@@ -170,6 +170,8 @@ var cine := "key"          # cut-ins: "key" moments, "all" attacks, "off" (setti
 var brisk_camera := false
 var cine_saved := {}
 var _cut_overlay_alpha := 1.0
+var _cut_plate_attacker := ""
+var _cut_plate_target := ""
 var follow := true          # follow enemy activations with the camera (settings)
 var cam_saved := {}
 const ROUTINE_CAMERA_NAMES := {"lance": "Lance cut-ins", "torp": "Torpedo cut-ins", "volley": "Volley cut-ins", "follow": "Enemy camera follow"}
@@ -1233,8 +1235,23 @@ func _enemy_fac() -> String:
 
 func _index_view() -> void:
 	VU.clear()
+	_plate_state.clear()
+	var enemy_numbers := {}
 	for u in V["units"]:
 		VU[u["id"]] = u
+		var friend: bool = u["side"] == "player"
+		var plate_name: String = u["name"]
+		if not friend:
+			var label := _class_label(u["cls"])
+			var number := int(enemy_numbers.get(label, 0)) + 1
+			enemy_numbers[label] = number
+			if not bool(u.get("nemesis", false)):
+				plate_name = "%s %d" % [label, number]
+		var parts := ShipSections.read(u)
+		_plate_state[u["id"]] = {"name": plate_name, "friend": friend, "sections": parts,
+			"nemesis": not friend and bool(u.get("nemesis", false)),
+			"shield_max": float(u["shMax"]),
+			"generator_lost": parts.size() == 3 and parts[1]["lost"] and u["shieldOff"]}
 
 
 func _make_view(u: Dictionary) -> void:
@@ -1254,7 +1271,7 @@ func _make_view_node(u: Dictionary) -> ShipView:
 	sv.set_marker(u["side"] == "player")
 	views[u["id"]] = sv
 	sv.calm = reduce_motion   # issue 1581: Reduce motion per view (no drift, bob or nod; half the ignition beat)
-	disp[u["id"]] = {"hp": float(u["hp"]), "sh": (u["sh"] as Array).duplicate(), "regenLock": bool(u.get("regenLock", false))}
+	disp[u["id"]] = _display_snapshot(u)
 	return sv
 
 
@@ -1436,7 +1453,7 @@ func _make_views_sliced(gen: int) -> bool:
 			_staged_ship = null
 			add_child(sv)
 		views[u["id"]] = sv
-		disp[u["id"]] = {"hp": float(u["hp"]), "sh": (u["sh"] as Array).duplicate(), "regenLock": bool(u.get("regenLock", false))}
+		disp[u["id"]] = _display_snapshot(u)
 		_ls["setup"] += used
 		if used > _ls["worst_setup"]:
 			_ls["worst_setup"] = used
@@ -1562,6 +1579,11 @@ static func hex_distance(a: Dictionary, b: Dictionary) -> int:
 	return int((absi(dq) + absi(dr) + absi(dq + dr)) / 2.0)
 
 
+func _display_snapshot(u: Dictionary) -> Dictionary:
+	return {"hp": float(u["hp"]), "sh": (u["sh"] as Array).duplicate(),
+		"shp": float(_z0(u.get("shp"))), "regenLock": bool(u.get("regenLock", false))}
+
+
 func _sync(v: Dictionary) -> void:
 	LOOK.battle_ssr(env, str(args.get("quality", "max")), v.get("units", []))
 	V = v
@@ -1571,7 +1593,7 @@ func _sync(v: Dictionary) -> void:
 		if not views.has(u["id"]):
 			_make_view(u)
 		var sv = views[u["id"]]
-		disp[u["id"]] = {"hp": float(u["hp"]), "sh": (u["sh"] as Array).duplicate(), "regenLock": bool(u.get("regenLock", false))}
+		disp[u["id"]] = _display_snapshot(u)
 		sv.set_marker(u["side"] == "player")
 		if gfx != null and gfx.has_method("sync_ship"):
 			var su: Dictionary = u.duplicate()
@@ -2071,7 +2093,8 @@ func _play_batch(bt: Dictionary) -> void:
 					move_aim[str(e["unit"])] = {"target": str(e2["target"]), "slot": int(e2["weapon"]) if e2.get("weapon") != null else -1,
 						"wid": str(e2.get("weapon_id", "")), "n": maxi((e2.get("shots", []) as Array).size(), 1)}
 					break
-		await _play_event(e, bt["view"])
+		var breaking_hit: bool = e["t"] == "hit" and _standalone_hit_breaks_shield(evs, i)
+		await _play_event(e, bt["view"], breaking_hit)
 		_tip_completed(e)
 		if e["t"] == "round" and not arrivals.is_empty():
 			await _arrive(arrivals)
@@ -2207,7 +2230,7 @@ func _merge_nemesis_opening(lines: Array) -> bool:
 	return true
 
 
-func _play_event(e: Dictionary, batch_view := {}) -> void:
+func _play_event(e: Dictionary, batch_view := {}, breaking_hit := false) -> void:
 	_voice_event(e)
 	match e["t"]:
 		"adaptation":
@@ -2305,15 +2328,12 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			_apply_hit(e)
 			music_hits += 1
 			if e.get("target") != null:
-				_impact(e["target"], e, Color(1, 0.6, 0.3))
+				_standalone_hit_impact(e, breaking_hit)
 				if e.get("float", true):   # issue 1481: counter-fire, ram shockwave and reactor hits already float their boon number
 					_float_hit(e["target"], float(e["shield"]), float(e["hull"]), e["crit"])
 			await wait(160.0)
 		"shield_down":
-			var d: Dictionary = disp.get(e["unit"], {})
-			if d.get("sh") is Array:
-				for qi in range((d["sh"] as Array).size()):
-					d["sh"][qi] = 0   # R246: an empty pool drops every side at once (issue 1481)
+			_display_shields_down(str(e["unit"]))
 			_float(e["unit"], "Shields down", Color("#9fe2ff"), -40)
 			sfx.shield(_pos(e["unit"]), true, str(VU.get(e["unit"], {}).get("fac", "")))
 			# issue 1239 (F2.5): a shield that drops with no volley to carry it (a storm, a special) still plays its failure
@@ -2321,6 +2341,7 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				gfx.shield_break(str(e["unit"]), int(e["quad"]))
 		"section_down":
 			var sec := str(e["section"])
+			_plate_section_down(str(e["unit"]), sec)
 			_log("%s: %s destroyed. %s" % [_name(e["unit"]), SEC_NAME.get(sec, sec), "Forward weapons silenced." if sec == "prow" else "Flank guns and shield generator gone." if sec == "mid" else "Engines crippled."], "e" if _side(e["unit"]) == "player" else "p")
 		"system":
 			_log("%s: %s." % [_name(e["unit"]), str(e["text"])], "e" if _side(e["unit"]) == "player" else "p")
@@ -2557,15 +2578,21 @@ func _reassemble(e: Dictionary, batch_view: Dictionary) -> void:
 		# the rest of the turn (including any tidal tick) has not happened in playback yet.
 		var frac := float(TBL["LEGION_HP"])
 		var hp := maxf(1.0, JSM.jsround(float(ru["maxHp"]) * frac))
-		var sh: Array = disp.get(id, {}).get("sh", prior.get("sh", ru["sh"]))
-		disp[id] = {"hp": hp, "sh": sh.duplicate()}
+		var d: Dictionary = disp.get(id, _display_snapshot(prior if not prior.is_empty() else ru)).duplicate()
+		d["hp"] = hp
+		disp[id] = d
+		var sec := {}
+		if ru.get("sec") is Dictionary:
+			for key in ru["sec"]:
+				var cap := float(ru["sec"][key]["max"])
+				sec[key] = {"hp": maxf(1.0, JSM.jsround(cap * frac)), "max": cap, "broken": false}
+		if _plate_state.has(id):
+			var risen := ru.duplicate()
+			risen["sec"] = sec if not sec.is_empty() else null
+			_plate_state[id]["sections"] = ShipSections.read(risen)
+			_plate_state[id]["generator_lost"] = false
 		if gfx != null and gfx.has_method("sync_ship"):
-			var sec := {}
-			if ru.get("sec") is Dictionary:
-				for key in ru["sec"]:
-					var cap := float(ru["sec"][key]["max"])
-					sec[key] = {"hp": maxf(1.0, JSM.jsround(cap * frac)), "max": cap, "broken": false}
-			gfx.sync_ship(id, {"hp": hp, "maxHp": ru["maxHp"], "sec": sec, "sh": sh, "burning": false})
+			gfx.sync_ship(id, {"hp": hp, "maxHp": ru["maxHp"], "sec": sec, "sh": d["sh"], "burning": false})
 	if gfx == null or gfx.rift_in(id, speed, 0.0, true) < 0.0:
 		_flash(sv.visual_position() + Vector3(0, 2, 0), 16.0, FLOOK.engine(str(ru.get("fac", "deathless"))), 0.8)
 
@@ -3092,6 +3119,11 @@ func _cine_release() -> void:
 	_routine_shot_cut = ""
 	cam.return_from_cut(cine_saved)
 	cine_saved = {}
+	var victim: ShipView = views.get(_cut_plate_target)
+	if is_instance_valid(victim) and victim.dead:
+		_retire_dead_plate(_cut_plate_target, victim)
+	_cut_plate_attacker = ""
+	_cut_plate_target = ""
 	hud.letterbox(false)
 	recording_cue.emit("cut_end", "")
 
@@ -3104,8 +3136,9 @@ func _step_cut_overlays(dt: float) -> void:
 	_cut_overlay_alpha = alpha
 	if is_instance_valid(board):
 		board.set_cut_overlay_alpha(alpha)
-	if is_instance_valid(hud.plates_root):
-		hud.plates_root.modulate.a = alpha
+	# Ordinary cut-ins still fade the plate layer. During a kill it draws only the two participants.
+	if is_instance_valid(hud) and is_instance_valid(hud.plates_root):
+		hud.plates_root.modulate.a = 1.0 if not board_view and not _cut_plate_target.is_empty() else alpha
 	for sv in views.values():
 		if is_instance_valid(sv):
 			sv.set_cut_overlay_alpha(alpha)
@@ -3157,13 +3190,23 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 	# issue 1211: what each landing hit does: its number, and the shield break with
 	# "Shields down" on the hit that empties the shield (the last hit the shield absorbed), not after the volley
 	var land := {"t_id": str(t_id), "numbers": true, "sh": 0.0, "hull": 0.0, "crit": false, "break_k": shield_break_hit(hits),
-		"downs": [], "tsv": tsv, "L": L, "shield_col": shield_col, "left": hits.size(), "ended": false,
-		"regen_unlocks": int(regen_unlocks.get(t_id, 0))}
+		"downs": [], "section_downs": {}, "tsv": tsv, "L": L, "shield_col": shield_col, "left": hits.size(), "ended": false,
+		"regen_unlocks": int(regen_unlocks.get(t_id, 0)), "display": disp.get(t_id)}
 	land["break_k"] = section_break_hit(grp, int(land["break_k"]))
+	var hit_index := -1
 	for g in grp:
-		if g["t"] == "shield_down":
+		if g["t"] == "hit":
+			hit_index += 1
+		elif g["t"] == "shield_down":
 			land["downs"].append(g)
+		elif g["t"] == "section_down":
+			# The rules emit the section loss after the hit that caused it.
+			var losses: Array = land["section_downs"].get(hit_index, [])
+			losses.append(g)
+			land["section_downs"][hit_index] = losses
 	_aim_on(a_id, t_id, land)
+	for g in land["section_downs"].get(-1, []):
+		_plate_section_down(str(g["unit"]), str(g["section"]))
 	if args.has("torp-shots") and fam == "torp":   # issue 1379 capture: the flight and the hit, close on the pair
 		var tag := "r%s_%s" % [str(V.get("round", 1)), str(a_id)]
 		print("TORP_FIRE %s weapon=%s shots=%d pd=%d" % [tag, str(e.get("kind", "")), (e.get("shots", []) as Array).size(), int(e.get("pd", 0))])
@@ -3429,7 +3472,10 @@ func _at_fx(at: float, f: Callable) -> void:
 # Issue 1211: one hit lands. Its HP and shield drop, its number rises (one running total per volley for shield, one for
 # hull, so a broadside reads as a count, not a pile), and the hit that empties the shield breaks it there and then.
 func _land_hit(t_id, h: Dictionary, k: int, land: Dictionary) -> void:
-	_apply_hit(h, int(land["regen_unlocks"]) == int(regen_unlocks.get(t_id, 0)))
+	if _volley_display_current(land):
+		_apply_hit(h, int(land["regen_unlocks"]) == int(regen_unlocks.get(t_id, 0)))
+		for g in land.get("section_downs", {}).get(k, []):
+			_plate_section_down(str(g["unit"]), str(g["section"]))
 	land["left"] = int(land.get("left", 0)) - 1
 	if bool(land.get("ended", false)) and int(land["left"]) <= 0:
 		_aim_off(land)
@@ -3468,16 +3514,20 @@ func _shield_text(land: Dictionary) -> String:
 	return ("Shields down\n−%d shield" if bool(land.get("broke", false)) else "−%d shield") % int(land["sh"])
 
 
+# A paced volley can still have effects in flight after sync has published its final damage.
+func _volley_display_current(land: Dictionary) -> bool:
+	return not land.has("display") or is_same(disp.get(land["t_id"]), land["display"])
+
+
 # The volley's shield breaks (each shield_down event once): the shield shatters, "Shields down" and the break sound.
 func _shield_downs(land: Dictionary) -> void:
 	if bool(land.get("downs_played", false)):
 		return
 	land["downs_played"] = true
+	var current := _volley_display_current(land)
 	for g in land["downs"]:
-		var d: Dictionary = disp.get(g["unit"], {})
-		if d.get("sh") is Array:
-			for qi in range((d["sh"] as Array).size()):
-				d["sh"][qi] = 0   # R246: an empty pool drops every side at once (issue 1481)
+		if current:
+			_display_shields_down(str(g["unit"]))
 		var sf = land.get("sh_f")
 		if str(g["unit"]) == str(land.get("t_id", "")) and sf is Dictionary and is_instance_valid((sf as Dictionary)["lbl"]):
 			# one label, two lines: "Shields down" over the volley's shield count, never a second label on top of it
@@ -3551,9 +3601,43 @@ func _apply_hit(h: Dictionary, show_regen_lock := true) -> void:
 	if show_regen_lock and bool(h.get("regenLock", false)):
 		_show_regen_lock(t_id, true)
 	d["hp"] = maxf(0.0, float(d["hp"]) - float(h["hull"]))
+	# The event carries the real remaining pool, including routing loss or an immediate refill.
+	if h.has("shieldFraction"):
+		d["shp"] = float(h["shieldFraction"]) * float(VU.get(t_id, {}).get("shMax", 0.0))
+	if h.has("sectionFraction") and _plate_state.has(t_id):
+		var i: int = ShipSections.KEYS.find(h.get("section"))
+		var data: Dictionary = _plate_state[t_id]
+		var parts: Array[Dictionary] = data["sections"].duplicate()
+		if i >= 0 and i < parts.size():
+			var part := parts[i].duplicate()
+			part["fraction"] = float(h["sectionFraction"])
+			parts[i] = part
+			data["sections"] = parts
 	var q := int(h.get("quad", 0))
 	if d["sh"] is Array and q < (d["sh"] as Array).size():
 		d["sh"][q] = maxf(0.0, float(d["sh"][q]) - float(h["shield"]))
+
+
+func _display_shields_down(id: String) -> void:
+	var d: Dictionary = disp.get(id, {})
+	if d.get("sh") is Array:
+		d["shp"] = 0.0
+		(d["sh"] as Array).fill(0)   # An empty shared pool drops every side at once.
+
+
+func _plate_section_down(id: String, key: String) -> void:
+	if not _plate_state.has(id):
+		return
+	var i: int = ShipSections.KEYS.find(key)
+	var data: Dictionary = _plate_state[id]
+	var parts: Array[Dictionary] = data["sections"].duplicate()
+	if i < 0 or i >= parts.size():
+		return
+	parts[i] = ShipSections.read(VU[id], key)[i]
+	data["sections"] = parts
+	if key == "mid" and data["shield_max"] > 0.0:
+		data["generator_lost"] = true
+		_display_shields_down(id)
 
 
 func _show_regen_lock(id: String, active: bool) -> void:
@@ -3564,12 +3648,35 @@ func _show_regen_lock(id: String, active: bool) -> void:
 			ship.set_regen_lock(active)
 
 
-func _impact(t_id, h: Dictionary, col: Color) -> void:
+static func _standalone_hit_breaks_shield(events: Array, i: int) -> bool:
+	var target = events[i].get("target")
+	# Rules emit the break after the hit, with any section loss and its callouts in between.
+	for j in range(i + 1, events.size()):
+		var e: Dictionary = events[j]
+		if e["t"] == "shield_down":
+			return e.get("unit") == target
+		if not volley_note(e, target) and not (e["t"] == "section_down" and e.get("unit") == target):
+			break
+	return false
+
+
+func _standalone_hit_impact(h: Dictionary, breaking: bool) -> void:
+	var t_id = h["target"]
 	var sv = views.get(t_id)
 	if sv == null:
 		return
-	_flash(sv.visual_position() + Vector3(0, 1.5, 0), 6.0 + sv.L * 0.3, col, 0.3)
-	sfx.hit(sv.visual_position(), h.get("crit", false))
+	var p: Vector3 = sv.visual_position()
+	var fac := str(VU.get(t_id, {}).get("fac", "hegemony"))
+	var hull_hit := float(h["hull"]) > 0.0
+	if gfx != null and gfx.has_method("standalone_hit"):
+		var from := _pos(h.get("unit")) if is_instance_valid(views.get(h.get("unit"))) else Vector3.INF
+		gfx.standalone_hit(str(t_id), h, from, breaking)
+	elif hull_hit:
+		_flash(p + Vector3(0, 1.5, 0), 6.0 + sv.L * 0.3, FLOOK.of(fac).damage_glow, 0.3)
+	if not hull_hit and float(h["shield"]) > 0.0:
+		sfx.shield(p, false, fac)
+	elif hull_hit:
+		sfx.hit(p, bool(h["crit"]))
 
 
 # Issue 521 (audit item 7; R193, Ryan's pick "Hold and slow", which replaces the Board's R123): the cut-in for a kill
@@ -3632,7 +3739,7 @@ func _step_battle_lens() -> void:
 
 
 # Keep the kill hold and slow beat. Frame only the dying hull and avoid a quarter blocked by another ship.
-func _kill_frame(id) -> void:
+func _kill_frame(id, by = null) -> void:
 	var sv = views.get(id)
 	if sv == null:
 		return
@@ -3643,6 +3750,8 @@ func _kill_frame(id) -> void:
 		if other != id and is_instance_valid(ov) and not ov.dead and ov.visible:
 			blockers.append([ov.visual_position(), ov.L])
 	var pose: Dictionary = cam.impact_cut(sv.visual_position(), sv.L, cap, blockers, reduce_motion, sv.cur_yaw)
+	_cut_plate_attacker = str(by) if by != null else ""
+	_cut_plate_target = str(id)
 	_cine_enter(pose, true)
 	if _death_dof and not reduce_motion and float(pose["r"]) < CamRig.DOF_CLOSE_LIMIT:
 		cam.set_close_dof(true, float(sv.L))
@@ -3740,7 +3849,7 @@ func _play_death(e: Dictionary, batch_view := {}) -> void:
 	_deaths_left = maxi(_deaths_left - 1, 0)
 	var cined := false
 	if sv != null and _cine_wants("kill", e.get("by"), id) and cine_saved.is_empty():
-		_kill_frame(id)
+		_kill_frame(id, e.get("by"))
 		recording_cue.emit("cut_start", "kill: %s" % _name(id))
 		cined = true
 	var cause := view_cause(str(e.get("cause", "blast")), str(id))
@@ -3749,6 +3858,8 @@ func _play_death(e: Dictionary, batch_view := {}) -> void:
 	_log("%s %s." % [_name(id), "is shot down" if sq else "is destroyed"], "e" if friend else "p")
 	if sv == null:
 		return
+	if disp.has(id):
+		disp[id]["hp"] = 0.0
 	var L: float = sv.L
 	var p: Vector3 = sv.visual_position() + Vector3(0, 2, 0)
 	var big := L >= 14.0
@@ -3819,6 +3930,8 @@ func _death_can_rise(id: String, unit: Dictionary, batch_view: Dictionary) -> bo
 
 
 func _retire_dead_plate(id: String, sv: ShipView) -> void:
+	if not cine_saved.is_empty() and id == _cut_plate_target:
+		return   # R458: keep the killed target through the hold, not past the return to the board.
 	if hud != null and not sv.has_meta("plate_off"):
 		hud.remove_plate(id)
 		sv.set_meta("plate_off", true)
@@ -4451,11 +4564,16 @@ func _overlay() -> void:
 		var rm2 = _ui(sel).get("ram")
 		if rm2 is Dictionary:
 			_path_dots(u, {"path": rm2["path"]})   # issue 1444: the ram's run as the shared path line
+	# The active enemy target gets screen-space brackets. Other planned picks keep their tactical rings.
 	if target != "" and VU.has(target) and not VU[target]["dead"]:
-		rings[board.key(VU[target]["q"], VU[target]["r"])] = TARGET_ON
+		var key: String = board.key(VU[target]["q"], VU[target]["r"])
+		if not showcase and hud.visible:
+			rings.erase(key)
+		else:
+			rings[key] = TARGET_ON
 	for a in aims:   # issue 1589: every enemy picked in the plan shows the lock ring
 		var at: Dictionary = VU.get(str(a["tid"]), {})
-		if not at.is_empty() and not at["dead"]:
+		if not at.is_empty() and not at["dead"] and (at["id"] != target or showcase or not hud.visible):
 			rings[board.key(at["q"], at["r"])] = TARGET_ON
 	_fans(sel if (arcs_on and _usable(u)) else "", ghost if (pst != null and ghost != null and ghost.visible) else null)
 	_enemy_fans(_inspected_enemy() if arcs_on else "")
@@ -5004,6 +5122,10 @@ func _unhandled_input(e: InputEvent) -> void:
 		_end_opening()
 	if kill_hold_until > 0.0 and ((e is InputEventMouseButton and (e as InputEventMouseButton).pressed and (e as InputEventMouseButton).button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]) or (e is InputEventKey and (e as InputEventKey).pressed and not (e as InputEventKey).echo)):
 		_kill_skip()
+		if e is InputEventMouseButton:
+			# The skip click must not start a camera drag and cancel the smooth return (issue 2194).
+			get_viewport().set_input_as_handled()
+			return
 		if e is InputEventKey and e.keycode == KEY_K:
 			return
 	if e is InputEventMouseButton:
@@ -7045,6 +7167,8 @@ func _panel_info() -> Dictionary:
 	var view: ShipView = views.get(id)
 	var info := {"name": u["name"], "cls": _class_label(u["cls"]), "side": u["side"], "flag": u["flagship"], "code": view.code if is_instance_valid(view) else "", "hp": d["hp"], "maxHp": u["maxHp"], "sh": d["sh"], "shMax": u["shMax"], "shp": _z0(u.get("shp")),
 		"routed": _routed_sides(u)}
+	var parts: Array[Dictionary] = _plate_state[id]["sections"] if _plate_state.has(id) else ShipSections.read(u)
+	info["section_losses"] = ShipSections.losses(parts)
 	var mleft := int(u.get("moveLeft", u["mp"])) if u.get("moveLeft") != null else int(u["mp"])
 	var stats := "Hull [color=#ffad3b]%s/%s[/color]   Armor %d%%   Evasion %d\nMovement %d of %d   Turns %d" % [Campaign.hull_text(d["hp"]), Campaign.hull_text(u["maxHp"]), int(round(float(ru.get("armor", 0)) * 100.0)), int(_z0(ru.get("ev"))), mleft, int(_z0(ru.get("speed"))), int(u["turnsLeft"])]
 	if u.get("fired", false) and mleft < int(u["mp"]):
@@ -7427,44 +7551,82 @@ func _process(dt: float) -> void:
 		round_saved = int(api.round_snap_round)
 		if bool(round_save_cb.call()):
 			round_on_disk = round_saved
-	var vs := get_viewport().get_visible_rect().size
-	# issue 1437 (item 9): with the HUD hidden or behind the title (showcase) no plate shows, so the plate, priority and
-	# declutter work is skipped; the gold ring still breathes
-	var plates_on := not showcase and hud != null and hud.visible
 	var show_up: bool = not bot and not thinking and not ended and api.phase == "player"
-	for id in views:
-		var sv = views[id]
-		if sv.dead:
-			if not sv.has_meta("plate_off"):
-				_retire_dead_plate(str(id), sv)
-			continue
-		var u: Dictionary = VU.get(id, {})
-		if not plates_on:
-			_breathe_ring(sv, show_up and not u.is_empty() and str(id) == sel and u["side"] == "player")
-			continue
-		var aimed := not aim.is_empty() and (str(id) == str(aim["t"]) or str(id) == str(aim["a"]))
-		if u.is_empty() or not sv.visible or _cut_overlay_alpha <= 0.0:
-			hud.set_plate(str(id), Vector2.ZERO, false, "", true, false, 0, 1, 0, 0)
-			continue
-		var wp: Vector3 = sv.visual_position() + Vector3(0, 3.0 + sv.L * 0.18, 0)
-		var on := not cam.is_position_behind(wp)
-		var sp := cam.unproject_position(wp)
-		on = on and sp.x > -50 and sp.y > -50 and sp.x < vs.x + 50 and sp.y < vs.y + 50
-		var d: Dictionary = disp.get(id, {"hp": u["hp"], "sh": u["sh"]})
-		var shs := 0.0
-		for x in d["sh"]:
-			shs += float(x)
-		var is_up: bool = show_up and str(id) == sel and u["side"] == "player"
-		var px := {"nem": bool(u.get("nemesis", false)) and u["side"] == "enemy", "target": str(id) == target or aimed,
-			"regenLock": bool(d.get("regenLock", false))}
-		if _tgt_plate.has(str(id)):
-			px["odds"] = _tgt_plate[str(id)]["odds"]
-			px["ghost"] = _tgt_plate[str(id)]["ghost"]
-		hud.set_plate(str(id), sp, on, str(u["name"]), u["side"] == "player", u["flagship"], float(d["hp"]), float(u["maxHp"]), shs, float(u["shMax"]) * 4.0, is_up, px)
-		_breathe_ring(sv, is_up)
-	if plates_on:
-		_declutter()
+	_board_marks(show_up)
+	if not showcase and hud != null and hud.visible:
+		_ship_plates(get_viewport().get_visible_rect().size, get_viewport().get_mouse_position(), show_up)
 	_float_step(dt)
+
+
+const ShipSections = preload("res://ui/battle/ship_section_state.gd")
+var _plate_state := {}
+
+
+func _ship_plates(vs: Vector2, mouse: Vector2, show_up: bool) -> void:
+	var blockers: Array = hud.hud_blockers()
+	var hover_id := ""
+	if not hud.over_ui(mouse):
+		hover_id = hud.plates_root.hovered_ship(mouse)
+		if hover_id.is_empty():
+			hover_id = str(_unit_at(hover.x, hover.y).get("id", ""))
+	else:
+		hud.plates_root.hovered_ship(Vector2(-1, -1))
+	var target_box := Rect2()
+	var cutting := not cine_saved.is_empty()
+	var kill_cut := cutting and not _cut_plate_target.is_empty()
+	for id in views:
+		var sv: ShipView = views[id]
+		var u: Dictionary = VU.get(id, {})
+		var cut_target: bool = kill_cut and id == _cut_plate_target
+		var in_cut: bool = cut_target or (kill_cut and id == _cut_plate_attacker)
+		var cut_hidden := (kill_cut and not in_cut) or (cutting and not kill_cut and _cut_overlay_alpha <= 0.0)
+		if u.is_empty() or (not cut_target and (sv.dead or not sv.visible)) or cut_hidden:
+			hud.plates_root.set_ship(str(id), Vector2.ZERO, {}, false, cam.r, hud.k, 0)
+			continue
+		var position_3d := sv.visual_position()
+		var behind := cam.is_position_behind(position_3d)
+		var ship_sp: Vector2 = cam.unproject_position(position_3d) if not behind else Vector2.INF
+		var sp: Vector2
+		if behind or not Rect2(Vector2.ZERO, vs).grow(50.0).has_point(ship_sp):
+			if not in_cut:
+				hud.plates_root.set_ship(str(id), Vector2.ZERO, {}, false, cam.r, hud.k, 0)
+				continue
+			# A kill camera can frame only the wreck. Give the off-camera attacker an edge anchor.
+			if behind:
+				ship_sp = Vector2(0.0 if cam.to_local(position_3d).x < 0.0 else vs.x, vs.y * 0.5)
+			ship_sp = ship_sp.clamp(Vector2.ZERO, vs)
+			sp = ship_sp
+		else:
+			var lifted: Vector2 = cam.unproject_position(position_3d + Vector3(0, 3.0 + sv.L * 0.18, 0))
+			sp = ship_sp + (lifted - ship_sp).limit_length(36.0 * hud.k)
+		var data: Dictionary = _plate_state[id].duplicate()
+		var d: Dictionary = disp.get(id, {})
+		data["up"] = not cutting and show_up and id == sel and data["friend"]
+		data["locked"] = bool(d.get("regenLock", false))
+		data["shield"] = float(d.get("shp", 0.0))
+		data["hull_fraction"] = clampf(float(d.get("hp", u["hp"])) / maxf(1.0, float(u["maxHp"])), 0.0, 1.0)
+		var detail: bool = id == sel or id == hover_id
+		var aimed: bool = not aim.is_empty() and (id == aim["t"] or id == aim["a"])
+		var priority := 4 if cut_target else (3 if in_cut or id == sel else (2 if id == hover_id or id == target or aimed else 0))
+		hud.plates_root.set_ship(str(id), sp, data, detail, cam.r, hud.k, priority, ship_sp)
+		if id == target and not data["friend"]:
+			target_box = _ship_target_box(sv, vs)
+	hud.plates_root.place(blockers, vs, hud.k, target_box)
+
+
+func _ship_target_box(sv: ShipView, vs: Vector2) -> Rect2:
+	var center := sv.visual_position()
+	if cam.is_position_behind(center):
+		return Rect2()
+	var at: Vector2 = cam.unproject_position(center)
+	var axis: Vector3 = sv.global_basis.z * sv.L * 0.5
+	var span := Vector2.ZERO
+	for end in [center + axis, center - axis]:
+		if not cam.is_position_behind(end):
+			span = span.max((cam.unproject_position(end) - at).abs())
+	var width := at.distance_to(cam.unproject_position(center + cam.global_basis.x * sv.L * 0.20))
+	var half := span + Vector2.ONE * maxf(8.0, width)
+	return Rect2(at - half, half * 2.0).intersection(Rect2(Vector2.ZERO, vs).grow(-4.0))
 
 
 # the gold ring under the ship that is up breathes, so the eye finds it; a reinforcement's ring flashes on arrival
@@ -7478,27 +7640,35 @@ func _breathe_ring(sv, is_up: bool) -> void:
 		sv.ring.scale = Vector3.ONE
 
 
-func _declutter() -> void:
-	# F1: names never pile up. The ship that is up and the target keep theirs, then the ship under the mouse and the enemy
-	# acting now, then the flagship; any other name that would overlap one already shown is hidden (hover shows it).
-	var prio := {}
-	for u in V.get("units", []):
-		if u["dead"]:
+func _board_marks(show_up: bool) -> void:
+	var ordered: Array[Dictionary] = []
+	for id in views:
+		var sv: ShipView = views[id]
+		if sv.dead:
+			_retire_dead_plate(str(id), sv)
 			continue
-		var pr := 1 if u.get("flagship", false) else 0
-		if u["active"] and u["side"] == "enemy":
-			pr = 2
-		prio[str(u["id"])] = pr
-	var hu := _unit_at(hover.x, hover.y)
-	if not hu.is_empty():
-		prio[str(hu["id"])] = 2
-	if sel != "":
-		prio[sel] = 3
-	if target != "":
-		prio[target] = 3
-	if not aim.is_empty():
-		prio[str(aim["t"])] = 3
-	hud.declutter_plates(prio)
+		_breathe_ring(sv, show_up and id == sel)
+		if showcase or warming or not sv.visible or sv.marker == null or sv.ring == null:
+			continue
+		var rank := 3 if str(aim.get("t", "")) == id else (2 if id == sel else int(sv.has_highlight()))
+		ordered.append({"id": id, "view": sv, "rank": rank})
+	ordered.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return a["rank"] > b["rank"] if a["rank"] != b["rank"] else str(a["id"]) < str(b["id"]))
+	var shown: Array[Vector3] = []
+	for item in ordered:
+		var sv: ShipView = item["view"]
+		var highlight := sv.has_highlight()
+		var footprint: bool = not highlight and (item["id"] != target or hud == null or not hud.visible)
+		var center := sv.ring.global_position if highlight else sv.marker.global_position
+		var radius := sv.mark_radius(highlight)
+		for other in shown:
+			if Vector2(center.x - other.x, center.z - other.y).length_squared() < pow(radius + other.z, 2):
+				highlight = false
+				footprint = false
+				break
+		sv.set_mark_visibility(footprint, highlight)
+		if footprint or highlight:
+			shown.append(Vector3(center.x, center.z, radius))
 
 
 # floating numbers, the bot's turn and its trace: every frame, plates or not
@@ -7513,12 +7683,14 @@ func _float_step(dt: float) -> void:
 		var pc = hud.plates.get(str(f.get("id", ""))) if f.has("id") else null
 		if pc != null and is_instance_valid(pc) and (pc as Control).visible:
 			# a ship's numbers start above its name plate and rise from there, never across it (run 2 pictures)
-			var base := minf(fp.y + lbl.size.y * 0.5, (pc as Control).position.y - 4.0 * hud.k)
-			lbl.position = Vector2(fp.x - lbl.size.x * 0.5, base - lbl.size.y + f.dy)
+			var plate_rect: Rect2 = (pc as Control).get_rect()
+			var base := minf(fp.y + lbl.size.y * 0.5, plate_rect.position.y - 4.0 * hud.k)
+			lbl.position = Vector2(clampf(fp.x, plate_rect.position.x, plate_rect.end.x) - lbl.size.x * 0.5, base - lbl.size.y + f.dy)
 		else:
 			lbl.position = fp - lbl.size * 0.5 + Vector2(0, f.dy)
 		var f_end := float(f.get("end", 1.6))
-		lbl.modulate.a = clampf(f_end - f.t, 0.0, 1.0) * _cut_overlay_alpha
+		# The HUD's separate callout layer stays outside the cut fade (issue 2194).
+		lbl.modulate.a = clampf(f_end - f.t, 0.0, 1.0)
 		if f.t > f_end:
 			lbl.queue_free()
 			floats.remove_at(i)
@@ -7587,7 +7759,6 @@ func _fire_preview_at(id: String, wi: int, tid: String, st: Dictionary) -> Dicti
 var _crests := {}
 var _info_last := {}
 var _nem_last := {}
-var _tgt_plate := {}          # target id -> {odds, ghost}: the target's nameplate tags, read every frame
 
 
 func _fac_crest(fac: String) -> Texture2D:
@@ -7677,7 +7848,6 @@ func _nem_info() -> Dictionary:
 
 # The enemy aimed at (or under the pointer) and what the bearing guns are expected to take from its shield pool and hull.
 func _target_info() -> Dictionary:
-	_tgt_plate = {}
 	if api == null or api.phase != "player" or ended or bot or showcase or sel == "" or not VU.has(sel) or VU[sel]["side"] != "player":
 		return {}
 	var tid := target
@@ -7724,9 +7894,6 @@ func _target_info() -> Dictionary:
 		var who := ("Both bearing guns" if set.size() == 2 else ("%d bearing guns" % set.size() if set.size() > 2 else "The bearing gun"))
 		line = "%s%s: about %d damage" % [who, " from the planned hex" if plan != null else "", total]
 		line += ": %d to shields, %d to hull." % [shields, hull] if shields > 0 else ", all to hull."
-		# no kill prediction (ui_spec S1 board ruling on the #314 check): the expected value only; the hatched ghost on the
-		# target's hull bar already shows the hull reaching zero
-		_tgt_plate[tid] = {"odds": "%d%% %d gun%s" % [best, set.size(), "" if set.size() == 1 else "s"], "ghost": maxf(0.0, float(d["hp"]) - eh)}
 	return {"name": str(tu["name"]), "flag": tu["flagship"], "nem": bool(tu.get("nemesis", false)), "hp": float(d["hp"]), "maxHp": float(tu["maxHp"]), "sh": d["sh"], "shMax": float(tu["shMax"]), "shp": float(_z0(tu.get("shp"))),
 		"defenses": _target_defenses(foe), "exp_hull": hull, "exp_shields": shields, "line": line, "bearing": set.size(), "hit": best, "gun_index": best_index, "gun": gun, "kind": kind,
 		"quad": quad, "routed": routed, "struck_routed": quad >= 0 and quad in routed, "called": _called_info(tid)}

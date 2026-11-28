@@ -3581,7 +3581,12 @@ func applyHit(att, w, t, dmg: float, quad: int, combat_origin: Dictionary = {}) 
 	var hl = treeSkill("hardLight")
 	if hl != null and t["side"] == "player" and cmdActive("player", "iron") and not jt(t.get("treeHardUsed")) and t["shMax"] > 0 and sp0 > 0:
 		hard = true; t["treeHardUsed"] = 1; treeFx(t, "hardLight", "the shield holds the section")
-	if not hard: damageSection(t, t["_calledSec"] if jt(t.get("_calledSec")) else SEC_OF_QUAD[quad], hull, att)
+	var section: String = hit_event["section"]
+	if not hard: damageSection(t, section, hull, att)
+	# Presentation only. Capture the result of this impact, including any section protection or repair.
+	var part = g(t.get("sec"), section)
+	if part is Dictionary:
+		hit_event["sectionFraction"] = clampf(float(part["hp"]) / maxf(1.0, float(part["max"])), 0.0, 1.0)
 	return {"shield": JSM.jsround(absorbed * ion), "hull": hull, "crit": crit, "combat_event": combat_hit}
 # issue 1651: Anuket rider (a ship that landed a rear-arc hit this round) and Mott rider (the Command's extra wings) add crit chance
 func riderCrit(att) -> float:
