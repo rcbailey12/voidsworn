@@ -63,46 +63,104 @@ func _worker_check(fx: FX) -> void:
 	var mi := _ship(fx, "rebuild")
 	var ship = fx.ship("rebuild")
 	var original := mi.mesh.surface_get_arrays(0)
-	ship._ents[1] = [BREACH.dent(Vector3(0, 2.5, 0), Vector3.UP, 5.0, 0.8, 2.0)]
+	var first := _held_dent(-5.0)
+	ship._ents[1] = [first]
 	ship._dmg_request(fx)
-	var prepared: bool = not ship._orig.is_empty() and (ship._orig[0] as Dictionary).has("grid")
+	var task: int = ship._dmg_task
+	var entered := await _wait_for_dent(first, task)
+	_check(entered and not WorkerThreadPool.is_task_completed(task), "the first real rebuild is held after its grid preparation")
+	_check(not ship._orig.is_empty() and not ship._orig[0].has("grid") and ship._dmg_surface_cache.is_empty(),
+		"first-hit prep leaves the original surface untouched and the cache with the worker")
+	first.release.post()
 	ship.flush_damage(fx)
 	var drawn: Array = ship.current_arrays(mi, 0)
 	_check(drawn[Mesh.ARRAY_VERTEX] != original[Mesh.ARRAY_VERTEX], "first rebuild really changes the drawn hull")
+	var cached: Dictionary = ship._dmg_surface_cache.get(0, {})
+	_check(cached.has("grid") and not ship._orig[0].has("grid"), "only the joined worker copy holds the prepared grid")
 
-	var next := HeldDent.new()
-	next.kind = BREACH.K_DENT
-	next.style = BREACH.S_DENT
-	next.c = Vector3(4, 2.5, 0)
-	next.R = 5.0
-	next.inf2 = 25.0
-	next.depth = 1.1
-	next.p = BREACH._phases(3.0)
-	ship._ents[1] = [next]
+	var next := _held_dent(1.0)
+	ship._ents[1] = [first, next]
 	ship._dmg_request(fx)
-	var task: int = ship._dmg_task
-	var deadline := Time.get_ticks_msec() + 5000
-	var entered := false
-	while not entered and Time.get_ticks_msec() < deadline and not WorkerThreadPool.is_task_completed(task):
-		entered = next.entered.try_wait()
-		if not entered:
-			await process_frame
+	task = ship._dmg_task
+	entered = await _wait_for_dent(next, task)
 	_check(entered and not WorkerThreadPool.is_task_completed(task), "second real rebuild is inside its worker pass")
-	_check(prepared, "surface cache is prepared before the first rebuild is joined")
 	DEATH.precompute(fx, ship, "blast", true)
-	var cut: Dictionary = ship.get_meta("cut_job", {})
-	var surfaces: Array = cut.get("surfs", [])
-	_check(not surfaces.is_empty() and surfaces[0]["arrays"] == drawn and not WorkerThreadPool.is_task_completed(task),
-		"death precompute gets the last drawn dent while the newer rebuild is still in flight")
+	_check(not ship.has_meta("cut_job") and ship.has_meta("cut_after_damage") and ship.current_arrays(mi, 0, true) == drawn,
+		"death precompute during the held rebuild defers the cut and sees only drawn arrays")
+	var last := BREACH.dent(Vector3(8, 2.5, 0), Vector3.UP, 4.0, 0.8, 4.0)
+	ship._ents[1] = [first, next, last]
+	ship._dmg_request(fx)
+	fx.death(ship.id, "blast")
+	var live_mesh := mi.mesh
+	_check(ship._dmg_dirty and not ship.has_meta("cut_job") and not WorkerThreadPool.is_task_completed(task),
+		"kill waits for both the in-flight and queued damage revisions")
 	next.release.post()
 	while not WorkerThreadPool.is_task_completed(task):
 		await process_frame
-	_check(ship._dmg_job.get("out", {}).is_empty() and ship.current_arrays(mi, 0) == drawn,
+	_check(ship._dmg_job.get("out", {}).is_empty() and ship.current_arrays(mi, 0, true) == drawn,
 		"a finished worker does not publish geometry before the main-thread flush")
 	ship.flush_damage(fx)
-	var rebuilt: Array = ship.current_arrays(mi, 0)
-	_check(rebuilt[Mesh.ARRAY_VERTEX] != drawn[Mesh.ARRAY_VERTEX], "flush hands over the new dent")
+	var intermediate: Array = ship.current_arrays(mi, 0, true)
+	_check(ship.damage_pending() and not ship.has_meta("cut_job"), "joining the first task still does not cut over queued damage")
+	ship.flush_damage(fx)
+	var cut: Dictionary = ship.get_meta("cut_job", {})
+	var surfaces: Array = cut.get("surfs", [])
+	var final_arrays: Array = ship._dmg_job["out"]["surfs"][0]
+	_check(ship.cut_matches_damage(cut) and ship._dmg_job["ents"].size() == 3 and not surfaces.is_empty()
+		and surfaces[0]["arrays"] == final_arrays and final_arrays != intermediate and final_arrays != drawn,
+		"death cuts the latest joined revision including the queued hit")
+	_check(mi.mesh == live_mesh and ship.current_arrays(mi, 0) == drawn,
+		"the death cut receives final geometry without swapping the dying hull")
+	_check(is_same(cached, ship._dmg_surface_cache.get(0)) and not ship._orig[0].has("grid"),
+		"later rebuilds reuse the same private grid without updating original surfaces")
 	fx.remove_ship("rebuild")
+	mi.get_parent().queue_free()
+
+
+func _held_dent(x: float) -> HeldDent:
+	var dent := HeldDent.new()
+	dent.kind = BREACH.K_DENT
+	dent.style = BREACH.S_DENT
+	dent.c = Vector3(x, 2.5, 0)
+	dent.R = 5.0
+	dent.inf2 = 25.0
+	dent.depth = 1.1
+	dent.p = BREACH._phases(3.0)
+	return dent
+
+
+func _wait_for_dent(dent: HeldDent, task: int) -> bool:
+	var deadline := Time.get_ticks_msec() + 5000
+	var entered := false
+	while not entered and Time.get_ticks_msec() < deadline and not WorkerThreadPool.is_task_completed(task):
+		entered = dent.entered.try_wait()
+		if not entered:
+			await process_frame
+	return entered
+
+
+
+func _apply_early_return_check(fx: FX) -> void:
+	var mi := _ship(fx, "skipped_apply")
+	var ship = fx.ship("skipped_apply")
+	ship._ents[1] = [BREACH.dent(Vector3(-5, 2.5, 0), Vector3.UP, 5.0, 0.8, 2.0)]
+	ship._dmg_request(fx)
+	ship.flush_damage(fx)
+	var drawn_mesh := mi.mesh
+	var drawn: Array = ship.current_arrays(mi, 0)
+	ship._ents[1] = [BREACH.dent(Vector3(5, 2.5, 0), Vector3.UP, 5.0, 0.8, 3.0)]
+	ship._dmg_request(fx)
+	var damage_root: Node3D = ship._dmg_root
+	ship._dmg_root = null  # Apply cannot attach anything after the damage root goes away.
+	ship.flush_damage(fx)
+	ship._dmg_root = damage_root
+	var skipped: Array = ship._dmg_job["out"]["surfs"][0]
+	_check(skipped != drawn and mi.mesh == drawn_mesh and ship.current_arrays(mi, 0) == drawn,
+		"early-return apply leaves both the mesh and its drawn arrays on the previous revision")
+	DEATH.precompute(fx, ship, "blast", true)
+	var surfaces: Array = ship.get_meta("cut_job", {}).get("surfs", [])
+	_check(not surfaces.is_empty() and surfaces[0]["arrays"] == drawn, "a cut after skipped apply uses the actual drawn arrays")
+	fx.remove_ship("skipped_apply")
 	mi.get_parent().queue_free()
 
 
@@ -164,6 +222,7 @@ func _run() -> void:
 	fx.defer_initial_cuts = true
 	fx.setup({"quality": "high", "shake": 0.0})
 	await _worker_check(fx)
+	_apply_early_return_check(fx)
 	_flicker_check(fx)
 	fx.release()
 	print("damage_worker_flicker_2199_check: %d failure(s)" % failures)

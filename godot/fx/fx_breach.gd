@@ -855,16 +855,17 @@ static func _edge_key(a: Vector3, b: Vector3, q: float) -> Array:
 
 
 class RebuildWork extends RefCounted:
-	# The worker owns out until the ship joins the task. It never writes into the inputs.
+	# The worker owns these until the ship joins the task. It never writes into the inputs.
+	var surface_cache: Dictionary
 	var out: Dictionary
 
 
 static func rebuild(work: RebuildWork, job: Dictionary) -> void:
-	work.out = compute(job)
+	work.out = compute(job, work.surface_cache)
 
 
-# The ship prepares only the surfaces the rebuild will touch. Once the job is submitted, both threads only read them.
-static func prepare_surfaces(surfs: Array, ents: Array, cell: float) -> PackedInt32Array:
+# Hash only the surfaces this job touches, on copies owned by the worker and reusable for the next rebuild.
+static func _prepare_surfaces(surfs: Array, ents: Array, cell: float, cache: Dictionary) -> PackedInt32Array:
 	var active := PackedInt32Array()
 	for k in surfs.size():
 		var sd: Dictionary = surfs[k]
@@ -873,16 +874,18 @@ static func prepare_surfaces(surfs: Array, ents: Array, cell: float) -> PackedIn
 		var aabb: AABB = sd["aabb"]
 		for e: Ent in ents:
 			if aabb.grow(sqrt(e.inf2) + e.ov).has_point(e.c):
-				if not sd.has("grid"):
-					_prepare_surface(sd, cell)
+				if not cache.has(k):
+					var prepared := sd.duplicate()
+					_prepare_surface(prepared, cell)
+					cache[k] = prepared
 				active.append(k)
 				break
 	return active
 
 
-# job: {surfs: [{arrays, xf, aabb}], active, ents, q (weld size), cell (grid cell), ovl (overlay lift)}. Returns {surfs: [new
+# job: {surfs: [{arrays, xf, aabb}], ents, q (weld size), cell (grid cell), ovl (overlay lift)}. Returns {surfs: [new
 # arrays or null], parts: [Part per entry], ms}.
-static func compute(job: Dictionary) -> Dictionary:
+static func compute(job: Dictionary, surface_cache: Dictionary = {}) -> Dictionary:
 	var t_ms := Time.get_ticks_msec()
 	var ents: Array = job["ents"]
 	var q: float = job["q"]
@@ -891,20 +894,12 @@ static func compute(job: Dictionary) -> Dictionary:
 		parts.append(Part.new())
 	var surfs: Array = job["surfs"]
 	var cell := float(job.get("cell", 1.0))
-	var active: PackedInt32Array
-	if job.has("active"):
-		active = job["active"]
-	else:
-		# Standalone checks and probes can supply raw surfaces. Prepare private copies for those calls.
-		surfs = surfs.duplicate()
-		for k in surfs.size():
-			surfs[k] = surfs[k].duplicate()
-		active = prepare_surfaces(surfs, ents, cell)
+	var active := _prepare_surfaces(surfs, ents, cell, surface_cache)
 	var out_s: Array = []
 	out_s.resize(surfs.size())
 	var edges := {}
 	for k in active:
-		out_s[k] = _surface(surfs[k], ents, parts, edges, q, cell, float(job.get("ovl", 0.02)), q * 8.0)
+		out_s[k] = _surface(surface_cache[k], ents, parts, edges, q, cell, float(job.get("ovl", 0.02)), q * 8.0)
 	var t_surf := Time.get_ticks_msec() - t_ms
 	# the cut edge: the skin's thickness along every edge between a kept and a removed triangle
 	for key in edges:
@@ -1011,7 +1006,7 @@ static func _mesh_of(arr) -> ArrayMesh:
 	return am
 
 
-# Cache the ship-frame positions and triangle grid once per touched surface, before the worker gets the job.
+# Cache the ship-frame positions and triangle grid once per touched surface.
 static func _prepare_surface(sd: Dictionary, cell: float) -> void:
 	var arr: Array = sd["arrays"]
 	var xf: Transform3D = sd["xf"]
@@ -1654,13 +1649,14 @@ static func _rep4(v: Vector4, n: int) -> PackedFloat32Array:
 	return POOLS.repeat_f(one, n)
 
 
-static func apply(fx, s, job: Dictionary) -> void:
+# Returns true only when a drawn hull mesh was swapped or restored.
+static func apply(fx, s, job: Dictionary) -> bool:
 	var res: Dictionary = job.get("out", {})
 	if res.is_empty():
-		return
+		return false
 	# (F3: the ship's nodes were freed while its rebuild ran on the worker: nothing left to show it on)
 	if not is_instance_valid(s.root) or not s.root.is_inside_tree() or not is_instance_valid(s._dmg_root):
-		return
+		return false
 	var t_b := Time.get_ticks_usec()
 	build_meshes(res)
 	t_b = fx.pend("ba_build", t_b)
@@ -1677,6 +1673,7 @@ static func apply(fx, s, job: Dictionary) -> void:
 		if not by_mi.has(mi):
 			by_mi[mi] = []
 		(by_mi[mi] as Array).append(k)
+	var swapped := false
 	for mi in by_mi:
 		var ks: Array = by_mi[mi]
 		var sd0: Dictionary = orig[ks[0]]
@@ -1697,10 +1694,13 @@ static func apply(fx, s, job: Dictionary) -> void:
 		if am == null:
 			if mi.mesh != sd0["mesh"]:
 				mi.mesh = sd0["mesh"]
+				swapped = true
 				_restore_overrides(mi, orig, ks)
 			continue
-		mi.mesh = am
-		_restore_overrides(mi, orig, ks)
+		if mi.mesh != am:
+			mi.mesh = am
+			swapped = true
+			_restore_overrides(mi, orig, ks)
 	clear_nodes(s)
 	var ents: Array = job["ents"]
 	var ends_by: Array = res.get("ends", [])
@@ -1751,6 +1751,7 @@ static func apply(fx, s, job: Dictionary) -> void:
 	# Issue 1232 (Neon's death audit F8.2): every rebuild also made an empty sprite batch, an empty spark batch, their two
 	# materials and a node to hold them; nothing ever filled them, so they are gone.
 	fx.pend("ba_nodes", t_b)
+	return swapped
 
 
 # Does any damage entry (its widest reach: cut, overlay, halo, slot length) touch this box (both in the hull frame)?

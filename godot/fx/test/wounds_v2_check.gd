@@ -246,17 +246,18 @@ func _glass_layer_check() -> void:
 	var glass := BREACH.place_hole(s.hull, Vector3.ZERO, Vector3.UP, 1.1, 3.0, "ithar")
 	check(glass.has_cut() and not glass.thin_shear, "2175: the layered hull takes a real faceted cut")
 
-	# Leave out active so the standalone call prepares its own copies.
+	# The standalone call prepares its own copies.
 	var rebuilt := BREACH.compute({"surfs": BREACH.gather(s), "ents": [glass], "q": 0.001, "hull": s.hull})
 	_check_glass_layers(rebuilt["meshes"].get(mi.get_instance_id()) as ArrayMesh, glass, offset, deep, shelf, "standalone")
 
-	# Let the ship gather, prepare and submit the live job, then test the mesh actually swapped onto it.
+	# Submit the live job, then check the worker's prepared surfaces and the mesh swapped onto the ship.
 	s._ents[1] = [glass]
 	s._dmg_request(fx)
-	var active: PackedInt32Array = s._dmg_job.get("active", PackedInt32Array())
-	check(s._dmg_task >= 0 and active.has(0) and active.has(1) and not active.has(3),
-		"2175 (live worker): the job prepares both shells but skips the authored deck")
+	check(s.damage_pending(), "2175 (live worker): the layered hull submits a damage rebuild")
 	s.flush_damage(fx)
+	var cache: Dictionary = s._dmg_surface_cache
+	check(cache.has(0) and cache.has(1) and not cache.has(3),
+		"2175 (live worker): the worker prepares both shells but skips the authored deck")
 	var live_skin := mi.mesh as ArrayMesh if mi.mesh != mesh else null
 	_check_glass_layers(live_skin, glass, offset, deep, shelf, "live worker")
 	fx.remove_ship(sid)

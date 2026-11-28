@@ -156,7 +156,10 @@ var _orig: Array = []      # the hull's original surfaces, gathered at the first
 var _dmg_task = -1
 var _dmg_dirty = false
 var _dmg_job: Dictionary = {}
+var _dmg_surface_cache := {}  # handed to the worker until it joins, never part of _orig
 var _dmg_drawn_surfs: Array = []  # last applied rebuild, even while a newer one is in flight
+var _dmg_death_out: Dictionary = {}  # joined geometry for the cut only, not swapped onto the dying hull
+var damage_revision := 0   # a cut is usable only after this rebuild and any queued rebuild have joined
 var _damage_surfaces := {}  # mutable breach coordinates are private to each surface
 var _damage_meshes := {}   # one power multiplier per mesh, shared by its damage surfaces
 var _damage_surfaces_assigned := false
@@ -2411,14 +2414,13 @@ func _dmg_request(fx) -> void:
 		fx.pend("hull_gather", t_g)
 		if _orig.is_empty():
 			return
-	var t_p := Time.get_ticks_usec()
-	var cell: float = hull.L / 16.0
-	var active := BREACH.prepare_surfaces(_orig, ents, cell)
-	fx.pend("hull_prepare", t_p)
 	var work := BREACH.RebuildWork.new()
+	work.surface_cache = _dmg_surface_cache
+	_dmg_surface_cache = {}
 	# Keep the result holder with the inputs so FX can retire both safely when a battle ends mid-rebuild.
-	var job := {"surfs": _orig, "ents": ents, "active": active, "q": hull.L * 2e-4, "cell": cell, "ovl": hull.L * 0.0006, "work": work, "hull": hull,
-		"organic": faction == "chorus", "wound_kind": int(fac.get("wound_kind", 0)), "flat": fx.compat, "mesh_on_worker": DisplayServer.get_name() != "headless"}
+	var job := {"surfs": _orig, "ents": ents, "q": hull.L * 2e-4, "cell": hull.L / 16.0, "ovl": hull.L * 0.0006, "work": work, "hull": hull,
+		"organic": faction == "chorus", "wound_kind": int(fac.get("wound_kind", 0)), "flat": fx.compat, "mesh_on_worker": not dead and DisplayServer.get_name() != "headless"}
+	damage_revision += 1
 	_dmg_job = job
 	_dmg_task = WorkerThreadPool.add_task(BREACH.rebuild.bind(work, job))
 	fx.later(fx.now + 0.02, func l_dmg_poll() -> void: _dmg_poll(fx))
@@ -2440,18 +2442,19 @@ func flush_damage(fx) -> void:
 		return
 	var work: BREACH.RebuildWork = _dmg_job["work"]
 	wait_damage()
-	if dead or gone:
+	if gone or (dead and (get_meta("death_hulk", true) or has_meta("death_hidden"))):
 		return
-	var t_ap := Time.get_ticks_usec()
+	_dmg_surface_cache = work.surface_cache
 	_dmg_job["out"] = work.out
-	BREACH.apply(fx, self, _dmg_job)
-	_dmg_drawn_surfs = work.out.get("surfs", [])
-	fx.pend("breach_apply", t_ap)
-	mark_ms.append([(_dmg_job["ents"] as Array).size(), int(work.out.get("ms", -1)), (Time.get_ticks_usec() - t_ap) / 1000.0])
-	# the death pieces are cut from the hull as it is now, holes and all. r18 (20-ship bench: 1% lows of 15 fps and a
-	# 4 s stall): at most one fresh cut every CUT_REFRESH seconds per ship, not one per hit (each cut is seconds of
-	# worker time on a big hull and its pieces' meshes are uploaded on the main thread); the last finished cut is kept
-	# so a death never waits for a cut still running
+	if dead:
+		# The death tell already owns the rendered hull. Hand off the final geometry without changing its mesh or effects.
+		_dmg_death_out = work.out
+	else:
+		var t_ap := Time.get_ticks_usec()
+		if BREACH.apply(fx, self, _dmg_job):
+			_dmg_drawn_surfs = work.out["surfs"]
+		fx.pend("breach_apply", t_ap)
+		mark_ms.append([(_dmg_job["ents"] as Array).size(), int(work.out.get("ms", -1)), (Time.get_ticks_usec() - t_ap) / 1000.0])
 	_cut_stale = true
 	if _dmg_dirty:
 		_dmg_dirty = false
@@ -2626,19 +2629,30 @@ func damage_surface(fx, mi: MeshInstance3D, si: int, src: Material) -> ShaderMat
 	return entry[1]
 
 
-# Death reads only the geometry applied to the live hull, never an in-flight rebuild's result.
-func current_arrays(mi: MeshInstance3D, si: int) -> Array:
+# Scene readers get the drawn hull. A death cut can also use the final joined rebuild that never touched the scene.
+func current_arrays(mi: MeshInstance3D, si: int, for_cut := false) -> Array:
 	var src: Mesh = mi.mesh
+	var death_snapshot := for_cut and not _dmg_death_out.is_empty()
+	var surfs: Array = _dmg_death_out["surfs"] if death_snapshot else _dmg_drawn_surfs
 	for k in _orig.size():
 		var sd: Dictionary = _orig[k]
 		if sd["mi"] != mi:
 			continue
 		src = sd["mesh"]
 		if int(sd["si"]) == si:
-			if mi.mesh != src and k < _dmg_drawn_surfs.size() and _dmg_drawn_surfs[k] != null:
-				return _dmg_drawn_surfs[k]
+			var has_rebuild: bool = _dmg_death_out["mesh_src"].has(sd["mid"]) if death_snapshot else mi.mesh != src
+			if has_rebuild and k < surfs.size() and surfs[k] != null:
+				return surfs[k]
 			return sd["arrays"]
 	return arrays_of(src, si) if src is ArrayMesh else src.surface_get_arrays(si)
+
+
+func damage_pending() -> bool:
+	return _dmg_task >= 0
+
+
+func cut_matches_damage(job: Dictionary) -> bool:
+	return not damage_pending() and not job.is_empty() and int(job.get("damage_revision", 0)) == damage_revision
 
 
 func wait_damage() -> void:

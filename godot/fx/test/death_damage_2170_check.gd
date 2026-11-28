@@ -69,7 +69,7 @@ func _run() -> void:
 	mi.position.x += 3.0   # mimic the tell moving the dying mesh before the worker returns
 	ship.flush_damage(fx)
 	ship.flush_damage(fx)
-	var rebuilt: Array = ship.current_arrays(mi, 0)
+	var rebuilt: Array = ship.current_arrays(mi, 0, true)
 	var last_job: Dictionary = ship._dmg_job
 	var cut: Dictionary = ship.get_meta("cut_job", {})
 	_check(cut.get("cap_kind") == Death.CAP_GLASS, "the deferred Glasswright cut keeps its glass fracture faces")

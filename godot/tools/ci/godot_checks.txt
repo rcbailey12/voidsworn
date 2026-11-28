@@ -143,7 +143,7 @@ headless|audio/test/faction_death_check.gd|-|-|issue 1238: Chorus cruiser and Bi
 headless|fx/test/attach_check.gd|-|-|issue 370: every attach point (authored, surface ray) lies on the hull within 0.012 of its length; stand-in slab, ring and tower here, every ship file present on the PC; skips counted
 headless|fx/test/fixed_t_bearing_2170_check.gd|-|-|issue 2170: a fixed arc-T muzzle bears ahead but is rejected astern
 headless|fx/test/damage_surface_check.gd|-|-|R80 damage contracts on box ships: stages, emitters and their caps, marks
-headless|fx/test/damage_worker_flicker_2199_check.gd|-|-|issue 2199: death precomputes from the last drawn hull during a real rebuild, and flicker makes no per-material writes
+headless|fx/test/damage_worker_flicker_2199_check.gd|-|-|issue 2199: private worker grid prep, skipped mesh swaps keep the drawn arrays, lethal hits cut the latest damage, and flicker makes no per-material writes
 headless|fx/test/damage_plume_check.gd|-|-|issue 2044: faction wound and wisp layers, cavity and local light separation, wing exhaust attachment, hulk smoke thins without expiring, clean faction crits and flash budget
 headless|fx/test/graphics_correctness_check.gd|-|-|issue 1955: missing damage anchors, rim and fog on mesh-surface wrecks, five live point-defense pops, quality downgrade and shader cache teardown
 headless|fx/test/faction_fx_1991_check.gd|-|-|issue 1991: faction fire and light, Eclipse trails and implosion, Chorus wing spores, cold Directorate hits and crits, wreck cap cooling and blocker depth testing

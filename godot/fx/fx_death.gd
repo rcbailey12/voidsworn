@@ -1555,16 +1555,7 @@ static func _lance_recut(fx, s) -> void:
 	fx.pend("lance_recut", t0)
 
 
-# Gather the drawn hull on the main thread, even if a newer damage rebuild is in flight, then cut on a worker.
-static func precompute(fx, s, cause := "blast", under_cover := false, shared_cuts: Variant = null) -> void:
-	if fx.get("closed") == true:   # issue 1435: a released fx takes no new cuts
-		return
-	if fx.get("passive") == true:   # issue 1434: the title backdrop never dies
-		return
-	if s.weight <= 0 or s.gone or s.has_meta("cut_task") or s.has_meta("cut_job"):
-		return
-	if not is_instance_valid(s.root) or not s.root.is_inside_tree():
-		return   # F3: the ship's node was freed before its staggered cut came round
+static func _cut_layout(fx, s, cause: String) -> Dictionary:
 	if s.faction == "chorus":
 		cause = "rupture"
 	elif s.death_big:
@@ -1624,7 +1615,7 @@ static func precompute(fx, s, cause := "blast", under_cover := false, shared_cut
 		for si in mi.mesh.get_surface_count():
 			var mat: Material = mi.get_active_material(si)
 			var src_mat: Material = mi.mesh.surface_get_material(si)
-			var sd := {"arrays": s.current_arrays(mi, si), "xf": xf, "mat": mat, "interior": s.hull.authored and HULL.interior_material(src_mat), "fmt": (mi.mesh as ArrayMesh).surface_get_format(si) if mi.mesh is ArrayMesh else 0}
+			var sd := {"arrays": s.current_arrays(mi, si, true), "xf": xf, "mat": mat, "interior": s.hull.authored and HULL.interior_material(src_mat), "fmt": (mi.mesh as ArrayMesh).surface_get_format(si) if mi.mesh is ArrayMesh else 0}
 			# issue 600: the hull plating surface (<code>_hull, RECIPE.md stage 7) tears with the insides under it; only the
 			# parts surfaces carry machines
 			if s.hull.authored and src_mat != null and String(src_mat.resource_name).ends_with("_hull"): sd["skin"] = true
