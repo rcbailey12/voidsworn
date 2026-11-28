@@ -2571,7 +2571,7 @@ func _play_event(e: Dictionary, batch_view := {}, breaking_hit := false) -> void
 			_log("The wreck of %s breaks into tumbling wreckage, blocking movement and line of fire." % _name(e["unit"]), "x")
 		"death":
 			_comms_kill(e, batch_view)
-			await _play_death(e)
+			await _play_death(e, batch_view)
 			if wrecked.has(e["unit"]):
 				_lay_wreck(e["unit"])
 		"fled":

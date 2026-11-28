@@ -140,6 +140,8 @@ func _show_message() -> void:
 
 
 func _process(dt: float) -> void:
+	if not _allowed:
+		return  # Keep the active hold and waiting queue in place while the HUD hides comms.
 	_clock += dt
 	if not current.is_empty():
 		_age += dt

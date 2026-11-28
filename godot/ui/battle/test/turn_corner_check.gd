@@ -112,6 +112,40 @@ func _queue(b: Playback) -> void:
 	banner.clear()
 
 
+func _suppressed_queue(b: Playback) -> void:
+	var banner: CommsBanner = b.hud.comms
+	b.hud.toggle_log()
+	banner.enqueue(K.COMMAND, ADMIRAL, "Iron is active.")
+	banner.enqueue(K.SELECTED_LOSS, CAPTAIN, "Prow destroyed.")
+	b.hud._layout()
+	banner._process(4.0)
+	banner._process(4.0)
+	_check(not banner.visible and banner.current.is_empty()
+		and banner.pending.map(func(e): return e["kind"]) == [K.SELECTED_LOSS, K.COMMAND],
+		"hidden comms stay queued until the log closes")
+	b.hud.toggle_log()
+	b.hud._layout()
+	banner._process(0.0)
+	banner._process(1.0)
+	_check(banner.visible and banner._line.text == "Prow destroyed.", "the first queued comms displays after the log closes")
+	b.hud.toggle_log()
+	b.hud._layout()
+	banner._process(4.0)
+	banner._process(4.0)
+	_check(not banner.visible and banner.current.get("kind") == K.SELECTED_LOSS
+		and banner.pending.map(func(e): return e["kind"]) == [K.COMMAND],
+		"suppression keeps the active comms and the waiting comms past the hold time")
+	b.hud.toggle_log()
+	b.hud._layout()
+	_check(banner.visible and banner._line.text == "Prow destroyed." and is_equal_approx(banner.modulate.a, 1.0),
+		"the active comms resumes at the same point after the log closes")
+	banner._process(CommsBanner.HOLD + 2.0 * CommsBanner.SLIDE - 1.0 + 0.01)
+	banner._process(CommsBanner.SLIDE)
+	_check(banner.visible and banner._line.text == "Iron is active." and is_equal_approx(banner.modulate.a, 1.0),
+		"the waiting comms displays after the resumed hold finishes")
+	banner.clear()
+
+
 func _ignores_mouse(n: Node) -> bool:
 	if n is Control and (n.mouse_filter != Control.MOUSE_FILTER_IGNORE or n.focus_mode != Control.FOCUS_NONE):
 		return false
@@ -130,7 +164,7 @@ func _run() -> void:
 		_check(false, "load campaign and battle tables")
 		quit(1)
 		return
-	API.JSM.rnd_seed(2081)
+	campaign.seed_rng(2081)
 	campaign.newRun("vex", "voidsworn")
 	api.new_battle(campaign.RUN, {"campaign": true, "seed": 2081, "kind": "battle", "obj": "rout", "col": 2,
 		"map": "open", "shape": "open", "arena": "strip", "fac": "hegemony",
@@ -149,6 +183,7 @@ func _run() -> void:
 	_check(banner.pending.any(func(e): return e["kind"] == K.HAIL) or banner.current.get("kind") == K.HAIL,
 		"the opening story line reaches the comms banner")
 	_queue(battle)
+	_suppressed_queue(battle)
 	var player: Dictionary = api.R.caps("player")[0]
 	var enemy: Dictionary = api.R.caps("enemy")[0]
 	var p := str(player["id"])
@@ -203,11 +238,11 @@ func _fallen(c: Campaign, api: API, target: Dictionary, killer: Dictionary) -> v
 	# Pick a seed whose first draw is a death (the escape roll is the only draw before recording this loss).
 	var seed_value := 1
 	while true:
-		API.JSM.rnd_seed(seed_value)
-		if API.JSM.rnd() >= 0.6:
+		c.seed_rng(seed_value)
+		if c.rng.rnd() >= 0.6:
 			break
 		seed_value += 1
-	API.JSM.rnd_seed(seed_value)
+	c.seed_rng(seed_value)
 	c.B = rules.B
 	c.finishBattle("retreat")
 	_check(c.RUN["fallen"].size() == 1, "settlement puts a captain who did not escape on the fallen roll")
