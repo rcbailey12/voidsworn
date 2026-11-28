@@ -351,6 +351,13 @@ async function test(){
   check('old logs and checks cannot revive a new run',()=>{const j=info();assert.equal(j.activity,NOW-50000);assert(j.evidence.filter(e=>['log.txt','checks_node.txt'].includes(e.source)).every(e=>e.association==='from an earlier run'));});
   check('events after the run start count as activity',()=>{write(path.join(out,'events.jsonl'),'{"type":"step_start"}',NOW-1000);assert.equal(info().activity,NOW-1000);});
   check('checked push remains status evidence, never text alone',()=>{status({status:'checked_push'});assert.equal(p.classify(info()).state,'finished');status({status:'unverified'});assert.equal(p.classify(info()).state,'blocked');});
+  check('a confirmed non-partial real push with unverified checks is delivered, not blocked',()=>{
+    const pushed='e'.repeat(40);
+    status({status:'unverified',commit:pushed,confirmed_commit:pushed});assert.equal(p.classify(info()).state,'finished');
+    status({status:'unverified',commit:pushed,confirmed_commit:''});assert.equal(p.classify(info()).state,'blocked');
+    status({status:'unverified',commit:pushed,confirmed_commit:'f'.repeat(40)});assert.equal(p.classify(info()).state,'blocked');
+    status({status:'unverified'});assert.equal(p.classify(info()).state,'blocked');
+  });
   check('missing status can prove failure but never checked success',()=>{const j={...info(),status:null,run:null,state:{exists:false},conflict:null,resultState:'failed'};assert.equal(p.classify(j).state,'failed');j.resultState='ended';assert.equal(p.classify(j).state,'unknown');});
   check('invalid DeepSeek latest pointer never falls back to an older run',()=>{
     const r=path.join(base,'pointer');write(path.join(r,'work217/issue-1-deepseek/latest.txt'),'C:\\private\\outside');write(path.join(r,'work217/issue-1-deepseek/20261116_100000/out/status.json'),JSON.stringify({run:RUN,status:'checked_push',started:iso(NOW-3600000)}));assert.equal(lane(p.snapshot(r,NOW),'deepseek').state,'unknown');
@@ -379,6 +386,14 @@ async function test(){
     write(path.join(out,'status.json'),JSON.stringify({run:RUN,status:'running',started:iso(NOW-40*60000)}),NOW-31*60000);
     write(path.join(out,'result.txt'),'job claimed: issue #1 by codex, run '+RUN+'\nchain waiting for C:\\private\\status.json',NOW-31*60000);
     assert.equal(lane(p.snapshot(r,NOW-2*60000),'main').state,'waiting');assert.equal(lane(p.snapshot(r,NOW),'main').state,'quiet');
+  });
+  check('a confirmed unverified push ends the lane as delivered, not without a push',()=>{
+    const r=path.join(base,'unverified-push'),out=path.join(r,'board/issue-1'),pushed='e'.repeat(40);
+    write(path.join(out,'status.json'),JSON.stringify({run:RUN,status:'unverified',started:iso(NOW-40*60000),
+      finished:iso(NOW-60000),commit:pushed,confirmed_commit:pushed}),NOW-60000);
+    write(path.join(out,'result.txt'),'job claimed: issue #1 by codex, run '+RUN+'\nall done',NOW-60000);
+    const row=lane(p.snapshot(r,NOW),'main');
+    assert.equal(row.state,'finished');assert.equal(row.endedWithoutPush,false);
   });
   check('quiet activity and unconfirmed claim have distinct thresholds',()=>{
     const r=path.join(base,'quiet');write(path.join(r,'board/issue-1/status.json'),JSON.stringify({run:RUN,status:'running',started:iso(NOW-31*60000)}),NOW-30*60000);
