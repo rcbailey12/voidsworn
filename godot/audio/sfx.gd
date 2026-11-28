@@ -102,12 +102,7 @@ func _ready() -> void:
 
 static func _load_catalog(prefix: String, late: Array) -> Array:
 	var t0 := Time.get_ticks_msec()
-	if _cue_data.is_empty():
-		_cue_data = _read_catalog_json("res://audio/cues.json")
-		_cue_data["shot_pass_by"] = PASS_BY_CUE
-		_cue_data["acid_sizzle"] = ACID_SIZZLE
-		_cue_data["shield_sputter"] = SHIELD_SPUTTER
-		_clip_index = _read_catalog_json("res://audio/clips/index.json")
+	_read_data()
 	var catalog_cues := _cue_data.duplicate()
 	var catalog_clips := {}
 	var catalog_synth := {}
@@ -136,7 +131,23 @@ static func _load_catalog(prefix: String, late: Array) -> Array:
 	return [catalog_cues, catalog_clips, catalog_synth]
 
 
+# issue 2161 (Artoo on PR 2010): cues.json and clips/index.json are parsed once, by whichever of prefetch() and
+# _load_catalog() comes first; the other reuses the result
+static var _json_reads := 0   # not GPU: how many catalog files were parsed (the check reads it)
+
+
+static func _read_data() -> void:
+	if not _cue_data.is_empty():
+		return
+	_cue_data = _read_catalog_json("res://audio/cues.json")
+	_cue_data["shot_pass_by"] = PASS_BY_CUE
+	_cue_data["acid_sizzle"] = ACID_SIZZLE
+	_cue_data["shield_sputter"] = SHIELD_SPUTTER
+	_clip_index = _read_catalog_json("res://audio/clips/index.json")
+
+
 static func _read_catalog_json(path: String) -> Dictionary:
+	_json_reads += 1
 	var data = JSON.parse_string(FileAccess.get_file_as_string(path)) if FileAccess.file_exists(path) else {}
 	return data if data is Dictionary else {}
 
@@ -163,21 +174,18 @@ static var _pending := {}   # not GPU: paths only (path -> true), the streams st
 
 static func prefetch() -> void:
 	var paths: Array = []
-	var idx = JSON.parse_string(FileAccess.get_file_as_string("res://audio/clips/index.json")) if FileAccess.file_exists("res://audio/clips/index.json") else {}
-	if idx is Dictionary:
-		for k in idx:
-			for f in idx[k]:
-				paths.append("res://audio/clips/" + str(f))
-	var cue_d = JSON.parse_string(FileAccess.get_file_as_string("res://audio/cues.json")) if FileAccess.file_exists("res://audio/cues.json") else {}
-	if cue_d is Dictionary:
-		for k in cue_d:
-			if not (cue_d[k] is Dictionary):
-				continue
-			for f in cue_d[k].get("synth", []):
+	_read_data()
+	for k in _clip_index:
+		for f in _clip_index[k]:
+			paths.append("res://audio/clips/" + str(f))
+	for k in _cue_data:
+		if not (_cue_data[k] is Dictionary):
+			continue
+		for f in _cue_data[k].get("synth", []):
+			paths.append("res://audio/synth/" + str(f))
+		for variant in _cue_data[k].get("variants", {}):
+			for f in _cue_data[k]["variants"][variant].get("synth", []):
 				paths.append("res://audio/synth/" + str(f))
-			for variant in cue_d[k].get("variants", {}):
-				for f in cue_d[k]["variants"][variant].get("synth", []):
-					paths.append("res://audio/synth/" + str(f))
 	for p in paths:
 		if _pending.has(p) or ResourceLoader.has_cached(p) or not GSRes._imported_ok(p):
 			continue
