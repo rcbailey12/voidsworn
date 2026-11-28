@@ -459,8 +459,10 @@ func _run() -> void:
 	var miss: Dictionary = BAKER._work(k_new, {"size": Vector2i(8, 4), "compute": false})
 	_check(miss.get("image") == null, "a changed recipe loaded the old recipe's map from disk")
 	_check(hit.get("image") != null and (hit.get("image") as Image).get_pixel(0, 0).r > 0.9, "the load path did not return the saved map")
-	_check(FileAccess.get_file_as_string("res://world/world_bake.gd").contains('var path := folder.path_join(key + ".png")'), "the compute bake path no longer saves under <key>.png")
+	_check(BAKER._save(k_new, stale, {}, {}, cdir) and FileAccess.file_exists(cdir.path_join(k_new + ".png")),
+		"the compute path's cache writer still saves planet images as <key>.png")
 	DirAccess.remove_absolute(cdir.path_join(k_old + ".png"))
+	DirAccess.remove_absolute(cdir.path_join(k_new + ".png"))
 	OS.unset_environment("VS_WORLD_CACHE")
 	# relief: one exact 32-bit float channel (Fable, PR 1776 M4)
 	var packed := Image.create(4, 2, false, Image.FORMAT_RGBA8)

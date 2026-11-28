@@ -5,13 +5,15 @@ extends Node
 
 const CACHE_MAX := 24
 const CACHE_DIR := "user://world_bakes/v3"
+const SKY_HALF_EXT := ".rgba16f"
+const SKY_HALF_BYTES := 8  # four IEEE half-float channels per pixel, no mips
 # R79: the sector map primes the same 4K surface the backdrop planet uses.
 # Size and shader source are part of cache_key, so older bakes cannot be reused.
 const PLANET_SIZE := Vector2i(4096, 2048)
 # Issue 1765: moons bake at 2K so craters and rays stay crisp when a moon sits large in the frame.
 const MOON_SIZE := Vector2i(2048, 1024)
-# Issue 1265: the disk cache on C: is capped. A sector bakes about three 4096 by 2048 maps (sky, planet a and b) plus
-# moons, so 500 MB holds the last several sectors (Neon audit P6). After a bake is saved, least recently used maps go
+# Issue 1265: the disk cache on C: is capped. A sector bakes a half-float sky and two 4K planet maps plus moons,
+# so 500 MB holds the last several sectors (Neon audit P6). After a bake is saved, least recently used maps go
 # first; maps the running battle holds never go; a stray .tmp older than a day goes. Only rebuildable bakes are removed.
 const CACHE_CAP_BYTES := 500 * 1024 * 1024
 const TMP_MAX_AGE := 86400
@@ -23,6 +25,10 @@ var _jobs := {}
 var _queue: Array = []
 var _active := ""
 var _thread: Thread
+# One shared service for the session. A missing local device affects every bake,
+# but a shader failure must not disable compute for other shader sources.
+var _device_unavailable := false
+var _failed_shaders := {}
 # Issue 1434 (LOAD12: a 9 s main-thread frame lined up with the worker's time after a bake's compute, cold and warm,
 # with no pipeline compiled in it): a bake finished while a battle or the title backdrop is loading (group
 # "battle_loading") keeps its image in memory and writes its PNG and prunes the cache only once nothing is loading.
@@ -97,7 +103,7 @@ static func cache_key(key: String, code: String, params: Dictionary, size: Vecto
 	return var_to_str([key, code, ordered, size]).sha256_text()
 
 static func cached(key: String) -> Image:
-	# Disk hits also use the worker, never PNG decode on the caller's thread.
+	# Disk hits also use the worker, never reading image bytes on the caller's thread.
 	var entry: RefCounted = _cache.get(key)
 	return entry.height if entry is RockyRelief else entry as Image
 
@@ -286,17 +292,26 @@ func bake(key: String, code: String, params: Dictionary, size: Vector2i, strips:
 	return await result(request_bake(key, code, params, size, strips, half_mips, urgent))
 
 # Queues a bake without waiting; returns its key for result() (see request_authored).
-func request_bake(key: String, code: String, params: Dictionary, size: Vector2i, _strips: int, half_mips := false, urgent := false) -> String:
+func request_bake(key: String, code: String, params: Dictionary, size: Vector2i, _strips: int, half_mips := false, urgent := false, sky := false) -> String:
 	var owner := service(_tree())
+	var renderer := _display_renderer()
+	var compat := renderer == "gl_compatibility"
+	var sky_half := sky and not compat
+	if sky: key += "|half-sky" if sky_half else "|compat-sky"
 	key = cache_key(key, code, params, size)
 	_pin(key)
 	if _cache.has(key): return key
 	if not owner._jobs.has(key):
 		owner._jobs[key] = {"code": code, "params": params.duplicate(true), "size": size, "half_mips": half_mips,
+			"sky": sky, "sky_half": sky_half,
 			"done": false, "image": null, "started": Time.get_ticks_msec(), "folder": _folder(),
-			"compute": DisplayServer.get_name() != "headless" and RenderingServer.get_current_rendering_method() != "gl_compatibility"}
+			"raster": renderer != "", "compute": renderer != "" and not compat}
 	owner._enqueue(key, urgent)
 	return key
+
+
+func bake_sky(key: String, code: String, params: Dictionary, size: Vector2i) -> Image:
+	return await result(request_bake(key, code, params, size, 32, false, false, true))
 
 # issue 1434 (LOAD17): the bakes handed back to the main thread since main.gd last read it (12-character keys)
 static var handed_back := ""
@@ -313,6 +328,30 @@ func _loading() -> bool:
 	return t != null and not t.get_nodes_in_group("battle_loading").is_empty()
 
 var _exiting := false   # issue 1482: set in _exit_tree; a raster that finishes after it starts no worker
+
+func _display_renderer() -> String:
+	return "" if DisplayServer.get_name() == "headless" else RenderingServer.get_current_rendering_method()
+
+func _create_local_device() -> RenderingDevice:
+	return RenderingServer.create_local_rendering_device()
+
+func _start_finalizer(task: Callable) -> Error:
+	return _thread.start(task)
+
+static func _shader_variant(job: Dictionary) -> String:
+	# Seed and parameters change the uniform data, not which shader is compiled.
+	return str(job.get("sky_half", false)) + ":" + str(job.code).sha256_text()
+
+func _compute_failure(result: Dictionary, job: Dictionary) -> void:
+	match result.get("failure", ""):
+		"device":
+			if _device_unavailable: return
+			_device_unavailable = true
+		"shader":
+			var variant := _shader_variant(job)
+			if _failed_shaders.has(variant): return
+			_failed_shaders[variant] = true
+	push_warning("World bake compute failed, trying raster: " + result.error)
 
 func _enter_tree() -> void:
 	_exiting = false
@@ -331,17 +370,23 @@ func _process(_dt: float) -> void:
 			_active = ""
 			return
 		var job: Dictionary = _jobs[_active]
-		if result.image == null and not job.has("path") and not job.compute and DisplayServer.get_name() != "headless" and not job.get("raster_done", false):
+		if result.image == null and job.get("raster", false) and not job.get("raster_done", false):
+			if result.get("error", "") != "":
+				_compute_failure(result, job)
 			job.raster_done = true
-			var img: Image = await _canvas(job.code, job.params, job.size)
+			var img: Image = await _canvas(job.code, job.params, job.size, bool(job.get("sky", false)))
 			# issue 1482: the raster awaited frames; if the service left the tree meanwhile, _exit_tree already joined
 			# and cleared every job, so no new worker may start (it would never be joined)
 			if _exiting or not is_inside_tree() or job.done:
 				job.done = true
 				return
 			_thread = Thread.new()
-			_thread.start(_finish_image.bind(_active, img, _keep_keys(), bool(job.get("half_mips", false))))
-			return
+			var err := _start_finalizer(_finish_image.bind(_active, img, _keep_keys(), job))
+			if err == OK: return
+			_thread = null
+			# Use the normal completion path so every waiter wakes and the queue can move on.
+			result = {"image": null}
+			push_warning("Could not start world bake finalizer: %s" % error_string(err))
 		job.image = result.image
 		job.done = true
 		if result.get("unsaved", false):
@@ -368,10 +413,13 @@ func _process(_dt: float) -> void:
 				_active = ""
 		return
 	_active = _queue.pop_front()
-	_jobs[_active]["defer_save"] = _loading()
-	_jobs[_active]["worker_from"] = Time.get_ticks_msec()
+	var job: Dictionary = _jobs[_active]
+	job.defer_save = _loading()
+	job.worker_from = Time.get_ticks_msec()
+	if job.compute:
+		job.compute = not _device_unavailable and not _failed_shaders.has(_shader_variant(job))
 	_thread = Thread.new()
-	var err := _thread.start(_work.bind(_active, _jobs[_active], _keep_keys()))
+	var err := _thread.start(_work.bind(_active, job, _keep_keys(), _create_local_device))
 	if err != OK:
 		_jobs[_active].done = true
 		_jobs.erase(_active)
@@ -402,7 +450,7 @@ func _keep_keys() -> Dictionary:
 static func _folder() -> String:
 	return OS.get_environment("VS_WORLD_CACHE") if OS.has_environment("VS_WORLD_CACHE") else CACHE_DIR
 
-static func _work(key: String, job: Dictionary, keep: Dictionary = {}) -> Dictionary:
+static func _work(key: String, job: Dictionary, keep: Dictionary = {}, make_device := Callable()) -> Dictionary:
 	if job.has("path"):
 		var authored_image: Image = null
 		if str(job.path).ends_with(".json"):
@@ -418,20 +466,34 @@ static func _work(key: String, job: Dictionary, keep: Dictionary = {}) -> Dictio
 	# Artoo on PR 1445: the folder is pinned when the job is queued, so a later VS_WORLD_CACHE change (the bench's b2r)
 	# cannot move this job's read or its deferred write
 	var folder: String = str(job.get("folder", _folder()))
-	var path := folder.path_join(key + ".png")
+	var sky_half: bool = job.get("sky_half", false)
+	var path := folder.path_join(key + SKY_HALF_EXT)
 	var img: Image = null
 	work_stage = 1
-	if FileAccess.file_exists(path): img = Image.load_from_file(path)
+	var size: Vector2i = job.size
+	var half_bytes := size.x * size.y * SKY_HALF_BYTES
+	if sky_half and FileAccess.file_exists(path) and FileAccess.get_size(path) == half_bytes:
+		var bytes := FileAccess.get_file_as_bytes(path)
+		if bytes.size() == half_bytes:
+			img = Image.create_from_data(size.x, size.y, false, Image.FORMAT_RGBAH, bytes)
+	# A normal-renderer sky keeps its own key even if it recovered via raster.
+	# Prefer its linear half-float file, then look for its gamma-encoded raster PNG.
+	if img == null:
+		path = folder.path_join(key + ".png")
+		if FileAccess.file_exists(path):
+			img = Image.load_from_file(path)
 	var source := "loaded"
 	var error := ""
+	var failure := ""
 	var stages := {}
 	if img == null or img.is_empty() or img.get_size() != job.size:
 		img = null
 		if job.compute:
 			work_stage = 2
-			var result := _compute(job.code, job.params, job.size)
+			var result := _compute(job.code, job.params, size, sky_half, make_device)
 			img = result.image
 			error = result.get("error", "")
+			failure = result.get("failure", "")
 			stages = result.get("stages", {})
 			source = "baked"
 			if img != null and job.get("defer_save", false):
@@ -443,23 +505,32 @@ static func _work(key: String, job: Dictionary, keep: Dictionary = {}) -> Dictio
 	work_stage = 5
 	var tm := Time.get_ticks_usec()
 	if img != null and job.get("half_mips", false): img = height_float(img)
-	if img != null and not img.has_mipmaps(): img.generate_mipmaps()
+	if img != null and not job.get("sky", false) and not img.has_mipmaps(): img.generate_mipmaps()
 	if not stages.is_empty(): stages["mips"] = (Time.get_ticks_usec() - tm) / 1000
 	work_stage = 0
-	return {"image": img, "source": source, "error": error, "stages": stages,
+	return {"image": img, "source": source, "error": error, "failure": failure, "stages": stages,
 		"unsaved": source == "baked" and img != null and job.get("defer_save", false)}
 
 
-# The PNG write and the cache prune of one baked map, each timed (stages "save" and "prune", with their wall-clock start).
+# The cache write and prune of one baked map, each timed. Linear sky pixels stay half-floats on disk.
 static func _save(key: String, img: Image, keep: Dictionary, stages: Dictionary, folder: String) -> bool:
-	var path := folder.path_join(key + ".png")
+	var half := img.get_format() == Image.FORMAT_RGBAH
+	var path := folder.path_join(key + (SKY_HALF_EXT if half else ".png"))
 	if DirAccess.make_dir_recursive_absolute(folder) != OK:
 		return false
 	work_stage = 3
 	var t := Time.get_ticks_usec()
 	stages["save_began"] = Time.get_ticks_msec()
 	var tmp := path + ".tmp"
-	var ok := img.save_png(tmp) == OK and DirAccess.rename_absolute(tmp, path) == OK
+	var ok := false
+	if half:
+		var f := FileAccess.open(tmp, FileAccess.WRITE)
+		if f != null:
+			ok = f.store_buffer(img.get_data())
+			f.close()
+	else:
+		ok = img.save_png(tmp) == OK
+	ok = ok and DirAccess.rename_absolute(tmp, path) == OK
 	stages["save"] = (Time.get_ticks_usec() - t) / 1000
 	if ok:
 		work_stage = 4
@@ -552,15 +623,11 @@ static func _authored_tiles(path: String, size: Vector2i) -> Image:
 		image.blit_rect(tile, Rect2i(Vector2i.ZERO, tile_size), pos)
 	return image
 
-static func _finish_image(key: String, img: Image, keep: Dictionary = {}, half_mips := false) -> Dictionary:
+static func _finish_image(key: String, img: Image, keep: Dictionary = {}, job: Dictionary = {}) -> Dictionary:
 	if img != null:
-		var folder := _folder()
-		if DirAccess.make_dir_recursive_absolute(folder) == OK:
-			var path := folder.path_join(key + ".png")
-			if img.save_png(path + ".tmp") == OK and DirAccess.rename_absolute(path + ".tmp", path) == OK:
-				prune(folder, CACHE_CAP_BYTES, keep, key)
-		if half_mips: img = height_float(img)
-		img.generate_mipmaps()
+		_save(key, img, keep, {}, str(job.get("folder", _folder())))
+		if job.get("half_mips", false): img = height_float(img)
+		if not job.get("sky", false): img.generate_mipmaps()
 	return {"image": img, "source": "baked"}
 
 # Issue 1265. The index maps a cache key to the unix time a battle last loaded or saved it. A missing stamp (older
@@ -600,7 +667,7 @@ static func prune(folder: String, cap: int, keep: Dictionary, fresh: String, now
 			if now - FileAccess.get_modified_time(path) > TMP_MAX_AGE and DirAccess.remove_absolute(path) == OK:
 				removed.append(name)
 			continue
-		if not name.ends_with(".png"): continue
+		if not (name.ends_with(".png") or name.ends_with(SKY_HALF_EXT)): continue
 		var key := name.get_basename()
 		var size := FileAccess.get_size(path)
 		var stamp: float = float(used.get(key, maxi(FileAccess.get_modified_time(path), FileAccess.get_access_time(path))))
@@ -614,7 +681,7 @@ static func prune(folder: String, cap: int, keep: Dictionary, fresh: String, now
 			if keep.has(m.key) or m.key == fresh: continue
 			if DirAccess.remove_absolute(m.path) == OK:
 				total -= int(m.size)
-				removed.append(m.key + ".png")
+				removed.append(m.path.get_file())
 	removed.append_array(_sweep_old_versions(folder, folder == CACHE_DIR))
 	var live := {}
 	for m in maps:
@@ -626,14 +693,16 @@ static func prune(folder: String, cap: int, keep: Dictionary, fresh: String, now
 
 # Issue 1265 (Board, Nov 20: the PC held 0.15 GB of v2 never read again): bake folders of older cache versions under
 # the game's own cache root (user://world_bakes/v1 .. v<N-1>) are cleared once per run. Never for a VS_WORLD_CACHE
-# override (Artoo on PR 1295: its neighbours are not the game's). Only names the game writes go: <64 hex>.png, that
-# plus .tmp, and used.json; then the folder if it is empty. Anything else stays.
+# override (Artoo on PR 1295: its neighbours are not the game's). Only names the game writes go: <64 hex>.png or
+# .rgba16f, their .tmp files, and used.json; then the folder if it is empty. Anything else stays.
 static var _old_swept := false
 
 static func _bake_name(f: String) -> bool:
 	if f == USED_INDEX or f == USED_INDEX + ".tmp": return true
-	var key := f.trim_suffix(".tmp").trim_suffix(".png")
-	if key.length() != 64 or not (f.ends_with(".png") or f.ends_with(".png.tmp")): return false
+	var name := f.trim_suffix(".tmp")
+	if not (name.ends_with(".png") or name.ends_with(SKY_HALF_EXT)): return false
+	var key := name.get_basename()
+	if key.length() != 64: return false
 	for c in key:
 		if not c in "0123456789abcdef": return false
 	return true
@@ -655,7 +724,7 @@ static func _sweep_old_versions(folder: String, owned: bool) -> Array:
 
 # The two bake shaders use the GLSL subset of Godot's shader language. Reuse
 # their equations, with a storage buffer for uniforms and an image output.
-static func _compute_source(code: String, params: Dictionary, size: Vector2i) -> Dictionary:
+static func _compute_source(code: String, params: Dictionary, size: Vector2i, sky_half := false) -> Dictionary:
 	code = code.replace("shader_type canvas_item;", "").replace("render_mode unshaded, blend_disabled;", "")
 	var rx := RegEx.new()
 	rx.compile("(?m)^uniform (float|int|vec2|vec3|vec4) (\\w+)(?:\\[(\\d+)\\])?[^;]*;")
@@ -694,7 +763,7 @@ static func _compute_source(code: String, params: Dictionary, size: Vector2i) ->
 		code = rx.sub(code, "bake_data.values[%d + ($1)]" % arrays[name], true)
 	code = code.replace("void fragment()", "void bake_pixel()")
 	var header := "#version 450\nlayout(local_size_x=8, local_size_y=8, local_size_z=1) in;\n"
-	header += "layout(set=0,binding=0,rgba8) uniform writeonly image2D output_image;\n"
+	header += "layout(set=0,binding=0,%s) uniform writeonly image2D output_image;\n" % ("rgba16f" if sky_half else "rgba8")
 	header += "layout(set=0,binding=1,std430) readonly buffer BakeData { vec4 values[]; } bake_data;\n"
 	header += "layout(push_constant,std430) uniform Tile { int y; } tile;\nvec2 UV; vec4 COLOR;\n"
 	var entry := "\nvoid main() { ivec2 p=ivec2(gl_GlobalInvocationID.xy)+ivec2(0,tile.y); if(any(greaterThanEqual(p,ivec2(full_size)))) return; UV=(vec2(p)+0.5)/full_size; bake_pixel(); imageStore(output_image,p,COLOR); }\n"
@@ -705,35 +774,48 @@ static func _compute_source(code: String, params: Dictionary, size: Vector2i) ->
 # frozen frame against the stage that ran during it. The local device stays per bake: it belongs to the thread that
 # made it (a cloud trial on software Vulkan refused free_rid and finalize from any other thread), and each bake is a
 # new worker thread.
-static func _compute(code: String, params: Dictionary, size: Vector2i) -> Dictionary:
-	var source := _compute_source(code, params, size)
+static func _compute(code: String, params: Dictionary, size: Vector2i, sky_half: bool, make_device: Callable) -> Dictionary:
+	var source := _compute_source(code, params, size, sky_half)
 	if source.has("error"): return {"image": null, "error": source.error}
 	var stages := {"began": Time.get_ticks_msec()}
 	var t := Time.get_ticks_usec()
-	var rd := RenderingServer.create_local_rendering_device()
+	var rd: RenderingDevice = make_device.call() if make_device.is_valid() else RenderingServer.create_local_rendering_device()
 	stages["device"] = (Time.get_ticks_usec() - t) / 1000
-	if rd == null: return {"image": null, "error": "Local RenderingDevice is unavailable"}
+	if rd == null: return {"image": null, "error": "Local RenderingDevice is unavailable", "failure": "device"}
 	t = Time.get_ticks_usec()
 	var shader_source := RDShaderSource.new()
 	shader_source.source_compute = source.code
 	var spirv := rd.shader_compile_spirv_from_source(shader_source)
+	if spirv == null:
+		rd.free()
+		return {"image": null, "error": "Could not compile bake shader", "failure": "shader"}
 	var error := spirv.get_stage_compile_error(RenderingDevice.SHADER_STAGE_COMPUTE)
 	if error != "":
 		rd.free()
-		return {"image": null, "error": error}
+		return {"image": null, "error": error, "failure": "shader"}
 	stages["spirv"] = (Time.get_ticks_usec() - t) / 1000
 	t = Time.get_ticks_usec()
 	var shader := rd.shader_create_from_spirv(spirv)
+	if not shader.is_valid():
+		rd.free()
+		return {"image": null, "error": "Could not create bake shader", "failure": "shader"}
 	var pipeline := rd.compute_pipeline_create(shader)
+	if not pipeline.is_valid():
+		rd.free_rid(shader)
+		rd.free()
+		return {"image": null, "error": "Could not create bake pipeline"}
 	stages["pipeline"] = (Time.get_ticks_usec() - t) / 1000
 	t = Time.get_ticks_usec()
 	var format := RDTextureFormat.new()
 	format.width = size.x
 	format.height = size.y
-	format.format = RenderingDevice.DATA_FORMAT_R8G8B8A8_UNORM
+	format.format = RenderingDevice.DATA_FORMAT_R16G16B16A16_SFLOAT if sky_half else RenderingDevice.DATA_FORMAT_R8G8B8A8_UNORM
 	format.usage_bits = RenderingDevice.TEXTURE_USAGE_STORAGE_BIT | RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT
 	var output := rd.texture_create(format, RDTextureView.new())
 	var buffer := rd.storage_buffer_create(source.data.size(), source.data)
+	if not output.is_valid() or not buffer.is_valid():
+		_free_compute(rd, [buffer, output, pipeline, shader])
+		return {"image": null, "error": "Could not allocate bake output or uniforms"}
 	var image_uniform := RDUniform.new()
 	image_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE
 	image_uniform.binding = 0
@@ -743,12 +825,16 @@ static func _compute(code: String, params: Dictionary, size: Vector2i) -> Dictio
 	data_uniform.binding = 1
 	data_uniform.add_id(buffer)
 	var uniforms := rd.uniform_set_create([image_uniform, data_uniform], shader, 0)
+	if not uniforms.is_valid():
+		_free_compute(rd, [buffer, output, pipeline, shader])
+		return {"image": null, "error": "Could not bind bake uniforms"}
+	var resources: Array[RID] = [uniforms, buffer, output, pipeline, shader]
 	# Small dispatches avoid the Windows GPU watchdog on slower graphics cards.
 	var worst_strip := 0
-	for y in range(0, size.y, 32):
+	var strip_h := 128 if sky_half else 32
+	for y in range(0, size.y, strip_h):
 		if _abort:
-			for rid in [uniforms, buffer, output, pipeline, shader]: rd.free_rid(rid)
-			rd.free()
+			_free_compute(rd, resources)
 			return {"image": null, "error": "", "stages": stages}
 		var ts := Time.get_ticks_usec()
 		var list := rd.compute_list_begin()
@@ -756,7 +842,7 @@ static func _compute(code: String, params: Dictionary, size: Vector2i) -> Dictio
 		rd.compute_list_bind_uniform_set(list, uniforms, 0)
 		var push := PackedInt32Array([y]).to_byte_array()
 		rd.compute_list_set_push_constant(list, push, push.size())
-		rd.compute_list_dispatch(list, ceili(size.x / 8.0), ceili(mini(32, size.y - y) / 8.0), 1)
+		rd.compute_list_dispatch(list, ceili(size.x / 8.0), ceili(mini(strip_h, size.y - y) / 8.0), 1)
 		rd.compute_list_end()
 		rd.submit()
 		rd.sync()
@@ -765,19 +851,26 @@ static func _compute(code: String, params: Dictionary, size: Vector2i) -> Dictio
 	stages["worst_strip"] = worst_strip / 1000
 	t = Time.get_ticks_usec()
 	var bytes := rd.texture_get_data(output, 0)
-	for rid in [uniforms, buffer, output, pipeline, shader]: rd.free_rid(rid)
-	rd.free()
+	_free_compute(rd, resources)
 	stages["readback"] = (Time.get_ticks_usec() - t) / 1000
-	if bytes.size() != size.x * size.y * 4: return {"image": null, "error": "Incomplete bake readback", "stages": stages}
-	return {"image": Image.create_from_data(size.x, size.y, false, Image.FORMAT_RGBA8, bytes), "stages": stages}
+	var pixel_bytes := SKY_HALF_BYTES if sky_half else 4
+	if bytes.size() != size.x * size.y * pixel_bytes: return {"image": null, "error": "Incomplete bake readback", "stages": stages}
+	var image_format := Image.FORMAT_RGBAH if sky_half else Image.FORMAT_RGBA8
+	return {"image": Image.create_from_data(size.x, size.y, false, image_format, bytes), "stages": stages}
 
 
-# Compatibility has no compute device. Keep its original raster bake under the
-# loading cover; mipmaps and PNG work still go through the worker.
-func _canvas(code: String, params: Dictionary, size: Vector2i) -> Image:
+static func _free_compute(rd: RenderingDevice, resources: Array[RID]) -> void:
+	for rid in resources:
+		if rid.is_valid(): rd.free_rid(rid)
+	rd.free()
+
+
+# Compatibility and failed compute bakes use raster under the loading cover.
+# Mipmaps and PNG work still go through the worker.
+func _canvas(code: String, params: Dictionary, size: Vector2i, sky_gamma := false) -> Image:
 	var strips := maxi(2, ceili(size.y / 32.0))
 	var sh := Shader.new()
-	sh.code = code
+	sh.code = ("#define SKY_COMPAT_8BIT\n" + code) if sky_gamma else code
 	var mat := ShaderMaterial.new()
 	mat.shader = sh
 	for k in params:
