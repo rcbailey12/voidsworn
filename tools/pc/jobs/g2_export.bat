@@ -1,5 +1,5 @@
 @echo off
-rem Windows build of Voidsworn (Godot): writes build\export\Voidsworn.exe (+ Voidsworn.pck) and a log.
+rem Windows build of Voidsworn (Godot): writes build\export\Voidsworn.exe, its companions and a log.
 rem Queue job from Downloads\voidsworn_test\build. Downloads the Godot export templates once (about 1 GB) if missing.
 rem After this, play_godot.bat runs the exported game.
 rem Build and check a separate candidate before replacing the whole live export folder.
@@ -48,6 +48,8 @@ set "PC_GODOT_EXPORT_TEMPLATES=%TPL%"
 call "%TMO%" 1800 "%G%" --headless --path "%PROJ%" --export-release "Windows Desktop" "%CANDIDATE_EXPORT%\Voidsworn.exe" >> "%LOG%" 2>&1
 if errorlevel 1 goto failed
 for %%F in (Voidsworn.exe Voidsworn.console.exe Voidsworn.pck) do if not exist "%CANDIDATE_EXPORT%\%%F" goto failed
+copy /y "%~dp0..\Play_Voidsworn_Safe.bat" "%CANDIDATE_EXPORT%\Play_Voidsworn_Safe.bat" >> "%LOG%" 2>&1
+if errorlevel 1 goto failed
 rem what is in the package: no test folders, the real campaign UI, fx, story and music player
 call "%TMO%" 300 "%CANDIDATE_EXPORT%\Voidsworn.console.exe" --headless -- --check-export >> "%LOG%" 2>&1
 if errorlevel 1 goto failed

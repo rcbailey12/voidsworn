@@ -16,6 +16,7 @@ const build = path.join(root, 'build with spaces');
 const job = path.join(__dirname, 'jobs/g2_export.bat');
 const log = path.join(root, 'shots/g2_export_log.txt');
 const files = ['Voidsworn.exe', 'Voidsworn.console.exe', 'Voidsworn.pck'];
+const safeName = 'Play_Voidsworn_Safe.bat';
 const put = (p, value) => {
   fs.mkdirSync(path.dirname(p), { recursive: true });
   fs.writeFileSync(p, value);
@@ -93,6 +94,9 @@ for (const failure of ['export', 'package', 'smoke', ...reportFailures, 'promoti
   assert.equal(r.status, failure ? 1 : 0, `${failure || 'clean export'}: ${r.error || ''}\n${text}\n${r.stderr}`);
   for (const f of files) assert.equal(read(path.join(build, 'export', f)), failure ? 'last good' : 'candidate', `${failure}: live ${f}`);
   assert.equal(fs.existsSync(path.join(build, 'export/assets.dll')), !failure);
+  const safe = path.join(build, 'export', safeName);
+  assert.equal(fs.existsSync(safe), !failure, `${failure}: safe launcher ships only with the promoted export`);
+  if (!failure) assert.deepEqual(fs.readFileSync(safe), fs.readFileSync(path.join(__dirname, safeName)));
   assert.equal(text.includes('fixture package check'), failure !== 'export');
   assert.equal(text.includes('fixture smoke check'), !['export', 'package'].includes(failure), text);
   assert.equal(/^OK:/m.test(text), !failure);
@@ -110,6 +114,42 @@ for (const failure of ['export', 'package', 'smoke', ...reportFailures, 'promoti
   if (!failure) assert.match(text, /smoke report checked: 2 runs, 0 errors, 0 softlocks/);
 }
 console.log('PASS: export, check, smoke report (missing, stale, short, errors, softlocks, parse error) and promotion failures keep the live build; a clean run promotes all companions together');
+
+// Test the shipped batch in a standalone folder. A tiny native probe captures
+// the argv and CWD Godot would receive, without opening a window or using a GPU.
+const release = path.join(root, 'standalone release');
+fs.cpSync(path.join(build, 'export'), release, { recursive: true });
+const probeSource = path.join(root, 'LaunchProbe.cs');
+const probeExe = path.join(root, 'LaunchProbe.exe');
+const probeMarker = path.join(root, 'safe launched.txt');
+put(probeSource, [
+  'using System;',
+  'using System.IO;',
+  'public static class LaunchProbe {',
+  '  public static int Main(string[] args) {',
+  '    File.WriteAllLines(Environment.GetEnvironmentVariable("SAFE_MARKER"),',
+  '      new[] { Environment.CurrentDirectory, String.Join("|", args) });',
+  '    return 23;',
+  '  }',
+  '}',
+].join('\n'));
+const probe = spawnSync('powershell.exe', ['-NoProfile', '-Command',
+  'Add-Type -Path $env:SAFE_PROBE_SOURCE -OutputAssembly $env:SAFE_PROBE_EXE -OutputType ConsoleApplication -ErrorAction Stop'], {
+  windowsHide: true, timeout: 15000, encoding: 'utf8',
+  env: { ...process.env, SAFE_PROBE_SOURCE: probeSource, SAFE_PROBE_EXE: probeExe },
+});
+assert.equal(probe.status, 0, `${probe.error || ''}\n${probe.stdout}\n${probe.stderr}`);
+fs.copyFileSync(probeExe, path.join(release, 'Voidsworn.exe'));
+assert.ok(!fs.existsSync(path.join(release, 'project.godot')));
+const safePlayed = spawnSync('cmd.exe', ['/d', '/s', '/c', `call "${path.join(release, safeName)}" --headless "two words"`], {
+  cwd: root, windowsVerbatimArguments: true, windowsHide: true, timeout: 10000, encoding: 'utf8',
+  env: { ...process.env, SAFE_MARKER: probeMarker },
+});
+assert.equal(safePlayed.status, 23, `${safePlayed.error || ''}\n${safePlayed.stdout}\n${safePlayed.stderr}`);
+const [safeCwd, safeArgs] = read(probeMarker).split(/\r?\n/);
+assert.equal(safeCwd.toLowerCase(), release.toLowerCase());
+assert.equal(safeArgs, '--rendering-method|gl_compatibility|--headless|two words');
+console.log('PASS: the shipped safe launcher runs the adjacent EXE from an export-only folder and passes gl_compatibility');
 
 // Try the real Play launcher with a harmless executable in the promoted folder.
 const play = path.join(build, 'tools/pc/play_godot.bat');
