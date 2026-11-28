@@ -1,0 +1,151 @@
+{
+  "source_commit": "4a6c1c18b2b1a84991ac48bf9cceb97220179faa",
+  "source_dirty": true,
+  "source_diff_sha256": "a8b82541774102e28033def47cee074ea401637f5e243fae625ff31615374384",
+  "source_dirty_files": {
+    "tools/blender/kits/hegemony_station/outpost_production.py": "206cd234a14a0bd149f85b48ac7cba37909329d1",
+    "tools/blender/kits/hegemony_station/production.py": "5bbaa15e6113609b5d23e966aee6603f0de50a48",
+    "tools/blender/kits/hegemony_station/tile_maps_test.py": "e84524d1155b4cf847711c851c87edb8e250f3a7"
+  },
+  "stage": "paint proof",
+  "schema": 1,
+  "picture_name": "station_T2_albedo_comparison.png",
+  "date": "2026-11-28T01:35:34Z",
+  "sources": [
+    {
+      "source_commit": "4a6c1c18b2b1a84991ac48bf9cceb97220179faa",
+      "source_dirty": true,
+      "source_diff_sha256": "a8b82541774102e28033def47cee074ea401637f5e243fae625ff31615374384",
+      "source_dirty_files": {
+        "tools/blender/kits/hegemony_station/outpost_production.py": "206cd234a14a0bd149f85b48ac7cba37909329d1",
+        "tools/blender/kits/hegemony_station/production.py": "5bbaa15e6113609b5d23e966aee6603f0de50a48",
+        "tools/blender/kits/hegemony_station/tile_maps_test.py": "e84524d1155b4cf847711c851c87edb8e250f3a7"
+      },
+      "stage": "paint proof"
+    },
+    {
+      "source_commit": "93edaff2d0e200276a35f116ba3a82b3b822dfab",
+      "source_diff_sha256": "ba3bbdbff1375fa7cce9fc0dcec30808d0a8ecf431e3ed3434a14491034d99dd",
+      "source_dirty": true,
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "fresh CPU Cycles T2 detailed albedo tiles",
+      "source_commit": "4a6c1c18b2b1a84991ac48bf9cceb97220179faa",
+      "source_dirty": true,
+      "source_diff_sha256": "a8b82541774102e28033def47cee074ea401637f5e243fae625ff31615374384",
+      "stage": "paint proof",
+      "date": "2026-11-28T01:35:34Z",
+      "image_sha256": "2981d176f045e3d845089f3caf1db3a83728a4907b133aed9f1460f749090689",
+      "sources": [
+        {
+          "source_commit": "4a6c1c18b2b1a84991ac48bf9cceb97220179faa",
+          "source_dirty": true,
+          "source_diff_sha256": "a8b82541774102e28033def47cee074ea401637f5e243fae625ff31615374384",
+          "source_dirty_files": {
+            "tools/blender/kits/hegemony_station/outpost_production.py": "206cd234a14a0bd149f85b48ac7cba37909329d1",
+            "tools/blender/kits/hegemony_station/production.py": "5bbaa15e6113609b5d23e966aee6603f0de50a48",
+            "tools/blender/kits/hegemony_station/tile_maps_test.py": "e84524d1155b4cf847711c851c87edb8e250f3a7"
+          },
+          "stage": "paint proof"
+        }
+      ]
+    },
+    {
+      "picture_name": "installed station_T2.glb",
+      "source_commit": "93edaff2d0e200276a35f116ba3a82b3b822dfab",
+      "source_dirty": true,
+      "source_diff_sha256": "ba3bbdbff1375fa7cce9fc0dcec30808d0a8ecf431e3ed3434a14491034d99dd",
+      "stage": "installed in game",
+      "date": "2026-11-17T18:34:00Z",
+      "image_sha256": "d0af9c4bd3b87a42995ae6be737bd407c536014634579e123a4d0d20eada3d56",
+      "sources": [
+        {
+          "source_commit": "93edaff2d0e200276a35f116ba3a82b3b822dfab",
+          "source_diff_sha256": "ba3bbdbff1375fa7cce9fc0dcec30808d0a8ecf431e3ed3434a14491034d99dd",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    596,
+    636,
+    720
+  ],
+  "strip_size": [
+    636,
+    124
+  ],
+  "strip_sha256": [
+    "5adcf76483f5cd862be5178556528b9700a18b5f51abbbdbfd785119aab7dab1"
+  ],
+  "stamp_template_sha256": "5adcf76483f5cd862be5178556528b9700a18b5f51abbbdbfd785119aab7dab1",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAAB8CAIAAAB8EPooAAACA0lEQVR4nO3XMREAIQADQXgHlNT49/gquILZNZDyJnPtMwCA+75gAwAQXQDoeLoAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcARBcA3uLpAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AGI0fycMBRWWLNc4AAAAASUVORK5CYII="
+  ],
+  "image_sha256": "0bb08c18f9f2580b2d20da0fc5b3054585aebaa21c339dc369b106a8c4cab68b",
+  "installed_asset_sha256": "d0af9c4bd3b87a42995ae6be737bd407c536014634579e123a4d0d20eada3d56",
+  "colour_comparison": {
+    "encoding": "8-bit sRGB",
+    "max_relative_drift_allowed": 0.02,
+    "zones": {
+      "hgrey": {
+        "installed_mean_rgb": [
+          216.855788230896,
+          214.06023859977722,
+          202.00883316993713
+        ],
+        "baked_mean_rgb": [
+          216.86289763450623,
+          214.07159423828125,
+          202.02596783638
+        ],
+        "max_relative_drift": 8.482137228354165e-05
+      },
+      "hpanel": {
+        "installed_mean_rgb": [
+          206.67588186264038,
+          202.98967838287354,
+          191.83830881118774
+        ],
+        "baked_mean_rgb": [
+          206.69362616539001,
+          203.00841188430786,
+          191.86020874977112
+        ],
+        "max_relative_drift": 0.00011415831759092764
+      },
+      "dark": {
+        "installed_mean_rgb": [
+          93.17122983932495,
+          107.07001829147339,
+          119.06687664985657
+        ],
+        "baked_mean_rgb": [
+          93.17123031616211,
+          107.07001638412476,
+          119.0668773651123
+        ],
+        "max_relative_drift": 1.7814031072827353e-08
+      },
+      "hmetal": {
+        "installed_mean_rgb": [
+          226.64853858947754,
+          228.4761621952057,
+          221.0249536037445
+        ],
+        "baked_mean_rgb": [
+          226.6560835838318,
+          228.4836230278015,
+          221.04230999946594
+        ],
+        "max_relative_drift": 7.852686060304415e-05
+      }
+    }
+  }
+}

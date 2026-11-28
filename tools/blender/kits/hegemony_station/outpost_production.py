@@ -11,8 +11,7 @@ blender -b --python-exit-code 1 -P outpost_production.py -- --out DIR --project 
 
 --t2-glb takes the painted tiles straight from the installed station_T2.glb (Ryan, Nov 24: "paint with T2's tiles"): the same
 pixels, so the outpost cannot drift from T2's accepted paint. Without it the tiles are baked again through production.py
-(--reuse-tiles reads an earlier bake from DIR/textures); that bake now goes through the newer shared paint stack and is not
-the accepted T2 look, so the PC job always passes --t2-glb.
+(--reuse-tiles reads an earlier bake from DIR/textures).
 """
 import argparse
 import hashlib
@@ -59,7 +58,7 @@ def main():
             source['normal'].colorspace_settings.name = 'Non-Color'
         maps = P.fine_details(maps, textures)
     else:
-        maps = P.fine_details(P.tile_maps(textures, P.cruiser_density(project)['length_world']), textures)
+        maps = P.tile_maps(textures, P.cruiser_density(project)['length_world'])
     glass = P.finish.glass_materials(P.H, P.PS, textures, P.RES, P.TILE_WORLD)
     root, move, objs, rows, details = outpost.build()
     root.name = OUT_NAME
@@ -100,7 +99,7 @@ def main():
     P.write(out / 'outpost_manifest.json', dict(
         code=OUT_NAME, stage='paint proof', route='station_T2 production functions (production.py)',
         tiles=dict(source=str(a.t2_glb), sha256=hashlib.sha256(Path(a.t2_glb).read_bytes()).hexdigest()) if a.t2_glb
-        else 'baked again (not the accepted T2 tiles)',
+        else 'rebaked through the T2 paint route',
         bounds=P.review.bounds(objs), uniform_scale=uniform_scale, modules=rows, details=details,
         triangles=sum(v['triangles'] for v in after.values()),
         inside_triangles=sum(v['triangles'] for v in after.values() if v['inside']),

@@ -30,6 +30,12 @@ import paint_stack as PS
 spec = importlib.util.spec_from_file_location('hegemony_paint', HERE.parent / 'hegemony/stack.py')
 H = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(H)
+# This private stack uses configure()'s per-zone tones, not the fleet's
+# part-duty palette. In particular, hgrey and hpanel must stay distinct.
+H.PART_DUTY_TONES = {}
+# The station gets its variation from service details and real geometry.
+# Keep the fleet's broad mottle and colour grain out of its base coupons.
+H.LAYERS = dict(H.LAYERS, mottle_range=0.0, colour_grain=0.0)
 
 RES = 2048
 TILE_WORLD = 2.0
@@ -60,10 +66,11 @@ def signature(objs):
 
 
 def tile_maps(out, reference_length):
-    """Bake small flat coupons through the actual Hegemony/shared paint stack.
+    """Bake flat coupons and write the finished tiles used by the station.
 
     Coupons lie between module joints. The station's real joint rings stay
     modelled and use htrim; no fake ship band is substituted for those joints.
+    Raw coupon maps are kept so --reuse-tiles can rerun the service details.
     """
     tiles = {k: PS.np_image('station_trim_' + k, v) for k, v in H.trim_sheet().items()}
     H.write_textures(str(out), H.trim_sheet(), H.decal_atlas(code='T2'))
@@ -71,6 +78,10 @@ def tile_maps(out, reference_length):
     bpy.ops.mesh.primitive_plane_add(size=TILE_WORLD / reference_length)
     plane = bpy.context.object
     plane.name = 'paint_coupon'
+    # Group P reads this attribute from a ship's bake copy. A coupon has no
+    # module family of its own; the station adds that on the real geometry.
+    tone = plane.data.attributes.new('ps_module_tone', 'FLOAT', 'POINT')
+    tone.data.foreach_set('value', [1.0] * len(plane.data.vertices))
     # Mesh coordinates are the same normalized ship units as a cruiser bake.
     for v in plane.data.vertices:
         v.co.x += TILE_WORLD / reference_length / 2
@@ -95,7 +106,7 @@ def tile_maps(out, reference_length):
         result[zone] = maps
         print('T2 TILE', zone, flush=True)
     bpy.data.objects.remove(plane, do_unlink=True)
-    return result
+    return fine_details(result, out)
 
 
 def finish_material(zone, maps):
@@ -402,9 +413,9 @@ def main():
         for source in maps.values():
             source['orm'].colorspace_settings.name = 'Non-Color'
             source['normal'].colorspace_settings.name = 'Non-Color'
+        maps = fine_details(maps, textures)
     else:
         maps = tile_maps(textures, cruiser['length_world'])
-    maps = fine_details(maps, textures)
     glass = finish.glass_materials(H, PS, textures, RES, TILE_WORLD)
     licences = json.loads((out/'licences.json').read_text())
     known = {r['file'] for r in licences['textures']}
