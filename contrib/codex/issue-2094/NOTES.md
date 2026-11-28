@@ -1,5 +1,37 @@
 # Vanguard cruiser redraw, issue 2094
 
+## Run 6
+
+Renamed the two module seams to `H9E_bandseam_*` and their four trim rings to `H9E_band_*` so the Directorate paint stack finds them. The approved geometry, silhouette and cannon are unchanged.
+
+CPU Blender reproduced the old missing-band error and confirmed two bands at the sheet's seam stations, each widened on both sides by its trim rings. Stage 5 setup and material routing passed with baking disabled. Concept import, the recipe part audit (115 parts, zero guns aimed into the hull), its self-test, the sheet contract and the recipe standing self-test passed. No GPU bake or publish.
+
+The full standing run recorded 125 passes, two known baseline results and one Windows fixture failure. `lane_tools_refresh_selftest` hit `kill EPERM` during cleanup and passed on its own rerun. No runner files changed.
+
+## Run 5
+
+The H9E now leads with a heavy octagonal collar and a stepped bore around the recessed Directorate emitter. The octagonal jacket has raised machined plate courses and longitudinal rails that run into the saddle. All four raised steel-blue hoops have recessed blue contacts. The second hoop moved aft to preserve both lances' full sweeps. The original saddle, blue flank line, drive row, interior layout and paint stack are unchanged.
+
+[Same-length family comparison](../../../docs/shots/issue-2094-codex/vanguard_family_lineup_r5.png) | [Orthographic build sheet and cutaway](../../../docs/shots/issue-2094-codex/vanguard_build_sheet_r5.png) | [Build sheet and method](../../../docs/ship_pipeline/build_sheets/hegemony_H9E/README.md) | [Manifest](../../../docs/ship_pipeline/build_sheets/hegemony_H9E/manifest.json)
+
+The CPU lineup gives all three models the same 350 px bow-to-stern scale and matched cameras and lighting. The orthographic sheet adds a straight-on view of the bore and a centreline cutaway. Both sheets have verified provenance. The cannon is more prominent than in Run 4, but its housing still sits deeper in the saddle than in the approved concept. The bright lens and blue contact strips are preview materials, not a baked finish.
+
+Concept import, weapon match, sheet conversion, recipe part audit, CPU LOD export and unpainted GLB readback passed. The fit report is clear in all eight categories. The export has 54,060 triangles across 15 primitives, both original module seams and 20 hard points. No GPU shape reference, paint bake, installed measurements or publish in this run. Paint waits for Ryan's review of the new lineup.
+
+The full local standing run did not go green. The manifest mismatch was fixed, and that check plus six other rows passed on individual reruns. Across the full run and reruns, 125 checks passed, two had known baseline results, and only `pc_jobs_1194_tests` still failed. Its Windows tool probe fixture did not stop its child process. No runner code changed. Both Run 5 picture and sidecar pairs passed direct verification in the checkout and the runner's shots folder.
+
+## Run 4
+
+H9E Spineguard keeps its four capacitor hoops, pinched waist and solid stern. The cruiser now uses the Cordon-style recessed accelerator, the shared Directorate Plasma lance turrets and rectangular drive kit, and the same steel-blue module rings, flush panel courses and blue flank strips as Picket and Cordon. The lower collar and worked flat belly are deliberate departures from the approved concept.
+
+[Same-length family comparison](../../../docs/shots/issue-2094-codex/vanguard_family_lineup_r4.png) | [Orthographic build sheet and cutaway](../../../docs/shots/issue-2094-codex/vanguard_build_sheet_r4.png) | [Build sheet and method](../../../docs/ship_pipeline/build_sheets/hegemony_H9E/README.md) | [Manifest](../../../docs/ship_pipeline/build_sheets/hegemony_H9E/manifest.json)
+
+The three comparison ships were built from their sheet sources on CPU with the same cameras, lighting and kit materials. Their overall lengths are normalized to 350 px. The stamp records `d7f5c7a6a` plus the working H9E design. Its recorded source blob matches the resumed design, and both picture sidecars verify. The broad spine has less panel relief than the flanking armour. The lineup is for shape and family cues, not a verdict on the baked finish.
+
+Concept import, weapon match, fit, sheet conversion, part audit and unpainted GLB readback passed on the resumed recipe. Fit found no clashes or blocked arcs. The test export has 51,396 triangles and 15 primitives, including two moving turrets. It has five muzzles, four engine exits and two launch origins for the single rules hangar. All test exports stayed in scratch. The GPU shape reference, recipe outline scores, paint bake, painted surface check, installed measurements and publish are for the later PC queue run after Ryan reviews the lineup.
+
+The full standing run recorded 124 passes, two known baseline results and two Windows runner fixture failures. The temporary Git clone failure in `runner_selftest` passed on its own rerun. The watchdog's `runner_stall_tests` reported a surviving fake Godot process in the full run and failed its isolated rerun with `kill EPERM` during fixture cleanup. Neither runner fixture nor the watchdog changed in this job.
+
 ## Run 3
 
 **Pick H9E Spineguard.** The four capacitor hoops and the heavy bow collar read as one long ion cannon. Its housing sits half-sunk in a solid armor saddle. The pinched waist and broad, unbroken stern give it a clear top outline even with the paint and fittings stripped away. **H9F Cheekguard** wraps the same gun in two heavier cheek plates that reach the muzzle, with a deep front belly tapering up to a shallower stern.

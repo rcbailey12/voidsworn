@@ -1,0 +1,42 @@
+{
+  "source_commit": "d7f5c7a6ab3a0f1e1ea53c7681498485e2274f18",
+  "source_dirty": true,
+  "source_diff_sha256": "23feba0aef26c7d3c84923a9e9801a8aafe8cf6970fff1fa6e23717fef800886",
+  "source_dirty_files": {
+    "tools/blender/build_sheets/ships/hegemony_H9E.py": "4a4987331fc610a210e12556f33b72b88063de19"
+  },
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "vanguard_family_lineup_r4.png",
+  "date": "2026-11-27T19:28:52Z",
+  "sources": [
+    {
+      "source_commit": "d7f5c7a6ab3a0f1e1ea53c7681498485e2274f18",
+      "source_dirty": true,
+      "source_diff_sha256": "23feba0aef26c7d3c84923a9e9801a8aafe8cf6970fff1fa6e23717fef800886",
+      "source_dirty_files": {
+        "tools/blender/build_sheets/ships/hegemony_H9E.py": "4a4987331fc610a210e12556f33b72b88063de19"
+      },
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    622,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "576f1584a7418bac6f72a9fd94d084a89537a4769c3654bdc852012fee88e137"
+  ],
+  "stamp_template_sha256": "576f1584a7418bac6f72a9fd94d084a89537a4769c3654bdc852012fee88e137",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABkklEQVR4nO3VMQHAIADAMJgEbgTgX+F+DNAjUdCvc+0zAKDkex0AADdzAiDHnADIMScAcswJgBxzAiDHnADIMScAcswJgBxzAiDHnADIMScAcswJgBxzAiDHnADIMScAcswJgBxzAiDHnADIMScAcswJgBxzAiDHnADIMScAcswJgBxzAiDHnADIMScAcswJgBxzAiDHnADIMScAcswJgBxzAiDHnADIMScAcswJgBxzAiDHnADIMScAcswJgBxzAiDHnADIMScAcswJgBxzAiDHnADIMScAcswJgBxzAiDHnADIMScAcswJgBxzAiDHnADIMScAcswJgBxzAiDHnADIMScAcswJgBxzAiDHnADIMScAcswJgBxzAiDHnADIMScAcswJgBxzAiDHnADIMScAcswJgBxzAiDHnADIMScAcswJgBxzAiDHnADIMScAcswJgBxzAiDHnADIMScAcswJgBxzAiDHnADIMScAcswJgBxzAiDHnADIMScAcswJgBxzAiDHnADIMScAcswJgFHzA3V0ARpIzQPgAAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "b58750126a0421acf42540c3feeb38930329190113a39c2152a24dfb94959bcc"
+}
