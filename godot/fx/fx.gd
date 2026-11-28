@@ -2047,6 +2047,12 @@ func volley_at(from: Vector3, kind: String, to: Vector3, opts := {}) -> Dictiona
 	return WEAP.volley_points(self, from, kind, to, opts)
 
 
+func standalone_hit(id: String, hit: Dictionary, from: Vector3, breaking: bool) -> void:
+	var target: SHIP = ships.get(id)
+	if target != null and not target.dead and not target.gone:
+		WEAP.standalone_hit(self, target, hit, from, breaking)
+
+
 # hit_lp (issue 1239): the breaking hit's point on the shield, in the shield's frame (a volley's "hit_pts"); INF aims
 # at the middle of the quadrant.
 func shield_break(id: String, quad: int, hit_lp := Vector3.INF) -> void:
