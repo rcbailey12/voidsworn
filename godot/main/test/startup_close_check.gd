@@ -36,9 +36,10 @@ func check(ok: bool, why: String) -> void:
 		push_error(why)
 
 
-func _no_launch_work(main: TestMain) -> bool:
+func _no_launch_work(main: TestMain, expected_sound_prefetches: int) -> bool:
 	return (main.prefetches == 0 and main.quick_battles == 0 and main.title == null and main.ui_sound == null
-			and not main._host_reading and not main._scene_reading and not main._fx_reading and Main.Sfx._pending.is_empty())
+			and not main._host_reading and not main._scene_reading and not main._fx_reading
+			and Main.Sfx._prefetch_calls == expected_sound_prefetches)
 
 
 func _run() -> void:
@@ -54,14 +55,14 @@ func _run() -> void:
 	check(not auto_accept_quit and main._launch_battle_pending, "the close route is armed while the quick battle waits to launch")
 	for i in 3:
 		await process_frame
-	check(_no_launch_work(main), "process frames alone do not start the launch before its first draw")
+	check(_no_launch_work(main, 0), "process frames alone do not start the launch before its first draw")
 	RenderingServer.frame_post_draw.emit()
-	check(_no_launch_work(main), "the draw callback itself does not start the launch")
+	check(_no_launch_work(main, 0), "the draw callback itself does not start the launch")
 	for i in 3:
 		await process_frame
 	check(main.prefetches == 1 and main._host_reading and main._scene_reading and main._fx_reading,
 			"the campaign host, battle scene and effects reads start once after the first draw")
-	check(not Main.Sfx._pending.is_empty(), "battle sound reads start after the first draw too")
+	check(Main.Sfx._prefetch_calls == 1, "battle sound prefetch starts once after the first draw")
 	check(main.quick_battles == 0 and main._launch_battle_pending, "the quick battle waits across frames for the held effects read")
 	main.hold_fx_read = false
 	while main._launch_battle_pending:
@@ -82,7 +83,7 @@ func _run() -> void:
 	var closing := TestMain.new()
 	closing.args["battle"] = true
 	root.add_child(closing)
-	check(_no_launch_work(closing), "no launch work is running when the window is closed before the first draw")
+	check(_no_launch_work(closing, 1), "no launch work is running when the window is closed before the first draw")
 	root.tree_exiting.connect(_at_exit.bind(closing))
 	root.propagate_notification(Node.NOTIFICATION_WM_CLOSE_REQUEST)
 	root.close_requested.emit()
@@ -91,6 +92,6 @@ func _run() -> void:
 
 
 func _at_exit(main: TestMain) -> void:
-	check(_no_launch_work(main), "a late first draw did not start prefetch or build a screen after close")
+	check(_no_launch_work(main, 1), "a late first draw did not start prefetch or build a screen after close")
 	print("STARTUP_CLOSE failures=%d" % failures)
 	quit(1 if failures else 0)

@@ -159,9 +159,11 @@ static func _load_takes(folder: String, files: Array, into: String, key: String,
 # reading the battle's clips on worker threads when it starts (main.gd), and a battle's sound only collects them.
 # Paths only (path -> true); the streams stay in the ResourceLoader.
 static var _pending := {}   # not GPU: paths only (path -> true), the streams stay in the ResourceLoader
+static var _prefetch_calls := 0   # startup_close_check counts requests even after their clips are collected
 
 
 static func prefetch() -> void:
+	_prefetch_calls += 1
 	var paths: Array = []
 	var idx = JSON.parse_string(FileAccess.get_file_as_string("res://audio/clips/index.json")) if FileAccess.file_exists("res://audio/clips/index.json") else {}
 	if idx is Dictionary:
