@@ -7982,9 +7982,6 @@ func _target_info() -> Dictionary:
 			var who := ("Both bearing guns" if set.size() == 2 else ("%d bearing guns" % set.size() if set.size() > 2 else "The bearing gun"))
 			line = "%s%s: about %d damage" % [who, " from the planned hex" if plan != null else "", total]
 			line += ": %d to shields, %d to hull." % [shields, hull] if shields > 0 else ", all to hull."
-		# no kill prediction (ui_spec S1 board ruling on the #314 check): the expected value only; the hatched ghost on the
-		# target's hull bar already shows the hull reaching zero
-		_tgt_plate[tid] = {"odds": "%d%% %d gun%s" % [best, set.size(), "" if set.size() == 1 else "s"], "ghost": maxf(0.0, float(d["hp"]) - eh)}
 	return {"name": str(tu["name"]), "flag": tu["flagship"], "nem": bool(tu.get("nemesis", false)), "hp": float(d["hp"]), "maxHp": float(tu["maxHp"]), "sh": d["sh"], "shMax": float(tu["shMax"]), "shp": float(_z0(tu.get("shp"))),
 		"defenses": _target_defenses(foe), "exp_hull": hull, "exp_shields": shields, "line": line, "burn_line": burn_line, "bearing": set.size(), "hit": best, "gun_index": best_index, "gun": gun, "kind": kind,
 		"quad": quad, "routed": routed, "struck_routed": quad >= 0 and quad in routed}
