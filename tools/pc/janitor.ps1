@@ -1,4 +1,4 @@
-# R336 PC cleanup. PowerShell 5.1. The Board reads --dry-run before the first live run.
+# R336 PC cleanup. PowerShell 5.1. With no trigger, preview cleanup only.
 . (Join-Path $PSScriptRoot 'runner_common.ps1') cleanup-library
 . (Join-Path $PSScriptRoot 'janitor_salvage.ps1')
 . (Join-Path $PSScriptRoot 'janitor_neon.ps1')
@@ -394,17 +394,17 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
     if ($legacy -or $helper) { Assert-NoProcessUses $dir }
     $finishedHelper = $false
     if ($helper) {
-      $done = Get-Item -LiteralPath (Join-Path $dir.FullName 'done.txt') -Force -ErrorAction SilentlyContinue
-      $finishedHelper = $done -is [IO.FileInfo] -and -not ($done.Attributes -band [IO.FileAttributes]::ReparsePoint) -and
-        ([IO.File]::ReadAllText($done.FullName).Trim() -ceq 'PASS')
       # A live run holds the mirror writers' lock from the relay and history proof through the removal, so no lane's
       # fetch or prune changes the refs that proof read (Artoo on PR 1592, 905a8504).
       if (-not $dryRun) {
         $mirrorLock = Open-MirrorWriterLock $mirror
         $relayLock = Open-CleanupLock (Join-Path $root 'relay-mirror.git.lock')
-        # Include the lease if this pass created it, and check the files again after relay proof.
-        $helperSnapshot = Measure-CleanupDirectory (Get-Item -LiteralPath $dir.FullName -Force) -Snapshot
+        # Capture after the helper lease is held, so creating the lease cannot look like a late file.
+        $snapshot = Measure-CleanupDirectory (Get-Item -LiteralPath $dir.FullName -Force) -Snapshot
       }
+      $done = Get-Item -LiteralPath (Join-Path $dir.FullName 'done.txt') -Force -ErrorAction SilentlyContinue
+      $finishedHelper = $done -is [IO.FileInfo] -and -not ($done.Attributes -band [IO.FileAttributes]::ReparsePoint) -and
+        ([IO.File]::ReadAllText($done.FullName).Trim() -ceq 'PASS')
       Test-RelayedResults $dir $mirror $finishedHelper $dryRun
     }
     if ($legacy) {
@@ -445,7 +445,7 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
       } elseif ($helper) {
         Assert-NoProcessUses $dir (Get-CommandLines)
         Assert-GpuQuiet
-        Assert-CleanupSnapshot $dir $helperSnapshot
+        Assert-CleanupSnapshot $dir $snapshot
         Remove-HelperFolder $dir $helperLease; $helperLease = $null; $action = 'removed'
       }
       else { Remove-CleanupDirectory $dir; $action = 'removed' }
@@ -804,12 +804,12 @@ if ($trigger -eq '--install-task') {
   catch { Write-Host "janitor task setup failed: $($_.Exception.Message)"; exit 1 }
   exit 0
 }
-if ($args.Count -gt 1 -or $trigger -notin @($null,'--dry-run','--nightly','--low-space','--after-job')) {
-  Write-Host 'usage: janitor.bat [--dry-run | --nightly | --low-space | --after-job]'
+$automatic = $trigger -in @('--nightly','--low-space','--after-job')
+if ($args.Count -gt 1 -or (-not $automatic -and $trigger -notin @($null,'--dry-run','--live'))) {
+  Write-Host 'usage: janitor.bat [--dry-run | --live | --nightly | --low-space | --after-job]'
   exit 2
 }
-$dryRun = $trigger -eq '--dry-run'
-$automatic = $trigger -in @('--nightly','--low-space','--after-job')
+$dryRun = -not ($automatic -or $trigger -eq '--live')
 $env:GIT_TERMINAL_PROMPT = '0'
 $env:GCM_INTERACTIVE = 'never'
 $root = Join-Path $env:USERPROFILE 'Downloads/voidsworn_test'

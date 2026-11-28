@@ -371,7 +371,7 @@ function gitEnvironment(env) {
 // Only the agent watchdog is replaced. Its preflight kill path and the separate
 // runner_stall_tests row still exercise the real timeout code.
 const runnerFiles = ['codex_issue.bat', 'codex_issue.ps1', 'runner_common.ps1', 'work_issue.bat', 'work_issue.ps1', 'review_evidence.ps1', 'run_timeout.ps1', 'tmo.bat', 'gpu_slots.js', 'disk_space.ps1', 'janitor.ps1', 'janitor_salvage.ps1',
-    'janitor_neon.ps1', 'janitor_relay.ps1', 'neon_idle_threads.js', 'janitor.bat'];
+    'janitor_neon.ps1', 'janitor_relay.ps1', 'neon_idle_threads.js', 'janitor.bat', 'sandbox_handoff.ps1'];
 function fixtureTools(name, scenario = '') {
   const dir = path.join(root, name);
   for (const file of runnerFiles.filter(name => name !== 'tmo.bat')) {
@@ -1669,6 +1669,8 @@ async function testRunnerStartChecks() {
     ['missing', null, /no hashes file/],
     ['incomplete', laneManifest.split('\n').filter(l => !l.endsWith('runner_common.ps1')).join('\n'), /leaves out: runner_common\.ps1/],
     ['changed', laneManifest.replace(/^[0-9a-f]{64}(?=  codex_issue\.bat)/m, '0'.repeat(64)), /lane runner files differ.*codex_issue\.bat/],
+    ['handoff-omitted', laneManifest.split('\n').filter(l => !l.endsWith('sandbox_handoff.ps1')).join('\n'), /leaves out: sandbox_handoff\.ps1/],
+    ['handoff-changed', laneManifest.replace(/^[0-9a-f]{64}(?=  sandbox_handoff\.ps1)/m, '0'.repeat(64)), /lane runner files differ.*sandbox_handoff\.ps1/],
   ];
   for (const [label, content, reason] of hashCases) {
     const file = path.join(root, 'strict-' + label + '.txt');

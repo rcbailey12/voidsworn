@@ -1,16 +1,14 @@
 diff --git a/.github/workflows/checks.yml b/.github/workflows/checks.yml
 --- a/.github/workflows/checks.yml
 +++ b/.github/workflows/checks.yml
-@@ -123,8 +123,15 @@
+@@ -123,8 +123,16 @@
      timeout-minutes: 20
      steps:
 -      # This commit's files only (blob:none): no 10 GB history. merge-main fetches the history it needs without contents.
--      - uses: actions/checkout@v4
--        with:
--          filter: blob:none
 +      # Use the PC lanes' sparse inputs. Checks that need omitted tracked paths read the Git index.
-+      - uses: actions/checkout@v4
-+        with:
+       - uses: actions/checkout@v4
+         with:
+           filter: blob:none
 +          sparse-checkout-cone-mode: false
 +          sparse-checkout: |
 +            /*
@@ -21,16 +19,14 @@ diff --git a/.github/workflows/checks.yml b/.github/workflows/checks.yml
 +            !/rocks_hi/
        - uses: actions/setup-node@v4
          with:
-@@ -330,8 +337,11 @@
+@@ -330,8 +338,12 @@
        XDG_DATA_HOME: ${{ github.workspace }}/.godot_user
      steps:
 -      # This commit's files only (blob:none): no 10 GB history. merge-main fetches the history it needs without contents.
--      - uses: actions/checkout@v4
--        with:
--          filter: blob:none
 +      # Keep local actions, the Blender recipe, and the Godot seam check with its fixture.
-+      - uses: actions/checkout@v4
-+        with:
+       - uses: actions/checkout@v4
+         with:
+           filter: blob:none
 +          sparse-checkout: |
 +            .github/actions
 +            tools

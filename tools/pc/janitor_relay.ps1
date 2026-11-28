@@ -44,8 +44,8 @@ function Get-DirectRelayTree($branch, $leaf, $relayMirror, $dryRun) {
   # Live callers hold the relay writers' lock through proof and removal. Never reuse a remote answer for a live delete.
   $tips = if ($dryRun) {
     if ($null -eq $script:directRelayRefs) { $script:directRelayRefs = Read-OriginRelayRefs 'refs/heads/pc-out-*' }
-    ,$script:directRelayRefs
-  } else { ,(Read-OriginRelayRefs $ref) }
+    $script:directRelayRefs
+  } else { Read-OriginRelayRefs $ref }
   if ($tips[$ref] -cne $local[0]) { throw 'origin does not confirm this relay tip' }
   $tree = [Collections.Generic.Dictionary[string,string]]::new([StringComparer]::Ordinal)
   $lines = @(Read-CleanupGit @('--git-dir',$relayMirror,'-c','core.quotepath=false','ls-tree','-r','-t',$local[0],'--',"$leaf/"))

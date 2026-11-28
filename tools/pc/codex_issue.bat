@@ -295,7 +295,7 @@ if not exist "%PC_RUN_SCRATCH%\" exit /b 0
 setlocal
 rem The watchdog must not hold logs open inside the scratch its child is removing.
 if "%~1"=="-RemoveScratch" set "PC_STEP_SCRATCH_PARENT=%PC_RUN_TEMP%"
-call "%TP%tmo.bat" 300 "%APPDATA%\npm\codex.cmd" sandbox windows -- powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%TP%sandbox_handoff.ps1" "%O%" "%R%" "%PC_HANDOFF_SID%" %~1 >> "%O%\result.txt" 2>&1
+call "%TP%tmo.bat" 300 "%APPDATA%\npm\codex.cmd" sandbox windows -- powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%TP%sandbox_handoff.ps1" "%O%" "%R%" "%PC_HANDOFF_SID%" -PcRoot "%ROOT%" -ScratchRoot "%PC_RUN_TEMP%" %~1 >> "%O%\result.txt" 2>&1
 if errorlevel 1 echo sandbox cleanup or ACL handoff incomplete, read the lines above >> "%O%\result.txt"
 endlocal
 if not exist "%PC_RUN_SCRATCH%\" (

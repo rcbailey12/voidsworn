@@ -134,7 +134,7 @@ cleanup delays it. A GPU solo claim also defers the nightly run without spending
 nightly run. Leave the Windows account signed in overnight so the task can use its Git credentials. The nightly date
 and lock prevent a second cleanup if the old watcher is running too. `janitor_task.bat --dry-run` previews the task and
 prints the exact action Windows will run.
-`janitor.bat --dry-run` previews cleanup.
+`janitor.bat` and `janitor.bat --dry-run` preview cleanup. A manual live run needs `janitor.bat --live`.
 
 ### Git cache upkeep (issue 2181)
 

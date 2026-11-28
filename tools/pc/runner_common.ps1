@@ -596,9 +596,12 @@ function Repo-Mirror($lane = '') {
   }
   Join-Path (Join-Path $env:USERPROFILE 'Downloads\voidsworn_test') $name
 }
-function Cleanup-Paused {
-  if (-not $env:USERPROFILE) { return $false }
-  $flag = Join-Path $env:USERPROFILE 'Downloads\voidsworn_test\gpu_go.txt'
+function Cleanup-Paused($pcRoot = '') {
+  if (-not $pcRoot) {
+    if (-not $env:USERPROFILE) { return $false }
+    $pcRoot = Join-Path $env:USERPROFILE 'Downloads/voidsworn_test'
+  }
+  $flag = Join-Path $pcRoot 'gpu_go.txt'
   if (-not (Test-Path -LiteralPath $flag)) { return $false }
   return (Get-Content -LiteralPath $flag -TotalCount 1) -match '^GPU not cleared: paused by the Board\b'
 }
@@ -693,8 +696,8 @@ function Read-ScratchOwner($directory) {
   if ($token -cnotmatch '\A[0-9a-f]{32}\z') { throw 'ownership token file changed' }
   return $token
 }
-function Get-OwnedScratch($record, $expected) {
-  $temp = [IO.Path]::GetFullPath($env:PC_RUN_TEMP).TrimEnd('\','/')
+function Get-OwnedScratch($record, $expected, $scratchRoot = $env:PC_RUN_TEMP) {
+  $temp = [IO.Path]::GetFullPath($scratchRoot).TrimEnd('\','/')
   $full = [IO.Path]::GetFullPath($record.path)
   if ($full -ne $record.path -or $full -ne $expected -or (Split-Path -Parent $full) -ne $temp -or
       (Split-Path -Leaf $full) -notmatch '^voidsworn-run-(?:[1-9][0-9]*-)?[0-9a-f]{32}$') {
@@ -709,9 +712,9 @@ function Get-OwnedScratch($record, $expected) {
       [string]$dir.CreationTimeUtc.Ticks -ne $record.created) { throw 'recorded directory was replaced' }
   return $dir
 }
-function Remove-CleanupDirectory($dir) {
+function Remove-CleanupDirectory($dir, $pcRoot = '') {
   Assert-PlainDirectory (Get-Item -LiteralPath $dir.FullName -Force)
-  if (Cleanup-Paused) { throw 'PC pause is active' }
+  if (Cleanup-Paused $pcRoot) { throw 'PC pause is active' }
   Remove-Item -LiteralPath $dir.FullName -Recurse -Force -ErrorAction Stop
   if (Test-Path -LiteralPath $dir.FullName) { throw 'directory could not be fully removed' }
 }
@@ -1566,7 +1569,7 @@ function Invoke-LockedRunner($start, $issue) {
 function Runner-HashFiles {
   @('codex_issue.bat','codex_issue.ps1','runner_common.ps1','work_issue.bat','work_issue.ps1','review_evidence.ps1',
     'run_timeout.ps1','tmo.bat','gpu_slots.js','disk_space.ps1','janitor.ps1','janitor_salvage.ps1',
-    'janitor_neon.ps1','janitor_relay.ps1','neon_idle_threads.js','janitor.bat')
+    'janitor_neon.ps1','janitor_relay.ps1','neon_idle_threads.js','janitor.bat','sandbox_handoff.ps1')
 }
 if ($mode -eq 'cleanup-library') { return }
 function End-Announcement($s) {

@@ -1,0 +1,397 @@
+diff --git a/.github/workflows/auto_pr.yml b/.github/workflows/auto_pr.yml
+--- a/.github/workflows/auto_pr.yml
++++ b/.github/workflows/auto_pr.yml
+@@ -24,16 +24,26 @@
+       - '!neon/issue-*-partial'
+       - '!muse/wip-*'
+       # Keep these '!' lines in step with checks.yml (issue 1488); contrib/opus/tools/workflow_config_tests.js checks both.
++  # stale_work.yml starts this for a job branch whose push opened no PR (a GitHub outage, Nov 25: 2148 and 2149).
++  # Dispatch on main so older orphan branches need not contain this workflow.
++  workflow_dispatch:
++    inputs:
++      branch:
++        description: Job branch to recover
++        required: true
++        type: string
+ # One run at a time per branch, in order (never cancelled): Muse pushes a new branch and its first commit a second apart,
+ # and two runs racing each other both saw no pull request, so the slower one failed on 'already exists' (Nov 10, PR 409).
+ concurrency:
+-  group: auto-pr-${{ github.ref }}
++  group: auto-pr-${{ github.event_name == 'workflow_dispatch' && inputs.branch || github.ref_name }}
+   cancel-in-progress: false
+ permissions:
+   contents: read
+   pull-requests: write
+ jobs:
+   open-pr:
++    # A merged PR's branch is deleted (delete_branch_on_merge), and a deletion is a push with no head commit.
++    if: ${{ !cancelled() && !github.event.deleted }}
+     runs-on: ubuntu-latest
+     # A hung gh call used to hold a runner for the default 360 minutes (issue 1488, audit GH-06).
+     timeout-minutes: 5
+@@ -41,7 +51,7 @@
+       - name: Open the PR if there isn't one (the push itself starts the checks)
+         env:
+           GH_TOKEN: ${{ github.token }}
+-          BRANCH: ${{ github.ref_name }}
++          BRANCH: ${{ github.event_name == 'workflow_dispatch' && inputs.branch || github.ref_name }}
+           REPO: ${{ github.repository }}
+           # Standing issues never close on a merge (256 is the outside-check issue, 906 Artoo's standing technical sweep, issue
+           # 1488). One list for both paths below (opus_check_594) and for main_commit_lint.yml.
+@@ -100,7 +110,7 @@
+               }' body.md > body-short.md
+           }
+           limit_body() {
+-            local limit=64999
++            local limit="${1:-64999}"
+             if [ "$(wc -c < body.md)" -le "$limit" ]; then return; fi
+             shorten_checks 40
+             if [ "$(wc -c < body-short.md)" -gt "$limit" ]; then
+@@ -144,8 +154,17 @@
+             cat body-end.md >> body-short.md
+             mv body-short.md body.md
+           }
+-          # Read large messages from the payload rather than passing them in the process environment.
+-          TITLE=$(jq -r '.head_commit.message' "$GITHUB_EVENT_PATH")
++          # A dispatch can name any branch. Use the push allowlist before any lookup.
++          HEAD_SHA="$GITHUB_SHA"
++          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
++            case "$BRANCH" in codex/issue-*|work/issue-*|opus/issue-*|neon/issue-*|muse/*) ;; *) echo "not a job branch: $BRANCH"; exit 0 ;; esac
++            case "$BRANCH" in muse/wip-*|*/*/*) echo "not a job branch: $BRANCH"; exit 0 ;; esac
++            HEAD_SHA=$(gh api "repos/$REPO/commits/$BRANCH" --jq .sha)
++            TITLE=$(gh api "repos/$REPO/commits/$HEAD_SHA" --jq .commit.message)
++          else
++            # Do not pass a large push message through the environment.
++            TITLE=$(jq -r '.head_commit.message' "$GITHUB_EVENT_PATH")
++          fi
+           # A Muse branch without issue-<n> in its name (Nov 17 audit fix D) gets a PR titled from its commit and no closing word.
+           n=""; arm=""
+           if printf '%s' "$BRANCH" | grep -qE 'issue-[0-9]+'; then
+@@ -156,6 +175,10 @@
+           open_prs() { gh api "repos/$REPO/pulls?state=open&head=${REPO%%/*}:$BRANCH" --jq "$1"; }
+           open=$(open_prs 'length')
+           if [ "$open" = "0" ]; then
++            if [ "$(gh api "repos/$REPO/compare/main...$BRANCH" --jq .ahead_by)" = 0 ]; then
++              echo "branch $BRANCH has no commits ahead of main yet: no pull request"
++              exit 0
++            fi
+             ititle=""
+             [ -n "$n" ] && ititle=$(gh api "repos/$REPO/issues/$n" --jq .title 2>/dev/null || true)
+             if [ -n "$ititle" ]; then title="Issue $n: $ititle"; else title=$(printf '%s\n' "$TITLE" | head -1); fi
+@@ -192,12 +215,35 @@
+               opus/*) echo "PR already open for $BRANCH" ;;
+               *)
+                 pr=$(open_prs '.[0].number')
++                # A merge-main commit carries no run report: keep the text the run wrote (PRs 2105, 2086 and 9 more
++                # merged with a merge commit's message as their whole body, Nov 22 to 25).
++                parents=$(gh api "repos/$REPO/commits/$HEAD_SHA" --jq '.parents | length')
++                case "$parents" in ''|*[!0-9]*) echo "Could not verify parents for $HEAD_SHA; PR $pr text kept"; exit 1 ;; esac
++                if [ "$parents" -gt 1 ]; then echo "head $HEAD_SHA is a merge commit: PR $pr text kept"; exit 0; fi
+                 # Issue 1135 kept the Board's "Refs #N" on refresh; since Nov 23 every refresh says Refs (refs_only).
+                 body=$(printf '%s\n' "$TITLE" | tail -n +2)
+                 printf '%s\n\nRefreshed from the latest push to branch %s. The Board reviews and merges.\n' "$body" "$BRANCH" > body.md
+                 refs_only
+                 guard_standing
+-                limit_body
++                # Reserve room for everything under the marker before limiting the generated text.
++                keep='<!-- kept on refresh: notes and evidence below -->'
++                gh api "repos/$REPO/pulls/$pr" --jq '.body // ""' > current-body.md
++                # gh api --jq adds a final newline. Do not grow the kept notes on each refresh.
++                awk -v marker="$keep" '
++                  { line=$0; sub(/\r$/, "", line); if (line == marker) keep=1
++                    if (keep) { if (seen) print previous; previous=$0; seen=1 } }
++                  END { if (seen && previous != "") print previous }
++                ' current-body.md > kept.md
++
++                if [ -s kept.md ]; then
++                  kept_bytes=$(wc -c < kept.md)
++                  if [ "$kept_bytes" -gt 64000 ]; then echo "kept notes are too large to refresh safely: PR $pr text kept"; exit 0; fi
++                  limit_body "$((64998 - kept_bytes))"
++                  { printf '\n'; cat kept.md; } >> body.md
++                  if [ "$(wc -c < body.md)" -gt 64999 ]; then echo "combined body would exceed the limit: PR $pr text kept"; exit 0; fi
++                else
++                  limit_body
++                fi
+                 gh api -X PATCH "repos/$REPO/pulls/$pr" -F body=@body.md --silent && echo "PR $pr text refreshed"
+                 ;;
+             esac
+diff --git a/.github/workflows/board_logs.yml b/.github/workflows/board_logs.yml
+new file mode 100644
+--- /dev/null
++++ b/.github/workflows/board_logs.yml
+@@ -0,0 +1,28 @@
++# The Board pushes LOOP.md and FINDINGS.md straight to main (R102), so no branch run checks them, and every branch
++# merges main in: on Nov 23 three such pushes left main failing memory_lint_tests (R428, R436, R439), which turned
++# every branch pushed meanwhile red. This says so within a minute of the push.
++# Board rollout: apply after F6 and the LOOP.md roll land.
++name: board logs
++on:
++  push:
++    branches: [main]
++    paths:
++      - 'contrib/opus/LOOP.md'
++      - 'contrib/opus/FINDINGS.md'
++permissions:
++  contents: read
++jobs:
++  lint:
++    runs-on: ubuntu-latest
++    timeout-minutes: 5
++    steps:
++      - uses: actions/checkout@v4
++        with:
++          filter: blob:none
++      - uses: actions/setup-node@v4
++        with:
++          node-version: 22
++      - name: The checks that read the Board logs
++        run: |
++          node contrib/opus/tools/memory_lint_tests.js
++          node contrib/opus/tools/doc_check_tests.js
+diff --git a/.github/workflows/checks.yml b/.github/workflows/checks.yml
+--- a/.github/workflows/checks.yml
++++ b/.github/workflows/checks.yml
+@@ -18,6 +18,7 @@
+       - 'work/**'
+       - 'opus/**'
+       - 'neon/**'
++      - 'claude/**'      # Claude cloud threads (claude/project-thread-*): 12 of 171 merges Nov 22 to 25 had no automatic run
+       # A run the PC runner marks partial pushes to <branch>-partial: a mid-work snapshot that fails by nature and opens no
+       # pull request, so it gets no checks (each failure mailed Ryan; Nov 15, "I keep seeing GitHub errors"). The resumed
+       # run's own branch is checked when it lands.
+@@ -29,6 +30,7 @@
+       # audit GH-06: each scratch push used to start a full run). Keep these '!' lines in step with auto_pr.yml;
+       # contrib/opus/tools/workflow_config_tests.js holds the two lists against each other.
+       - '!muse/wip-**'
++  workflow_call:      # main_checks.yml tests main after each merge
+   workflow_dispatch:
+     inputs:
+       base:
+@@ -46,7 +48,8 @@
+   # count) skips the four Godot jobs; the standing checks always run. Any other file, a failed lookup or a run started by
+   # hand runs every check. "All checks" at the end always reports one pass or fail mark, skipped jobs included.
+   changes:
+-    name: What changed (docs-only pushes skip the Godot jobs)
++    name: What changed (docs-only and zero-ahead pushes skip the Godot jobs)
++    if: ${{ !github.event.deleted }}   # a branch deletion is a push too: nothing to test
+     runs-on: ubuntu-latest
+     timeout-minutes: 5
+     outputs:
+@@ -66,25 +69,56 @@
+         run: |
+           node tools/ci/docs_only.js --self-test
+           say() { echo "$1"; echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
++          godot() { echo "godot=$1" >> "$GITHUB_OUTPUT"; }
++          # A reusable run on main tests the pushed tree itself, even if main has moved since.
+           if [ -z "$BASE" ] && { [ "$EVENT" = workflow_dispatch ] || [ "$GITHUB_REF" = refs/heads/main ]; }; then
+-            say "Started by hand or on main with no base: every check runs."; echo "godot=true" >> "$GITHUB_OUTPUT"; exit 0
++            full_run=true
++          else
++            full_run=false
+           fi
+-          base=${BASE:-main}
+-          if git fetch -q --no-tags --filter=blob:none --unshallow origin "$base" \
+-             && git diff --name-only --no-renames "$(git rev-parse FETCH_HEAD)...HEAD" > "$RUNNER_TEMP/changed.txt"; then
+-            node tools/ci/docs_only.js "$RUNNER_TEMP/changed.txt" | tee "$RUNNER_TEMP/verdict.txt"
++          if [ "$GITHUB_REF" = refs/heads/main ] && [ "$full_run" = true ]; then
++            say "Running on main: every check runs."; godot true; exit 0
++          fi
++          deepen=""
++          if [ "$(git rev-parse --is-shallow-repository)" = true ]; then deepen="--unshallow"; fi
++          git fetch -q --no-tags --filter=blob:none $deepen origin "+refs/heads/main:refs/remotes/origin/main"
++          # Check the actual merge direction before paying for any of the large checkouts.
++          if ! git merge-tree --write-tree HEAD origin/main > "$RUNNER_TEMP/merge-tree.txt" 2>&1; then
++            cat "$RUNNER_TEMP/merge-tree.txt"
++            say "This branch cannot merge with main. Merge main, fix the conflicts, and push again."
++            exit 1
++          fi
++          if [ "$full_run" = true ]; then
++            say "Started by hand with no base: every check runs."; godot true; exit 0
++          fi
++          base=origin/main
++          if [ -n "$BASE" ] && [ "$BASE" != main ]; then
++            if git fetch -q --no-tags --filter=blob:none origin "$BASE"; then
++              base=FETCH_HEAD
++            else
++              say "Could not fetch the requested base: every check runs."; godot true; exit 0
++            fi
++          fi
++          if [ -z "$(git rev-list -1 "$base"..HEAD)" ]; then
++            say "Nothing ahead of the comparison base: the Godot jobs are skipped."; godot false; exit 0
++          fi
++          if git diff --name-only --no-renames "$base"...HEAD > "$RUNNER_TEMP/changed.txt"; then
++            node tools/ci/docs_only.js "$RUNNER_TEMP/changed.txt" > "$RUNNER_TEMP/verdict.txt"
++            cat "$RUNNER_TEMP/verdict.txt"
+           else
+-            echo "docs_only=false" > "$RUNNER_TEMP/verdict.txt"; echo "could not compare with $base"
++            say "Could not compare with the base: every check runs."; godot true; exit 0
+           fi
+           if grep -qx 'docs_only=true' "$RUNNER_TEMP/verdict.txt"; then
+-            say "Docs-only change compared with $base: the Godot jobs are skipped. $(sed -n 2p "$RUNNER_TEMP/verdict.txt")"
+-            echo "godot=false" >> "$GITHUB_OUTPUT"
++            say "Docs-only change: the Godot jobs are skipped. $(sed -n 2p "$RUNNER_TEMP/verdict.txt")"
++            godot false
+           else
+-            say "Code changed compared with $base (or the comparison failed): every check runs. $(sed -n 2p "$RUNNER_TEMP/verdict.txt")"
+-            echo "godot=true" >> "$GITHUB_OUTPUT"
++            say "Code changed: every check runs. $(sed -n 2p "$RUNNER_TEMP/verdict.txt")"
++            godot true
+           fi
+   standing-checks:
+     name: Standing checks (rules, text, saves)
++    needs: changes
++    if: ${{ !github.event.deleted }}
+     runs-on: ubuntu-latest
+     timeout-minutes: 20
+     steps:
+@@ -143,10 +177,10 @@
+         if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
+         run: sh godot/rules/test/run_parity.sh
+       - name: Saved results this branch changes compared with main
+-        if: ${{ always() }}
++        if: ${{ !cancelled() }}
+         run: node godot/rules/test/saved/diff_vs_main.js origin/main "$RUNNER_TEMP/saved_changes_vs_main.txt"
+       - name: Keep changed-battles evidence
+-        if: ${{ always() }}
++        if: ${{ !cancelled() }}
+         uses: actions/upload-artifact@v4
+         with:
+           name: saved-godot-results
+@@ -201,9 +235,9 @@
+   # when every step runs to its cap, as on the broken test commit 138ff38; the load gate makes that rare (audit 706, 9c).
+   # Four shards in parallel (issues 1430, 1957): run_checks.sh gives every headless check to exactly one shard, balanced by
+   # godot/tools/ci/godot_check_times.txt; shard 1 also proves the list is whole and plays the bot battle. "All checks"
+-  # reads the four as one result (needs.godot-game fails if any shard fails). 921 s in one job on Nov 22 2026.
++  # reads the five shards as one result (needs.godot-game fails if any shard fails). 921 s in one job on Nov 22 2026.
+   godot-game:
+-    name: Godot game checks (${{ matrix.shard }} of 4)
++    name: Godot game checks (${{ matrix.shard }} of 5)
+     needs: changes
+     if: needs.changes.outputs.godot == 'true'
+     runs-on: ubuntu-latest
+@@ -211,7 +245,7 @@
+     strategy:
+       fail-fast: false
+       matrix:
+-        shard: [1, 2, 3, 4]
++        shard: [1, 2, 3, 4, 5]   # 390 s each by the recorded times (4 shards: 487 s of the 600 s budget, Nov 25)
+     env:
+       XDG_DATA_HOME: ${{ github.workspace }}/.godot_user   # user:// for every Godot run here; never a real profile
+     steps:
+@@ -257,26 +291,23 @@
+       # (b) this shard's headless checks named in godot/tools/ci/godot_checks.txt (shard 1 also proves the list names every
+       # test script). Each shard has a 600 s budget (about 405 s each planned on Nov 24 2026, issue 1957; shard 2 of 3 had reached 590 s); a check the budget never reached
+       # counts as failed.
+-      - name: Headless Godot checks from the list (shard ${{ matrix.shard }} of 4)
++      - name: Headless Godot checks from the list (shard ${{ matrix.shard }} of 5)
+         if: ${{ !cancelled() && steps.load.outcome == 'success' }}
+         env:
+-          SHARD: ${{ matrix.shard }}/4
++          SHARD: ${{ matrix.shard }}/5
+           GODOT_CHECKS_BUDGET: 600
+         run: |
+           sh godot/tools/ci/run_checks.sh 2>&1 | tee "$RUNNER_TEMP/run_checks.log"; code=${PIPESTATUS[0]}
+           { echo "### Godot checks from the list (shard $SHARD)"; echo '```'; grep -E '^  [a-z0-9_]+: |^  list: |^Ran |^PASS|^FAIL' "$RUNNER_TEMP/run_checks.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+           exit $code
+       # (c) one battle reached from a real campaign start, played to its end by the game's AI on both sides in the real
+-      # battle scene. Fails on any script error and on any "unknown event" line. Seeds 359, 360 and 361 rotate on UTC
+-      # Mondays, with the week and seed in the summary for replay (issue 732). No retry. The driver stops itself at the
+-      # first script error and at 300 s; the 360 s limit here is the backstop.
+-      - name: Bot battle from a real campaign start (weekly seed rotation)
++      # battle scene. Fail on script errors and unknown events. Rotate 359, 360, 361 by changing this pin in a commit,
++      # so rerunning the same revision uses the same seed. No retry. The driver stops at the first error or at 300 s.
++      - name: Bot battle from a real campaign start (pinned seed)
+         if: ${{ !cancelled() && steps.load.outcome == 'success' && matrix.shard == 1 }}
+         run: |
+-          now=$(date -u +%s)
+-          week=$(date -u -d "@$now" +%G-W%V)
+-          seed=$((359 + ((now + 259200) / 604800) % 3))
+-          echo "UTC week $week: seed $seed (rotation: 359, 360, 361)" | tee -a "$GITHUB_STEP_SUMMARY"
++          seed=361
++          echo "Pinned bot battle seed: $seed" | tee -a "$GITHUB_STEP_SUMMARY"
+           timeout -k 10 360 "$GODOT" --headless --path godot --script res://tools/ci/bot_battle.gd -- --seed "$seed" 2>&1 | tee "$RUNNER_TEMP/bot_battle.log"; code=${PIPESTATUS[0]}
+           { echo '### Bot battle'; echo '```'; grep '^bot battle:' "$RUNNER_TEMP/bot_battle.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+           if grep -qE 'SCRIPT ERROR|unknown event' "$RUNNER_TEMP/bot_battle.log"; then echo "SCRIPT ERROR or unknown event lines above"; exit 1; fi
+@@ -340,7 +371,9 @@
+   # One mark for the whole run (issue 1487): passes when every job passed or was skipped as docs-only, fails otherwise.
+   all-checks:
+     name: All checks
+-    if: ${{ always() }}
++    # !cancelled(), not always(): a run cancelled by a newer push on the branch posts no red mark (and no mail) on the
++    # superseded commit. A job that fails or times out inside a live run still fails this one.
++    if: ${{ !cancelled() && !github.event.deleted }}
+     needs: [changes, standing-checks, godot-parity, rules-safety, godot-game, a16-fixture]
+     runs-on: ubuntu-latest
+     timeout-minutes: 2
+@@ -352,5 +385,5 @@
+         run: |
+           echo "$RESULTS" | jq -r 'to_entries[] | "\(.key): \(.value.result)"' | tee -a "$GITHUB_STEP_SUMMARY"
+           bad=$(echo "$RESULTS" | jq -r --arg g "$GODOT" '[to_entries[] | select(.value.result != "success" and ((.value.result == "skipped" and $g == "false" and (.key | IN("godot-parity", "rules-safety", "godot-game", "a16-fixture"))) | not))] | length')
+-          if [ "$bad" != 0 ]; then echo "::error::$bad job(s) failed, were cancelled, or were skipped without being one of the four Godot jobs on a docs-only verdict."; exit 1; fi
++          if [ "$bad" != 0 ]; then echo "::error::$bad job(s) failed, were cancelled, or were skipped without being one of the four Godot jobs on a docs-only or zero-ahead verdict."; exit 1; fi
+           echo "PASS" | tee -a "$GITHUB_STEP_SUMMARY"
+diff --git a/.github/workflows/main_checks.yml b/.github/workflows/main_checks.yml
+new file mode 100644
+--- /dev/null
++++ b/.github/workflows/main_checks.yml
+@@ -0,0 +1,17 @@
++# Test main itself after each merge (no checks ran on main before: 72 percent of merges landed after other code had
++# reached main since the PR's last push). Board log pushes skip it; a newer merge cancels an older run.
++name: main checks
++on:
++  push:
++    branches: [main]
++    paths-ignore:
++      - 'contrib/opus/LOOP.md'
++      - 'contrib/opus/FINDINGS.md'
++permissions:
++  contents: read
++concurrency:
++  group: main-checks
++  cancel-in-progress: true
++jobs:
++  checks:
++    uses: ./.github/workflows/checks.yml
+diff --git a/.github/workflows/stale_work.yml b/.github/workflows/stale_work.yml
+new file mode 100644
+--- /dev/null
++++ b/.github/workflows/stale_work.yml
+@@ -0,0 +1,38 @@
++# Stale work sweep (ways-of-working audit, Nov 25 2026). Every two hours, list work that was done but is not moving
++# (contrib/opus/tools/stale_work.js) and send any job branch that never got a pull request back through auto-pr
++# (codex/issue-2148 and 2149 were pushed during the Nov 25 GitHub outage and sat with none). Reads with REST only.
++# The report goes to this run's summary and, when the STALE_ISSUE variable names an issue, replaces that issue's body.
++name: stale-work
++on:
++  schedule:
++    - cron: '17 */2 * * *'
++  workflow_dispatch:
++concurrency:
++  group: stale-work
++  cancel-in-progress: true
++permissions:
++  contents: read
++  pull-requests: read
++  checks: read       # read All checks for open pull requests
++  issues: write      # only the STALE_ISSUE body
++  actions: write     # only to start auto-pr for a branch with no PR
++jobs:
++  sweep:
++    runs-on: ubuntu-latest
++    timeout-minutes: 10
++    steps:
++      - uses: actions/checkout@v4
++        with:
++          sparse-checkout: |
++            .github/workflows
++            contrib/opus/tools/stale_work.js
++          sparse-checkout-cone-mode: false
++      - name: Sweep
++        env:
++          GH_TOKEN: ${{ github.token }}
++          STALE_ISSUE: ${{ vars.STALE_ISSUE }}
++        run: |
++          set -e
++          args=(--github --dispatch)
++          if [ -n "$STALE_ISSUE" ]; then args+=(--issue "$STALE_ISSUE"); fi
++          node contrib/opus/tools/stale_work.js "${args[@]}"
