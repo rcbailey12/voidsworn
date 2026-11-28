@@ -91,6 +91,35 @@ for (const [i, option] of beat.o.entries()) {
 for (const key of ['t', 'debrief', 'learning', 'spotlights']) pool('STORY_BEAT3.chorus.' + key, beat[key]);
 add('WIN_TITLE.chorus', t.WIN_TITLE.chorus);
 
+// These lines live beside the UI or campaign action that displays them. Read the
+// literals there and count each interpolated name as one author-written word.
+const literal = /("(?:[^"\\\r\n]|\\.)*")/.source;
+const join = String.raw`\s*\+\s*`;
+const campaign = 'campaign/campaign.gd';
+const ui = 'ui/campaign/campaign_ui.gd';
+const sources = new Map();
+function code(id, file, pattern, prefix = '') {
+  if (!sources.has(file)) sources.set(file, fs.readFileSync(path.join(root, 'godot', file), 'utf8'));
+  const matches = [...sources.get(file).matchAll(new RegExp(pattern, 'gm'))];
+  assert.equal(matches.length, 1, 'Expected one Chorus line for ' + id + ' in ' + file);
+  const text = matches[0].slice(1).map(part => JSON.parse(part)).join('{name}');
+  add(id, prefix + text.replace(/%s/g, '{name}'));
+}
+
+const chorus = String.raw`"chorus":\s*` + literal;
+for (const [variable, ship] of [['r_line', 'sh'], ['p_line', 'sh2']]) {
+  code('campaign.' + variable, campaign,
+    String.raw`\bvar ${variable}: String = str\(\{${chorus}${join}ship_bare\(str\(${ship}\["name"\]\)\)${join}${literal},`);
+}
+code('campaign.escape', campaign, String.raw`\bvar esc_tail: String = \{${chorus},`, '{name}');
+code('campaign_ui.eatenCore', ui,
+  String.raw`if C\.jt\(R\.get\("eatenCore"\)\).*?\blbl\(${literal}${join}str\(C\.PATRONS\[R\["eatenCore"\]\]\["n"\]\)${join}${literal},`);
+code('campaign_ui.lineage', ui, String.raw`\bvar _lin_lead: String = \{[^\r\n]*?${chorus},`);
+code('campaign_ui.escape', ui, String.raw`\bvar escape_line: String = \{\s*${chorus},`);
+code('campaign_ui.eatCore', ui, String.raw`^\s*"eatCore":\r?\n[^\r\n]*\r?\n\s*p\.call\(${literal},`);
+code('rename_dialog.subtitle', 'ui/career/rename_dialog.gd',
+  String.raw`\bvar _rename_sub := \{[^}]*?${chorus},`);
+
 let errors = 0;
 for (const [id, text] of lines) {
   for (const { sentence, count } of overlong(text)) {
