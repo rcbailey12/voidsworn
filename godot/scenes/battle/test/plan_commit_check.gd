@@ -218,7 +218,16 @@ func _run() -> void:
 		quit(1)
 		return
 	b.select(ship, "roster")
-	await _wait_idle(5000)
+	# Let the selected ship's deferred threat refresh start before waiting for Q/E to be available.
+	for k in 10:
+		await process_frame
+	var ready_at := Time.get_ticks_msec() + 30000
+	while not _idle() and Time.get_ticks_msec() < ready_at:
+		await process_frame
+	if not _idle():
+		_check(false, "the selected ship is ready to plan a turn")
+		quit(1)
+		return
 	# a turn in place is planned too, a skill's free turn included (Codex on PR 1643): E turns the ghost and nothing reaches
 	# the rules; Backspace takes it back; a click on the ghost on the ship's own hex commits it through the rules' rotate,
 	# which spends the free turn and no movement and leaves the move counter alone

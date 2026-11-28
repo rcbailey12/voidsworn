@@ -67,6 +67,7 @@ var log_text: RichTextLabel
 var log_open := false
 var log_enabled := true
 var log_collapsed := false
+var _log_follow_folded := false
 var banner_lbl: Label
 var tip: PanelContainer
 var tip_text: RichTextLabel
@@ -95,6 +96,8 @@ var legend_open := false
 var _legend := {}                   # {title, desc, rows: [[name, colour, effect]]}
 
 var ledger                          # the orders sheet (ledger.gd): what the player sees
+var _edge_layer: Control
+var _edge_guides: Array[Dictionary] = []
 var _log_lines: Array = []          # the log as plain lines, for the sheet's last three
 var ask_panel: Control              # issue 529: the sheet while a tree prompt is open in it, else null
 var ask_key := ""
@@ -130,6 +133,10 @@ func _build_all() -> void:
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.theme = _theme()
 	add_child(root)
+	_edge_layer = Control.new()
+	_edge_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(_edge_layer)
+	_edge_layer.draw.connect(_draw_edge_guides)
 	if plates_root == null:
 		plates_root = PlateLayer.new()
 	root.add_child(plates_root)
@@ -156,7 +163,8 @@ func _build_ledger() -> void:
 	root.add_child(ledger)
 	ledger.log_lines = _log_lines
 	ledger.log_enabled = log_enabled
-	ledger.log_collapsed = log_collapsed
+	ledger.log_collapsed = log_collapsed or _log_follow_folded
+	ledger.log_follow_folded = _log_follow_folded
 	ledger.act.connect(func(n: String, arg: Variant) -> void: action.emit(n, arg))
 	ledger.hover_tip.connect(_ledger_tip)
 	# the board's hover tip belongs to the board: it goes when the pointer comes onto the sheet (the board gets no motion there)
@@ -445,6 +453,13 @@ func set_panel(info: Dictionary) -> void:
 	ledger.mark()
 
 
+func update_enemy_turn_hull(id: String, hp: float, shields: float) -> void:
+	if _phase_kind == "enemy" and _panel_info.get("id", "") == id:
+		_panel_info["hp"] = hp
+		_panel_info["shp"] = shields
+		ledger.mark()
+
+
 func _detail_bb(info: Dictionary) -> String:
 	var bb := "[b]%s[/b]  [color=#a7b09d]%s[/color]" % [str(info.get("name", "")), str(info.get("cls", ""))]
 	if str(info.get("captain", "")) != "":
@@ -511,7 +526,7 @@ func _build_log() -> void:
 	log_panel.anchor_right = 1.0
 	log_panel.anchor_top = 1.0
 	log_panel.anchor_bottom = 1.0
-	log_panel.visible = log_open and not bool(_last.get("letterbox", false))
+	log_panel.visible = _full_log_visible()
 	root.add_child(log_panel)
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", s(8))
@@ -556,8 +571,10 @@ func _log_bar() -> void:
 
 
 func toggle_log() -> void:
+	if _log_follow_folded:
+		return
 	log_open = not log_open
-	log_panel.visible = log_open and not bool(_last.get("letterbox", false))
+	log_panel.visible = _full_log_visible()
 	if log_open:
 		# issue 1559 item 10: the open log draws over the terrain key, and _layout puts the tip card beside it, so its Close
 		# button is never under either
@@ -577,8 +594,31 @@ func set_log_preferences(enabled: bool, collapsed: bool) -> void:
 	log_collapsed = collapsed
 	if ledger != null:
 		ledger.log_enabled = enabled
-		ledger.log_collapsed = collapsed
+		ledger.log_collapsed = collapsed or _log_follow_folded
 		ledger.mark()
+
+
+func _full_log_visible() -> bool:
+	return log_open and not _log_follow_folded and not bool(_last.get("letterbox", false))
+
+
+# Follow changes what is on screen, not the player's Log settings or open full history.
+func fold_log_for_follow(on: bool) -> void:
+	if _log_follow_folded == on:
+		return
+	_log_follow_folded = on
+	if ledger != null:
+		ledger.log_follow_folded = on
+		ledger.log_collapsed = log_collapsed or on
+		ledger.mark()
+	if log_panel != null:
+		log_panel.visible = _full_log_visible()
+		if log_panel.visible:
+			log_panel.move_to_front()
+			for c in [end_block, endcard, menu_block, menu]:
+				if is_instance_valid(c):
+					c.move_to_front()
+		_layout()
 
 
 func _layout_log() -> void:
@@ -795,8 +835,7 @@ func set_chip(txt: String) -> void:
 
 
 # ---------------------------------------------------------------- terrain legend (ui3d.js refreshLegend)
-# Only what is on this battlefield: the encounter, its zones and its terrain. Closed it is one line under the Nemesis, top
-# right: the encounter's name and a swatch per terrain; a click opens the names and what each does, another click closes.
+# The closed key shows named swatches for this battlefield under the Nemesis. A click opens the encounter and terrain effects.
 
 func _build_legend() -> void:
 	legend = PanelContainer.new()
@@ -842,15 +881,19 @@ func _draw_legend() -> void:
 		return
 	legend.visible = true
 	if not legend_open:
-		legend.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
-		var h := HBoxContainer.new()
-		h.add_theme_constant_override("separation", s(8))
-		h.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		h.alignment = BoxContainer.ALIGNMENT_END
-		h.add_child(_label(title if title != "" else "Terrain", 19, S_TEXT2, font_semi))
+		legend.add_theme_stylebox_override("panel", _tipbox(10, 6))
+		var key := VBoxContainer.new()
+		key.add_theme_constant_override("separation", s(2))
+		key.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		key.add_child(_label("Terrain key", 19, S_TEXT, font_name))
 		for r in rows:
+			var h := HBoxContainer.new()
+			h.add_theme_constant_override("separation", s(8))
+			h.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			h.add_child(_swatch(str(r[1])))
-		legend.add_child(h)
+			h.add_child(_label(str(r[0]), 17, S_TEXT2))
+			key.add_child(h)
+		legend.add_child(key)
 		legend.size = Vector2.ZERO
 		legend.reset_size()
 		return
@@ -892,6 +935,54 @@ func hud_blockers() -> Array:
 		if p != null and is_instance_valid(p) and (p as Control).is_visible_in_tree():
 			out.append((p as Control).get_global_rect())
 	return out
+
+
+# A camera can use the space beside a Log or corner panel as well as the space above it. The shelf
+# spans the window, so its top is a hard bottom edge. Reserve it when framing for the player's next turn.
+func battle_frame(reserve_shelf := false, padded := true) -> Dictionary:
+	var pad := s(28) if padded else 0
+	var area := get_viewport().get_visible_rect().grow(-pad)
+	var covers: Array[Rect2] = []
+	var panels := hud_blockers()
+	if reserve_shelf:
+		panels.append(ledger.sheet_r)
+	for rect: Rect2 in panels:
+		if rect == ledger.sheet_r:
+			area.end.y = minf(area.end.y, rect.position.y - pad)
+		else:
+			covers.append(rect.grow(s(24)) if padded else rect)
+	return {"area": area, "covers": covers}
+
+
+func set_edge_guides(guides: Array[Dictionary]) -> void:
+	if guides == _edge_guides:
+		return
+	_edge_guides = guides
+	_edge_layer.queue_redraw()
+
+
+func _draw_edge_guides() -> void:
+	for guide in _edge_guides:
+		var at: Vector2 = guide.at
+		var dir: Vector2 = guide.dir
+		var objective: bool = guide.get("objective", false)
+		var count: int = guide.get("count", 1)
+		var side := dir.orthogonal()
+		var col := S_EMBER if objective else S_TEXT
+		_edge_layer.draw_circle(at, s(18), Color(GS.INK, 0.94), true, -1.0, true)
+		var arrow := PackedVector2Array([at - dir * s(1) - side * s(6), at + dir * s(7), at - dir * s(1) + side * s(6)])
+		_edge_layer.draw_polyline(arrow, col, s(2), true)
+		if objective:
+			var p := at - dir * s(6)
+			_edge_layer.draw_colored_polygon(PackedVector2Array([p + dir * s(3), p + side * s(4), p - dir * s(4), p - side * s(4)]), col)
+		if count > (0 if objective else 1):
+			var fs := s(17)
+			var label := str(count)
+			var p := at - dir * s(19)
+			p.x -= font_num.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x * 0.5
+			p.y += (font_num.get_ascent(fs) - font_num.get_descent(fs)) * 0.5
+			_edge_layer.draw_circle(at - dir * s(19), s(10), Color(GS.INK, 0.94))
+			_edge_layer.draw_string(font_num, p, label, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, col)
 
 
 # for the trace: visible ship plates that sit under a HUD panel
@@ -1098,6 +1189,8 @@ var bars: Array = []
 
 func letterbox(on: bool) -> void:
 	_last["letterbox"] = on
+	banner_lbl.visible = not on
+	toast_lbl.visible = not on
 	if bars.is_empty():
 		for top_bar in [true, false]:
 			var b := ColorRect.new()
@@ -1112,6 +1205,7 @@ func letterbox(on: bool) -> void:
 			bars.append(b)
 	for b in bars:
 		(b as ColorRect).visible = on
+	_edge_layer.visible = not on
 	# issue 1559 item 12: the faded sheet, log and legend let the mouse through to the cut-in (a click skips it, no hover
 	# tips pop over it, a hidden fleet slot cannot pick a ship); item 19: the teaching tip card steps out of the cut-in too
 	for c in [ledger, log_panel, legend]:
@@ -1121,11 +1215,13 @@ func letterbox(on: bool) -> void:
 	# the open full log's own Close and scroll bar would still take clicks under a transparent parent: it steps out of the
 	# cut-in whole and comes back open (Artoo on PR 1601)
 	if log_panel != null:
-		log_panel.visible = log_open and not on
+		log_panel.visible = _full_log_visible()
 	if on and tip != null:
 		tip.visible = false
 		dtip.visible = false
 	_sync_tipcard()
+	if not on:
+		_layout()
 
 
 # issue 1559 item 19: the teaching tip card is hidden (kept, not dismissed) under the end card and during a cut-in
@@ -1244,8 +1340,6 @@ func _process(dt: float) -> void:
 		if _resize_t <= 0.0 or Engine.get_process_frames() < 30:
 			_resize_t = -1.0
 			_rebuild()
-	if root != null:
-		_layout()
 	if _banner_dur > 0.0:
 		_banner_t += dt
 		var a := 1.0
@@ -1259,6 +1353,8 @@ func _process(dt: float) -> void:
 	if _toast_t > 0.0:
 		_toast_t -= dt
 		toast_lbl.modulate.a = clampf(_toast_t / 0.4, 0.0, 1.0)
+	if root != null:
+		_layout()
 
 
 # Every frame: keep each part in its region (see the top of this file). Cheap: a handful of rects.
@@ -1281,15 +1377,16 @@ func _layout() -> void:
 	# the onboarding tip card: right side of the clear part, under the corner's words
 	if tipcard != null and is_instance_valid(tipcard):
 		tipcard.position = Vector2(right - tipcard.size.x, below + s(6)).round()
-		if log_open and log_panel != null and tipcard.get_global_rect().intersects(log_panel.get_global_rect()):
+		if _full_log_visible() and log_panel != null and tipcard.get_global_rect().intersects(log_panel.get_global_rect()):
 			tipcard.position.x = roundf(maxf(col.x, log_panel.get_global_rect().position.x - tipcard.size.x - s(16)))   # item 10
 	# toasts: centred in the clear part, near the top, below the tip card if they would meet
 	# the big banner: centred in the clear part
-	if banner_lbl.modulate.a > 0.0:
+	var banner_up := banner_lbl.visible and banner_lbl.modulate.a > 0.0 and banner_lbl.text != ""
+	if banner_up:
 		banner_lbl.reset_size()
 		var w := banner_lbl.size.x
 		banner_lbl.position = Vector2(clampf((col.x + col.y) * 0.5 - w * 0.5, col.x, maxf(col.x, col.y - w)), s(72)).round()
-	if toast_lbl.modulate.a > 0.0:
+	if toast_lbl.visible and toast_lbl.modulate.a > 0.0:
 		# issue 1559 item 17: no wider than the band between the two corner clusters (a long reinforcement list wraps
 		# instead of running off the edge or over the corner words)
 		var room := clampf(col.y - col.x - s(40), float(s(200)), float(s(720)))
@@ -1300,9 +1397,9 @@ func _layout() -> void:
 		toast_lbl.reset_size()
 		w = toast_lbl.size.x
 		var p := Vector2(clampf((col.x + col.y) * 0.5 - w * 0.5, col.x, maxf(col.x, col.y - w)), s(96))
-		# issue 1559 item 11: below the big banner when both show (REINFORCEMENTS and its sentence fire together)
-		if banner_lbl.modulate.a > 0.0 and banner_lbl.text != "" and Rect2(p, toast_lbl.size).intersects(banner_lbl.get_global_rect()):
-			p.y = banner_lbl.get_global_rect().end.y + s(8)
+		# Reserve the banner's full height, including its halo. Lay out after the fade updates so the first frame fits.
+		if banner_up:
+			p.y = maxf(p.y, banner_lbl.get_global_rect().end.y + s(12))
 		if tipcard != null and is_instance_valid(tipcard) and tipcard.visible and Rect2(p, toast_lbl.size).intersects(tipcard.get_global_rect()):
 			p.x = maxf(col.x, tipcard.get_global_rect().position.x - w - s(16))
 		toast_lbl.position = p.round()
@@ -1330,8 +1427,15 @@ func over_ui(p: Vector2) -> bool:
 
 
 # kind: "player", "enemy" or "" (hidden); bb: the strip's text; progress 0..1 (enemy turn only, negative hides the bar)
-func set_phase(kind: String, bb: String, progress := -1.0) -> void:
-	_last["set_phase"] = [kind, bb, progress]
+func set_phase(kind: String, bb: String, progress := -1.0, actor := {}) -> void:
+	_last["set_phase"] = [kind, bb, progress, actor]
 	_phase_kind = kind
-	ledger.phase = {"kind": kind, "text": bb, "p": progress}
+	ledger.phase = {"kind": kind, "text": bb, "p": progress, "actor": actor}
 	ledger.mark()
+
+
+func set_enemy_fire(id: String, weapon: String) -> void:
+	var actor: Dictionary = ledger.phase.get("actor", {})
+	if actor.get("id", "") == id and actor.get("firing", "") != weapon:
+		actor["firing"] = weapon
+		ledger.mark()

@@ -476,14 +476,16 @@ func hasBoon(id) -> bool:
 func rfx(k) -> float: return float(z0(runFx().get(k))) if RUN != null else 0.0
 # Cold-Hull Dampener: in round 1 enemies cannot target your ships from 6 or more hexes away (area blasts still hit)
 func quietBlocks(u, t) -> bool: return B != null and u != null and t != null and B["round"] == 1 and u["side"] == "enemy" and t["side"] == "player" and rfx("quiet") > 0 and hdist(u, t) >= rfx("quiet")
-# Swivel Arc Mounts: a non-turret fore or flank weapon reaches one arc wider (30 degrees each side), at -20% damage
+# Swivel Arc Mounts: fixed fore weapons widen by 30 degrees each side. Flanks widen toward the bow only,
+# keeping the normal aft edge so neither fixed flank sweeps dead astern. Extra bearings deal -20% damage.
 func chaserArc(u, w, t) -> bool:
 	if u == null or not jt(g(u.get("fx"), "chaser")) or w.get("k") == "turret" or w["arc"] == "T": return false
 	return _wide_fixed_arc(relAng(u, t), w["arc"])
 func _wide_fixed_arc(a: float, arc) -> bool:
 	if arc == "F": return absf(a) <= 90.5
-	if arc == "S": return a >= -0.5 and a <= 180.5
-	if arc == "P": return a <= 0.5 and a >= -180.5
+	if arc in ["S", "P"]:
+		var side: float = a if arc == "S" else -a
+		return side >= -0.5 and side <= 150.5
 	return false
 # Sinking Standard: once the flagship drops below 30% hull or falls, every other ship deals +20% damage for the battle
 func lastLightCheck(t, fell := false) -> void:

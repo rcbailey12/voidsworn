@@ -1,7 +1,7 @@
 extends SceneTree
 # KEEL's readability checks at 1080, 1440, and in a narrow window.
-#   - nothing the player reads is smaller than 17 px at 1080; Big Shoulders only for names, never under 28 px;
-#   - three text strengths (TEXT, TEXT2, TEXT3), TEXT3 only for joining words; ember the accent, NEM the Nemesis only,
+#   - nothing the player reads is smaller than 17 px at 1080; Big Shoulders for names and headings, never under 28 px;
+#   - three text strengths (TEXT, TEXT2, TEXT3), TEXT3 for joining words and paused orders; ember the accent, NEM the Nemesis only,
 #     Glacier for shield readouts only (R210), nothing lime;
 #   - every word at 4.5 to 1 or better over the brightest and the darkest board: the brightest board is taken as pure
 #     white and the darkest as black, under the sheet's own veils at their weakest point beneath each word (ledger.gd
@@ -116,7 +116,7 @@ func feed(h, m: Dictionary) -> void:
 	h.set_panel(m.get("ship", ship()))
 	h.set_target(m.get("target", target()))
 	h.set_card(m.get("card", card_fire()))
-	h.set_phase(m.get("phase_kind", "player"), m.get("phase_text", ""), m.get("phase_p", -1.0))
+	h.set_phase(m.get("phase_kind", "player"), m.get("phase_text", ""), m.get("phase_p", -1.0), m.get("actor", {}))
 	if m.has("ask"):
 		h.show_ask(m["ask"])
 	else:
@@ -152,10 +152,10 @@ func measure(h, label: String, need_strengths := false) -> Dictionary:
 		smallest = minf(smallest, float(it["size"]))
 		if str(it["face"]) == "BigShoulders":
 			bs_min = minf(bs_min, float(it["size"]))
-			if str(it["role"]) not in ["name", "action"]:
-				check(false, "%s: Big Shoulders only for names and the action ('%s')" % [label, it["t"]])
-		if nm == "TEXT3" and str(it["role"]) != "join":
-			check(false, "%s: TEXT3 only for joining words ('%s', role %s)" % [label, it["t"], it["role"]])
+			if str(it["role"]) not in ["name", "action", "enemy_actor_heading"]:
+				check(false, "%s: Big Shoulders only for names, the action and the enemy card title ('%s')" % [label, it["t"]])
+		if nm == "TEXT3" and str(it["role"]) not in ["join", "enemy_paused", "enemy_paused_gun", "enemy_paused_order"]:
+			check(false, "%s: TEXT3 only for joining words and paused orders ('%s', role %s)" % [label, it["t"], it["role"]])
 		if nm == "GLACIER" and str(it["role"]) != "shield":
 			check(false, "%s: Glacier only for shield readouts ('%s')" % [label, it["t"]])
 		if nm == "NEM" and not ("Nemesis" == str(it["t"]) or str(h.ledger.target.get("name", "")).to_upper().begins_with(str(it["t"]).trim_suffix("..."))):
@@ -286,6 +286,7 @@ func _run() -> void:
 		var a := acts(h)
 		for need in ["confirm", "arm", "brace", "ability", "rotl", "rotr", "next", "command", "end", "pick", "menu", "log_collapse"]:
 			check(a.has(need), "%s: '%s' is reachable on the sheet" % [tag, need])
+		_fixed_orders(h, tag)
 		check(int(a.get("arm", 0)) == 3 and int(a.get("pick", 0)) == 3, "%s: every gun and every fleet line can be clicked" % tag)
 		var words := PackedStringArray()
 		for x in h.ledger.items:
@@ -332,7 +333,8 @@ func _run() -> void:
 		check(h.over_ui(h.ledger.sheet_r.get_center()) and not h.over_ui(Vector2(h.ledger.px(80), sz.y * 0.5)), "%s: shelf catches clicks and the old rail is open to the board" % tag)
 		await _camera_clear(h, tag)
 		# 2. the enemy's turn
-		feed(h, {"turn": "Enemy turn", "card": {}, "target": {}, "ship": {}, "cmd": false, "phase_kind": "enemy",
+		feed(h, {"turn": "Enemy turn", "card": {}, "target": {}, "cmd": false, "phase_kind": "enemy",
+			"actor": {"id": "e1", "name": "Iron Warden", "cls": "Cruiser", "weapons": PackedStringArray(["Plasma Battery", "Heavy Lance"]), "firing": "Heavy Lance"},
 			"phase_text": "[b][color=#c4a4ff]ENEMY TURN[/color][/b]  ·  Meridian Directorate: Iron Warden  ·  [color=#8d86a0]Enter hurries[/color]", "phase_p": 0.4})
 		await process_frame
 		measure(h, tag + " enemy turn")
@@ -340,6 +342,8 @@ func _run() -> void:
 		for x in h.ledger.items:
 			j2 += str(x["t"]) + " | "
 		check("Enemy turn" in j2 and "Meridian Directorate:" in j2 and not "FIRE" in j2, "%s: the enemy's turn says whose turn and who is moving, no action" % tag)
+		check("Enemy turn: Iron Warden is acting" in j2 and "Last fired: Heavy Lance" in j2 and not acts(h).has("arm"),
+			"%s: the enemy card names the actor and its fire and locks player guns" % tag)
 		# 3. a "you may" prompt (issue 529, PR 533's words) in the shot's place
 		feed(h, {"ask": {"kind": "may", "key": "debtDue", "n": "Debt Comes Due", "q": "Delay the whole volley to the start of next round? It fires then with +20% damage.",
 			"opts": [{"id": "yes", "n": "Delay the volley"}, {"id": "no", "n": "Fire it now"}]}})
@@ -427,6 +431,52 @@ func _log_states(h, tag: String) -> void:
 	check(h.log_panel.visible and h.log_text.get_parsed_text().contains("Contact:"), "%s: the manual history remains available with the ticker off" % tag)
 	h.toggle_log()
 	h.set_log_preferences(true, false)
+	var damage := "Fleet Marshal Petra Valk's Forward Heavy Lance hits the Unyielding Oath after burning from the other side: 18 to prow shields, 14 to hull."
+	h.add_log(damage, "")
+	L.ensure_layout()
+	var expanded: Array = L.items.filter(func(it): return it.role == "log")
+	var fits: bool = expanded.size() == 5 and str(expanded[-1].t).ends_with("18 to prow shields, 14 to hull.") \
+		and expanded[-1].y + expanded[-1].h <= L.log_r.end.y
+	check(fits, "%s: Council 8: newest log entry wraps without losing damage" % tag)
+
+
+func _fixed_orders(h, tag: String) -> void:
+	var L = h.ledger
+	var first := _order_cells(L)
+	var card := card_fire()
+	card["keys"] = "Enter plays · Backspace undoes · Esc clears"
+	var reload := {"text": "Reload torpedoes", "act": "ability", "ability": "reload", "on": true,
+		"tip": "Use after launching torpedoes."}
+	var ws := weapons()
+	ws[1].merge({"kind": "flak", "name": "Flak", "distance": 9, "range": 2, "hit": -1, "why": "out of range"}, true)
+	var burn := target()
+	burn.merge({"burn_line": "3-hex burn: 1 of 1 guns", "line": "In reach after a 3-hex burn: 1 of 1 guns."}, true)
+	feed(h, {"card": card, "target": burn, "ship": ship("Unyielding Oath", "Vigil", ws, orders(true).filter(func(o): return o.act != "ability") + [reload])})
+	var dense := _order_cells(L)
+	var reload_hit: Array = L.hits.filter(func(hit): return hit.act == "ability")
+	check(first == dense and first.size() == 2, "%s: Council 13: End ship and Next ship stay put with more orders and plan keys" % tag)
+	check(L.items.any(func(it): return it.t == "Reload") and reload_hit.size() == 1 and str(reload_hit[0].tip).contains("Use after launching"),
+		"%s: Council 13: Reload fits and explains when to use it" % tag)
+	check(L.items.any(func(it): return str(it.t).contains("3-hex burn: 1 of 1 guns")),
+		"%s: Council 1: target box puts the burn and gun count on the shelf, not just its hover" % tag)
+	check(L.items.any(func(it): return it.t == "Defense") and not L.hits.any(func(hit): return hit.act == "arm" and hit.arg == 1),
+		"%s: Council 7: flak shows Defense, even out of range, without an arm action" % tag)
+	card["buttons"] = card["buttons"].filter(func(button): return button.act not in ["confirm", "next"])
+	h.set_card(card)
+	var sparse := _order_cells(L)
+	check(sparse.has("end") and sparse["end"] == first.get("end") and not sparse.has("next"),
+		"%s: Council 13: unavailable Next ship leaves a blank without moving End ship" % tag)
+	feed(h, {})
+	L.ensure_layout()
+
+
+func _order_cells(ledger) -> Dictionary:
+	ledger.ensure_layout()
+	var cells := {}
+	for hit in ledger.hits:
+		if hit.act in ["end", "next"]:
+			cells[hit.act] = hit.r
+	return cells
 
 
 func _log_settings(h) -> void:

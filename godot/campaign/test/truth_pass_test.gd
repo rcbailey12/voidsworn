@@ -178,7 +178,7 @@ func _battle_tips(c: Campaign) -> void:
 	h.set_command(data.label, true, true, false, Battle._command_tip(data))
 	# This exercises the real hover hit region, not just the formatter.
 	h.ledger.layout()
-	h.ledger._orders(20, 10, 440, 190, {}, false)
+	h.ledger._orders(20, 10, 440, 190, {})
 	_check(h.ledger.hits.any(func(x): return x["act"] == "command" and "+30% damage" in x["tip"] and "Wait one round for power 2" in x["tip"] and "+45% damage" in x["tip"]),
 		"the Command hover shows the present effect and the next round's stronger effect before use")
 	_check(h.ledger.hits.any(func(x): return x["act"] == "command" and "Rider: Ships that land a rear-arc hit this round gain +10% critical chance." in x["tip"]),
