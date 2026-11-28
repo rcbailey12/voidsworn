@@ -16,6 +16,10 @@ const GS := preload("res://ui/theme/glass_shell.gd")
 const Choice := preload("res://ui/campaign/choice_button.gd")
 const MapChart := preload("res://ui/campaign/map3d.gd")
 const RowHover := preload("res://ui/campaign/row_hover.gd")
+const Podium := preload("res://ui/campaign/flagship_podium.gd")
+const FrontEndShots := preload("res://ui/test/front_end_shots.gd")
+const ShipView := preload("res://render/ship_view.gd")
+const WorldShaders := preload("res://world/world_shaders.gd")
 var fails := 0
 
 
@@ -85,11 +89,153 @@ func run() -> void:
 	await kit_checks(snd)
 	await title_checks(snd)
 	await campaign_checks(snd)
+	await flagship_checks()
+	c37_caption_checks()
 	music_checks()
 	showcase_checks()
 	Kit.sound = null; UiScale.set_player(1.0)
 	print("Front end: " + ("PASS" if fails == 0 else "FAIL (%d)" % fails))
 	quit(0 if fails == 0 else 1)
+
+
+func c37_caption_checks() -> void:
+	var source_commit := "a1b2c3d4e5f67890123456789abcdef0123456789"
+	var expected := "C37, run 2, a1b2c3d4e5f6"
+	check(FrontEndShots.c37_caption("a1b2c3d", source_commit) == expected
+		and FrontEndShots.c37_caption(source_commit, source_commit) == expected,
+		"C37 short and full tags produce the provenance commit caption")
+	check(FrontEndShots.c37_caption("a1b2c3d4e5f7", source_commit).is_empty(),
+		"C37 rejects a valid-looking tag from a different commit")
+	check(FrontEndShots.c37_caption("", source_commit).is_empty()
+		and FrontEndShots.c37_caption("a1b2c3d", "").is_empty(),
+		"C37 rejects missing reviewed commit or provenance")
+
+
+class PodiumCampaign extends RefCounted:
+	var HULLS := {"c37_check_hull": {"cls": "Cruiser"}}
+
+	func factionOfTpl(_tpl: String) -> String:
+		return "voidsworn"
+
+
+func _projected_hull_bounds(camera: Camera3D, view: ShipView, yaw: float) -> Rect2:
+	var bounds := Rect2()
+	var first := true
+	for x in [-view.L * 0.5, view.L * 0.5]:
+		for y in [-view.half_h, view.half_h]:
+			for z in [-view.half_w, view.half_w]:
+				var corner := Vector3(x, y, z).rotated(Vector3.UP, deg_to_rad(yaw))
+				var point := camera.unproject_position(view.visual_position() + corner)
+				bounds = Rect2(point, Vector2.ZERO) if first else bounds.expand(point)
+				first = false
+	return bounds
+
+
+func _full_turn_fits(podium: Podium, view: ShipView) -> bool:
+	var stage := Rect2(Vector2.ZERO, Vector2(podium._vp.size))
+	for angle in range(0, 360, 15):
+		if not stage.encloses(_projected_hull_bounds(podium._camera, view, float(angle))):
+			return false
+	return true
+
+
+func flagship_checks() -> void:
+	var C := PodiumCampaign.new()
+	var tpl := "c37_check_hull"
+	var ship := {"uid": "c37", "tpl": tpl}
+	# A cached model proves engine placement without requiring the PC's installed hull cache.
+	var model := MeshInstance3D.new()
+	var mesh := BoxMesh.new()
+	mesh.size = Vector3(1.0, 0.22, 0.36)
+	model.mesh = mesh
+	var nozzle := Marker3D.new()
+	nozzle.name = "hp_eng_1"
+	nozzle.position = Vector3(-0.5, 0.0, 0.08)
+	nozzle.rotation_degrees.y = 90.0
+	model.add_child(nozzle)
+	nozzle.owner = model
+	var scene := PackedScene.new()
+	var packed := scene.pack(model)
+	model.free()
+	var path := "res://ui/test/c37_cached_fixture.tscn"
+	scene.take_over_path(path)
+	check(packed == OK, "C37 hull fixture packs")
+	var saved = ShipView._manifest
+	ShipView._manifest = {"ships": {tpl: {"res": path}}}
+
+	var podium := Podium.new()
+	podium.size = Vector2(1150, 864)
+	podium.setup(C, ship, Color.ORANGE_RED)
+	root.add_child(podium)
+	await frames(2)
+	var world := podium._vp.get_child(0) as Node3D
+	var star := world.get_node_or_null("DeadStar") as Node3D
+	var disc := false
+	var lens := false
+	if star != null:
+		for node in star.find_children("*", "MeshInstance3D", true, false):
+			var material := (node as MeshInstance3D).material_override as ShaderMaterial
+			if material != null:
+				disc = disc or material.shader.code == WorldShaders.DISC
+				lens = lens or material.shader.code == WorldShaders.LENS
+	var needs_lens := RenderingServer.get_current_rendering_method() != "gl_compatibility"
+	var core := star.get_child(0) as MeshInstance3D if star != null else null
+	check(core != null and core.mesh is SphereMesh and disc and (lens or not needs_lens),
+		"C37 uses the battle Hollow Sun core, disc and lens")
+	check(star != null and podium._camera.to_local(star.global_position).z < podium._camera.to_local(Vector3.ZERO).z,
+		"C37 places the real star behind the ship in the same viewport")
+	var key := world.get_node_or_null("ThreeQuarterKey") as DirectionalLight3D
+	check(key != null and absf(key.rotation_degrees.y) > 30.0 and key.rotation_degrees.x < -20.0,
+		"C37 key light arrives from above and one side")
+	check(podium.installed and podium.is_processing() and not podium._pivot.get_children().is_empty(),
+		"C37 loads and turns an installed hull")
+	if podium.installed:
+		var view := podium._pivot.get_child(0) as ShipView
+		var glow := view.get_node_or_null("EngineGlow_hp_eng_1") as Sprite3D
+		var hp := view.hull.find_child("hp_eng_1", true, false) as Node3D
+		check(glow != null and hp != null and glow.visible and glow.modulate.a > ShipView.PILOT_GLOW
+			and glow.position.distance_to(view.to_local(hp.global_position)) < view.L * 0.015
+			and not (view.engines[0] as Sprite3D).visible,
+			"C37 lights the engine exit and hides the guessed stern glows")
+		var yaw := podium._pivot.rotation_degrees.y
+		podium._process(1.0)
+		check(is_equal_approx(podium._pivot.rotation_degrees.y - yaw, Podium.TURN_DEG_PER_S),
+			"C37 turns at the slow showcase rate")
+		var old_camera := Camera3D.new()
+		world.add_child(old_camera)
+		old_camera.fov = 30.0
+		old_camera.look_at_from_position(view.L * Vector3(0.0, 0.55, 1.9), Vector3.DOWN * view.L * 0.04)
+		var before := _projected_hull_bounds(old_camera, view, -35.0)
+		var after := _projected_hull_bounds(podium._camera, view, Podium.START_YAW)
+		var area_ratio := after.get_area() / maxf(before.get_area(), 1.0)
+		check(area_ratio >= 1.75 and _full_turn_fits(podium, view),
+			"C37 opening frame has about twice the old projected bounds area (%.2fx) and the whole turn fits" % area_ratio)
+		old_camera.queue_free()
+		var wide_fov := podium._camera.fov
+		podium.size = Vector2(630, 800)
+		await frames(2)
+		check(podium._camera.fov > wide_fov and _full_turn_fits(podium, view),
+			"C37 keeps the whole turn in frame as the stage narrows")
+
+	var still := Podium.new()
+	root.add_child(still)
+	still.size = Vector2(1150, 864)
+	still.setup(C, ship, Color.ORANGE_RED, true)
+	await frames(3)
+	check(still.installed and not still.is_processing() and is_equal_approx(still._pivot.rotation_degrees.y, Podium.START_YAW),
+		"C37 Reduce motion holds the starting three-quarter pose")
+	ShipView._manifest = {}
+	var fallback := Podium.new()
+	root.add_child(fallback)
+	fallback.size = Vector2(1150, 864)
+	fallback.setup(C, ship, Color.ORANGE_RED)
+	check(not fallback.installed and fallback._vp.get_child(0).has_node("DeadStar"),
+		"C37 keeps the live star when the installed hull is missing")
+	ShipView._manifest = saved
+	fallback.queue_free()
+	still.queue_free()
+	podium.queue_free()
+	await frames()
 
 
 func kit_checks(snd: FakeSound) -> void:
@@ -445,6 +591,9 @@ func campaign_checks(snd: FakeSound) -> void:
 		and hit.mouse_default_cursor_shape == Control.CURSOR_POINTING_HAND
 		and hit.get_theme_stylebox("hover") is StyleBoxFlat, "refit hover and hit area cover the full card")
 	var podium0 = ui.podium
+	check(podium0 != null and podium0._vp != null and podium0.size.x > 0.0 and podium0.size.y > 0.0
+		and (not found_hit or podium0.get_global_rect().end.x < hit.get_global_rect().position.x),
+		"C37 live preview stays clear of the refit controls")
 	if found_hit:
 		hit.grab_focus()
 		await press("ui_accept")

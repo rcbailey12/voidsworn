@@ -1053,9 +1053,8 @@ func _run_options() -> Control:
 
 # ---------------- aspect ----------------
 # ---------------- the flagship podium (issue 1217 phase 4; Ryan: its own screen with a big live 3D ship) ----------------
-# Left: the flagship, big, turning slowly (still under Reduce motion), with its name plate. Right: the aspect offers as
-# cards you pick, then what rides along (a patron's gift, Heat, the cores in range). The bar: Back (the rules action
-# backToSetup, both twins) and one ember Launch that takes the picked aspect.
+# Left: the flagship in front of the live Hollow Sun, with its name plate. Right: the aspect offers as cards you pick,
+# then what rides along. The bar: Back (backToSetup) and one ember Launch that takes the picked aspect.
 const Podium = preload("res://ui/campaign/flagship_podium.gd")
 var aspect_pick := ""               # the aspect card picked on this page; Launch takes it
 var _aspect_cards: Array = []       # [card, id] of the last render (front_end_test)
@@ -1073,23 +1072,28 @@ func _podium() -> Control:
 	var left = (vs.x - cw) * 0.5
 	var col_w = clampf(cw * 0.36, float(px(420)), float(px(620)))
 	var stage_w = cw - col_w - px(40)
-	# the stage: the ship over a soft glow in its engine colour, and its name plate
-	var stage = Control.new(); stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	stage.offset_left = left; stage.offset_top = px(28); stage.anchor_bottom = 1.0; stage.offset_bottom = -px(96); stage.offset_right = left + stage_w
+	# The preview bleeds to the left and top. The name plate stays on the same grid as the refit controls.
+	var stage := Control.new()
+	stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	stage.anchor_bottom = 1.0
+	stage.offset_bottom = -px(96)
+	stage.offset_right = left + stage_w
 	host.add_child(stage)
-	var glow = TextureRect.new(); glow.texture = _podium_glow(accent); glow.set_anchors_preset(Control.PRESET_FULL_RECT)
-	glow.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; glow.stretch_mode = TextureRect.STRETCH_SCALE; glow.mouse_filter = Control.MOUSE_FILTER_IGNORE; stage.add_child(glow)
 	# issue 1559 item 27: a pick re-renders the page; the same flagship keeps its live podium (no reload hitch, and the
 	# turning ship carries on from where it was instead of snapping back to its start angle)
 	var pkey = str(f.get("uid", "")) + "|" + str(f["tpl"]) + "|" + accent.to_html() + "|" + str(_reduce_motion())
 	if podium != null and is_instance_valid(podium) and not podium.is_queued_for_deletion() and str(podium.get_meta("podium_key", "")) == pkey:
 		if podium.get_parent() != null: podium.get_parent().remove_child(podium)
-		stage.add_child(podium); podium.offset_bottom = -px(120)
+		stage.add_child(podium)
 	else:
-		podium = Podium.new(); podium.set_anchors_preset(Control.PRESET_FULL_RECT); podium.offset_bottom = -px(120); stage.add_child(podium)
-		podium.setup(C, f, accent, _reduce_motion()); podium.set_meta("podium_key", pkey)
+		podium = Podium.new()
+		stage.add_child(podium)
+		podium.setup(C, f, accent, _reduce_motion())
+		podium.set_meta("podium_key", pkey)
+	podium.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	podium.offset_bottom = -px(120)
 	var plate = VBoxContainer.new(); plate.add_theme_constant_override("separation", px(4)); plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	plate.anchor_top = 1.0; plate.anchor_bottom = 1.0; plate.anchor_right = 1.0; plate.offset_top = -px(112); stage.add_child(plate)
+	plate.anchor_top = 1.0; plate.anchor_bottom = 1.0; plate.anchor_right = 1.0; plate.offset_left = left; plate.offset_top = -px(112); stage.add_child(plate)
 	plate.add_child(Kit.section("Your flagship", k))
 	plate.add_child(Kit.heading(str(f["name"]), 44, k))
 	var rb = ColorRect.new(); rb.color = accent; rb.custom_minimum_size = Vector2(px(72), maxi(2, px(3))); rb.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN; rb.mouse_filter = Control.MOUSE_FILTER_IGNORE; plate.add_child(rb)
@@ -1154,15 +1158,6 @@ func _aspect_card(id: String, w: float, accent: Color) -> Control:
 	card_hit_area.add_child(hit)
 	card_hit_area.name = "Aspect_" + id
 	return card_hit_area
-var _glow_cache := {}
-func _podium_glow(col: Color) -> Texture2D:
-	var key = col.to_html()
-	if _glow_cache.has(key): return _glow_cache[key]
-	var g = Gradient.new(); g.set_color(0, Color(col, 0.20)); g.set_color(1, Color(col, 0.0))
-	var t = GradientTexture2D.new(); t.gradient = g; t.fill = GradientTexture2D.FILL_RADIAL
-	t.fill_from = Vector2(0.5, 0.55); t.fill_to = Vector2(0.5, 0.0); t.width = 256; t.height = 256
-	_glow_cache[key] = t
-	return t
 
 # ---------------- the sector map: the Briefing layout (Ryan's pick, Nov 10 2026, FINDINGS R165) ----------------
 # The first spec (archived) is docs/archive/briefs/campaign_map_briefing.md; the live look is contrib/opus/briefs/campaign_rail_orders_sheet.md; the first picture is contrib/opus/ui_map_design/map_option_C_briefing.jpg.

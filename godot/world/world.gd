@@ -500,7 +500,16 @@ func build_gallery(env: Environment, cam: Camera3D, opts: Dictionary) -> void:
 
 # ---------------------------------------------------------------- sky
 
-func _make_sky(env: Environment) -> void:
+## Menu backdrop: the same dead star and per-pixel stars as battle, without a sector sky bake or board.
+func build_hollow_sun_backdrop(env: Environment, center: Vector3, scale_factor: float) -> void:
+	preload("res://fx/fx_shaders.gd").ensure_globals()
+	quality = "low" if RenderingServer.get_current_rendering_method() == "gl_compatibility" else "high"
+	setting = SKY.setting({}, "voidsworn", "open", true, 7)
+	_make_sky(env, false)
+	dead_star(center, scale_factor)
+
+
+func _make_sky(env: Environment, bake := true) -> void:
 	var m := ShaderMaterial.new()
 	var sh: Shader = SKEEP.of(SKY.SKY)   # issue 1434: one compiled shader per code
 	m.shader = sh
@@ -549,7 +558,8 @@ func _make_sky(env: Environment) -> void:
 	SKEEP.event("world sky made")
 	env.background_mode = Environment.BG_SKY
 	_sky_mat = m
-	_bake_sky(lamps)
+	if bake:
+		_bake_sky(lamps)
 
 
 func _bake_sky(lamps: Array) -> void:
