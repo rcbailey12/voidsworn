@@ -854,32 +854,52 @@ static func _edge_key(a: Vector3, b: Vector3, q: float) -> Array:
 	return [ka, kb] if ka < kb else [kb, ka]
 
 
+class RebuildWork extends RefCounted:
+	# The worker owns these until the ship joins the task. It never writes into the inputs.
+	var surface_cache: Dictionary
+	var out: Dictionary
+
+
+static func rebuild(work: RebuildWork, job: Dictionary) -> void:
+	work.out = compute(job, work.surface_cache)
+
+
+# Hash only the surfaces this job touches, on copies owned by the worker and reusable for the next rebuild.
+static func _prepare_surfaces(surfs: Array, ents: Array, cell: float, cache: Dictionary) -> PackedInt32Array:
+	var active := PackedInt32Array()
+	for k in surfs.size():
+		var sd: Dictionary = surfs[k]
+		if bool(sd.get("interior", false)):
+			continue
+		var aabb: AABB = sd["aabb"]
+		for e: Ent in ents:
+			if aabb.grow(sqrt(e.inf2) + e.ov).has_point(e.c):
+				if not cache.has(k):
+					var prepared := sd.duplicate()
+					_prepare_surface(prepared, cell)
+					cache[k] = prepared
+				active.append(k)
+				break
+	return active
+
+
 # job: {surfs: [{arrays, xf, aabb}], ents, q (weld size), cell (grid cell), ovl (overlay lift)}. Returns {surfs: [new
 # arrays or null], parts: [Part per entry], ms}.
-static func compute(job: Dictionary) -> Dictionary:
+static func compute(job: Dictionary, surface_cache: Dictionary = {}) -> Dictionary:
 	var t_ms := Time.get_ticks_msec()
 	var ents: Array = job["ents"]
 	var q: float = job["q"]
 	var parts: Array = []
 	for e in ents:
 		parts.append(Part.new())
+	var surfs: Array = job["surfs"]
+	var cell := float(job.get("cell", 1.0))
+	var active := _prepare_surfaces(surfs, ents, cell, surface_cache)
 	var out_s: Array = []
+	out_s.resize(surfs.size())
 	var edges := {}
-	for sd in job["surfs"]:
-		if bool(sd.get("interior", false)):
-			out_s.append(null)
-			continue
-		var aabb: AABB = sd["aabb"]
-		var hit := false
-		for x in ents:
-			var E: Ent = x
-			if aabb.grow(sqrt(E.inf2) + E.ov).has_point(E.c):
-				hit = true
-				break
-		if not hit:
-			out_s.append(null)
-			continue
-		out_s.append(_surface(sd, ents, parts, edges, q, float(job.get("cell", 1.0)), float(job.get("ovl", 0.02)), q * 8.0))
+	for k in active:
+		out_s[k] = _surface(surface_cache[k], ents, parts, edges, q, cell, float(job.get("ovl", 0.02)), q * 8.0)
 	var t_surf := Time.get_ticks_msec() - t_ms
 	# the cut edge: the skin's thickness along every edge between a kept and a removed triangle
 	for key in edges:
@@ -928,7 +948,6 @@ static func compute(job: Dictionary) -> Dictionary:
 		ends_by.append([ends, r.state])
 	var t_parts := Time.get_ticks_msec() - t_ms
 	var mesh_src := {}
-	var surfs: Array = job["surfs"]
 	var groups := {}
 	for k in surfs.size():
 		var key: int = int(surfs[k]["mid"])
@@ -987,61 +1006,59 @@ static func _mesh_of(arr) -> ArrayMesh:
 	return am
 
 
-# One surface: displace the skin near the damage, mark removed triangles zero-area, collect cavities and overlay skins.
-# Only triangles in grid cells near the damage are visited (the grid and the ship-frame positions are built once per
-# surface and kept in sd), so an 8K hull costs about what a game hull does.
-static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionary, q: float, cell: float, ovl: float, tess_min := 0.0):
+# Cache the ship-frame positions and triangle grid once per touched surface.
+static func _prepare_surface(sd: Dictionary, cell: float) -> void:
 	var arr: Array = sd["arrays"]
 	var xf: Transform3D = sd["xf"]
-	var V: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
-	var N := PackedVector3Array()
-	if arr[Mesh.ARRAY_NORMAL] != null:
-		N = arr[Mesh.ARRAY_NORMAL]
-	var has_n := N.size() == V.size()
-	var nv := V.size()
-	if not sd.has("P"):
-		sd["P"] = xf * V
-	var P: PackedVector3Array = sd["P"]
+	var P: PackedVector3Array = xf * (arr[Mesh.ARRAY_VERTEX] as PackedVector3Array)
 	var idx := PackedInt32Array()
 	if arr[Mesh.ARRAY_INDEX] != null:
 		idx = arr[Mesh.ARRAY_INDEX]
 	if idx.is_empty():
-		if not sd.has("ident"):
-			var ident := PackedInt32Array()
-			ident.resize(nv)
-			for i in nv:
-				ident[i] = i
-			sd["ident"] = ident
-		idx = sd["ident"]
-	var nt := idx.size() / 3
-	if not sd.has("grid"):
-		# every triangle goes into each cell its box overlaps (r4: a big kit plate's centroid can sit cells away from a
-		# mark on it, so centroid bucketing missed it), up to 64 cells; past that, its centroid's cell
-		var grid := {}
-		var big := PackedInt32Array()
-		for t in nt:
-			var a0 := P[idx[t * 3]] / cell
-			var a1 := P[idx[t * 3 + 1]] / cell
-			var a2 := P[idx[t * 3 + 2]] / cell
-			var lo := Vector3i(floori(minf(a0.x, minf(a1.x, a2.x))), floori(minf(a0.y, minf(a1.y, a2.y))), floori(minf(a0.z, minf(a1.z, a2.z))))
-			var hi := Vector3i(floori(maxf(a0.x, maxf(a1.x, a2.x))), floori(maxf(a0.y, maxf(a1.y, a2.y))), floori(maxf(a0.z, maxf(a1.z, a2.z))))
-			var span := (hi - lo) + Vector3i.ONE
-			if span.x * span.y * span.z > 64:
-				# r13: a plate this big goes on a list every mark checks (centroid bucketing left whole kit plates out of
-				# the overlay inside a mark's halo: hard-edged gaps and stray glowing triangles on the PC frigate)
-				big.append(t)
-				continue
-			for gx in range(lo.x, hi.x + 1):
-				for gy in range(lo.y, hi.y + 1):
-					for gz in range(lo.z, hi.z + 1):
-						var key := Vector3i(gx, gy, gz)
-						if not grid.has(key):
-							grid[key] = []
-						(grid[key] as Array).append(t)
-		sd["grid"] = grid
-		sd["big"] = big
+		idx.resize(P.size())
+		for i in idx.size():
+			idx[i] = i
+	# Every triangle goes into each cell its box overlaps, up to 64 cells. Larger plates go in the always-check list:
+	# a plate's centroid can be cells away from a mark that still touches the plate (r4, r13).
+	var grid := {}
+	var big := PackedInt32Array()
+	for t in idx.size() / 3:
+		var a0 := P[idx[t * 3]] / cell
+		var a1 := P[idx[t * 3 + 1]] / cell
+		var a2 := P[idx[t * 3 + 2]] / cell
+		var lo := Vector3i(floori(minf(a0.x, minf(a1.x, a2.x))), floori(minf(a0.y, minf(a1.y, a2.y))), floori(minf(a0.z, minf(a1.z, a2.z))))
+		var hi := Vector3i(floori(maxf(a0.x, maxf(a1.x, a2.x))), floori(maxf(a0.y, maxf(a1.y, a2.y))), floori(maxf(a0.z, maxf(a1.z, a2.z))))
+		var span := (hi - lo) + Vector3i.ONE
+		if span.x * span.y * span.z > 64:
+			big.append(t)
+			continue
+		for gx in range(lo.x, hi.x + 1):
+			for gy in range(lo.y, hi.y + 1):
+				for gz in range(lo.z, hi.z + 1):
+					var key := Vector3i(gx, gy, gz)
+					if not grid.has(key):
+						grid[key] = []
+					(grid[key] as Array).append(t)
+	sd["P"] = P
+	sd["idx"] = idx
+	sd["grid"] = grid
+	sd["big"] = big
+
+
+# Displace the skin near the damage, mark removed triangles zero-area and collect cavities and overlay skins.
+static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionary, q: float, cell: float, ovl: float, tess_min := 0.0):
+	var arr: Array = sd["arrays"]
+	var xf: Transform3D = sd["xf"]
+	var P: PackedVector3Array = sd["P"]
+	var idx: PackedInt32Array = sd["idx"]
 	var grid: Dictionary = sd["grid"]
-	var big_t: PackedInt32Array = sd.get("big", PackedInt32Array())
+	var big_t: PackedInt32Array = sd["big"]
+	var N := PackedVector3Array()
+	if arr[Mesh.ARRAY_NORMAL] != null:
+		N = arr[Mesh.ARRAY_NORMAL]
+	var nv := P.size()
+	var nt := idx.size() / 3
+	var has_n := N.size() == nv
 	var tmark := PackedByteArray()
 	tmark.resize(nt)
 	var cand := PackedInt32Array()
@@ -1632,13 +1649,14 @@ static func _rep4(v: Vector4, n: int) -> PackedFloat32Array:
 	return POOLS.repeat_f(one, n)
 
 
-static func apply(fx, s, job: Dictionary) -> void:
+# Returns true only when a drawn hull mesh was swapped or restored.
+static func apply(fx, s, job: Dictionary) -> bool:
 	var res: Dictionary = job.get("out", {})
 	if res.is_empty():
-		return
+		return false
 	# (F3: the ship's nodes were freed while its rebuild ran on the worker: nothing left to show it on)
 	if not is_instance_valid(s.root) or not s.root.is_inside_tree() or not is_instance_valid(s._dmg_root):
-		return
+		return false
 	var t_b := Time.get_ticks_usec()
 	build_meshes(res)
 	t_b = fx.pend("ba_build", t_b)
@@ -1655,6 +1673,7 @@ static func apply(fx, s, job: Dictionary) -> void:
 		if not by_mi.has(mi):
 			by_mi[mi] = []
 		(by_mi[mi] as Array).append(k)
+	var swapped := false
 	for mi in by_mi:
 		var ks: Array = by_mi[mi]
 		var sd0: Dictionary = orig[ks[0]]
@@ -1675,10 +1694,13 @@ static func apply(fx, s, job: Dictionary) -> void:
 		if am == null:
 			if mi.mesh != sd0["mesh"]:
 				mi.mesh = sd0["mesh"]
+				swapped = true
 				_restore_overrides(mi, orig, ks)
 			continue
-		mi.mesh = am
-		_restore_overrides(mi, orig, ks)
+		if mi.mesh != am:
+			mi.mesh = am
+			swapped = true
+			_restore_overrides(mi, orig, ks)
 	clear_nodes(s)
 	var ents: Array = job["ents"]
 	var ends_by: Array = res.get("ends", [])
@@ -1729,6 +1751,7 @@ static func apply(fx, s, job: Dictionary) -> void:
 	# Issue 1232 (Neon's death audit F8.2): every rebuild also made an empty sprite batch, an empty spark batch, their two
 	# materials and a node to hold them; nothing ever filled them, so they are gone.
 	fx.pend("ba_nodes", t_b)
+	return swapped
 
 
 # Does any damage entry (its widest reach: cut, overlay, halo, slot length) touch this box (both in the hull frame)?
@@ -1757,6 +1780,7 @@ static func _inside_overlay(fx, s, mis: Array, ents: Array, glow: Color) -> void
 		var frame: Transform3D = s._dmg_root.global_transform.affine_inverse() * mi.global_transform
 		var override: Material = mi.material_override
 		mi.material_override = null
+		var has_damage := false
 		for si in mi.mesh.get_surface_count():
 			var src: Material = override if override != null else mi.get_active_material(si)
 			if HULL.interior_material(mi.mesh.surface_get_material(si)) and not mi.mesh.surface_get_material(si).resource_name.ends_with("_inside_skin"):
@@ -1777,6 +1801,9 @@ static func _inside_overlay(fx, s, mis: Array, ents: Array, glow: Color) -> void
 				HULL.set_wear(surface, float(s.hull_wear), wear_p)   # issue 1235: wear as HP falls
 			mi.set_surface_override_material(si, surface)
 			s._damage_surfaces_assigned = true
+			has_damage = true
+		if has_damage:
+			s.track_damage_mesh(mi)
 		if mi.has_meta("fx_inside"):
 			mi.material_overlay = null
 			mi.remove_meta("fx_inside")

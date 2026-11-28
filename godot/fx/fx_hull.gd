@@ -165,7 +165,6 @@ uniform vec4 fx_shapes[64]; // round/square/slot, phases 0, 1, 2
 uniform vec4 fx_tears[64]; // square rotation, phase 3, phase 4, unused
 uniform vec3 fx_burnt_cell = vec3(1.0);
 uniform float fx_power = 1.0;
-uniform float fx_flick = 1.0; // issue 1587: a wounded hull's uneven power, on top of the wear's fx_power
 uniform bool fx_organic = false;
 uniform int fx_scorch_count = 0;
 uniform vec4 fx_scorch[8]; // issue 484: a death's wound (centre, reach) on a wreck piece
@@ -412,7 +411,9 @@ static func _damage_code(source: String, disable_fog := false, fixed_wreck := fa
 	code = cull.sub(code, "cull_disabled", true)
 	if not code.contains("cull_disabled"):
 		code = code.replace("shader_type spatial;", "shader_type spatial;\nrender_mode cull_disabled;")
-	code = code.replace("shader_type spatial;", "shader_type spatial;\n" + BURNT + DAMAGE_UNIFORMS)
+	# Issue 2199: the live flicker rides on the mesh, so it does not dirty the damage material's mouth arrays.
+	var flick := "instance uniform float fx_flick = 1.0;\n" if not fixed_wreck else ""
+	code = code.replace("shader_type spatial;", "shader_type spatial;\n" + BURNT + DAMAGE_UNIFORMS + flick)
 	# Board chunks are already cut and never get mouths. Keeping the discard in their shader
 	# makes Forward+ compile material-specific depth and shadow shaders for a path that cannot run.
 	var hull_pos := "VERTEX" if fixed_wreck else "(fx_hull_frame * vec4(VERTEX, 1.0)).xyz"
@@ -509,6 +510,8 @@ if (fx_back_face) {
 	# already-instanced mesh. Only zero the back face when the source actually writes SSS.
 	if not source.contains("SSS_STRENGTH"):
 		inside = inside.replace(" SSS_STRENGTH = 0.0;", "")
+	if fixed_wreck:
+		inside = inside.replace(" * fx_flick", "")
 	code = _inject(code, "fragment", soot, inside)
 	if disable_fog and not code.contains("fog_disabled"):
 		code = code.replace("shader_type spatial;", "shader_type spatial;\nrender_mode fog_disabled;")
@@ -1471,7 +1474,7 @@ func _gun_points(slot: int, weapon: String, target_local: Vector3, d: Vector3) -
 func _bears(pt: Dictionary, target_local: Vector3, d: Vector3) -> bool:
 	if pt.has("tur"):
 		return turret_reaches(int(pt["tur"]), target_local)
-	return str(pt.get("arc", "")) == "T" or maxf((pt["f"] as Vector3).dot(d), (pt["n"] as Vector3).dot(d)) > 0.2
+	return maxf((pt["f"] as Vector3).dot(d), (pt["n"] as Vector3).dot(d)) > 0.2
 
 
 # A wing launch: the i-th hangar mouth; else the plating facing up and toward the target, on the line through the core.

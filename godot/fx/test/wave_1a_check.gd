@@ -178,15 +178,16 @@ func _power() -> void:
 	_ion_hull("wounded", true)
 
 
-# The lowest fx_flick and fx_power on a ship's damage surfaces (1.0 when it has none).
+# The lowest mesh flicker and surface wear power (1.0 when the hull has neither).
 func _flick_range(s) -> Vector2:
 	var out := Vector2.ONE
+	for mi: MeshInstance3D in s.meshes:
+		var fl = mi.get_instance_shader_parameter(&"fx_flick")
+		if fl != null: out.x = minf(out.x, float(fl))
 	for key in s._damage_surfaces:
 		var e: Array = s._damage_surfaces[key]
 		if e.size() > 1 and e[1] is ShaderMaterial:
-			var fl = (e[1] as ShaderMaterial).get_shader_parameter("fx_flick")
 			var pw = (e[1] as ShaderMaterial).get_shader_parameter("fx_power")
-			out.x = minf(out.x, 1.0 if fl == null else float(fl))
 			out.y = minf(out.y, 1.0 if pw == null else float(pw))
 	return out
 

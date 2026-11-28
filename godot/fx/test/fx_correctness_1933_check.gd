@@ -47,8 +47,9 @@ func _prepare_and_check_hulls(fx: FX) -> void:
 	fx.ship("rammer").hit_power(fx, false, 0.4)
 	fx.step(0.01)
 	var dip_mat := dipped.get_surface_override_material(0) as ShaderMaterial
-	_check(dip_mat != null and float(dip_mat.get_shader_parameter("fx_flick")) < 1.0,
-		"a first brownout reaches the material on a battle-prepared hull")
+	var dip = dipped.get_instance_shader_parameter(&"fx_flick")
+	_check(dip_mat != null and dip != null and float(dip) < 1.0,
+		"a first brownout reaches the mesh on a battle-prepared hull")
 
 	var healthy := {"hp": 100, "max": 100}
 	fx.sync_ship("target", {"hp": 75, "maxHp": 100, "sec": {"eng": healthy, "mid": healthy, "prow": healthy}})

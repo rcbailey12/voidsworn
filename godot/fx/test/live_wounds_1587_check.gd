@@ -75,11 +75,11 @@ func _ship(sid: String, faction: String, pos: Vector3):
 	return s
 
 
-# The lowest fx_flick on a ship's live damage surfaces (1.0 when it has none).
+# The lowest fx_flick on a ship's live damage meshes (1.0 when it has none).
 func _live_flick(s) -> float:
 	var lo := 1.0
-	for key in s._damage_surfaces:
-		var fl = (s._damage_surfaces[key][1] as ShaderMaterial).get_shader_parameter("fx_flick")
+	for mi: MeshInstance3D in s.meshes:
+		var fl = mi.get_instance_shader_parameter(&"fx_flick")
 		if fl != null: lo = minf(lo, float(fl))
 	return lo
 
@@ -149,10 +149,7 @@ func _run() -> void:
 		check(s._damage_surfaces.is_empty(), "%s: a fresh hull has no damage surfaces yet" % faction)
 		s.hit_power(fx, true, 0.62, 0.5)
 		fx.step(0.05)
-		var dip_lo := 1.0
-		for key in s._damage_surfaces:
-			var fl = (s._damage_surfaces[key][1] as ShaderMaterial).get_shader_parameter("fx_flick")
-			if fl != null: dip_lo = minf(dip_lo, float(fl))
+		var dip_lo := _live_flick(s)
 		check(not s._damage_surfaces.is_empty() and dip_lo < 0.6, "%s: an ion dip on a fresh hull dims its lights (%d surfaces, fx_flick %.2f)" % [faction, s._damage_surfaces.size(), dip_lo])
 		settle(1.0)
 		var nodes0: int = _emitters(s)
@@ -261,13 +258,11 @@ func _run() -> void:
 		var want_power: float = 1.0 - HULL.WEAR_POWER * s.hull_wear
 		for j in 40:
 			fx.step(0.05)
+			flick_seen = flick_seen or _live_flick(s) < 0.99
 			for key in s._damage_surfaces:
 				var e: Array = s._damage_surfaces[key]
 				if e.size() > 1 and e[1] is ShaderMaterial:
 					var m: ShaderMaterial = e[1]
-					var fl = m.get_shader_parameter("fx_flick")
-					if fl != null and float(fl) < 0.99:
-						flick_seen = true
 					power_steady = power_steady and absf(float(m.get_shader_parameter("fx_power")) - want_power) < 1e-4
 		check(flick_seen, "%s: the flicker reaches the hull's damage surfaces" % faction)
 		check(power_steady, "%s: fx_power keeps the wear's steady value under the flicker" % faction)
@@ -334,7 +329,7 @@ func _run() -> void:
 	settle(5.0)
 	check(quiet.wound_log.is_empty(), "the wound history stays off in play")
 	# Fable audit Nov 22, finding 1: a hull that dies during a hit brownout, or while a wounded hull flickers, starts its
-	# death at full light (the death copies its live material, fx_flick included)
+	# death at full light (the death reuses the hull mesh, fx_flick included)
 	for row in [["die_dipped", false], ["die_flicker", true]]:
 		var d = _ship(row[0], "hegemony", Vector3(180, 0, 80 + (60 if row[1] else 0)))
 		d.sync(fx, _state(100, 100, 100))
@@ -353,14 +348,16 @@ func _run() -> void:
 		var hull_mi: MeshInstance3D = d.meshes[0]
 		fx.death(row[0], "blast")
 		fx.step(0.05)
-		var lo := 1.0
+		var flick = hull_mi.get_instance_shader_parameter(&"fx_flick")
 		var seen := 0
+		var power_down_only := true
 		for i in hull_mi.mesh.get_surface_count():
 			var m = hull_mi.get_surface_override_material(i)
-			if m is ShaderMaterial and m.get_shader_parameter("fx_flick") != null:
+			if m is ShaderMaterial and m.get_shader_parameter("death_span") != null:
 				seen += 1
-				lo = minf(lo, float(m.get_shader_parameter("fx_flick")))
-		check(before < 0.8 and seen > 0 and lo == 1.0, "%s: the death starts at full light (live fx_flick %.2f, death copies %d, lowest %.2f)" % [row[0], before, seen, lo])
+				power_down_only = power_down_only and not m.shader.code.contains("* fx_flick;")
+		check(before < 0.8 and seen > 0 and flick == 1.0 and power_down_only,
+			"%s: the death starts at full light (live fx_flick %.2f, death copies %d, new fx_flick %s)" % [row[0], before, seen, flick])
 	check(WEAP.BREAK_HULL_BEAT == 0.08, "the shield-break beat is 0.08 s (brief section 3, already on main)")
 	print("live_wounds_1587_check: ", "PASS" if failures == 0 else "FAIL (%d)" % failures)
 	quit(1 if failures > 0 else 0)

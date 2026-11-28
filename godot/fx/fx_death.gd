@@ -1521,15 +1521,14 @@ static func _joint_gap(b: Dictionary, p: Vector3) -> float:
 
 # Issue 461 (carried from 484: "the cut is prepared before the killing weapon is known"). A lance kill re-cuts the hull on
 # the death frame along the beam's line (fracture_plan reads "lance_line"). The cut runs on a worker during the tell
-# (1.38 s on a cruiser, 2.0 s on a capital); if it is not done by the break, the ship breaks along the cut it already had
-# (cut_prev), never stalls. Only big hulls killed by a lance pay for it.
+# (1.38 s on a cruiser, 2.0 s on a capital). A late lance cut can fall back to the previous cut only if both have the
+# same damage. Otherwise the normal bounded wait applies. Only big hulls killed by a lance pay for the recut.
 static func _lance_recut(fx, s) -> void:
 	if not is_instance_valid(s.root):
 		return
 	if s.has_meta("cut_task"):
 		# a damage refresh of the cut is still running (bench round 1: a damaged ship nearly always has one): leave it to
-		# finish on its own and start the lance cut beside it. If the refresh had not finished, the ship breaks along the
-		# last finished cut (cut_prev) only if the lance cut is late; otherwise it waits for the lance cut.
+		# finish on its own and start the lance cut beside it. The split checks the damage revision of any fallback.
 		var tid: int = s.get_meta("cut_task")
 		if not finish_precompute(fx, s):
 			s.remove_meta("cut_job")  # the detached worker still owns this result
@@ -1556,16 +1555,7 @@ static func _lance_recut(fx, s) -> void:
 	fx.pend("lance_recut", t0)
 
 
-# Gather the hull's surfaces on the main thread (mesh arrays come from the rendering server), then cut on a worker.
-static func precompute(fx, s, cause := "blast", under_cover := false, shared_cuts: Variant = null) -> void:
-	if fx.get("closed") == true:   # issue 1435: a released fx takes no new cuts
-		return
-	if fx.get("passive") == true:   # issue 1434: the title backdrop never dies
-		return
-	if s.weight <= 0 or s.gone or s.has_meta("cut_task") or s.has_meta("cut_job"):
-		return
-	if not is_instance_valid(s.root) or not s.root.is_inside_tree():
-		return   # F3: the ship's node was freed before its staggered cut came round
+static func _cut_layout(fx, s, cause: String) -> Dictionary:
 	if s.faction == "chorus":
 		cause = "rupture"
 	elif s.death_big:
@@ -1580,21 +1570,52 @@ static func precompute(fx, s, cause := "blast", under_cover := false, shared_cut
 	if (s.death_big and s.faction != "chorus") or s.hull.authored:
 		plan = fracture_plan(fx, s, r)
 		seeds = plan["seeds"]
+	return {"cause": cause, "seeds": seeds, "plan": plan,
+		"warp": _waves(r, s.hull.L, s.hull.L * 0.05, 3) if s.faction == "chorus" else []}
+
+
+# Gather the hull's settled surfaces on the main thread, then give the worker a read-only snapshot.
+static func precompute(fx, s, cause := "blast", under_cover := false, shared_cuts: Variant = null) -> void:
+	if fx.get("closed") == true:   # issue 1435: a released fx takes no new cuts
+		return
+	if fx.get("passive") == true:   # issue 1434: the title backdrop never dies
+		return
+	if s.weight <= 0 or s.gone or s.has_meta("cut_task") or s.has_meta("cut_job"):
+		return
+	if not is_instance_valid(s.root) or not s.root.is_inside_tree():
+		return   # F3: the ship's node was freed before its staggered cut came round
+	if s.damage_pending():
+		if not s.dead:
+			s.set_meta("cut_after_damage", cause)
+		return
+	s.remove_meta("cut_after_damage")
+	var layout: Dictionary = s.get_meta("death_cut_layout", {})
+	if layout.is_empty():
+		layout = _cut_layout(fx, s, cause)
+	var seeds: PackedVector3Array = layout["seeds"]
 	var inv: Transform3D = s.root.global_transform.affine_inverse()
+	var hull_inv := Transform3D.IDENTITY
 	var surfs: Array = []
 	if s.hull.authored:
 		# Seams and damage entries live in the analysis pose; ShipView may since have bobbed or banked the mesh.
-		inv = s.hull_motion().affine_inverse() * inv
+		var motion: Transform3D = s.get_meta("death_hull_motion", s.hull_motion())
+		hull_inv = motion.affine_inverse()
+		inv = hull_inv * inv
+	var death_poses := {}
+	for pose: Dictionary in s.get_meta("death_poses", []):
+		if is_instance_valid(pose["mi"]):
+			death_poses[pose["mi"]] = pose["pose"]
 	for m in s.meshes:
 		if not is_instance_valid(m): continue   # a ship part freed under a live ship (1204 bot runs)
 		var mi = m as MeshInstance3D
 		if mi == null or mi.mesh == null:
 			continue
-		var xf = inv * mi.global_transform
+		# A deferred cut must not bake in the jolt or roll that the death animation already applies.
+		var xf: Transform3D = hull_inv * death_poses[mi] if death_poses.has(mi) else inv * mi.global_transform
 		for si in mi.mesh.get_surface_count():
 			var mat: Material = mi.get_active_material(si)
 			var src_mat: Material = mi.mesh.surface_get_material(si)
-			var sd := {"arrays": s.current_arrays(mi, si), "xf": xf, "mat": mat, "interior": s.hull.authored and HULL.interior_material(src_mat), "fmt": (mi.mesh as ArrayMesh).surface_get_format(si) if mi.mesh is ArrayMesh else 0}
+			var sd := {"arrays": s.current_arrays(mi, si, true), "xf": xf, "mat": mat, "interior": s.hull.authored and HULL.interior_material(src_mat), "fmt": (mi.mesh as ArrayMesh).surface_get_format(si) if mi.mesh is ArrayMesh else 0}
 			# issue 600: the hull plating surface (<code>_hull, RECIPE.md stage 7) tears with the insides under it; only the
 			# parts surfaces carry machines
 			if s.hull.authored and src_mat != null and String(src_mat.resource_name).ends_with("_hull"): sd["skin"] = true
@@ -1605,10 +1626,10 @@ static func precompute(fx, s, cause := "blast", under_cover := false, shared_cut
 				sd["tur"] = tk
 				sd["anchor"] = inv * (s.hull.turrets[tk]["node"] as Node3D).global_transform.origin
 			surfs.append(sd)
-	var inputs := {"seeds": seeds, "surfs": surfs, "cause": cause, "organic": s.faction == "chorus", "faction": s.faction, "L": s.hull.L,
+	var inputs := {"seeds": seeds, "surfs": surfs, "cause": layout["cause"], "organic": s.faction == "chorus", "faction": s.faction, "L": s.hull.L,
 		"cap_kind": CAP_GLASS if s.faction == "ithar" else (CAP_FLESH if s.faction == "chorus" else CAP_METAL),
-		"mesh_on_worker": DisplayServer.get_name() != "headless", "plan": plan, "authored": s.hull.authored,
-		"ragged": s.death_big, "warp": _waves(r, s.hull.L, s.hull.L * 0.05, 3) if s.faction == "chorus" else [],
+		"mesh_on_worker": DisplayServer.get_name() != "headless", "plan": layout["plan"], "authored": s.hull.authored,
+		"ragged": s.death_big, "warp": layout["warp"],
 		"sites": s.death_big and s.faction != "chorus", "sp": s.hull.sp, "sn": s.hull.sn}
 	var cut: CutWork
 	var matches: Array = []
@@ -1629,12 +1650,28 @@ static func precompute(fx, s, cause := "blast", under_cover := false, shared_cut
 		if shared_cuts != null:
 			matches.append(cut)
 	var job := inputs.duplicate()
+	job["damage_revision"] = s.damage_revision
 	job["out"] = null
 	s.set_meta("cut_job", job)
 	s.set_meta("cut_work", cut)
 	s.set_meta("cut_task", cut.task)
 	if not under_cover:
 		fx.later(fx.now + 0.5, func l_prebuild() -> void: _prebuild(fx, s))
+
+
+static func _prepare_death_cut(fx, s, cause: String) -> void:
+	if s.cut_matches_damage(s.get_meta("cut_job", {})):
+		return
+	if s.has_meta("cut_job") or s.has_meta("cut_task") or s.has_meta("cut_prev"):
+		fx.discard_ship_cut(s)
+	if not s.damage_pending():
+		precompute(fx, s, cause)
+
+
+# A lethal volley can leave several wounds behind the live rebuild. Start the death cut when the last one settles.
+static func damage_settled(fx, s) -> void:
+	if not s.get_meta("death_hulk", true) and not s.has_meta("death_hidden"):
+		_prepare_death_cut(fx, s, str(s.get_meta("death_cause", "blast")))
 
 
 class CutWork extends RefCounted:
@@ -1695,6 +1732,8 @@ static func _run_cut(work: CutWork, abort: CutAbort, share_lanes: bool) -> void:
 static func _prebuild(fx, s) -> void:
 	if not finish_precompute(fx, s):
 		fx.later(fx.now + 0.5, func l_prebuild() -> void: _prebuild(fx, s))
+	else:
+		s._cut_refresh(fx)
 
 
 static func finish_precompute(fx, s) -> bool:
@@ -2762,8 +2801,7 @@ static func _death_inner(fx, s, cause: String) -> float:
 		s.set_meta("death_hulk", false)
 		s.set_meta("death_spore_next", T)
 		if "_vel" in s.root: s.set_meta("death_velocity", s.root.get("_vel"))
-		if not s.has_meta("cut_task") and not s.has_meta("cut_job"):
-			precompute(fx, s, "rupture")
+		_prepare_death_cut(fx, s, "rupture")
 		if not s.death_big:
 			s.set_meta("death_split", T + 0.35)
 			fx.later(T + 0.35, func l_break_up() -> void: _break_up_when_ready(fx, s, "rupture", s.fac.damage_glow, T + 2.85))
@@ -2793,9 +2831,12 @@ static func _death_inner(fx, s, cause: String) -> float:
 	s.set_meta("death_velocity", inherited)
 	if cause == "cut" and s.death_big and s.faction != "chorus":
 		_lance_recut(fx, s)
-	if not s.has_meta("cut_task") and not s.has_meta("cut_job"):
-		precompute(fx, s, cause)
+	_prepare_death_cut(fx, s, cause)
 	var job: Dictionary = s.get_meta("cut_job", {})
+	if s.damage_pending():
+		# The tell can start on time. Keep its exact fracture layout for the eventual geometry snapshot.
+		job = _cut_layout(fx, s, cause)
+		s.set_meta("death_cut_layout", job)
 	var seeds: PackedVector3Array = job.get("seeds", PackedVector3Array())
 	var at: Vector3 = (seeds[0] + seeds[1]) * 0.5 if seeds.size() >= 2 else s.hull.core   # issue 370: the core, never the box centre
 	var axis: Vector3 = (seeds[1] - seeds[0]).normalized() if seeds.size() >= 2 else Vector3.RIGHT
@@ -2896,6 +2937,8 @@ static func _small_trail(fx, s, age: float, motion: Transform3D) -> void:
 # capital deck by deck from the top), death_steps holds (bands, delay per band, fade).
 static func power_material(mat: ShaderMaterial, strain := false) -> ShaderMaterial:
 	var code: String = mat.shader.code
+	# The power-down beat starts at full light, even when its mesh still holds a live flicker or hit brownout.
+	code = SH.patch(code, " * fx_flick;", ";")
 	code = SH.patch(code, "uniform float fx_power = 1.0;", "uniform float fx_power = 1.0;\nuniform float death_age = 0.0;\nuniform float death_start = 0.0;\nuniform vec2 death_span = vec2(0.0, 1.0);\nuniform vec3 death_axis = vec3(1.0, 0.0, 0.0);\nuniform vec3 death_steps = vec3(3.0, 0.055, 0.18);\nuniform float death_hold = 0.0;" + (SH.STRAIN_FN if strain else ""))
 	if strain:
 		# Issue 1077 (prototype): the plating along the break lines bulges as the hull strains (death_age is the shader's
@@ -3003,9 +3046,6 @@ static func _power_surface(fx, s, mi: MeshInstance3D, i: int, pose: Transform3D)
 	if source is ShaderMaterial and source.has_meta("fx_hull_source"):
 		mat = source.duplicate()
 		mat.shader = template.shader
-		# Fable audit Nov 22, finding 1: the live surface may hold a hit brownout or the wound flicker (fx_flick); the death
-		# copy starts at full light so the power-down beat, not a frozen dip, darkens the hull
-		mat.set_shader_parameter("fx_flick", 1.0)
 	else:
 		mat = template.duplicate()
 		HULL.set_damage_pose(mat, pose, {})
@@ -3142,8 +3182,8 @@ static func _update_dying(fx, s) -> void:
 		if is_instance_valid(pose["mi"]): (pose["mi"] as Node3D).global_transform = s.root.global_transform * motion * (pose["pose"] as Transform3D)
 
 
-# A worker or budgeted piece build never blocks the split frame. Use a built previous cut if the worker is still
-# running. With none, the hull holds its tell until its own cut is ready: issue 1232, a capital
+# A worker or budgeted piece build never blocks the split frame. Use a built previous cut only if it has the same
+# damage. Otherwise the hull holds its tell until its own cut is ready: issue 1232, a capital
 # killed before its first cut was ready (A16's cut ran 5.4 s on the PC against a 2.67 s death) popped with no pieces.
 # The wait is capped: a cut still running cold_cut_wall seconds of real time after the death ends in the no-pieces pop, so
 # the kill camera and the turn (both wait for the core flash) never hold longer than that (Board on PR 1240: well under the
@@ -3154,17 +3194,20 @@ static func _break_up_when_ready(fx, s, cause: String, tint: Color, deadline: fl
 	if not is_instance_valid(s.root) or fx.ships.get(s.id) != s:
 		fx.resolve_death_core(s, false)
 		return
+	if s.has_meta("death_hidden"):
+		return
 	var worker_done := finish_precompute(fx, s)
 	var job: Dictionary = s.get_meta("cut_job", {})
 	var prev: Dictionary = s.get_meta("cut_prev", {})
-	if worker_done and job.get("built", false):
+	var prev_ready: bool = s.cut_matches_damage(prev) and prev.get("built", false)
+	if worker_done and s.cut_matches_damage(job) and job.get("built", false):
 		_break_up(fx, s, cause, tint, job)
 		return
-	if not worker_done and prev.get("built", false):
+	if not worker_done and prev_ready:
 		fx.discard_ship_cut(s)
 		_break_up(fx, s, cause, tint, prev)
 		return
-	if not job.is_empty():
+	if not job.is_empty() or s.damage_pending():
 		var waited := float(Time.get_ticks_usec() - int(s.get_meta("death_wall_usec", Time.get_ticks_usec()))) / 1e6
 		if fx.now < deadline or waited < cold_cut_wall:
 			if fx.now >= deadline and not s.has_meta("death_cut_wait"):
@@ -3174,7 +3217,7 @@ static func _break_up_when_ready(fx, s, cause: String, tint: Color, deadline: fl
 			fx.later(minf(fx.now + step, deadline) if fx.now < deadline else fx.now + step, func l_break_up() -> void: _break_up_when_ready(fx, s, cause, tint, deadline))
 			return
 	fx.discard_ship_cut(s)
-	_break_up(fx, s, cause, tint, prev if prev.get("built", false) else {})
+	_break_up(fx, s, cause, tint, prev if prev_ready else {})
 
 
 # ---------------------------------------------------------------- issue 462: the tell, chain blasts, the aftermath
