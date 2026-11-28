@@ -17,7 +17,7 @@ const wrecks = [
     credits: 46,
   },
   {
-    name: "Line battleship", hull: "Battleship", sprite: "H10_23",
+    name: "Dominion battleship", hull: "Battleship", sprite: "H10_23",
     cause: "Melted by corrosive fire. No refit survived.",
     credits: 58,
   },
