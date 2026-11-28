@@ -4,8 +4,8 @@
 //
 // This is the always-runnable guard: it checks the wiring in godot/fx/fx_death.gd so a later edit cannot silently drop
 // the record calls again. When a Godot binary is available it also runs the behaviour check
-// godot/fx/test/death_spawn_check.gd on the PC-built hulls (a real Eclipse cruiser, a hull that does not fill its box);
-// where Godot or the built hulls are missing (GitHub's standing-checks job) it prints SKIP and keeps the static result.
+// godot/fx/test/death_spawn_check.gd on the PC-built hulls (a real Eclipse cruiser, a hull that does not fill its box).
+// On CI this row checks wiring only. The GPU check list owns the separate behaviour check.
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
@@ -50,7 +50,7 @@ console.log('PASS: every fx_death picture records its spawn and the vent uses th
 
 const godot = findGodot();
 if (!godot) {
-  console.log('SKIP: behaviour check needs Godot (run godot/fx/test/death_spawn_check.gd on the PC)');
+  console.log('NOTE: wiring only here. Run godot/fx/test/death_spawn_check.gd with Godot on the PC for behaviour.');
   process.exit(0);
 }
 const run = spawnSync(godot, ['--headless', '--path', 'godot', '--script', 'res://fx/test/death_spawn_check.gd'],
@@ -61,7 +61,7 @@ for (const line of out.trim().split(/\r?\n/)) {
   if (/DEATH_SPAWN|^PASS|^FAIL|vent atlas root|^WARN|placeholder/.test(t)) console.log('  ' + t);
 }
 if (/placeholder hull/.test(out)) {
-  console.log('SKIP: behaviour check needs the PC-built hulls in godot/gen');
+  console.log('NOTE: wiring only here. The behaviour check requires PC-built hulls in godot/gen.');
   process.exit(0);
 }
 if (run.status !== 0) {

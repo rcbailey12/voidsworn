@@ -1,7 +1,8 @@
 # Issue 1739 (Board, Nov 23 03:22 janitor dry run): the janitor said 49.9 GB would come back and about 4.6 GB did.
 # Two causes: a checkout's files are often hard links shared with the mirror or another checkout, so removing them frees
 # nothing, and the Codex sandbox account owns folders the janitor's account cannot delete. These helpers let a size say
-# what would really be freed. Windows PowerShell 5.1 and pwsh (Linux for the tests). Read only; nothing here deletes.
+# what would really be freed. Windows PowerShell 5.1 and pwsh (Linux for the tests). Measurement is read only.
+# The native DACL setter is used only by the sandbox handoff. Nothing here deletes.
 # Dot-source this file; it defines functions only.
 
 function Initialize-DiskSpaceNative {
@@ -26,6 +27,8 @@ public static class VoidswornFileIdentity {
   static extern SafeFileHandle CreateFileW(string name, uint access, uint share, IntPtr security, uint mode, uint flags, IntPtr template);
   [DllImport("kernel32.dll", SetLastError = true)]
   static extern bool GetFileInformationByHandle(SafeFileHandle handle, out Info info);
+  [DllImport("advapi32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
+  static extern bool SetFileSecurityW(string name, uint information, byte[] descriptor);
   // Returns "volume:index links", or null when the file cannot be opened for its attributes.
   public static string Get(string path) {
     // 0x80 FILE_READ_ATTRIBUTES; share read, write and delete; OPEN_EXISTING; FILE_FLAG_BACKUP_SEMANTICS for folders.
@@ -35,6 +38,17 @@ public static class VoidswornFileIdentity {
       if (!GetFileInformationByHandle(h, out i)) return null;
       return i.volume.ToString("x") + ":" + ((((ulong)i.indexHigh) << 32) | i.indexLow).ToString("x") + " " + i.links;
     }
+  }
+  public static bool CanCleanFolder(string path) {
+    // LIST_DIRECTORY, DELETE_CHILD, READ_ATTRIBUTES and DELETE. Open only, without delete-on-close.
+    using (SafeFileHandle h = CreateFileW(@"\\?\" + path, 0x000100C1, 7, IntPtr.Zero, 3, 0x02200000, IntPtr.Zero)) {
+      return !h.IsInvalid;
+    }
+  }
+  public static void SetCleanupDacl(string path, byte[] descriptor) {
+    // DACL_SECURITY_INFORMATION only. Unlike DirectoryInfo.SetAccessControl, this does not re-inherit child ACLs.
+    if (!SetFileSecurityW(@"\\?\" + path, 4, descriptor))
+      throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
   }
 }
 '@ -WarningAction SilentlyContinue
@@ -99,7 +113,14 @@ function Test-OtherAccountFolder($directory) {
   # True when another account owns the folder, so this account may not be able to delete it (the Codex sandbox scratch).
   $owner = Get-FolderOwner $directory
   if (-not $owner) { return $false }
-  return -not (Get-CurrentAccountIds).Contains($owner)
+  if ((Get-CurrentAccountIds).Contains($owner)) { return $false }
+  return -not (Test-FolderCleanupAccess $directory)
+}
+
+function Test-FolderCleanupAccess($directory) {
+  # A sandbox-owned folder with a usable ACL handoff is not blocked just because its owner SID differs.
+  try { return (Initialize-DiskSpaceNative) -and [VoidswornFileIdentity]::CanCleanFolder($directory.FullName) }
+  catch { return $false }
 }
 
 function New-FreeTally {

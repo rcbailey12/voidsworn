@@ -45,8 +45,9 @@ if (fs.existsSync(path.join(ROOT, PLAYBOOK_DIR))) {
   for (const name of playbooks) ENTRY_FILES.push({ file: PLAYBOOK_DIR + '/' + name });
 }
 
-// Built on the PC and never committed: a fresh checkout cannot have it.
-const GENERATED = new Set(['godot/gen']);
+// Built locally and never committed. A linked worktree has a .git file, not a
+// .git directory; its info/exclude lives in the shared Git directory.
+const GENERATED = new Set(['godot/gen', '.git/info/exclude']);
 
 // Template words stand in for a real name (tools/recipe/ships/SHIP.json names no one ship).
 const PLACEHOLDERS = new Set(['SHIP', 'FACTION', 'SCREEN', 'EFFECT']);

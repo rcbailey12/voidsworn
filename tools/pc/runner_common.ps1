@@ -9,7 +9,7 @@
 # space <out> <settings file> <target path>: refuse to start when the target's drive has less than min_free_gb
 #   (default 60) free; one line in result.txt, status failed. Test knobs: PC_TEST_SETTINGS, PC_TEST_SPACE_FREE_MB.
 # hashwrite <tools dir> <hash file>: the Board writes SHA-256 of the runner and watchdog files after copying them.
-# hashcheck <out> <tools dir> <hash file> [strict]: warn in result.txt when the running copies differ. With strict
+# hashcheck <out> <tools dir> <hash file> [strict|strict-runner]: warn in result.txt when the running copies differ. With strict
 #   (issue 1194), a differing or missing watchdog, slot or step helper file (tmo.bat, run_timeout.ps1, gpu_slots.js,
 #   job_wrap.bat) stops the job with exit 14. Test knob: PC_TEST_HASHES.
 # preflight-tools <out> <list> (issue 1194): find each named tool (godot, blender, ffmpeg, node, pil) before a job clones
@@ -596,9 +596,12 @@ function Repo-Mirror($lane = '') {
   }
   Join-Path (Join-Path $env:USERPROFILE 'Downloads\voidsworn_test') $name
 }
-function Cleanup-Paused {
-  if (-not $env:USERPROFILE) { return $false }
-  $flag = Join-Path $env:USERPROFILE 'Downloads\voidsworn_test\gpu_go.txt'
+function Cleanup-Paused($pcRoot = '') {
+  if (-not $pcRoot) {
+    if (-not $env:USERPROFILE) { return $false }
+    $pcRoot = Join-Path $env:USERPROFILE 'Downloads/voidsworn_test'
+  }
+  $flag = Join-Path $pcRoot 'gpu_go.txt'
   if (-not (Test-Path -LiteralPath $flag)) { return $false }
   return (Get-Content -LiteralPath $flag -TotalCount 1) -match '^GPU not cleared: paused by the Board\b'
 }
@@ -608,6 +611,23 @@ function Assert-PlainDirectory($directory) {
       throw "directory is missing or linked: $($dir.FullName)"
     }
   }
+}
+function Get-PcStorageMirrors($root) {
+  Assert-PlainDirectory (Get-Item -LiteralPath $root -Force)
+  foreach ($name in @('repo-mirror.git','repo-mirror-b.git','repo-mirror-c.git','repo-mirror-d.git',
+      'repo-mirror-e.git','repo-mirror-f.git','relay-mirror.git')) {
+    $dir = Get-Item -LiteralPath (Join-Path $root $name) -Force -ErrorAction SilentlyContinue
+    if (-not $dir) { continue }
+    try {
+      Assert-PlainDirectory $dir
+      $head = Get-Item -LiteralPath (Join-Path $dir.FullName 'HEAD') -Force -ErrorAction SilentlyContinue
+      if ($head -is [IO.FileInfo] -and -not ($head.Attributes -band [IO.FileAttributes]::ReparsePoint)) { $dir.FullName }
+    } catch { Write-Warning "mirror upkeep skipped $name : $($_.Exception.Message)" }
+  }
+}
+function Get-MirrorGcArgs($gitDir) {
+  @('--git-dir',$gitDir,'-c','gc.autoDetach=false','-c','gc.reflogExpire=never','-c','gc.reflogExpireUnreachable=never',
+    'gc','--prune=2.weeks.ago')
 }
 function Test-PathInsideRepo($path, $repo) {
   $separator = [IO.Path]::DirectorySeparatorChar
@@ -676,8 +696,8 @@ function Read-ScratchOwner($directory) {
   if ($token -cnotmatch '\A[0-9a-f]{32}\z') { throw 'ownership token file changed' }
   return $token
 }
-function Get-OwnedScratch($record, $expected) {
-  $temp = [IO.Path]::GetFullPath($env:PC_RUN_TEMP).TrimEnd('\','/')
+function Get-OwnedScratch($record, $expected, $scratchRoot = $env:PC_RUN_TEMP) {
+  $temp = [IO.Path]::GetFullPath($scratchRoot).TrimEnd('\','/')
   $full = [IO.Path]::GetFullPath($record.path)
   if ($full -ne $record.path -or $full -ne $expected -or (Split-Path -Parent $full) -ne $temp -or
       (Split-Path -Leaf $full) -notmatch '^voidsworn-run-(?:[1-9][0-9]*-)?[0-9a-f]{32}$') {
@@ -692,9 +712,9 @@ function Get-OwnedScratch($record, $expected) {
       [string]$dir.CreationTimeUtc.Ticks -ne $record.created) { throw 'recorded directory was replaced' }
   return $dir
 }
-function Remove-CleanupDirectory($dir) {
+function Remove-CleanupDirectory($dir, $pcRoot = '') {
   Assert-PlainDirectory (Get-Item -LiteralPath $dir.FullName -Force)
-  if (Cleanup-Paused) { throw 'PC pause is active' }
+  if (Cleanup-Paused $pcRoot) { throw 'PC pause is active' }
   Remove-Item -LiteralPath $dir.FullName -Recurse -Force -ErrorAction Stop
   if (Test-Path -LiteralPath $dir.FullName) { throw 'directory could not be fully removed' }
 }
@@ -703,7 +723,10 @@ function Complete-RunScratch($record, $keepFailed) {
   try {
     $dir = Get-OwnedScratch $record $env:PC_RUN_SCRATCH
     if (-not $dir) { return }
+    if (Get-BoardKeepReason $dir.FullName) { throw 'on the Board keep list' }
     if (-not $keepFailed) {
+      $stats = Measure-CleanupDirectory $dir -AllowLinks
+      Remove-CleanupLinks $stats.Links
       Assert-NoLinkedChildren $dir.FullName
       Remove-CleanupDirectory $dir
       Log "run scratch removed: $($dir.FullName)"
@@ -723,6 +746,7 @@ function Complete-RunScratch($record, $keepFailed) {
       if ($old.FullName -eq $dir.FullName -or $old.Name -notmatch "^voidsworn-run-$issue-[0-9a-f]{32}$") { continue }
       try {
         Assert-PlainDirectory $old
+        if (Get-BoardKeepReason $old.FullName) { continue }
         if (-not (Get-FailedScratchMarker $old)) { continue }
         $null = Read-ScratchOwner $old.FullName
         Assert-NoLinkedChildren $old.FullName
@@ -739,10 +763,11 @@ function Get-FailedScratchMarker($dir) {
   }
   return $marker
 }
-function Measure-CleanupDirectory($directory, [switch]$checkout, [switch]$allowLinks, [switch]$allowUnreadable) {
+function Measure-CleanupDirectory($directory, [switch]$checkout, [switch]$allowLinks, [switch]$allowUnreadable, [switch]$snapshot) {
   Assert-PlainDirectory $directory
   $bytes = 0L; $latest = $directory.LastWriteTimeUtc; $links = @(); $unreadable = @()
   $fileLatest = [DateTime]::MinValue; $worktreeLatest = [DateTime]::MinValue
+  $entriesByPath = if ($snapshot) { ,([Collections.Generic.Dictionary[string,string]]::new([StringComparer]::Ordinal)) }
   # Issue 1739: FreeBytes is what removing the folder would give back. A hard link shared with a file outside it frees
   # nothing, and a folder another account owns cannot be removed by this one, so neither counts.
   $tally = $null
@@ -771,6 +796,11 @@ function Measure-CleanupDirectory($directory, [switch]$checkout, [switch]$allowL
         continue
       }
       if ($item.LastWriteTimeUtc -gt $latest) { $latest = $item.LastWriteTimeUtc }
+      if ($snapshot) {
+        $rel = $item.FullName.Substring($directory.FullName.Length + 1)
+        $length = if ($item -is [IO.DirectoryInfo]) { -1 } else { $item.Length }
+        $entriesByPath.Add($rel, "$length $($item.LastWriteTimeUtc.Ticks)")
+      }
       if ($item -is [IO.DirectoryInfo]) {
         if ($tally) { $folders.Add($item) } else { $pending.Push($item) }
         continue
@@ -799,7 +829,8 @@ function Measure-CleanupDirectory($directory, [switch]$checkout, [switch]$allowL
   $free = $bytes; $shared = 0L; $unchecked = 0L
   if ($tally) { $sum = Complete-FreeTally $tally; $free = $sum.Free; $shared = $sum.SharedOutside; $unchecked = $sum.Unchecked }
   return [pscustomobject]@{ Bytes = $bytes; Latest = $latest; FileLatest = $fileLatest; WorktreeLatest = $worktreeLatest
-    Links = $links; Unreadable = $unreadable; FreeBytes = $free; SharedBytes = $shared; UncheckedBytes = $unchecked; FreeTally = $tally }
+    Links = $links; Unreadable = $unreadable; FreeBytes = $free; SharedBytes = $shared; UncheckedBytes = $unchecked; FreeTally = $tally
+    EntriesByPath = $entriesByPath }
 }
 function Format-CleanupSize($stats) {
   if (Get-Command Format-FreeBytes -ErrorAction SilentlyContinue) { return (Format-FreeBytes $stats) }
@@ -810,6 +841,9 @@ function Add-WouldFree($stats) {
   if ($script:plannedFreeTally -and $stats.FreeTally) { Merge-FreeTally $script:plannedFreeTally $stats.FreeTally }
   else { $script:wouldFreeBytes += [long]$stats.FreeBytes }
   $script:wouldFreeCount++
+  if ($script:freedByKind -and $script:cleanupKind) {
+    $script:freedByKind[$script:cleanupKind] += [long]$stats.FreeBytes
+  }
 }
 function Get-LinkTarget($link) {
   # Where a link points, for the log only: it is never followed.
@@ -1012,10 +1046,17 @@ function Clear-KeptCheckout($copy, $mirror, $dryRun, $now, $salvageRoot, $salvag
   } catch { Log "kept checkout retained: $candidate ($size; $($_.Exception.Message))" }
   finally { if ($mirrorLock) { $mirrorLock.Dispose() } }
 }
-function Remove-OlderKeptRepos($board, $mirror, $dryRun = $false, $now = [DateTime]::UtcNow, $salvageRoot = '') {
+function Remove-OlderKeptRepos($board, $mirror, $dryRun = $false, $now = [DateTime]::UtcNow, $salvageRoot = '', [switch]$ownLane) {
   Assert-PlainDirectory (Get-Item -LiteralPath $board -Force)
-  $lock = $null
-  try { $lock = Open-CleanupLock (Join-Path $board 'repo.cleanup.lock') $dryRun } catch { Log "kept checkout scan kept: $board ($($_.Exception.Message))"; return }
+  $lock = $null; $laneLock = $null
+  try {
+    if (-not $ownLane) { $laneLock = Open-CleanupLock (Join-Path $board 'repo.checkout.lock') $dryRun }
+    $lock = Open-CleanupLock (Join-Path $board 'repo.cleanup.lock') $dryRun
+  } catch {
+    if ($laneLock) { $laneLock.Dispose() }
+    Log "kept checkout scan kept: $board ($($_.Exception.Message))"
+    return
+  }
   try {
     $copies = @(Get-ChildItem -LiteralPath $board -Directory -Force |
       Where-Object { $_.Name -like 'repo-kept-*' } | Sort-Object LastWriteTimeUtc, CreationTimeUtc, Name -Descending)
@@ -1028,7 +1069,7 @@ function Remove-OlderKeptRepos($board, $mirror, $dryRun = $false, $now = [DateTi
       }
       Clear-KeptCheckout $copy $mirror $dryRun $now $salvageRoot "$(Split-Path -Leaf $board)_$($copy.Name)"
     }
-  } finally { if ($lock) { $lock.Dispose() } }
+  } finally { if ($lock) { $lock.Dispose() }; if ($laneLock) { $laneLock.Dispose() } }
 }
 # Windows command line quoting, including trailing backslashes. Inputs are argument values, never shell snippets.
 function Quote($value) { return '"' + ([regex]::Replace(([string]$value), '(\\*)"', '$1$1\"') -replace '(\\+)$', '$1$1') + '"' }
@@ -1102,7 +1143,8 @@ function Update-SharedMirror($mirror, $source, $job, $attempts = 1, $wait = 1800
       $url = @(Git @('--git-dir',$mirror,'remote','get-url','origin'))
       if ($gitExit -ne 0 -or $url[0] -ne $source) { throw 'shared repo copy has an unexpected origin; kept unchanged' }
       $fetch = Invoke-BoundedMirrorGit @('--git-dir',$mirror,'-c','http.lowSpeedLimit=1000','-c','http.lowSpeedTime=60',
-        '-c','fetch.writeCommitGraph=false','fetch','--no-auto-maintenance','--prune','origin') $seconds
+        '-c','fetch.writeCommitGraph=false','fetch','--no-auto-maintenance','--prune','--no-tags','--refmap=','origin',
+        '+refs/heads/*:refs/heads/*','+refs/tags/*:refs/tags/*') $seconds
       if ($fetch.Code -eq 0) { Must-Git @('--git-dir',$mirror,'symbolic-ref','HEAD','refs/heads/main') }
     } finally { $lock.Dispose() }
     Write-GitLog $fetch.Lines
@@ -1524,6 +1566,11 @@ function Invoke-LockedRunner($start, $issue) {
     finally { $child.Dispose() }
   } finally { $lock.Dispose() }
 }
+function Runner-HashFiles {
+  @('codex_issue.bat','codex_issue.ps1','runner_common.ps1','work_issue.bat','work_issue.ps1','review_evidence.ps1',
+    'run_timeout.ps1','tmo.bat','gpu_slots.js','disk_space.ps1','janitor.ps1','janitor_salvage.ps1',
+    'janitor_neon.ps1','janitor_relay.ps1','neon_idle_threads.js','janitor.bat','sandbox_handoff.ps1')
+}
 if ($mode -eq 'cleanup-library') { return }
 function End-Announcement($s) {
   if (-not $s.github -or -not $s.github.claimed) { return }
@@ -1672,10 +1719,6 @@ try {
     $null = New-Item -ItemType Directory -Force -Path $parent
     Update-SharedMirror $mirror $source $br 3 -ReportWait
     $reuse = Can-ReuseRepo $repo $mirror $patterns
-    if ($reuse) {
-      # --prune: a reused slot must drop a branch GitHub deleted, or a rerun would continue its stale tip (PR 1804).
-      Retry-Git 'checkout fetch' @('-C',$repo,'fetch','--no-tags','--no-auto-maintenance','--prune',$mirror,'+refs/heads/*:refs/remotes/origin/*')
-    }
     # A pinned lane must not hold the shared mirror lock for the ten-minute preservation wait.
     if (-not $reuse) { Keep-Repo $repo 'kept' }
     Warn-KeptRepos $repo
@@ -1684,7 +1727,8 @@ try {
         Log "local clone attempt $attempt/3"
         # Reacquire around each local clone: mirror fetch and hardlink cloning must still serialize.
         $lock = Open-MirrorWriterLock $mirror $br 'git clone --local --no-checkout' 1800 -ReportWait
-        try { $null = Git @('clone','-q','-c','core.autocrlf=false','--local','--no-checkout',$mirror,$repo) }
+        # Clone just main's ref, then fetch the filtered set below. --local still hardlinks the immutable objects.
+        try { $null = Git @('clone','-q','-c','core.autocrlf=false','--local','--no-checkout','--single-branch','--branch','main',$mirror,$repo) }
         finally { $lock.Dispose() }
         if ($gitExit -eq 0) { break }
         Keep-Repo $repo 'clone-failed'
@@ -1694,6 +1738,18 @@ try {
     Add-ProfileCacheExclude $repo
     # Local hardlinks share immutable objects without alternates. All pushes go to GitHub, never to the mirror.
     Must-Git @('-C',$repo,'remote','set-url','origin',$source)
+    $laneHeads = '+refs/heads/*:refs/remotes/origin/*'
+    $excludeRelay = '^refs/heads/board/pc-out-*'
+    # Git 2.29+ negative refspec. Old copied relay refs stay for the Board's compaction pass.
+    Must-Git @('-C',$repo,'config','--replace-all','remote.origin.fetch',$laneHeads)
+    Must-Git @('-C',$repo,'config','--add','remote.origin.fetch',$excludeRelay)
+    # --prune drops deleted job branches so a rerun cannot start from a stale tip (PR 1804).
+    $refs = @($laneHeads,$excludeRelay)
+    if (-not $reuse) { $refs += '+refs/tags/*:refs/tags/*' } # Keep the prior clone's tag inventory.
+    $lock = Open-MirrorWriterLock $mirror $br 'git fetch into lane' 1800 -ReportWait
+    try {
+      Retry-Git 'checkout fetch' (@('-C',$repo,'fetch','--no-tags','--no-auto-maintenance','--prune',$mirror) + $refs)
+    } finally { $lock.Dispose() }
     if (-not $reuse -and $patterns.Count) {
       # Write the patterns file and settings directly; the checkout below applies them. Passing '/*' as an argument let
       # PowerShell on Linux expand it into root folders, which left out every file (issue 1186, CI).
@@ -2012,7 +2068,7 @@ try {
   elseif ($mode -eq 'hashwrite') {
     # The Board runs this right after copying the runner files to a PC tools folder; hashcheck then guards the copies.
     $tools = $args[1]; $hashf = $args[2]
-    $names = @('codex_issue.bat','codex_issue.ps1','runner_common.ps1','work_issue.bat','work_issue.ps1','review_evidence.ps1','run_timeout.ps1','tmo.bat','gpu_slots.js','janitor.ps1','janitor_salvage.ps1','janitor.bat')
+    $names = Runner-HashFiles
     $lines = @()
     foreach ($n in $names) {
       $p = Join-Path $tools $n
@@ -2023,13 +2079,13 @@ try {
     Write-Host "hashes written to $hashf ($($names.Count) files)"
   }
   elseif ($mode -eq 'hashcheck') {
-    # Issue 722 (audit 706 finding 6): the running copies must be what the Board copied. A drift or a missing
-    # hashes file is a warning only: a run must never stop because the Board has not written hashes yet.
+    # Without strict, older Workhorse launches still warn. Codex requires the complete lane manifest.
     $script:out = $args[1]; $tools = $args[2]; $hashf = $args[3]
     if ($test -and $env:PC_TEST_HASHES) { $hashf = $env:PC_TEST_HASHES }
     # Issue 1194 (Artoo on PR 1254): strict fails closed. A missing or empty manifest, or one that leaves out a guarded
     # file, stops the job as surely as a changed file.
-    $strict = $args[4] -eq 'strict'
+    $strictRunner = $args[4] -eq 'strict-runner'
+    $strict = $strictRunner -or $args[4] -eq 'strict'
     function Stop-Strict($why) {
       Log "STOPPED: $why"
       if (Test-Path -LiteralPath (Join-Path $script:out 'status.json')) { State 'failed' "STOPPED: $why" }
@@ -2043,11 +2099,14 @@ try {
     $want = @{}
     foreach ($l in [IO.File]::ReadAllLines($hashf)) {
       $m = [regex]::Match($l, '^([0-9a-fA-F]{64})\s+(\S+)\s*$')
+      if ($strictRunner -and (-not $m.Success -or $m.Groups[2].Value -notmatch '\A[A-Za-z0-9_.-]+\z' -or
+          $want.ContainsKey($m.Groups[2].Value))) { Stop-Strict "invalid or duplicate entry in $hashf" }
       if ($m.Success) { $want[$m.Groups[2].Value] = $m.Groups[1].Value.ToLower() }
     }
     if ($strict) {
       $required = @('tmo.bat', 'run_timeout.ps1', 'gpu_slots.js')
-      if (Test-Path -LiteralPath (Join-Path $tools 'job_wrap.bat')) { $required += 'job_wrap.bat' }
+      if ($strictRunner) { $required = Runner-HashFiles }
+      elseif (Test-Path -LiteralPath (Join-Path $tools 'job_wrap.bat')) { $required += 'job_wrap.bat' }
       $absent = @($required | Where-Object { -not $want.ContainsKey($_) })
       if ($absent.Count) { Stop-Strict "the hashes file $hashf leaves out: $($absent -join ', ')" }
     }
@@ -2060,6 +2119,7 @@ try {
     }
     if ($bad.Count) { Log "WARNING: these runner files differ from the Board-copied hashes: $($bad -join ', ')" }
     else { Log "runner files match the Board hashes ($($want.Count) checked)" }
+    if ($strictRunner -and $bad.Count) { Stop-Strict "lane runner files differ from $($hashf): $($bad -join ', ')" }
     # Issue 1194: a job must not run a watchdog or slot reader other than the one the hashes name.
     $guarded = @('tmo.bat', 'run_timeout.ps1', 'gpu_slots.js', 'job_wrap.bat')
     $stop = @($bad | Where-Object { $guarded -contains ($_ -replace ' \(missing\)$', '') })
@@ -2376,13 +2436,13 @@ try {
         if (Cleanup-Paused) { Log 'run cleanup skipped during the PC pause' }
         else {
           Complete-RunScratch $old.scratch ($status -notin @('checked_push','no_changes'))
-          if ($status -eq 'checked_push' -and $args[6]) {
+          if ($args[6]) {
             $repo = [IO.Path]::GetFullPath($args[6])
             $board = Split-Path -Parent $repo
             $lane = Split-Path -Leaf $board
             if ($test -or ((Split-Path -Leaf $repo) -eq 'repo' -and $lane -match '\Aboard(?:_[b-f])?\z' -and
                 (Split-Path -Parent $board) -eq (Join-Path $env:USERPROFILE 'Downloads/voidsworn_test'))) {
-              Remove-OlderKeptRepos $board (Repo-Mirror $lane)
+              Remove-OlderKeptRepos $board (Repo-Mirror $lane) -ownLane
             }
           }
         }

@@ -16,8 +16,9 @@ const childTimeout = 65000;
 const janitorTimeout = windows ? 240000 : childTimeout;
 const temp = path.join(root, 'temp'), board = path.join(root, 'board');
 const mirror = path.join(root, 'mirror.git'), repo = path.join(board, 'repo');
+const legacyOrigin = path.join(root, 'legacy-origin.git');
 const profile = path.join(root, 'profile'), flag = path.join(profile, 'Downloads', 'voidsworn_test', 'gpu_go.txt');
-const env = { ...process.env, USERPROFILE: profile, PC_RUNNER_TEST: '1', PC_RUN_TEMP: temp, PC_TEST_MIRROR: mirror, PC_TEST_GIT: '' };
+const env = { ...process.env, USERPROFILE: profile, PC_RUNNER_TEST: '1', PC_RUN_TEMP: temp, PC_TEST_MIRROR: mirror, PC_TEST_SOURCE: legacyOrigin, PC_TEST_GIT: '' };
 const fixtureNow = new Date();
 function write(file, value) {
   fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -88,6 +89,91 @@ function scratch(parent, name, hours) {
   write(file, name);
   dateTree(dir, hours);
   return dir;
+}
+function checkSandboxAcl() {
+  if (!windows) return;
+  const folder = path.join(root, 'sandbox-acl-handoff');
+  write(path.join(folder, 'protected', 'private.bin'), 'retry scratch');
+  const code = `
+    $ErrorActionPreference = 'Stop'
+    . (Join-Path $env:ACL_TEST_TOOLS 'sandbox_handoff.ps1') -LibraryOnly
+    $owner = [Security.Principal.WindowsIdentity]::GetCurrent().User
+    $runner = [Security.Principal.SecurityIdentifier]::new('S-1-5-19')
+    $dir = Get-Item -LiteralPath (Join-Path $env:ACL_TEST_ROOT 'protected')
+    $file = Get-Item -LiteralPath (Join-Path $dir.FullName 'private.bin')
+    $link = New-Item -ItemType HardLink -Path (Join-Path $env:ACL_TEST_ROOT 'pack.link') -Target $file.FullName
+    $original = $dir.GetAccessControl()
+    try {
+      $acl = $dir.GetAccessControl()
+      $acl.SetAccessRuleProtection($true,$true)
+      $dir.SetAccessControl($acl)
+      $before = $file.GetAccessControl().Sddl
+      Grant-SandboxCleanupAcl $dir $owner $runner
+      Grant-SandboxCleanupAcl $file $owner $runner
+      if ($file.GetAccessControl().Sddl -cne $before) { throw 'shared file ACL was changed' }
+      $after = $dir.GetAccessControl()
+      if (-not $after.AreAccessRulesProtected -or $after.GetOwner([Security.Principal.SecurityIdentifier]).Value -ne $owner.Value) {
+        throw 'handoff changed ownership or inheritance'
+      }
+      $grant = $after.GetAccessRules($true,$false,[Security.Principal.SecurityIdentifier]) | Where-Object { $_.IdentityReference -eq $runner }
+      if (-not ($grant.FileSystemRights -band [Security.AccessControl.FileSystemRights]::Delete)) { throw 'runner delete right not granted' }
+      'sandbox ACL handoff verified'
+    } finally {
+      $restore = $dir.GetAccessControl()
+      $restore.SetSecurityDescriptorSddlForm($original.Sddl, [Security.AccessControl.AccessControlSections]::Access)
+      $dir.SetAccessControl($restore)
+    }
+  `;
+  assert.match(execute(shellName(), ['-NoProfile', '-Command', code], undefined, {
+    ACL_TEST_ROOT: folder, ACL_TEST_TOOLS: path.dirname(common)
+  }), /sandbox ACL handoff verified/);
+}
+function shellName() { return windows ? 'powershell.exe' : 'pwsh'; }
+function checkSandboxHandoffTargets() {
+  const pcRoot = path.join(profile, 'Downloads', 'voidsworn_test');
+  const lane = path.join(pcRoot, 'board_e');
+  const checkout = path.join(lane, 'repo');
+  const out = path.join(lane, 'issue-2144');
+  const sandboxProfile = path.join(root, 'sandbox-profile');
+  const sandboxPcRoot = path.join(sandboxProfile, 'Downloads', 'voidsworn_test');
+  const sandboxTemp = path.join(sandboxProfile, 'temp');
+  for (const dir of [checkout, out, sandboxPcRoot, sandboxTemp]) fs.mkdirSync(dir, { recursive: true });
+  shared(['init', out, 'fixture/handoff']);
+  shared(['scratch', out], '', '2144');
+  const scratchPath = read(path.join(out, 'scratch_path.txt')).trim();
+  const code = `
+    . (Join-Path $env:ACL_TEST_TOOLS 'sandbox_handoff.ps1') -LibraryOnly
+    $hostRoot = $env:ACL_TEST_PC_ROOT
+    $sandboxRoot = Join-Path $env:USERPROFILE 'Downloads/voidsworn_test'
+    $out = $env:ACL_TEST_OUT
+    $repo = $env:ACL_TEST_REPO
+    $scratch = $env:ACL_TEST_SCRATCH
+    $scratchRoot = $env:ACL_TEST_SCRATCH_ROOT
+    function Expect-Rejection([scriptblock]$action, $message) {
+      try { $null = & $action }
+      catch { if ($_.Exception.Message -like "*$message*") { return }; throw }
+      throw "handoff accepted an unsafe target: $message"
+    }
+    $targets = Get-SandboxHandoffTargets $out $repo $hostRoot $scratchRoot $scratch '2144'
+    if ($targets.PcRoot -ne $hostRoot -or $targets.Repo.FullName -ne $repo -or $targets.Scratch.FullName -ne $scratch) {
+      throw 'did not resolve the locked host run'
+    }
+    Expect-Rejection { Get-SandboxHandoffTargets $out $repo $sandboxRoot $scratchRoot $scratch '2144' } 'active checkout'
+    Expect-Rejection { Get-SandboxHandoffTargets $out $repo $hostRoot $env:PC_RUN_TEMP $scratch '2144' } 'TEMP directory'
+    Expect-Rejection { Get-SandboxHandoffTargets $out $repo $hostRoot $scratchRoot $scratch '2145' } 'this issue in the same lane'
+    if ((Cleanup-Paused) -or -not (Cleanup-Paused $hostRoot)) { throw 'did not read the host pause flag' }
+    Expect-Rejection { Remove-CleanupDirectory $targets.Scratch $hostRoot } 'PC pause is active'
+    'host handoff targets and pause verified'
+  `;
+  write(flag, 'GPU not cleared: paused by the Board');
+  assert.match(execute(shellName(), ['-NoProfile', '-Command', code], undefined, {
+    USERPROFILE: sandboxProfile, PC_RUN_TEMP: sandboxTemp, ACL_TEST_TOOLS: path.dirname(common),
+    ACL_TEST_PC_ROOT: pcRoot, ACL_TEST_OUT: out, ACL_TEST_REPO: checkout,
+    ACL_TEST_SCRATCH: scratchPath, ACL_TEST_SCRATCH_ROOT: temp,
+  }), /host handoff targets and pause verified/);
+  fs.unlinkSync(flag);
+  assert(fs.existsSync(scratchPath), 'host pause must preserve scratch');
+  console.log('PASS runner handoff: distinct host and sandbox roots, locked issue, owned scratch, and host pause');
 }
 function checkProfileCache() {
   const slot = path.join(root, 'work217', 'slot_sonnet', 'repo');
@@ -190,6 +276,8 @@ try {
   git(['--git-dir', mirror, 'update-ref', 'refs/heads/main', main]);
   git(['--git-dir', mirror, 'symbolic-ref', 'HEAD', 'refs/heads/main']);
   checkProfileCache();
+  checkSandboxAcl();
+  checkSandboxHandoffTargets();
   makeCopy('repo', 1);
   const rebuildable = makeCopy('repo-kept-caches', 1);
   write(path.join(rebuildable, '.git', 'info', 'exclude'), '/godot/.godot/\n');
@@ -433,6 +521,7 @@ try {
   markOwned(recent, 2);
   // Issue 1180 run 8: a helper folder goes after a day only when every out file is a blob committed on a board/pc-out
   // relay branch (a loose blob is not a receipt, Artoo on PR 1266) and everything else is a rebuildable checkout.
+  git(['init', '-q', '--bare', legacyOrigin]);
   let relays = 0;
   const relay = (...files) => {
     const entries = files.map((file, i) =>
@@ -440,7 +529,9 @@ try {
     const tree = git(['--git-dir', mirror, 'mktree'], entries);
     const receipt = git(['--git-dir', mirror, 'hash-object', '-t', 'commit', '-w', '--stdin'],
       `tree ${tree}\nauthor relay <relay@example.invalid> 0 +0000\ncommitter relay <relay@example.invalid> 0 +0000\n\nrelay\n`);
-    git(['--git-dir', mirror, 'update-ref', `refs/heads/board/pc-out-fixture${relays++}`, receipt]);
+    const ref = 'refs/heads/board/pc-out-fixture' + relays++;
+    git(['--git-dir', mirror, 'update-ref', ref, receipt]);
+    git(['--git-dir', mirror, 'push', '-q', legacyOrigin, ref]);
   };
   const opus = scratch(pc, 'opus901out1', 73);
   relay(path.join(opus, 'nested', 'proof.txt'));
@@ -662,12 +753,16 @@ try {
   const beforeScan = oldCopies.map(checkoutSnapshot);
   const dry = runJanitor('--dry-run');
   assert.deepEqual(oldCopies.map(checkoutSnapshot), beforeScan);
-  const secondDry = runJanitor('--dry-run');
+  const secondDry = runJanitor();
+  assert.match(secondDry, /^janitor dry run at /m, 'no trigger must default to a preview');
   assert.deepEqual(oldCopies.map(checkoutSnapshot), beforeScan);
   for (const dir of oldCopies) {
     assert.equal(decision(secondDry, dir, 'would remove'), decision(dry, dir, 'would remove'));
   }
-  for (const dir of remove) decision(dry, dir, 'would remove');
+  for (const dir of remove) {
+    decision(dry, dir, 'would remove');
+    assert(fs.existsSync(dir), `no-arg preview removed ${dir}`);
+  }
   for (const dir of newLaneKeeps) assert(dry.includes(`kept checkout retained (newest): ${dir} (`), `janitor skipped ${dir}`);
   for (const dir of preserve) decision(dry, dir, dir.startsWith(temp + path.sep) || /[\\/](?:opus\d+|pt\d{4})[^\\/]*$/.test(dir) ? 'would keep' : (jobCheckoutsKept.includes(dir) ? 'retained' : 'kept'));
   for (const dir of lookalikes) {
@@ -858,13 +953,13 @@ try {
     const outside = path.join(root, 'resume-target.txt');
     write(outside, 'not the janitor\'s file\n');
     fs.symlinkSync(outside, resumeFile);
-    const linked = runJanitor('', lockPath, { PC_JANITOR_CAP_SECONDS: '0' });
+    const linked = runJanitor('--live', lockPath, { PC_JANITOR_CAP_SECONDS: '0' });
     assert.match(linked, /resume file (?:ignored|not written): .* is not a plain file/, linked);
     assert.equal(read(outside), 'not the janitor\'s file\n', 'the link target is untouched');
     assert(fs.lstatSync(resumeFile).isSymbolicLink(), 'the link stays a link');
     fs.rmSync(resumeFile);
   }
-  const capLive = runJanitor('', lockPath, { PC_JANITOR_CAP_SECONDS: '0' });
+  const capLive = runJanitor('--live', lockPath, { PC_JANITOR_CAP_SECONDS: '0' });
   const stopped = [...capLive.matchAll(/time cap: stopped the (lane|temp|root) folders at (\S+) after/g)].map(m => m[1] + ' ' + m[2]);
   assert.equal(stopped.length, 3, 'the lanes, TEMP and job folders each stop at a zero cap: ' + capLive);
   assert(!fs.existsSync(resumeFile + '.new'), 'no half-written resume file is left');
@@ -965,13 +1060,13 @@ try {
     const inUse = scratch(temp, 'issue-309-in-use', 4);
     markOwned(inUse, 4);
     const heldFile = path.join(inUse, 'nested', 'proof.txt');
-    decision(runJanitor('', heldFile), inUse, 'kept');
+    decision(runJanitor('--live', heldFile), inUse, 'kept');
     assert.equal(read(heldFile), 'issue-309-in-use');
   }
   const pausedTemp = scratch(temp, 'issue-310-pause', 4);
   markOwned(pausedTemp, 4);
   write(flag, 'GPU not cleared: paused by the Board at 12:30');
-  assert.match(runJanitor(), /janitor skipped during the PC pause/);
+  assert.match(runJanitor('--live'), /janitor skipped during the PC pause/);
   assert(fs.existsSync(pausedTemp));
   console.log('PASS janitor: dry and live decisions, retained edits and history, issue locks, age, safe paths, and the automatic rate limit');
 } catch (error) {

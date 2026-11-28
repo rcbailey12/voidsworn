@@ -21,6 +21,7 @@ if ($mode -eq 'run') {
     $start.Arguments = '/d /s /c ""' + $runner + '" ' + $n + ' locked"'
     $start.UseShellExecute = $false
     $start.EnvironmentVariables['CODEX_LOCKED_REPO'] = $args[2]
+    $start.EnvironmentVariables['PC_HANDOFF_SID'] = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
     . (Join-Path $PSScriptRoot 'runner_common.ps1') cleanup-library
     exit (Invoke-LockedRunner $start $n)
   } catch {
