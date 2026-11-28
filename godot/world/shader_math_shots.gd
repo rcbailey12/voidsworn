@@ -62,21 +62,19 @@ func _run() -> void:
 
 	# ---- the sky: the setting the world_shots planet battle uses (hegemony, open map, seed 4105)
 	var st: Dictionary = SKY.setting({"rock": "stone", "planet": 3}, "hegemony", "open", false, 4105)
-	var bs: Dictionary = SKY.bake_view(st)
-	var lamps: Array = SKY.lamps(bs)
-	var size := Vector2i(1024, 512) if small else Vector2i(4096, 2048)
-	var params := {"seed": float(int(bs["seed"]) % 997) * 0.37, "c1": bs["c1"], "c2": bs["c2"], "c3": bs["c3"],
-		"neb": float(bs["neb"]), "cover": float(bs["cover"]), "dust": float(bs["dust"]), "band": float(bs["band"]),
-		"band_n": bs["band_n"], "feature": bs["feature"], "steps": 26 if small else 40,
-		"lamp": PackedVector4Array(lamps), "gal": PackedVector4Array(SKY.galaxies(bs))}
-	var pano: Image = await baker.bake("1468sky|" + tag, SKY.bake_code(), params, size, 32)
+	var size := Vector2i(1024, 512) if small else SKY.BAKE_SIZE
+	var params := SKY.bake_params(st, 26 if small else 40)
+	var pano: Image = await baker.bake_sky("1468sky|" + tag, SKY.bake_code(), params, size)
 	if pano == null:
 		printerr("shader math shots: sky bake failed")
 		quit(1)
 		return
 	var p2 := pano.duplicate()
-	p2.convert(Image.FORMAT_RGBA8)
 	p2.resize(1280, 640, Image.INTERPOLATE_LANCZOS)
+	if pano.get_format() == Image.FORMAT_RGBAH:
+		for y in p2.get_height():
+			for x in p2.get_width(): p2.set_pixel(x, y, p2.get_pixel(x, y).linear_to_srgb())
+	p2.convert(Image.FORMAT_RGBA8)
 	if not _stamp(p2, out.path_join("sky_panorama_%s.png" % tag)): return
 
 	var scene := Node3D.new()
@@ -87,13 +85,9 @@ func _run() -> void:
 	var sh := Shader.new()
 	sh.code = SKY.SKY
 	m.shader = sh
-	m.set_shader_parameter("lamp", PackedVector4Array(lamps))
-	m.set_shader_parameter("seed", float(int(st["seed"]) % 997))
-	m.set_shader_parameter("band_n", st["band_n"])
-	m.set_shader_parameter("band", float(st["band"]))
-	m.set_shader_parameter("star_k", float(st["stars"]))
-	m.set_shader_parameter("px", deg_to_rad(45.0) / 720.0)
+	SKY.set_star_uniforms(m, st)
 	m.set_shader_parameter("neb_tex", BAKER.texture(pano))
+	m.set_shader_parameter("neb_gamma", pano.get_format() == Image.FORMAT_RGBA8)
 	m.set_shader_parameter("has_neb", 1.0)
 	var sky := Sky.new()
 	sky.sky_material = m

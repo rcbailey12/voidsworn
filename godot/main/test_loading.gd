@@ -64,17 +64,18 @@ func _run() -> void:
 	for seed in [1, 9001]:
 		var world := World.new()
 		root.add_child(world)
-		world.build({"terrain": {}, "units": [], "map": {"deadstar": {"q": 0, "r": 0}} if seed == 9001 else {}},
+		var deadstar: bool = seed == 9001
+		world.build({"terrain": {}, "units": [], "map": {"deadstar": {"q": 0, "r": 0}} if deadstar else {}},
 			{"hex_world": func(q, r): return Vector3(q * 10, 0, r * 10), "fac": "corsair", "seed": seed, "sector_setting": sector})
-		for field in ["seed", "feature", "c1", "c2", "planet"]:
+		for field in ["seed", "feature", "c1", "c2"]:
 			check(world.setting[field] == sector[field], "sector " + field + " survives rival, seed and dead-star changes")
+		# Dead Star keeps the sector gas but intentionally uses the unremixed planet (issue 1272).
+		var expected_planet: Dictionary = World.SKY.PLANETS[sector.get("planet_base_i", sector.planet_i)] if deadstar else sector.planet
+		check(world.setting.planet == expected_planet, "sector planet stays fixed or uses the authored Dead Star base")
 		world.queue_free()
 	if DisplayServer.get_name() != "headless":
 		await compare_pixels(baker, "pixels", CODE, params, size)
-		var sky_params := {"seed": 3.7, "c1": sector.c1, "c2": sector.c2, "c3": sector.c3, "neb": sector.neb, "cover": sector.cover,
-			"dust": sector.dust, "band": sector.band, "band_n": sector.band_n, "feature": sector.feature, "steps": 48,
-			"lamp": PackedVector4Array(World.SKY.lamps(sector)), "gal": PackedVector4Array(World.SKY.galaxies(sector))}
-		await compare_pixels(baker, "sky", World.SKY.bake_code(), sky_params, size)
+		await compare_pixels(baker, "sky", World.SKY.bake_code(), World.SKY.bake_params(sector, 32), size, true)
 		for pass_id in 2:
 			await compare_pixels(baker, "planet%d" % pass_id, World.PL.bake_code(),
 				{"seed": 7.1, "kind": 2, "ca": Vector3(0.3, 0.36, 0.2), "cb": Vector3(0.02, 0.06, 0.14), "cc": Vector3(0.62, 0.55, 0.42), "pass_id": pass_id}, size)
@@ -86,16 +87,21 @@ func _run() -> void:
 	print("LOADING_TEST failures=%d" % failed)
 	quit(0 if failed == 0 else 1)
 
-func compare_pixels(baker: Node, label: String, code: String, params: Dictionary, size: Vector2i) -> void:
-	var computed: Image = await baker.bake("compare_" + label, code, params, size, 2)
-	var raster: Image = await baker._canvas(code, params, size)
+func compare_pixels(baker: Node, label: String, code: String, params: Dictionary, size: Vector2i, sky := false) -> void:
+	var computed: Image
+	if sky: computed = await baker.bake_sky("compare_" + label, code, params, size)
+	else: computed = await baker.bake("compare_" + label, code, params, size, 2)
+	var raster: Image = await baker._canvas(code, params, size, sky)
 	check(computed != null and raster != null, label + " returns both images")
 	if computed == null or raster == null: return
 	var error := 0.0
 	var total := 0.0
 	for y in size.y:
 		for x in size.x:
-			var delta := computed.get_pixel(x, y) - raster.get_pixel(x, y)
+			var ref := raster.get_pixel(x, y)
+			if sky and computed.get_format() == Image.FORMAT_RGBAH:
+				ref = Color(pow(ref.r, 2.2), pow(ref.g, 2.2), pow(ref.b, 2.2), ref.a)
+			var delta := computed.get_pixel(x, y) - ref
 			error = maxf(error, maxf(maxf(absf(delta.r), absf(delta.g)), maxf(absf(delta.b), absf(delta.a))))
 			total += absf(delta.r) + absf(delta.g) + absf(delta.b) + absf(delta.a)
 	# The sky hashes pixel coordinates for ray jitter. Raster interpolation and

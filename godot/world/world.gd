@@ -61,7 +61,8 @@ var _center := Vector3.ZERO
 var _lo := Vector3.ZERO
 var _hi := Vector3.ZERO
 var _yaw := 0.0
-var _sky_tex: Texture2D = null
+var _rock_haze_tex: Texture2D = null
+var _sky_gamma := false
 var _old_clouds: Array = []     # today's faint cloud billboards on nebula and storm hexes
 var _under_mat: ShaderMaterial = null
 var _under_mi: MeshInstance3D = null
@@ -155,10 +156,11 @@ func wait_ready() -> void:
 		await get_tree().process_frame
 
 
-func _sky_into(m: ShaderMaterial) -> void:
-	if _sky_tex == null or m == null:
+func _rock_haze_into(m: ShaderMaterial) -> void:
+	if _rock_haze_tex == null or m == null:
 		return
-	m.set_shader_parameter("sky_tex", _sky_tex)
+	m.set_shader_parameter("sky_haze_tex", _rock_haze_tex)
+	m.set_shader_parameter("sky_gamma", _sky_gamma)
 	m.set_shader_parameter("has_sky", 1.0)
 	m.set_shader_parameter("turn", Basis(Vector3.UP, -_yaw))
 
@@ -504,24 +506,9 @@ func _make_sky(env: Environment) -> void:
 	var m := ShaderMaterial.new()
 	var sh: Shader = SKEEP.of(SKY.SKY)   # issue 1434: one compiled shader per code
 	m.shader = sh
-	var lamps: Array = SKY.lamps(SKY.bake_view(setting))   # issue 1272: bake inputs stay the sector's own
-	var lc: Array = []
-	var lr := RandomNumberGenerator.new()
-	lr.seed = int(setting["seed"]) + 9
-	for k in lamps.size():
-		var c: Vector3 = (setting["c3"] as Vector3).lerp(Vector3(0.85, 0.92, 1.0), lr.randf_range(0.3, 0.9))
-		lc.append(c)
-	m.set_shader_parameter("lamp", PackedVector4Array(lamps))
-	m.set_shader_parameter("lamp_col", PackedVector3Array(lc))
-	m.set_shader_parameter("seed", float(int(setting["seed"]) % 997))
-	m.set_shader_parameter("band_n", setting["band_n"])
-	m.set_shader_parameter("band", float(setting["band"]))
-	m.set_shader_parameter("star_k", float(setting["stars"]))
+	SKY.set_star_uniforms(m, setting)
 	for k in ["mood_tint", "mood_mix", "mood_gain", "mood_dim"]:   # issue 1272: the stop's mood, cheap uniforms
 		if setting.has(k): m.set_shader_parameter(k, setting[k])
-	# Issue 232 E18/BD8 sheet: the live star occlusion floor, overridable for the density sweep (default 0.15).
-	var sf := OS.get_environment("VS_STAR_FLOOR")
-	m.set_shader_parameter("star_floor", float(sf) if sf != "" else 0.15)
 	m.set_shader_parameter("sun_dir", SUN.normalized())
 	if LOOK.fleet_lighting_enabled():
 		m.set_shader_parameter("fleet_reflections", true)
@@ -549,35 +536,34 @@ func _make_sky(env: Environment) -> void:
 	SKEEP.event("world sky made")
 	env.background_mode = Environment.BG_SKY
 	_sky_mat = m
-	_bake_sky(lamps)
+	_bake_sky()
 
 
-func _bake_sky(lamps: Array) -> void:
+func _bake_sky() -> void:
 	pending_bakes += 1
-	await _load_sky(lamps)
+	await _load_sky()
 	pending_bakes -= 1
 
 
-func _load_sky(lamps: Array) -> void:
-	var size := Vector2i(4096, 2048) if quality != "low" else Vector2i(2048, 1024)
+func _load_sky() -> void:
+	var size := SKY.BAKE_SIZE
 	if OS.has_environment("VS_WORLD_PREVIEW"):   # software rendering in the cloud: small bakes
 		size = Vector2i(768, 384)
 	var key := "sky|%d|%s|%d" % [int(setting["seed"]), setting["region"], size.x]
-	var bs: Dictionary = SKY.bake_view(setting)   # issue 1272: a stop mood never rebakes the sector's sky
-	var params := {"seed": float(int(bs["seed"]) % 997) * 0.37, "c1": bs["c1"], "c2": bs["c2"], "c3": bs["c3"],
-		"neb": float(bs["neb"]), "cover": float(bs["cover"]), "dust": float(bs["dust"]), "band": float(bs["band"]),
-		"band_n": bs["band_n"], "feature": bs["feature"], "steps": 48 if quality == "max" else (40 if quality == "high" else 26),
-		"lamp": PackedVector4Array(lamps), "gal": PackedVector4Array(SKY.galaxies(bs))}
+	var params := {"steps": 48 if quality == "max" else (40 if quality == "high" else 26)}
+	params.merge(SKY.bake_params(setting))
 	var code := SKY.bake_code()
 	var mat := _sky_mat
-	var img: Image = await _baker.bake(key, code, params, size, 32)
+	var img: Image = await _baker.bake_sky(key, code, params, size)
 	if not is_inside_tree() or img == null or not is_instance_valid(mat) or mat != _sky_mat: return
 	var tex := BAKER.texture(img)
 	mat.set_shader_parameter("neb_tex", tex)
+	_sky_gamma = img.get_format() == Image.FORMAT_RGBA8
+	mat.set_shader_parameter("neb_gamma", _sky_gamma)
 	SKEEP.event("sky nebula map set (%dx%d)" % [img.get_width(), img.get_height()])
 	mat.set_shader_parameter("has_neb", 1.0)
-	_sky_tex = tex
-	for k in _mats: _sky_into(_mats[k])
+	_rock_haze_tex = ImageTexture.create_from_image(WR.sky_haze_image(img))
+	for k in _mats: _rock_haze_into(_mats[k])
 
 
 # ---------------------------------------------------------------- the system: planet, rings, moons
@@ -832,6 +818,7 @@ func dead_star(c: Vector3, s: float) -> void:
 			hm.set_shader_parameter("r_out", Rsh * 4.2)
 			hm.set_shader_parameter("spin", 0.35)
 			hm.set_shader_parameter("seed", 3.7 * float(k + 1))
+			hm.render_priority = -5
 			hz.material_override = hm
 			hz.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 			hz.position = Vector3(0.0, Rsh * (0.07 if k == 0 else -0.07), 0.0)
@@ -902,7 +889,7 @@ func _annulus(r0: float, r1: float, seg: int, rings: int) -> ArrayMesh:
 func _mat(kind: String) -> ShaderMaterial:
 	if not _mats.has(kind):
 		_mats[kind] = WR.material(kind, _look)
-		_sky_into(_mats[kind])
+		_rock_haze_into(_mats[kind])
 	return _mats[kind]
 
 
@@ -1611,7 +1598,7 @@ func cloud_hexes(ps: Array, t: String, fac: String) -> void:
 # Dust specks through the space round and below the board (never over it at ship height): they slide past at different
 # depths whenever the camera moves, which gives the scene its depth.
 func dust(mk: String) -> void:
-	var n := {"belt": 2600, "graveyard": 2000, "storm": 1600}.get(mk, 1300)
+	var n := {"belt": 520, "graveyard": 440, "storm": 360}.get(mk, 280)
 	if quality == "low":
 		n /= 3
 	var r := RandomNumberGenerator.new()
@@ -1633,7 +1620,7 @@ func dust(mk: String) -> void:
 	var m := ShaderMaterial.new()
 	var sh: Shader = SKEEP.of(DUST_SHADER)   # issue 1434: one compiled shader per code
 	m.shader = sh
-	m.set_shader_parameter("col", Vector3(0.55, 0.52, 0.48).lerp(setting.get("c1", Vector3(0.5, 0.5, 0.5)), 0.25) * 0.9)
+	m.set_shader_parameter("col", Vector3(0.55, 0.52, 0.48).lerp(setting.get("c1", Vector3(0.5, 0.5, 0.5)), 0.25) * 0.55)
 	mi.material_override = m
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	mi.extra_cull_margin = 100.0

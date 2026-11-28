@@ -67,8 +67,6 @@ uniform float gain = 1.0;
 uniform vec3 hot = vec3(1.0, 0.92, 0.8);
 uniform vec3 warm = vec3(1.0, 0.55, 0.2);
 uniform vec3 cool = vec3(0.55, 0.12, 0.04);
-uniform float front_only = 0.0;
-uniform vec3 hole_center = vec3(0.0);
 uniform float inner = 0.0;     // 1: draw only the inner, dense part (the outer part is DISC_SOFT)
 varying vec3 vL;
 varying vec3 vW;
@@ -96,12 +94,6 @@ void fragment() {
 	float dop = dot(tang, V);
 	c *= 1.0 + 0.85 * dop;
 	c = mix(c, c * vec3(0.8, 0.95, 1.25), clamp(dop, 0.0, 1.0) * 0.4);
-	if (front_only > 0.5) {
-		// the overlay: only the half of the disc between the camera and the hole
-		vec3 toHole = hole_center - CAMERA_POSITION_WORLD;
-		vec3 toFrag = vW - CAMERA_POSITION_WORLD;
-		if (length(toFrag) > length(toHole)) { discard; }
-	}
 	// r18 (Muse audit B4.5, flat in close-up): fine filaments wound along the flow and dark dust lanes break the disc
 	// up, and the gas looks thicker where it is seen edge-on (a slab of glowing gas, not a painted plate)
 	float rr = length(q);
@@ -166,7 +158,8 @@ void fragment() {
 	vec3 c = mix(hot, cool, smoothstep(0.1, 0.9, u)) * (2.0 - 1.5 * u);
 	vec3 tang = normalize((MODEL_MATRIX * vec4(-q.y, 0.0, q.x, 0.0)).xyz);
 	c *= 1.0 + 0.6 * dot(tang, V);
-	ALBEDO = c * dens * gain * (0.35 + 0.65 * graz);
+	ALBEDO = c * gain;
+	ALPHA = dens * (0.35 + 0.65 * graz);
 }
 """
 
@@ -176,7 +169,7 @@ void fragment() {
 # nothing escapes: black, ringed by the thin bright photon ring.
 const LENS := """
 shader_type spatial;
-render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+render_mode unshaded, blend_mix, depth_draw_never, depth_test_disabled, cull_disabled, shadows_disabled, fog_disabled;
 global uniform float scene_t;
 """ + NOISE + """
 uniform sampler2D screen_tex : hint_screen_texture, filter_linear_mipmap, repeat_disable;
@@ -211,12 +204,12 @@ void fragment() {
 	vec2 d = SCREEN_UV - cs;
 	// screen offset per unit of r (the quad's half size projected)
 	float k = length(d) / max(r, 1e-4);
-	vec2 dir = r > 1e-4 ? d / length(d) : vec2(0.0);
+	vec2 dir = d / max(length(d), 1e-5);
 	float th = r;
 	float re2 = r_einstein * r_einstein;
 	float beta = th - re2 / max(th, 1e-3);
 	// fade the bending out toward the quad edge so there is no seam
-	float edge = smoothstep(1.0, 0.6, r);
+	float edge = 1.0 - smoothstep(0.6, 1.0, r);
 	// F4 r8: and as the camera comes near the hole (zoomed in on a ship beside it): within about three shadow radii the
 	// bent picture sampled the disc itself and folded it into hard-edged slabs; up close the plain view is cleaner
 	float cam_d = length(CAMERA_POSITION_WORLD - (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz);
@@ -228,7 +221,8 @@ void fragment() {
 	// not used, so nothing in front of the hole moves and the disc is never folded into fragments (r6: r4's g01 showed
 	// torn copies of the disc round the shadow); its lensed image is drawn below instead, as arcs over and under the shadow
 	vec3 H = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
-	float hole_z = -(VIEW_MATRIX * vec4(H, 1.0)).z;
+	vec3 hole_view = (VIEW_MATRIX * vec4(H, 1.0)).xyz;
+	float hole_z = -hole_view.z;
 	float dsrc = texture(depth_tex, suv).r;
 	vec4 vsrc = INV_PROJECTION_MATRIX * vec4(suv * 2.0 - 1.0, dsrc, 1.0);
 	float src_z = -vsrc.z / vsrc.w;
@@ -237,14 +231,23 @@ void fragment() {
 	float dcur = texture(depth_tex, SCREEN_UV).r;
 	vec4 vcur = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, dcur, 1.0);
 	float cur_z = -vcur.z / vcur.w;
-	bool near_px = cur_z < hole_z + disc_reach;
-	if (src_z < hole_z + disc_reach || near_px) { suv = SCREEN_UV; }
-	// whatever stands in front of the hole hides its shadow, ring and lensed arcs (a ship crossing the dead star)
-	float front = 1.0 - smoothstep(hole_z - r_sh_w * 1.6, hole_z - r_sh_w * 1.1, cur_z);
+	float far_edge = hole_z + disc_reach;
+	float bend = smoothstep(far_edge, far_edge + r_sh_w, min(src_z, cur_z));
+	suv = mix(SCREEN_UV, suv, bend);
+	// The billboard is at the centre, not the surface. A depth test against that flat plane clipped its lens
+	// along the opaque disc at low views and hid the lens over the core. Compare against the ray's entry into
+	// the sphere instead, or its tangent plane outside the limb, with a feather before the occluder.
+	vec3 eye_ray = normalize(vcur.xyz / vcur.w);
+	float along = dot(hole_view, eye_ray);
+	vec3 miss = hole_view - eye_ray * along;
+	float impact = length(miss);
+	float chord = sqrt(max(0.0, (r_sh_w + impact) * (r_sh_w - impact)));
+	float entry_z = -(along - chord) * eye_ray.z;
+	float exposed = smoothstep(entry_z - 0.11 * r_sh_w, entry_z - 0.015 * r_sh_w, cur_z);
 	vec3 col = textureLod(screen_tex, suv, 0.0).rgb;
 	// a little extra brightening near the Einstein ring (lensing magnifies)
 	float me = (th - r_einstein) / (r_einstein * 0.35);   // signed: squared by hand, pow() is undefined for a negative base
-	float mag = 1.0 + 0.6 * exp(-me * me) * edge * (near_px ? 0.0 : 1.0);
+	float mag = 1.0 + 0.6 * exp(-me * me) * edge * bend;
 	col *= mag;
 	// the disc's far side, lensed: a broad arc over the shadow and a thin secondary arc under it (the same recipe as
 	// G3's map, BH_LENSED), with Doppler beaming (the side turning toward the camera brighter and bluer)
@@ -252,12 +255,13 @@ void fragment() {
 	vec3 Vd = normalize(H - CAMERA_POSITION_WORLD);
 	vec3 fdir = Vd - N * dot(Vd, N);
 	fdir = length(fdir) > 1e-4 ? normalize(fdir) : vec3(0.0, 0.0, 1.0);
-	vec3 A = normalize(cross(N, Vd));
+	vec3 axis = cross(N, Vd);
+	vec3 A = length(axis) > 1e-4 ? normalize(axis) : normalize(disc_basis[0]);
 	vec2 hv = (VIEW_MATRIX * vec4(H, 1.0)).xy;
 	vec2 up2 = normalize((VIEW_MATRIX * vec4(H + fdir * disc_r_mid, 1.0)).xy - hv + vec2(0.0, 1e-5));
 	vec2 ax2 = normalize((VIEW_MATRIX * vec4(H + A * disc_r_mid, 1.0)).xy - hv + vec2(1e-5, 0.0));
 	vec2 pd = r > 1e-4 ? vUv / r : vec2(0.0, 1.0);
-	float ts = th / max(r_shadow, 1e-4);         // in shadow radii
+	float ts = impact / r_sh_w;         // true apparent shadow, including perspective at close views
 	float across = abs(pd.x * ax2.y - pd.y * ax2.x);
 	// F4: a smooth change from the upper arc to the lower one (a hard step drew a seam at top-dead-centre, Argon 4.1)
 	float up = smoothstep(-0.35, 0.35, dot(pd, up2));
@@ -280,14 +284,13 @@ void fragment() {
 	c = mix(c, c * vec3(0.85, 0.97, 1.2), clamp(beam, 0.0, 1.0) * 0.35);
 	c = mix(c, c * vec3(1.1, 0.8, 0.65), clamp(-beam, 0.0, 1.0) * 0.35);
 	// the shadow and the photon ring: thin, sharp, hugging the shadow, a little brighter on the approaching side
-	float sh = smoothstep(1.02, 0.98, ts);
+	float sh = 1.0 - smoothstep(0.98, 1.02, ts);
 	float r1 = (ts - 1.02) / 0.011;   // signed: squared by hand, never pow()
 	float r2 = (ts - 1.06) / 0.05;
 	float ring = (exp(-r1 * r1) * 3.2 * (1.0 + 0.25 * beam) + exp(-r2 * r2) * 0.35) * photon;
 	vec3 lensed = mix(col, vec3(0.0), sh) + (c * arc * arc_gain + ring_col * ring) * (0.95 + 0.05 * sin(scene_t * 0.7));
-	col = mix(lensed, col, front);
-	ALBEDO = col;
-	ALPHA = smoothstep(1.0, 0.85, r);
+	ALBEDO = lensed;
+	ALPHA = (1.0 - smoothstep(0.85, 1.0, r)) * exposed;
 }
 """
 
