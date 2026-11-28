@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C12 reward card mock-ups</title>
+<!-- Open this file locally. Use ?layout=ledger&wrecks=2, ?layout=ledger&wrecks=4,
+     or ?layout=register&wrecks=4. The screenshot renderer adds &rev=<short Git hash>.
+     This is a stand-alone mock-up. Nothing is saved to the game. -->
+<style>
+  @font-face {
+    font-family: "Big Shoulders Display";
+    src: url("../../../../godot/ui/theme/fonts/BigShouldersDisplay-VF.ttf") format("truetype");
+    font-weight: 100 900;
+  }
+  @font-face {
+    font-family: Barlow;
+    src: url("../../../../godot/ui/theme/fonts/Barlow-Regular.ttf") format("truetype");
+    font-weight: 400;
+  }
+  @font-face {
+    font-family: Barlow;
+    src: url("../../../../godot/ui/theme/fonts/Barlow-Medium.ttf") format("truetype");
+    font-weight: 500;
+  }
+  @font-face {
+    font-family: "Azeret Mono";
+    src: url("../../../../godot/ui/theme/fonts/AzeretMono-VF.ttf") format("truetype");
+    font-weight: 100 900;
+  }
+
+  :root {
+    color-scheme: dark;
+    --card: #10100f;
+    --edge: #47423b;
+    --rule: #38342f;
+    --text: #f0eade;
+    --secondary: #c4beb0;
+    --muted: #969084;
+    --ember: #ff8a3a;
+    --head: "Big Shoulders Display", sans-serif;
+    --mono: "Azeret Mono", monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 14px 24px 105px;
+    color: var(--text);
+    background: #090909;
+    font: 18px/1.2 Barlow, sans-serif;
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    z-index: -1;
+    inset: 0;
+    /* Crop the old tooltip off the right edge. The only added hull art is the game sprites. */
+    background:
+      linear-gradient(180deg, #080808bd, #080808e5),
+      url("../../reviews/council_1120/pack/run_seed121/PT25adec3_seed121_t017.jpg")
+      0 48% / max(142%, 1820px) auto no-repeat;
+  }
+  h1, h2, h3, p, ul, dl, dd { margin: 0; }
+  h1, h2 { font: 750 28px/.98 var(--head); text-transform: uppercase; }
+  h1 { font-size: 55px; letter-spacing: .025em; }
+  h3 { font-weight: 500; }
+  button { font: inherit; color: inherit; }
+  button:focus-visible { outline: 1px solid var(--text); outline-offset: 3px; }
+  .figure, kbd { font: 450 .88em/1.25 var(--mono); }
+  kbd { color: var(--secondary); }
+  .quiet { color: var(--secondary); }
+
+  .review {
+    width: min(100%, 1000px);
+    margin: 0 auto 12px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px 24px;
+    color: var(--secondary);
+    font: 450 14px/1.2 var(--mono);
+  }
+  .card {
+    width: min(100%, 708px);
+    margin: 0 auto;
+    padding: 22px 30px 18px;
+    background: var(--card);
+    border: 1px solid var(--edge);
+  }
+  .card[data-layout="register"] { width: min(100%, 890px); }
+  .card-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .result { margin-top: 8px; }
+  .loss { margin-top: 4px; }
+  .payout { align-self: center; text-align: right; }
+  .payout div { display: flex; justify-content: flex-end; gap: 15px; align-items: baseline; }
+  .payout div + div { margin-top: 4px; }
+  .payout dt { color: var(--secondary); }
+  .payout dd { min-width: 3ch; }
+  .salvage { padding-top: 15px; }
+  .section-label { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 10px; }
+  .list { list-style: none; padding: 0; }
+  .wreck {
+    display: grid;
+    grid-template-columns: 10px 96px minmax(0, 1fr) 142px 23px;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 48px;
+    padding: 2px 8px 2px 0;
+    border: 0;
+    border-bottom: 1px solid var(--rule);
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+  }
+  .wreck:hover, .wreck[aria-pressed="true"] { background: #ffffff08; }
+  .mark {
+    width: 6px;
+    height: 6px;
+    border: 1px solid var(--muted);
+  }
+  [aria-pressed="true"] > .mark { background: var(--text); border-color: var(--text); }
+  .hull {
+    display: block;
+    width: 100%;
+    height: 36px;
+    object-fit: contain;
+    opacity: .74;
+  }
+  [aria-pressed="true"] .hull { opacity: 1; }
+  .wreck-name { font-weight: 500; }
+  .wreck-class { display: block; color: var(--secondary); font-size: 17px; }
+  .wreck-key { text-align: right; }
+  .detail { padding-top: 11px; }
+  .detail h3 { font-size: 20px; }
+  .detail p { margin-top: 4px; }
+  .choices { display: flex; flex-wrap: wrap; gap: 4px 28px; margin-top: 8px; }
+  .choice {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 28px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+  }
+  .choice:hover .choice-label { text-decoration: underline; text-underline-offset: 3px; }
+  .choice-value { margin-left: 5px; color: var(--secondary); }
+  .card-footer {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 20px;
+  }
+  .primary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: 0 0 247px;
+    min-height: 51px;
+    padding: 0 13px;
+    border: 2px solid var(--ember);
+    border-radius: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+  .primary:hover { background: var(--ember); color: var(--card); }
+  .primary:hover kbd { color: var(--card); }
+
+  .card[data-layout="register"] .wreck-area {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 30px;
+  }
+  .card[data-layout="register"] .list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 12px;
+  }
+  .card[data-layout="register"] .wreck {
+    position: relative;
+    grid-template-columns: 10px minmax(0, 1fr) 14px;
+    row-gap: 3px;
+    padding: 6px 8px 7px 5px;
+    min-height: 106px;
+    align-content: start;
+  }
+  .card[data-layout="register"] .hull { grid-area: 1 / 1 / 2 / -1; height: 47px; }
+  .card[data-layout="register"] .mark { grid-area: 2 / 1; }
+  .card[data-layout="register"] .identity { grid-area: 2 / 2 / 4 / 3; }
+  .card[data-layout="register"] .wreck-key { grid-area: 2 / 3; }
+  .card[data-layout="register"] .availability { display: none; }
+  .card[data-layout="register"] .detail { padding: 7px 0 0 22px; border-left: 1px solid var(--rule); }
+  .card[data-layout="register"] .detail h3 { font: 750 32px/1.05 var(--head); text-transform: uppercase; }
+  .card[data-layout="register"] .detail p { margin-top: 8px; }
+  .card[data-layout="register"] .choices { flex-direction: column; gap: 6px; margin-top: 13px; }
+  .card[data-layout="ledger"] .detail h3 { position: absolute; width: 1px; height: 1px; clip-path: inset(50%); overflow: hidden; }
+  .card[data-layout="register"] .choice { width: 100%; }
+  .card[data-layout="register"] .choice kbd { margin-left: auto; }
+  .card[data-layout="register"] .choice-value { display: block; margin: 3px 0 0; }
+
+  @media (max-width: 760px) {
+    body { padding-inline: 12px; }
+    .card { padding-inline: 18px; }
+    .card[data-layout] .wreck-area { display: block; }
+    .card[data-layout] .detail { margin-top: 10px; border-left: 0; padding-left: 0; }
+    .wreck { grid-template-columns: 10px 64px minmax(0, 1fr) 20px; gap: 8px; }
+    .availability { display: none; }
+  }
+  @media (max-width: 460px) {
+    .card-header, .card-footer { display: block; }
+    .payout { margin-top: 10px; }
+    .payout div { justify-content: flex-start; }
+    .primary { width: 100%; margin-top: 11px; }
+  }
+</style>
+<script defer src="reward_card.js"></script>
+</head>
+<body>
+  <header class="review" aria-label="Review picture label">
+    <span id="review-label"></span>
+    <span id="review-option"></span>
+  </header>
+  <main class="card" aria-labelledby="result-title">
+    <header class="card-header">
+      <div>
+        <h1 id="result-title">Victory</h1>
+        <p class="result" id="result"></p>
+        <p class="loss quiet">Lost the Dawn of Cinders and Rosalind Salo.</p>
+      </div>
+      <dl class="payout" aria-label="Credits earned">
+        <div><dt>Battle credits</dt><dd class="figure" id="credits"></dd></div>
+        <div><dt>Spoils</dt><dd class="figure">+45</dd></div>
+      </dl>
+    </header>
+    <section class="salvage" aria-labelledby="salvage-title">
+      <div class="section-label">
+        <h2 id="salvage-title">Salvage one wreck</h2>
+        <p class="quiet" id="wreck-count"></p>
+      </div>
+      <div class="wreck-area">
+        <ul class="list" id="wreck-list" aria-label="Available wrecks"></ul>
+        <section class="detail" aria-labelledby="wreck-title">
+          <h3 id="wreck-title"></h3>
+          <p id="wreck-cause" class="quiet"></p>
+          <div class="choices" id="choices" aria-label="Available salvage"></div>
+        </section>
+      </div>
+    </section>
+    <footer class="card-footer">
+      <p id="selection" class="quiet" aria-live="polite"></p>
+      <button class="primary" id="confirm" type="button" aria-keyshortcuts="Enter"><span>Confirm salvage</span> <kbd>Enter</kbd></button>
+    </footer>
+  </main>
+</body>
+</html>
