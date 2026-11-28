@@ -47,7 +47,7 @@ and their reasons live in `docs/RULEBOOK.md`, decisions in `contrib/opus/FINDING
 - **Board**: the one Claude thread that owns the job board, reviews and merges.
 - **Seat**: an AI worker (Opus, Codex, Muse, Neon, Artoo) with its own role (RULEBOOK 2.6).
 - **Job board**: the open GitHub issues; the label says which seat has each job.
-- **Lane**: one of the PC's job queues (lane C and D are code only).
+- **Lane**: one of the PC's job queues (lanes C to F are code only).
 - **Pin**: a full 40-character commit a PC job runs, never a branch tip.
 - **Attempt folder**: one run of a PC job, `voidsworn_test\<job>\out_<stamp>_<n>`.
 - **Relay**: sending an attempt's results off the PC to the private relay repo, so the job can free its checkouts.
