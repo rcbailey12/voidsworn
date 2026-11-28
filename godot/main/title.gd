@@ -553,9 +553,7 @@ func _toggle(t: String, key: String) -> Control:
 		main.settings[key] = not bool(main.settings[key])
 		if key == "tips": load("res://ui/campaign/campaign_tips.gd").set_off(not main.settings[key])
 		b.text = "On" if main.settings[key] else "Off"
-		main.save_settings()
-		if key == "taa" and main.has_method("restart_showcase"):
-			main.restart_showcase())
+		main.save_settings())
 	return Kit.row(t, b, k, _ctrl_w)
 
 

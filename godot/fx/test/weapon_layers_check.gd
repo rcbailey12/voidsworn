@@ -10,17 +10,24 @@ var failures := 0
 
 class RecordFX extends "res://fx/fx.gd":
 	var streaks: Array = []
+	var streak_cols: Array = []
 	var spark_times: Array[float] = []
 	var sprites: Array = []
 	var rings: Array = []
 	var flashes: Array = []
 
-	func stk(p: Vector3, t: float, life: float, col: Color, i: float, length: float, w: float, kind: int, vel: Vector3,
+	func flight_streak(p: Vector3, t: float, life: float, col: Color, i: float, length: float, w: float, kind: int, vel: Vector3,
 			drag := 0.0, acc := 0.0, wpx := 0.0, lpx := 0.0) -> void:
 		streaks.append(kind)
-		if kind == 1 or kind == 8:
+		streak_cols.append({"kind": kind, "col": col})
+		super.flight_streak(p, t, life, col, i, length, w, kind, vel, drag, acc, wpx, lpx)
+
+	func spark(p: Vector3, t: float, life: float, faction: String, intensity: float, shutter: float, width: float,
+			vel: Vector3, drag := 0.0, wpx := 0.0, lpx := 0.0, role := SparkRole.HULL, tint := Color.TRANSPARENT) -> void:
+		var before: int = pools["stk"].emitted
+		super.spark(p, t, life, faction, intensity, shutter, width, vel, drag, wpx, lpx, role, tint)
+		if pools["stk"].emitted > before:
 			spark_times.append(t)
-		super.stk(p, t, life, col, i, length, w, kind, vel, drag, acc, wpx, lpx)
 
 	func _emit_spr(p: Vector3, t: float, life: float, col: Color, i: float, s0: float, s1: float, kind: int, vel := Vector3.ZERO,
 			drag := 0.0, spin := 0.0, acc := 0.0, px := 0.0) -> void:
@@ -56,6 +63,8 @@ func _fx(calm := false) -> RecordFX:
 	fx.manual = true
 	fx.setup({"quality": "high", "reduce_flashing": calm})
 	fx.rng.seed = 23
+	# issue 2194: a nonzero start proves no check leans on the clock beginning at zero
+	fx.now = 5.0
 	return fx
 
 
@@ -104,6 +113,10 @@ func _bolts() -> void:
 		var shots := [] if row[4] else _sprites(fx, row[3])
 		var expected: bool = fx.streaks.has(row[3]) if row[4] else not shots.is_empty()
 		_check(expected and res.get("impacts", []).size() == 1, "%s %s emits its layered projectile" % [row[2], row[1]])
+		if row[4]:
+			var streak_rows: Array = fx.streak_cols.filter(func(r: Dictionary) -> bool: return int(r["kind"]) == int(row[3]))
+			_check(not streak_rows.is_empty() and _same_hue(streak_rows[0]["col"], FLOOK.weapon(row[2])),
+				"%s %s keeps its tracer tint" % [row[2], row[1]])
 		if not shots.is_empty():
 			var palette := WEAP.PLASMA_COL if row[3] == WEAP.BOLT_PLASMA else FLOOK.weapon(row[2])
 			_check(_same_hue(shots[0]["col"], palette), "%s %s keeps its bolt tint" % [row[2], row[1]])
@@ -123,7 +136,7 @@ func _plasma_palette() -> void:
 				var layers := _sprites(fx, profile)
 				_check(not layers.is_empty() and _same_hue(layers[0]["col"], WEAP.PLASMA_COL),
 					"%s uses light blue for sprite %d" % [label, profile])
-			var fire: float = res["fires"][0]
+			var fire: float = fx.now + float(res["fires"][0])
 			var lights: Array = fx._lev.filter(func(light: Array) -> bool: return is_equal_approx(light[1], fire))
 			_check(lights.size() == (2 if weapon == "turbo" else 1) and lights.all(
 				func(light: Array) -> bool: return _same_hue(light[4], WEAP.PLASMA_COL)), "%s has light-blue firing lights" % label)
@@ -140,7 +153,7 @@ func _muzzles() -> void:
 			["flak", "flak", "corsair", WEAP.MUZZLE_BALLISTIC], ["bio", "bioplasma", "chorus", WEAP.MUZZLE_BIO]]:
 		var fx := _fx(true)
 		var res := _volley(fx, row[0], row[1], row[2], false, 108.0)
-		var fire: float = res["fires"][0]
+		var fire: float = fx.now + float(res["fires"][0])
 		_advance(fx, fire + 0.09)
 		var layers := _sprites(fx, row[3])
 		_check(not layers.is_empty() and float(layers[0]["life"]) <= 0.25, "%s has a short muzzle sheath" % row[1])
@@ -151,8 +164,20 @@ func _muzzles() -> void:
 			_check(not vent and not fx.spark_times.any(func(t: float) -> bool: return t <= fx.now),
 				"%s muzzle throws no ballistic vent or metal sparks" % row[1])
 		if row[3] != WEAP.MUZZLE_BIO:
-			_check(not fx.flashes.is_empty() and not fx.flashes[0][1] and fx.flashes[0][2] <= 0.25,
-				"%s muzzle core goes through the reduced-flashing budget" % row[1])
+			_check(fx.flashes.is_empty(), "%s muzzle core asks for no flash budget" % row[1])
+		fx.free()
+
+
+func _muzzle_budget() -> void:
+	# issue 2194: the light-gun core is bright on purpose, but its pulse must not book a flash. Before this, each
+	# autocannon and flak pulse sat at 4.2, over FLASH_I 4.0, and crowded out the impact and death flashes.
+	for row in [["battery", "autocannon", "corsair"], ["battery", "autocannon", "hegemony"],
+			["flak", "flak", "corsair"], ["flak", "flak", "hegemony"], ["flak", "flak", "ithar"]]:
+		var fx := _fx()
+		var before: int = fx.flash_log.size()
+		var res := _volley(fx, row[0], row[1], row[2], false, 108.0)
+		_advance(fx, fx.now + float(res["fires"][0]) + 0.09)
+		_check(fx.flash_log.size() == before, "%s muzzle pulses spend no flash budget" % row[1])
 		fx.free()
 
 
@@ -183,8 +208,10 @@ func _ordnance() -> void:
 				"%s has a live nozzle wake (fallback %s)" % [variant[0], variant[2]])
 		if variant[0] == "htorp":
 			var smoke := _sprites(fx, SH.ROCKET_SMOKE)
-			_check(smoke.size() >= 3 and smoke[0]["smoke"] and float(smoke[0]["life"]) <= 0.35,
-				"rockets emit a short, cold smoke layer (fallback %s)" % variant[2])
+			var soot := Color(0.30, 0.27, 0.25)   # a Hullbreaker rocket's cold, sooty second layer
+			_check(smoke.size() >= 3 and smoke[0]["smoke"] and float(smoke[0]["life"]) <= 0.35
+				and (smoke[0]["col"] as Color).is_equal_approx(soot),
+				"rockets emit a short, cold, soot-tinted smoke layer (fallback %s)" % variant[2])
 		_advance(fx, float(p["t1"]) + 0.55)
 		_check(fx.dstate["proj"].is_empty() and fx.dstate.get("ptrails", []).is_empty(), "%s clears its flight layers" % variant[0])
 		fx.free()
@@ -206,6 +233,7 @@ func _run() -> void:
 	_bolts()
 	_plasma_palette()
 	_muzzles()
+	_muzzle_budget()
 	_ordnance()
 	print("PASS shared weapon layers" if failures == 0 else "FAIL shared weapon layers: %d" % failures)
 	quit(0 if failures == 0 else 1)

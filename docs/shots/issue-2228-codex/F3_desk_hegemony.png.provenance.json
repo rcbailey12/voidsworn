@@ -1,0 +1,62 @@
+{
+	"covered_pixels": [
+		"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"
+	],
+	"date": "2026-11-26T02:53:34Z",
+	"image_sha256": "c340351a02c115b522a79e601ec70f7f69edfb0e3c4aa65b174baa025c713f25",
+	"inputs": [],
+	"picture_name": "F3_desk_hegemony.png",
+	"schema": 1,
+	"source_commit": "83ccc923dec45424e989f7cedd8efd5b5ee71ff1",
+	"source_diff_sha256": "ce4238f9779b0b0ce5957653e2d1d06053328002af308a1d4c0e1873fc95c314",
+	"source_dirty": true,
+	"source_dirty_files": {
+		"godot/portraits/index.json": "2b4a29d1f6ee564b9d077402bf357e67fdd010f8",
+		"godot/portraits/painted/aelith.webp": "aec4bfc8fdcccb4918d8d7e2ff0d870068b1cb29",
+		"godot/portraits/painted/grax.webp": "b3729e9d73915dff7209199bcc8da1fd943bbcfa",
+		"godot/portraits/painted/kassar.webp": "32b602c853d44aee6d0cb5b6040ff12ae527a506",
+		"godot/portraits/painted/matriarch.webp": "337ac2b540648b790dcba2226c426fa0705ec4cb",
+		"godot/portraits/painted/mending.webp": "58f278be5c919839b3297d1b8c4a258d42fc4954",
+		"godot/portraits/painted/nekhet.webp": "51253f15114e379fd1ffeb913ecdb7a527f29246",
+		"godot/portraits/painted/sable.webp": "2c0fd0241b97474ae436a68d0bea98ed2792a426",
+		"godot/portraits/painted/vaelen.webp": "00e19d5d77bcec97f8cc0eaa6451110b54f4bd0d",
+		"godot/portraits/painted/vex.webp": "7987ed4296bd543906ca73e3497127bb9bae83b3",
+		"godot/portraits/test/portraits_check.gd": "ac03a318015bc6a3b4e70ae70ae95f8b0206476c"
+	},
+	"sources": [
+		{
+			"source_commit": "83ccc923dec45424e989f7cedd8efd5b5ee71ff1",
+			"source_diff_sha256": "ce4238f9779b0b0ce5957653e2d1d06053328002af308a1d4c0e1873fc95c314",
+			"source_dirty": true,
+			"source_dirty_files": {
+				"godot/portraits/index.json": "2b4a29d1f6ee564b9d077402bf357e67fdd010f8",
+				"godot/portraits/painted/aelith.webp": "aec4bfc8fdcccb4918d8d7e2ff0d870068b1cb29",
+				"godot/portraits/painted/grax.webp": "b3729e9d73915dff7209199bcc8da1fd943bbcfa",
+				"godot/portraits/painted/kassar.webp": "32b602c853d44aee6d0cb5b6040ff12ae527a506",
+				"godot/portraits/painted/matriarch.webp": "337ac2b540648b790dcba2226c426fa0705ec4cb",
+				"godot/portraits/painted/mending.webp": "58f278be5c919839b3297d1b8c4a258d42fc4954",
+				"godot/portraits/painted/nekhet.webp": "51253f15114e379fd1ffeb913ecdb7a527f29246",
+				"godot/portraits/painted/sable.webp": "2c0fd0241b97474ae436a68d0bea98ed2792a426",
+				"godot/portraits/painted/vaelen.webp": "00e19d5d77bcec97f8cc0eaa6451110b54f4bd0d",
+				"godot/portraits/painted/vex.webp": "7987ed4296bd543906ca73e3497127bb9bae83b3",
+				"godot/portraits/test/portraits_check.gd": "ac03a318015bc6a3b4e70ae70ae95f8b0206476c"
+			},
+			"stage": "cloud direction check"
+		}
+	],
+	"stage": "cloud direction check",
+	"stamp_box": [
+		0,
+		622,
+		684,
+		720
+	],
+	"stamp_template_sha256": "a3125135cb8ccab9844b37683846197297287a0f3479c7966116912caaf5e54c",
+	"strip_sha256": [
+		"a3125135cb8ccab9844b37683846197297287a0f3479c7966116912caaf5e54c"
+	],
+	"strip_size": [
+		684,
+		98
+	]
+}

@@ -14,6 +14,7 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 const FX := preload("res://fx/fx.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const LOOK := preload("res://fx/faction_look.gd")
+const BREACH := preload("res://fx/fx_breach.gd")
 var failures := 0
 
 
@@ -238,7 +239,11 @@ func _wreck_caps(metal: Array, glass: Dictionary, flesh: Dictionary) -> void:
 		var hot: Vector3 = r.get("rim_hot", Vector3.ZERO)
 		var cool: Vector3 = r.get("rim_cool", Vector3.ZERO)
 		paints[paint] = true
-		check(r.get("cap_kind") == DEATH.CAP_METAL and paint.is_equal_approx(_rgb(LOOK.of(fac).fragment_paint)), fac + ": cap uses its own hull pigment")
+		var palette := LOOK.of(fac)
+		var pigment: Color = palette.fragment_paint
+		if fac in ["deathless", "corsair"]:
+			pigment = BREACH.wound_col(palette.wound, "scorch_col", pigment)
+		check(r.get("cap_kind") == DEATH.CAP_METAL and paint.is_equal_approx(_rgb(pigment)), fac + ": cap uses its own hull pigment")
 		check(hot.is_equal_approx(_rgb(LOOK.of(fac).death.rim)) and cool.length() < hot.length() * 0.2
 			and cool.normalized().is_equal_approx(hot.normalized()), fac + ": the seam keeps its faction heat hue and dims as it cools")
 		check(r["seam_hot"] and r["seam_cold"] and not r["seam_overrun"] and r["scorch_after_seam"],

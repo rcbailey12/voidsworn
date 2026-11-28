@@ -1,0 +1,371 @@
+{
+  "type": "graph",
+  "name": "graph",
+  "label": "Chorus | hide folds, pores and bone",
+  "nodes": [
+    {
+      "name": "Dermal_folds",
+      "type": "fbm4",
+      "parameters": {
+        "noise": 0,
+        "scale_x": 7,
+        "scale_y": 13,
+        "iterations": 3,
+        "folds": 0,
+        "offset": 0,
+        "persistence": 0.55,
+        "lacunarity": 2
+      },
+      "node_position": {
+        "x": 0,
+        "y": -240
+      },
+      "seed_int": 27719
+    },
+    {
+      "name": "Chitin_pores",
+      "type": "fbm4",
+      "parameters": {
+        "noise": 3,
+        "scale_x": 32,
+        "scale_y": 32,
+        "iterations": 2,
+        "folds": 0,
+        "offset": 0,
+        "persistence": 0.55,
+        "lacunarity": 2
+      },
+      "node_position": {
+        "x": 0,
+        "y": 70
+      },
+      "seed_int": 27760
+    },
+    {
+      "name": "Hide_and_bone",
+      "type": "shader",
+      "parameters": {
+        "rib_count": 16
+      },
+      "node_position": {
+        "x": 310,
+        "y": -290
+      },
+      "shader_model": {
+        "name": "Keratin fibres, pores and bone grain",
+        "shortdesc": "Keratin fibres, pores and bone grain",
+        "longdesc": "Keratin fibres, pores and bone grain",
+        "instance": "",
+        "code": [
+          "float rib_phase = $uv.y * $rib_count + ($fold($uv) - 0.5) * 1.25;",
+          "float longitudinal = sin(6.2831853 * rib_phase);",
+          "float bone_mask = smoothstep(0.34, 0.77, $fold($uv + vec2(0.24, 0.43)));",
+          "float pores = smoothstep(0.28, 0.52, $pore($uv));",
+          "float ribs = longitudinal * mix(0.18, 0.45, bone_mask);"
+        ],
+        "global": "",
+        "inputs": [
+          {
+            "name": "fold",
+            "label": "Fold",
+            "type": "f",
+            "default": "0.5"
+          },
+          {
+            "name": "pore",
+            "label": "Pore",
+            "type": "f",
+            "default": "0.5"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "f",
+            "shortdesc": "Fibres",
+            "f": "0.5 + ribs"
+          },
+          {
+            "type": "f",
+            "shortdesc": "Bone",
+            "f": "bone_mask"
+          },
+          {
+            "type": "f",
+            "shortdesc": "Pores",
+            "f": "pores"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "rib_count",
+            "label": "Rib Count",
+            "type": "float",
+            "default": 16,
+            "min": 4,
+            "max": 64,
+            "step": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "Finish",
+      "type": "shader",
+      "parameters": {
+        "roughness": 0.43,
+        "layer_share": 0.38
+      },
+      "node_position": {
+        "x": 650,
+        "y": -175
+      },
+      "shader_model": {
+        "name": "Height, tinted detail and roughness",
+        "shortdesc": "Height, tinted detail and roughness",
+        "longdesc": "Height, tinted detail and roughness",
+        "instance": "",
+        "code": [
+          "float fibre = $fibre($uv) - 0.5;",
+          "float bone = $bone($uv);",
+          "float pore = 1.0 - $pores($uv);",
+          "float height = 0.48 + 0.15 * fibre + 0.10 * bone - 0.08 * pore;",
+          "float shade = 0.94 + 0.06 * bone + 0.085 * fibre - 0.09 * pore;",
+          "float roughness = $roughness + 0.15 * bone + 0.16 * pore;"
+        ],
+        "global": "",
+        "inputs": [
+          {
+            "name": "fibre",
+            "label": "Fibre",
+            "type": "f",
+            "default": "0.5"
+          },
+          {
+            "name": "bone",
+            "label": "Bone",
+            "type": "f",
+            "default": "0.5"
+          },
+          {
+            "name": "pores",
+            "label": "Pores",
+            "type": "f",
+            "default": "0.5"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "f",
+            "shortdesc": "Relief",
+            "f": "height"
+          },
+          {
+            "type": "rgba",
+            "shortdesc": "Multiply color + share",
+            "rgba": "vec4(clamp(shade * vec3(1.000, 0.971, 0.979), 0.0, 1.0), $layer_share)"
+          },
+          {
+            "type": "f",
+            "shortdesc": "Roughness",
+            "f": "clamp(roughness, 0.0, 1.0)"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "roughness",
+            "label": "Roughness",
+            "type": "float",
+            "default": 0.43,
+            "min": 0.1,
+            "max": 0.95,
+            "step": 0.01
+          },
+          {
+            "name": "layer_share",
+            "label": "Layer Share",
+            "type": "float",
+            "default": 0.38,
+            "min": 0,
+            "max": 1,
+            "step": 0.01
+          }
+        ]
+      }
+    },
+    {
+      "name": "Normal_from_relief",
+      "type": "normal_map",
+      "parameters": {
+        "param0": 9,
+        "param1": 1.08,
+        "param2": 1,
+        "param4": 1
+      },
+      "node_position": {
+        "x": 940,
+        "y": 70
+      }
+    },
+    {
+      "name": "Material",
+      "type": "material",
+      "parameters": {
+        "size": 9,
+        "flags_transparent": false,
+        "albedo_color": {
+          "type": "Color",
+          "r": 1,
+          "g": 1,
+          "b": 1,
+          "a": 1
+        },
+        "roughness": 1,
+        "normal": 1,
+        "ao": 1,
+        "depth_scale": 0,
+        "metallic": 0,
+        "sss": 0,
+        "emission_energy": 1
+      },
+      "node_position": {
+        "x": 1540,
+        "y": -390
+      }
+    },
+    {
+      "name": "Preview_normal_format",
+      "type": "normal_map_convert",
+      "parameters": {
+        "op": 0
+      },
+      "node_position": {
+        "x": 1220,
+        "y": -390
+      }
+    },
+    {
+      "name": "Save_chorus_grain",
+      "type": "export",
+      "parameters": {
+        "size": 9,
+        "format": 0,
+        "suffix": "chorus_grain"
+      },
+      "node_position": {
+        "x": 1250,
+        "y": -100
+      }
+    },
+    {
+      "name": "Save_chorus_n",
+      "type": "export",
+      "parameters": {
+        "size": 9,
+        "format": 0,
+        "suffix": "chorus_n"
+      },
+      "node_position": {
+        "x": 1250,
+        "y": 135
+      }
+    },
+    {
+      "name": "Save_chorus_roughness",
+      "type": "export",
+      "parameters": {
+        "size": 9,
+        "format": 0,
+        "suffix": "chorus_roughness"
+      },
+      "node_position": {
+        "x": 1250,
+        "y": 370
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "Dermal_folds",
+      "from_port": 0,
+      "to": "Hide_and_bone",
+      "to_port": 0
+    },
+    {
+      "from": "Chitin_pores",
+      "from_port": 0,
+      "to": "Hide_and_bone",
+      "to_port": 1
+    },
+    {
+      "from": "Hide_and_bone",
+      "from_port": 0,
+      "to": "Finish",
+      "to_port": 0
+    },
+    {
+      "from": "Hide_and_bone",
+      "from_port": 1,
+      "to": "Finish",
+      "to_port": 1
+    },
+    {
+      "from": "Hide_and_bone",
+      "from_port": 2,
+      "to": "Finish",
+      "to_port": 2
+    },
+    {
+      "from": "Finish",
+      "from_port": 0,
+      "to": "Normal_from_relief",
+      "to_port": 0
+    },
+    {
+      "from": "Normal_from_relief",
+      "from_port": 0,
+      "to": "Preview_normal_format",
+      "to_port": 0
+    },
+    {
+      "from": "Finish",
+      "from_port": 1,
+      "to": "Material",
+      "to_port": 0
+    },
+    {
+      "from": "Preview_normal_format",
+      "from_port": 0,
+      "to": "Material",
+      "to_port": 4
+    },
+    {
+      "from": "Finish",
+      "from_port": 2,
+      "to": "Material",
+      "to_port": 2
+    },
+    {
+      "from": "Finish",
+      "from_port": 1,
+      "to": "Save_chorus_grain",
+      "to_port": 0
+    },
+    {
+      "from": "Normal_from_relief",
+      "from_port": 0,
+      "to": "Save_chorus_n",
+      "to_port": 0
+    },
+    {
+      "from": "Finish",
+      "from_port": 2,
+      "to": "Save_chorus_roughness",
+      "to_port": 0
+    }
+  ],
+  "node_position": {
+    "x": 0,
+    "y": 0
+  },
+  "parameters": {}
+}

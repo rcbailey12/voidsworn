@@ -23,12 +23,12 @@ func _init() -> void:
 		printerr(err); quit(1); return
 	for fixture in fixtures:
 		c.RUN = fixture["run"].duplicate(true)
-		JSM.rnd_seed(int(fixture["seed"]))
+		c.rng.rnd_seed(int(fixture["seed"]))
 		var who = fixture.get("who")
 		var n = c.RUN["nems"][who] if who != null else null
 		var pick = c.nemAdapt(fixture["force"], n) if who != null else c.nemAdapt(fixture["force"])   # #121: a registry case adapts the commander named
 		if who == null: n = c.RUN["nem"]
-		var got = {"pick": pick, "adapt": n["adapt"], "seen": n["seen"], "revealed": n["revealed"], "rng": JSM.rng_s & 0xFFFFFFFF}
+		var got = {"pick": pick, "adapt": n["adapt"], "seen": n["seen"], "revealed": n["revealed"], "rng": c.rng.rng_s & 0xFFFFFFFF}
 		if who != null:
 			var others = {}
 			for k in c.RUN["nems"].keys():
