@@ -394,15 +394,17 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
     if ($legacy -or $helper) { Assert-NoProcessUses $dir }
     $finishedHelper = $false
     if ($helper) {
-      $done = Get-Item -LiteralPath (Join-Path $dir.FullName 'done.txt') -Force -ErrorAction SilentlyContinue
-      $finishedHelper = $done -is [IO.FileInfo] -and -not ($done.Attributes -band [IO.FileAttributes]::ReparsePoint) -and
-        ([IO.File]::ReadAllText($done.FullName).Trim() -ceq 'PASS')
       # A live run holds the mirror writers' lock from the relay and history proof through the removal, so no lane's
       # fetch or prune changes the refs that proof read (Artoo on PR 1592, 905a8504).
       if (-not $dryRun) {
         $mirrorLock = Open-MirrorWriterLock $mirror
         $relayLock = Open-CleanupLock (Join-Path $root 'relay-mirror.git.lock')
+        # Capture after the helper lease is held, so creating the lease cannot look like a late file.
+        $snapshot = Measure-CleanupDirectory (Get-Item -LiteralPath $dir.FullName -Force) -Snapshot
       }
+      $done = Get-Item -LiteralPath (Join-Path $dir.FullName 'done.txt') -Force -ErrorAction SilentlyContinue
+      $finishedHelper = $done -is [IO.FileInfo] -and -not ($done.Attributes -band [IO.FileAttributes]::ReparsePoint) -and
+        ([IO.File]::ReadAllText($done.FullName).Trim() -ceq 'PASS')
       Test-RelayedResults $dir $mirror $finishedHelper $dryRun
     }
     if ($legacy) {
@@ -443,6 +445,7 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
       } elseif ($helper) {
         Assert-NoProcessUses $dir (Get-CommandLines)
         Assert-GpuQuiet
+        Assert-CleanupSnapshot $dir $snapshot
         Remove-HelperFolder $dir $helperLease; $helperLease = $null; $action = 'removed'
       }
       else { Remove-CleanupDirectory $dir; $action = 'removed' }
