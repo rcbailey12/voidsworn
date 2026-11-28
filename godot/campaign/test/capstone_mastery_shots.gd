@@ -66,7 +66,7 @@ func _profile(xp: float) -> void:
 
 func _run() -> void:
 	await _frames(4)
-	BattleAPI.JSM.rnd_seed(4242)
+	C.rng.rnd_seed(4242)
 	_profile(320.0)
 	C.act("lineage", "vaelen")
 	await _frames(4); await _scroll_to("Capstone mastery: ")

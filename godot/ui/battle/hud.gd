@@ -16,7 +16,6 @@ const S_EMBER := GS.MAP_EMBER
 const S_TEXT := GS.TEXT
 const S_TEXT2 := GS.TEXT2
 const S_TEXT3 := GS.TEXT3
-const S_NEM := GS.NEM
 const S_GLACIER := GS.GLACIER
 const S_HAIR := GS.SHEET_HAIR
 
@@ -74,8 +73,15 @@ var tip_text: RichTextLabel
 var dtip: PanelContainer            # the "more on hover" layer of the ship that is up
 var dtip_text: RichTextLabel
 var aichip: Label
-var plates_root: Control
-var plates := {}                    # unit id -> Control
+const PlateLayer = preload("res://ui/battle/ship_plate_layer.gd")
+var plates_root: PlateLayer
+var floats_root: Control
+var plates: Dictionary:
+	get:
+		return plates_root.plates
+var plates_hidden: int:
+	get:
+		return plates_root.hidden_count
 var tipcard: PanelContainer
 var endcard: PanelContainer
 var end_block: Control
@@ -128,10 +134,13 @@ func _build_all() -> void:
 	root.theme = _theme()
 	add_child(root)
 	if plates_root == null:
-		plates_root = Control.new()
-		plates_root.set_anchors_preset(Control.PRESET_FULL_RECT)
-		plates_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		plates_root = PlateLayer.new()
 	root.add_child(plates_root)
+	if floats_root == null:
+		floats_root = Control.new()
+		floats_root.set_anchors_preset(Control.PRESET_FULL_RECT)
+		floats_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(floats_root)
 	_build_log()
 	_build_ledger()
 	_build_banner()
@@ -165,7 +174,7 @@ func _build_ledger() -> void:
 
 
 # The window changed size: build every part again at the new scale and put back what each part showed. The battle log's
-# text, the floating callouts and the dialogs move across as they are; nameplates are made again on the next frame.
+# text, floating callouts, plates and dialogs move across as they are.
 func _rebuild() -> void:
 	var vs := get_viewport().get_visible_rect().size
 	_built_vs = vs
@@ -184,9 +193,7 @@ func _rebuild() -> void:
 		var mfo := get_viewport().gui_get_focus_owner()
 		if mfo != null and menu.is_ancestor_of(mfo): keep_row = maxi(0, mfo.get_index() - 1)
 	plates_root.get_parent().remove_child(plates_root)
-	for id in plates:
-		(plates[id] as Control).queue_free()
-	plates.clear()
+	floats_root.get_parent().remove_child(floats_root)
 	log_text.get_parent().remove_child(log_text)
 	remove_child(root)
 	root.queue_free()
@@ -331,18 +338,6 @@ func _halo(l: Label) -> void:
 	l.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
 
 
-# a ship's name over the board (issue 678): the plain halo plus a solid dark underlay. The halo alone left gaps where the
-# outline's coverage thins under a letter, and a bright hull or ring behind showed through (4.44 to 1 measured at 1440 with
-# 20 ships). The shadow is the same glyph and outline drawn first, centred, opaque, so no pixel under a letter is the board.
-func _halo_name(l: Label) -> void:
-	_halo(l)
-	l.add_theme_color_override("font_outline_color", Color(GS.HALO, 1.0))
-	l.add_theme_color_override("font_shadow_color", Color(GS.HALO, 1.0))
-	l.add_theme_constant_override("shadow_offset_x", 0)
-	l.add_theme_constant_override("shadow_offset_y", 0)
-	l.add_theme_constant_override("shadow_outline_size", maxi(3, s(6)))
-
-
 func _label(txt: String, size := 17, col := BONE, f: Font = null) -> Label:
 	var l := Label.new()
 	l.text = txt
@@ -470,6 +465,8 @@ func _detail_bb(info: Dictionary) -> String:
 		for sc in info["secs"]:
 			parts.append("%s %d/%d" % [str(sc[0]), int(sc[1]), int(sc[2])])
 		bb += "\n[color=#a7b09d]Sections:[/color] " + ", ".join(parts)
+	for loss in info.get("section_losses", PackedStringArray()):
+		bb += "\n" + loss
 	if str(info.get("note", "")) != "":
 		bb += "\n" + str(info["note"])
 	for ex in info.get("extra", []):
@@ -893,143 +890,7 @@ func _draw_legend() -> void:
 	legend.reset_size()
 
 
-# ---------------------------------------------------------------- nameplates
-# E1: words on the board only for the ship that is up (ember) and the target (the Nemesis in its red); the ship under the
-# pointer and the enemy acting now get theirs while they are; every other name waits for hover. Plain words with the
-# map's dark halo. A regen lock sits over a ship's name while shields cannot recharge.
-
-func plate(id: String) -> Control:
-	if plates.has(id):
-		return plates[id]
-	var c := VBoxContainer.new()
-	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	c.add_theme_constant_override("separation", 0)
-	var tags := HBoxContainer.new()
-	tags.name = "tags"
-	tags.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	tags.alignment = BoxContainer.ALIGNMENT_CENTER
-	tags.visible = false
-	c.add_child(tags)
-	var lock := Control.new()
-	lock.custom_minimum_size = Vector2(s(16), s(18))
-	lock.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	lock.draw.connect(func() -> void: _draw_regen_lock(lock))
-	tags.add_child(lock)
-	var st := PanelContainer.new()
-	st.name = "st"
-	st.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	st.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
-	c.add_child(st)
-	var v := VBoxContainer.new()
-	v.name = "v"
-	v.add_theme_constant_override("separation", 0)
-	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	st.add_child(v)
-	var nm := _label("", 19, S_TEXT, font_semi)
-	nm.name = "nm"
-	_halo_name(nm)
-	v.add_child(nm)
-	var bars_c := Control.new()
-	bars_c.name = "bars"
-	bars_c.visible = false
-	bars_c.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	bars_c.set_meta("v", [1.0, 0.0, false, -1.0, -1.0])
-	bars_c.draw.connect(func() -> void: _draw_plate_bars(bars_c))
-	v.add_child(bars_c)
-	plates_root.add_child(c)
-	plates[id] = c
-	return c
-
-
-# hull: 8 segments over the strip's width; shield: one thin line under it. v = [hull f, shield f, has shields, ghost hull f, ghost shield f]
-func _draw_plate_bars(c: Control) -> void:
-	var v: Array = c.get_meta("v")
-	var w := c.size.x
-	var hh := float(s(4))
-	var gap := maxf(1.0, float(s(2)))
-	var n := 8
-	var cw := (w - gap * float(n - 1)) / float(n)
-	var f := float(v[0])
-	var col := HULL_LOW if f < 0.35 else HULL   # HD9: one hull-low line at 0.35 (Muse check of #269)
-	var fill := f * w
-	var gx := float(v[3]) * w if float(v[3]) >= 0.0 else fill
-	for i in n:
-		var x0 := float(i) * (cw + gap)
-		c.draw_rect(Rect2(x0, 0, cw, hh), GS.BAR_TRACK)
-		if fill > x0:
-			var xe := minf(x0 + cw, fill)
-			c.draw_rect(Rect2(x0, 0, xe - x0, hh), col)
-			if gx < xe:
-				var hs := maxf(x0, gx)
-				c.draw_rect(Rect2(hs, 0, xe - hs, hh), Color(GS.WELL, 0.7))
-				var xx := hs
-				while xx < xe:
-					c.draw_line(Vector2(xx, hh), Vector2(minf(xx + hh, xe), 0), col, 1.0)
-					xx += maxf(3.0, float(s(3)))
-	if bool(v[2]):
-		var y := hh + float(s(1))
-		var sh := clampf(float(v[1]), 0.0, 1.0)
-		c.draw_rect(Rect2(0, y, w, maxf(1.0, float(s(2)))), GS.SHIELD_TRACK)
-		c.draw_rect(Rect2(0, y, w * sh, maxf(1.0, float(s(2)))), SHIELD)
-
-
-func _draw_regen_lock(icon: Control) -> void:
-	var k := icon.size.x / 16.0
-	var shackle := Vector2(8, 7) * k
-	var body := Rect2(Vector2(2, 6) * k, Vector2(12, 9) * k)
-	icon.draw_arc(shackle, 4.0 * k, PI, TAU, 12, GS.WELL, 4.0 * k, true)
-	icon.draw_arc(shackle, 4.0 * k, PI, TAU, 12, SHIELD, 1.8 * k, true)
-	icon.draw_rect(body.grow(k), GS.WELL)
-	icon.draw_rect(body, SHIELD)
-	icon.draw_circle(Vector2(8, 10) * k, 1.4 * k, GS.WELL)
-
-
-# The odds and the ghost are on the sheet. The plate holds the name and active regen lock.
-func set_plate(id: String, screen: Vector2, on: bool, name_txt: String, friend: bool, flag: bool, hp: float, mx: float, sh: float, shmx: float, up := false, extra := {}) -> void:
-	if not on:
-		var existing: Control = plates.get(id)
-		if existing != null:
-			existing.hide()
-		return
-	var c := plate(id)
-	c.show()
-	# issue 1437 (item 9): the plate's three parts are looked up once, not by path for every ship every frame
-	var refs: Array = c.get_meta("parts") if c.has_meta("parts") else []
-	if refs.is_empty():
-		refs = [c.get_node("st/v/nm"), c.get_node("tags"), c.get_node("st/v/bars")]
-		c.set_meta("parts", refs)
-	var nm := refs[0] as Label
-	var tags := refs[1] as HBoxContainer
-	var locked := bool(extra.get("regenLock", false))
-	# issue 221: the plate is laid out again only when its words change or its size no longer fits them
-	var relayout := nm.text != name_txt
-	if relayout:
-		nm.text = name_txt
-	if tags.visible != locked:
-		tags.visible = locked
-		relayout = true
-	var target: bool = extra.get("target", false)
-	var col := S_EMBER if up else (S_NEM if bool(extra.get("nem", false)) else S_TEXT)
-	# issue 221: an override sends THEME_CHANGED, which reshapes the label's text and re-sorts the plate; set it only when
-	# the colour changes, not every frame for every ship
-	if not nm.has_theme_color_override("font_color") or nm.get_theme_color("font_color") != col:
-		nm.add_theme_color_override("font_color", col)
-	c.set_meta("keep", up or target or locked)
-	var bars_c := refs[2] as Control
-	var f := clampf(hp / maxf(mx, 1.0), 0.0, 1.0)
-	var g := float(extra.get("ghost", -1.0))
-	bars_c.set_meta("v", [f, clampf(sh / maxf(shmx, 1.0), 0.0, 1.0), shmx > 0.0, clampf(g / maxf(mx, 1.0), 0.0, 1.0) if g >= 0.0 else -1.0, -1.0])
-	if relayout or c.size != c.get_combined_minimum_size():
-		c.reset_size()
-	c.position = screen - Vector2(c.size.x * 0.5, c.size.y)
-
-
-# F1: nameplate declutter, once a frame after every plate is placed. prio: id -> 3 (up, targeted), 2 (hovered, acting),
-# 1 (flagship), 0. Highest first, then nearer the camera (lower on screen); a plate of rank under 2 that would overlap a
-# plate already shown is hidden. Any plate that would sit under a HUD panel is hidden whatever its rank (the up ship and
-# the target are named in the shell anyway).
-var plates_hidden := 0
-
+# ---------------------------------------------------------------- ship state plates
 
 # screen rects of the HUD panels a ship name must not sit under
 func hud_blockers() -> Array:
@@ -1037,7 +898,7 @@ func hud_blockers() -> Array:
 	if ledger != null and ledger.is_visible_in_tree() and ledger.modulate.a > 0.5:
 		ledger.ensure_layout()
 		out.append_array(ledger.blockers)
-	for p in [log_panel, tipcard, legend]:
+	for p in [log_panel, tipcard, legend] + bars:
 		if p != null and is_instance_valid(p) and (p as Control).is_visible_in_tree():
 			out.append((p as Control).get_global_rect())
 	# Ship labels can move out of the way, but the banner is never included in over_ui().
@@ -1046,95 +907,13 @@ func hud_blockers() -> Array:
 	return out
 
 
-func _plate_rect(c: Control) -> Rect2:
-	return Rect2(c.position, c.size)
-
-
-func declutter_plates(prio: Dictionary) -> void:
-	var blockers := hud_blockers()
-	var items: Array = []
-	for id in plates:
-		var c: Control = plates[id]
-		if c.visible:
-			items.append([int(prio.get(id, 0)), c.position.y + c.size.y, id])
-	items.sort_custom(func(a, b): return a[0] > b[0] if a[0] != b[0] else a[1] > b[1])
-	var shown: Array = []
-	# issue 221: each plate's alpha is decided first and written once (1 then 0 every frame redrew every plate twice)
-	var hid := {}
-	plates_hidden = 0
-	for it in items:
-		var c: Control = plates[it[2]]
-		if not bool(c.get_meta("keep", false)) and int(it[0]) < 2:
-			# E1: a name that is neither the ship that is up, the target, the hovered ship nor the enemy acting waits for hover
-			hid[it[2]] = true
-			continue
-		var pr := _plate_rect(c).grow(s(1))
-		if _hits_any(pr, blockers):
-			hid[it[2]] = true
-			plates_hidden += 1
-			continue
-		if int(it[0]) >= 2:
-			# a plate that must stay: lift it above whatever it would cover (at most a few steps)
-			for kk in 4:
-				var hit := Rect2()
-				var any := false
-				for x in shown:
-					if pr.intersects(x):
-						hit = x
-						any = true
-						break
-				if not any:
-					break
-				var dy: float = pr.end.y - hit.position.y + s(2)
-				c.position.y -= dy
-				pr.position.y -= dy
-			if _hits_any(pr, blockers):
-				hid[it[2]] = true
-				plates_hidden += 1
-				continue
-			shown.append(pr)
-			continue
-		if _hits_any(pr, shown):
-			hid[it[2]] = true
-			plates_hidden += 1
-			continue
-		shown.append(pr)
-	for id in plates:
-		var c: Control = plates[id]
-		var a := 0.0 if hid.has(id) else 1.0
-		if c.modulate.a != a:
-			c.modulate.a = a
-
-
-func _hits_any(r: Rect2, rs: Array) -> bool:
-	for x in rs:
-		if r.intersects(x):
-			return true
-	return false
-
-
-# for the trace: visible plates that overlap another visible plate (0 after the declutter)
-func plate_name_overlaps() -> int:
-	var rs: Array = []
-	for id in plates:
-		var c: Control = plates[id]
-		if c.visible and c.modulate.a > 0.5:
-			rs.append(_plate_rect(c))
-	var n := 0
-	for i in rs.size():
-		for j in range(i + 1, rs.size()):
-			if (rs[i] as Rect2).intersects(rs[j]):
-				n += 1
-	return n
-
-
 # for the trace: visible ship plates that sit under a HUD panel
 func plate_names_under_panels() -> int:
 	var blockers := hud_blockers()
 	var n := 0
 	for id in plates:
 		var c: Control = plates[id]
-		if c.visible and c.modulate.a > 0.5 and _hits_any(_plate_rect(c), blockers):
+		if c.visible and blockers.any(func(r: Rect2) -> bool: return c.get_rect().intersects(r)):
 			n += 1
 	return n
 
@@ -1143,15 +922,13 @@ func plate_names_under_panels() -> int:
 func make_float(text: String, col: Color) -> Label:
 	var l := _label(text, 19, col_of(col), font_semi)
 	_halo(l)
-	plates_root.add_child(l)
+	floats_root.add_child(l)
 	l.reset_size()
 	return l
 
 
 func remove_plate(id: String) -> void:
-	if plates.has(id):
-		(plates[id] as Control).queue_free()
-		plates.erase(id)
+	plates_root.remove_ship(id)
 
 
 # ---------------------------------------------------------------- onboarding tip card and end card

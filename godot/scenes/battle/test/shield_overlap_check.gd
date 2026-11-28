@@ -104,6 +104,9 @@ func _case(shape: String, calm: bool) -> void:
 	b.follow = false
 	root.add_child(b)
 	await b._begin(api)
+	# Neither synthetic volley is in the opening batch that publishes the first view.
+	while b.opening or b.busy:
+		await process_frame
 	var a := str(foe["id"])
 	var t := str(me["id"])
 	_check(b.gfx != null, "%s: the G4 effects are in the build" % name)

@@ -56,17 +56,22 @@ static func js_int(x: float) -> int: # ToInt32 of a double (x|0)
 	return to_i32(t)
 
 # ---- PRNG: core.js rndSeed / rnd (mulberry32) ----
-static var rng_s: int = 0 # kept as JS keeps it: rndSeed stores s>>>0, rnd stores a signed 32-bit value
-static func rnd_seed(s: int) -> void:
-	rng_s = to_u32(s)
-static func rnd() -> float:
-	rng_s = to_i32(rng_s + 0x6D2B79F5)
-	var a := to_u32(rng_s)
-	var t := imul(a ^ (a >> 15), 1 | a)
-	t = to_u32(t + imul(t ^ (t >> 7), 61 | t)) ^ t
-	return float(to_u32(t ^ (t >> 14))) / 4294967296.0
-static func rng_u32() -> int:
-	return to_u32(rng_s)
+class RandomStream extends RefCounted:
+	var rng_s: int = 0 # kept as JS keeps it: rndSeed stores s>>>0, rnd stores a signed 32-bit value
+	func rnd_seed(s: int) -> void:
+		rng_s = s & 0xffffffff
+	func rnd() -> float:
+		rng_s = (rng_s + 0x6D2B79F5) & 0xffffffff
+		if rng_s >= 0x80000000: rng_s -= 0x100000000
+		var a := (rng_s & 0xffffffff)
+		var t := _mul32(a ^ (a >> 15), 1 | a)
+		t = ((t + _mul32(t ^ (t >> 7), 61 | t)) & 0xffffffff) ^ t
+		return float(((t ^ (t >> 14)) & 0xffffffff)) / 4294967296.0
+	func rng_u32() -> int:
+		return (rng_s & 0xffffffff)
+	func _mul32(a: int, b: int) -> int:
+		var al := a & 0xffff; var bl := b & 0xffff
+		return (al * bl + ((((a >> 16) * bl + al * (b >> 16)) & 0xffff) << 16)) & 0xffffffff
 
 # ---- Math.round (V8: ceil, then step back if that went more than half up) ----
 static func jsround(x: float) -> float:
@@ -75,14 +80,6 @@ static func jsround(x: float) -> float:
 	return c if c - 0.5 <= x else c - 1.0
 
 # ---- fdlibm (V8 src/base/ieee754.cc) ----
-# Unported maths branch: a hard stop, never a plausible number. The function returns NAN and sets not_ported; rules.gd's
-# not_ported reads it, so the parity harness stops at the next record and the game's battle scene reports "NOT PORTED" (as for rules).
-# Every fdlibm branch is ported (the last one, sin/cos of |x| > 2^19 pi through __kernel_rem_pio2, on Oct 27); _np stays for any future gap.
-static var not_ported := ""
-static func _np(what: String) -> float:
-	if not_ported == "": not_ported = "JSM " + what
-	push_error("NOT PORTED: JSM " + what)
-	return NAN
 # fdlibm constants as exact IEEE words: Godot parses long decimal literals up to an ulp off (found Oct 25: 13 of them), so none are written as decimals
 static var S1: float = words(0xBFC55555, 0x55555549)
 static var S2: float = words(0x3F811111, 0x1110F8A6)
@@ -189,7 +186,7 @@ static var KPIO2: Array = [words(0x3FF921FB, 0x40000000), words(0x3E74442D, 0), 
 const TWO24 := 16777216.0
 const TWON24 := 5.9604644775390625e-08   # 2^-24, exact in decimal
 static func _scalbn(x: float, n: int) -> float: # x * 2^n; the exponents here stay well inside the normal range
-	return x * pow(2.0, float(n))
+	return x * words((n + 1023) << 20, 0)
 static func _rem_pio2_big(x: float, y: Array) -> int:
 	var hx := hi(x); var ix := hx & 0x7fffffff
 	var e0 := (ix >> 20) - 1046
