@@ -39,6 +39,7 @@ var ask := {}
 var log_lines: Array = []
 var log_enabled := true
 var log_collapsed := false
+var log_follow_folded := false
 var phase := {}
 var retreat := {}
 var detail_bb := ""
@@ -190,7 +191,8 @@ func mine_turn() -> bool:
 
 
 func enemy_turn() -> bool:
-	return phase.get("kind", "") == "enemy" or top.get("turn", "") == "Enemy turn"
+	var kind := str(phase.get("kind", ""))
+	return kind == "enemy" or (kind == "" and top.get("turn", "") == "Enemy turn")
 
 
 func _is_nem(nm: String) -> bool:
@@ -262,8 +264,8 @@ func layout() -> void:
 	var foe_w := minf(px(470), usable * 0.49)
 	_turn_block(Rect2(pad, top_y, turn_w, 0))
 	_top_right(Rect2(vs.x - pad - foe_w, top_y, foe_w, 0))
-	if playing:
-		# issue 1708: while a move, volley or enemy turn plays, the whole bottom sheet (ship, guns, odds, orders, fleet)
+	if playing and not enemy_turn():
+		# issue 1708: while a player move or volley plays, the whole bottom sheet (ship, guns, odds, orders, fleet)
 		# leaves so the scene has the screen; the log stays where it was, and the sheet pops back when the event ends
 		_log(vs.x - pad, shelf_y - px(12), minf(px(540), usable * 0.58))
 		_hover = hit_at(get_local_mouse_position()) if is_inside_tree() else -1
@@ -274,6 +276,18 @@ func layout() -> void:
 	var y := shelf_y + px(28)
 	var gap := px(15 if compact else 22)
 	var room := usable - gap * 3
+	var foot := vs.y - px(FLEET_H)
+	if enemy_turn():
+		var half := (usable - gap * 2) * 0.5
+		var mine_w := half * (0.49 if compact else 0.52)
+		_ship_block(Rect2(pad, y, mine_w, foot - y), compact)
+		_enemy_paused_orders(Rect2(pad + mine_w + gap, y, half - mine_w, foot - y))
+		_enemy_actor(Rect2(pad + half + gap * 2, y, half, foot - y))
+		_fleet(pad, foot, usable)
+		_log(vs.x - pad, shelf_y - px(12), minf(px(540), usable * 0.58))
+		_hover = hit_at(get_local_mouse_position()) if is_inside_tree() else -1
+		_dirty = false
+		return
 	var ship_w := room * (0.245 if compact else 0.325)
 	var gun_w := room * 0.248
 	var target_w := room * (0.235 if compact else 0.187)
@@ -281,7 +295,6 @@ func layout() -> void:
 	var gun_x := pad + ship_w + gap
 	var target_x := gun_x + gun_w + gap
 	var action_x := target_x + target_w + gap
-	var foot := vs.y - px(FLEET_H)
 	_ship_block(Rect2(pad, y, ship_w, foot - y), compact)
 	_ship_losses(pad, shelf_y, ship_w, usable)
 	var after_guns := _guns(gun_x, y, gun_w)
@@ -304,6 +317,67 @@ func layout() -> void:
 	_log(vs.x - pad, shelf_y - px(12), minf(px(540), usable * 0.58))
 	_hover = hit_at(get_local_mouse_position()) if is_inside_tree() else -1
 	_dirty = false
+
+
+func _enemy_paused_orders(r: Rect2) -> void:
+	if ship.is_empty():
+		return
+	var x := r.position.x
+	var y := r.position.y
+	_text(x, y, _trim("Guns and orders on hold", f_med, 17, r.size.x), f_med, 17, TEXT3, "enemy_paused")
+	var guns: Array = ship.get("weapons", [])
+	var gun_rows := ceili(guns.size() / 2.0)
+	for i in guns.size():
+		var g: Dictionary = guns[i]
+		var cell := Vector2(x + (i % 2) * r.size.x * 0.5, y + px(26 + floori(i * 0.5) * 22))
+		_glyph(Icons.weapon(str(g.get("kind", ""))), cell, 20, TEXT3)
+		_text(cell.x + px(24), cell.y, _trim(str(g.get("name", "")), f_body, 17, r.size.x * 0.5 - px(28)), f_body, 17, TEXT3, "enemy_paused_gun")
+	var labels := PackedStringArray(["End ship", "Next ship"])
+	for o in ship.get("orders", []):
+		var id := str(o.get("act", ""))
+		if id == "rotr" or id in ["ram", "board"]:
+			continue
+		var label := _without_key(str(o.get("text", "")))
+		var ability := str(o.get("ability", ""))
+		if id == "rotl":
+			label = "Turn"
+		elif ability == "reload":
+			label = "Reload"
+		elif ability == "focus":
+			label = "Focus fire"
+		labels.append(label)
+	var order_y := y + px(31 + gun_rows * 22)
+	var cols := 2 if r.size.x < px(240) else 3
+	for i in labels.size():
+		var row_y := order_y + px(floori(float(i) / cols) * 22)
+		if row_y + px(22) > r.end.y:
+			break
+		_text(x + float(i % cols) * r.size.x / cols, row_y,
+			_trim(labels[i], f_body, 17, r.size.x / cols - px(9)), f_body, 17, TEXT3, "enemy_paused_order")
+
+
+func _enemy_actor(r: Rect2) -> void:
+	var actor: Dictionary = phase.get("actor", {})
+	var who := str(actor.get("name", ""))
+	var x := r.position.x
+	var y := r.position.y
+	var room := r.size.x - _width("Enemy turn:  is acting", f_name, 28)
+	var heading := "Enemy turn" if who == "" else "Enemy turn: %s is acting" % _trim(who, f_name, 28, room)
+	_line(Vector2(x - px(12), y), Vector2(x - px(12), r.end.y - px(8)), GS.LINE, 1)
+	_text(x, y, _trim(heading, f_name, 28, r.size.x), f_name, 28, TEXT, "enemy_actor_heading")
+	if who == "":
+		return
+	_text(x, y + px(37), _trim(str(actor.get("cls", "")), f_body, 18, r.size.x), f_body, 18, TEXT2, "enemy_actor_class")
+	var weapons: PackedStringArray = actor.get("weapons", PackedStringArray())
+	var armed_with := "Weapons: " + ", ".join(weapons) if not weapons.is_empty() else "No ship weapons"
+	var firing := str(actor.get("firing", ""))
+	var weapons_y := y + px(68)
+	if firing != "":
+		_text(x, y + px(68), _trim("Last fired: " + firing, f_body, 20, r.size.x), f_body, 20, TEXT, "enemy_actor_firing")
+		weapons_y = y + px(99)
+	for line in _lines(armed_with, f_body, 17, r.size.x).slice(0, 2):
+		_text(x, weapons_y, _trim(line, f_body, 17, r.size.x), f_body, 17, TEXT2, "enemy_actor_weapons")
+		weapons_y += px(22)
 
 
 func _turn_block(r: Rect2) -> void:
@@ -906,7 +980,7 @@ func _fleet_slot(r: Rect2, row: Dictionary) -> void:
 			tip += "\nArrived this round."
 	if bool(row.get("flag", false)):
 		tip += "\nYour flagship."
-	var pickable: bool = st != "Lost" and (ask.get("kind") != "skill_target" or not row.get("sel", false))
+	var pickable: bool = st != "Lost" and not enemy_turn() and (ask.get("kind") != "skill_target" or not row.get("sel", false))
 	_hit(r, "pick" if pickable else "", row.get("id"), tip + "\nClick to pick it." if pickable else tip)
 
 
@@ -928,7 +1002,8 @@ func _log(right: float, bottom: float, w: float) -> void:
 	var y := log_r.position.y + px(5)
 	_veil(log_r.grow_individual(px(9), px(7), px(9), px(7)), Brand.KEEL_LOG_VEIL, Vector4.ONE * px(9))
 	var lw := _text(x, y, "Log", f_med, 17, TEXT, "log", true)
-	_glyph("expand" if log_collapsed else "collapse", Vector2(right - px(30), y), 20, TEXT)
+	if not log_follow_folded:
+		_glyph("expand" if log_collapsed else "collapse", Vector2(right - px(30), y), 20, TEXT)
 	for i in entries.size():
 		var tx := x + (lw + px(14) if log_collapsed else 0.0)
 		var ty := y if log_collapsed else y + px(28 + i * 26)
@@ -953,7 +1028,8 @@ func _log(right: float, bottom: float, w: float) -> void:
 	var log_tip := "Expand the battle log." if log_collapsed else "Collapse the battle log."
 	if log_collapsed and not entries.is_empty():
 		log_tip = str(entries[-1]) + "\n" + log_tip
-	_hit(Rect2(log_r.position, Vector2(w, px(29))), "log_collapse", null, log_tip + " L opens the full history.")
+	if not log_follow_folded:
+		_hit(Rect2(log_r.position, Vector2(w, px(29))), "log_collapse", null, log_tip + " L opens the full history.")
 	blockers.append(log_r)
 
 

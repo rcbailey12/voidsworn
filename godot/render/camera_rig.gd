@@ -231,14 +231,115 @@ func glide(p: Vector3, dur := 1.1, rr := -1.0) -> void:
 	slow_until = _clock + dur
 
 
-# true when a board point falls inside a part of the screen given as fractions (x0, y0, x1, y1), for framing a view
-# inside the part the HUD panels leave clear
-func sees_in(p: Vector3, x0: float, y0: float, x1: float, y1: float) -> bool:
+# Split the play rectangle around the HUD panels so framing can use every clear part of the screen.
+static func clear_regions(area: Rect2, covers: Array[Rect2]) -> Array[Rect2]:
+	if not area.has_area():
+		return []
+	var regions: Array[Rect2] = [area]
+	for cover in covers:
+		var next: Array[Rect2] = []
+		for r0 in regions:
+			var c := r0.intersection(cover)
+			if not c.has_area():
+				next.append(r0)
+				continue
+			# The strips overlap at their corners so framing can use the full width/height of each opening.
+			for strip in [Rect2(r0.position, Vector2(c.position.x - r0.position.x, r0.size.y)),
+					Rect2(c.end.x, r0.position.y, r0.end.x - c.end.x, r0.size.y),
+					Rect2(r0.position, Vector2(r0.size.x, c.position.y - r0.position.y)),
+					Rect2(r0.position.x, c.end.y, r0.size.x, r0.end.y - c.end.y)]:
+				if strip.has_area():
+					next.append(strip)
+		regions = next
+	return regions
+
+
+func sees_clear(p: Vector3, regions: Array[Rect2]) -> bool:
 	if is_position_behind(p):
 		return false
-	var vs := get_viewport().get_visible_rect().size
-	var sp := unproject_position(p)
-	return sp.x > vs.x * x0 and sp.x < vs.x * x1 and sp.y > vs.y * y0 and sp.y < vs.y * y1
+	var at := unproject_position(p)
+	for region in regions:
+		if region.has_point(at):
+			return true
+	return false
+
+
+# Find the smallest pan at the planned pose and today's zoom. If the two subjects cannot fit together,
+# keep the first (the acting ship) in view and leave the other to the edge guide.
+func keep_clear(subject: Vector3, other: Vector3, regions: Array[Rect2]) -> void:
+	if regions.is_empty():
+		return
+	_set_pose(a, b, r, t, Vector3.ZERO)
+	if is_position_behind(subject):
+		t = subject
+		_set_pose(a, b, r, t, Vector3.ZERO)
+	if not sees_clear(subject, regions) or (other != Vector3.INF and not sees_clear(other, regions)):
+		var first := _pan_ranges(subject, regions)
+		var choices: Array[Rect2] = []
+		if other != Vector3.INF and not is_position_behind(other):
+			var second := _pan_ranges(other, regions)
+			for f in first:
+				for s in second:
+					var common := f.intersection(s)
+					if common.has_area():
+						choices.append(common)
+		if choices.is_empty():
+			choices = first
+		var best := Vector2.INF
+		for c in choices:
+			var delta := Vector2.ZERO.clamp(c.position, c.end)
+			if delta.length_squared() < best.length_squared():
+				best = delta
+		if best.is_finite():
+			t += global_basis.x * best.x - global_basis.y * best.y
+	_set_pose(_ca, _cb, _cr, _ct, shake)
+
+
+# A pan in the camera plane leaves depth unchanged. Convert each clear pixel rectangle to the pan range
+# that would put this point inside it, accounting for the depth difference between ships.
+func _pan_ranges(p: Vector3, regions: Array[Rect2]) -> Array[Rect2]:
+	var at := unproject_position(p)
+	var depth := -(get_camera_transform().affine_inverse() * p).z
+	var per_pixel := depth * 2.0 * tan(deg_to_rad(fov) * 0.5) / get_viewport().get_visible_rect().size.y
+	var out: Array[Rect2] = []
+	for rr in regions:
+		var inner := rr.grow(-1.0) if rr.size.x > 2.0 and rr.size.y > 2.0 else rr
+		out.append(Rect2((at - inner.end) * per_pixel, inner.size * per_pixel))
+	return out
+
+
+# Point from the board's clear centre to the farthest clear point along the ray, stopping at the HUD
+# if it covers that edge. Points behind the camera still give a useful left/right direction.
+func edge_guide(p: Vector3, area: Rect2, regions: Array[Rect2]) -> Dictionary:
+	var center := area.get_center()
+	var dir: Vector2
+	if is_position_behind(p):
+		var local := get_camera_transform().affine_inverse() * p
+		dir = Vector2(local.x, -local.y)
+	else:
+		var at := unproject_position(p)
+		for region in regions:
+			if region.has_point(at):
+				return {}
+		dir = at - center
+	dir = dir.normalized() if dir.length_squared() > 0.0001 else Vector2.DOWN
+	var reach := -1.0
+	for region in regions:
+		var start := 0.0
+		var end := INF
+		for axis in 2:
+			if absf(dir[axis]) < 0.0001:
+				if center[axis] < region.position[axis] or center[axis] > region.end[axis]:
+					end = -1.0
+					break
+				continue
+			var s0 := (region.position[axis] - center[axis]) / dir[axis]
+			var s1 := (region.end[axis] - center[axis]) / dir[axis]
+			start = maxf(start, minf(s0, s1))
+			end = minf(end, maxf(s0, s1))
+		if end >= start:
+			reach = maxf(reach, end)
+	return {"at": center + dir * reach, "dir": dir} if reach >= 0.0 else {}
 
 
 # true when a board point is well inside the view (so a hand-over needs no glide)
