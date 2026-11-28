@@ -81,28 +81,28 @@
     },
     "chorus": {
       "voidsworn": [
-        "Hot frontier reactors burning loud across the dark. Push straight into their line and crack the alloy.",
-        "Loud iron hulls carrying full fuel bays. Hunger wants their warmth before the void takes it."
+        "Frontier reactors run hot and loud. Rush their line. Crack the alloy.",
+        "Loud iron hulls. Full fuel bays. Hunger wants the heat before it fades."
       ],
       "hegemony": [
-        "Neat rows of polished alloy moving in lockstep. Break one link and swallow the escorts behind it.",
-        "Cold steel hulls transmitting sharp orders. Dissolve their formation and strip the dense cores inside."
+        "Polished plates in tight rows. Break one link. Swallow the escorts behind it.",
+        "Cold steel. Sharp orders. Melt their line. Strip the thick cores."
       ],
       "corsair": [
-        "Patched metal scavengers rushing straight toward our acid. Clumsy prey makes an easy harvest.",
-        "Loud raiders welded from stolen plate. Crack their heavy bows and drink the hot drives underneath."
+        "Patchwork shells rush our acid. Clumsy prey feeds us well.",
+        "Loud raiders in stolen plate. Crack their bows. Drink the hot drives."
       ],
       "chorus": [
-        "A rival brood feeding in our lane. Consume their spores before they claim these reactors.",
-        "Foreign chitin on our thermal trace. Only one swarm survives this sector; tear them open."
+        "A rival brood feeds in our lane. Eat its spores before it takes the reactors.",
+        "Foreign chitin on our heat trail. One swarm survives here. Tear them open."
       ],
       "ithar": [
-        "Cousins of our dead makers, still shining behind thin crystal. Memory recalls their lenses; Hunger does not care.",
-        "Glasswright mirrors ahead. Old breeding reflex wakes in our nerves; close fast before their beams cut us."
+        "Our makers' kin shine behind thin glass. Memory knows the lenses. Hunger tastes prey.",
+        "Glasswright mirrors ahead. Old reflex wakes in the brood. Close before their beams burn."
       ],
       "deathless": [
-        "Violet-black husks we were built to crack a thousand years ago. Every spore wakes at their cold signal.",
-        "Eclipse frames on the scopes. Ancient war-code surges through the brood; tear their repair swarms apart!"
+        "Violet-black shells. We were grown to crack them a thousand years ago. Their cold signal wakes every spore.",
+        "Eclipse frames ahead. Old war-code burns through the brood. Tear their repair swarms apart!"
       ]
     },
     "ithar": {
@@ -251,32 +251,32 @@
     },
     "chorus": {
       "ambush": [
-        "Two clusters closing from opposite bearings. Crush the nearer group first before their fire crosses.",
-        "Prey tries to encircle the brood. Rush one side together and feed before the second arrives."
+        "Heat closes from both sides. Crush the nearer brood before their fire crosses.",
+        "Prey circles our brood. Rush one side together. Feed before the other arrives."
       ],
       "defend": [
-        "Cluster tight around the friendly station hull. Dissolve any hostile shell that approaches its perimeter.",
-        "Hold the station ring through six cycles. Feed on every ship foolish enough to press close."
+        "Cling to the friendly station. Melt any shell that comes close.",
+        "Hold the station ring for six cycles. Feed on anything that comes close."
       ],
       "hunt": [
-        "Their lead vessel is spooling a jump drive. Surge forward and tear its engines out before cycle six!",
-        "The richest core is fleeing toward deep space. Leave the small shells behind and swallow the leader!"
+        "Their lead jump drive burns. Tear it out before cycle six!",
+        "The richest core flees. Leave the small shells. Swallow the leader!"
       ],
       "intercept": [
-        "Slow supply hulls creeping toward the far edge. Cut across their path and crack them before they escape!",
-        "Cargo vessels carry dense metal and warm reactors. Intercept them before they reach the jump boundary!"
+        "Slow supply hulls near the far edge. Cut across. Crack them before they slip away!",
+        "Thick cargo. Warm cores. Cut them off before the jump boundary!"
       ],
       "break": [
-        "Do not linger to digest the escorts. Surge across their line and slip through the far exit lane!",
-        "Push the heaviest hulls through the gap and jump clear beyond the green edge."
+        "Skip the escorts. Burn through their line. Slip out the far lane!",
+        "Push our heaviest hulls through the gap. Burn clear past the green edge."
       ],
       "hold": [
-        "Anchor a strong bio-hull beside the central relay. Keep every hostile shell off its border for three cycles.",
-        "Claim the central signal spire. Drive rival vessels away until three clean cycles pass."
+        "Set a thick hull by the relay. Keep prey clear for three cycles.",
+        "Take the central spire. Keep strange heat away for three clean cycles."
       ],
       "flagship": [
-        "Destroy their lead mind and the smaller vessels will scatter. Focus every tendril on their flagship!",
-        "One primary core anchors their formation. Crack their flagship and watch the rest flee."
+        "Pour every tendril onto their flagship. Eat the lead mind. The little hulls will scatter.",
+        "One hot core holds their line. Crack the flagship. Watch the rest flee."
       ]
     },
     "ithar": {
@@ -397,20 +397,20 @@
     },
     "chorus": {
       "win_clean": [
-        "No spores lost, and the field lies heavy with split alloy. Feed thoroughly before the next jump.",
-        "Every vessel intact, every hostile hull cooling into harvest. The swarm grows heavier today."
+        "Not one spore lost. The field is thick with split alloy. Feed before we jump.",
+        "Our hulls are whole. Their hulls cool into food. The swarm grows heavier."
       ],
       "win_bloody": [
-        "Deep cuts across the brood, yet enough living tissue remains to consume the wreckage and regrow.",
-        "Costly clash. Pull our torn shells and their shattered metal into the vats together."
+        "Deep cuts in the brood. Still enough warm tissue to feed and regrow.",
+        "A costly bite. Draw our torn shells and their broken metal into the vats."
       ],
       "win_fast": [
-        "Over before their reactors even cooled. Swift, clean digestion; push on while Hunger runs hot.",
-        "They broke almost instantly. Strip the warm metal quickly and follow the next heat trail."
+        "Their reactors hadn't cooled. A clean meal. Push on while Hunger runs hot.",
+        "They broke fast. Strip the warm metal. Follow the next heat trail."
       ],
       "win_last_stand": [
-        "One surviving shell drifts over a field of fallen metal. Enough tissue remains to grow a fresh brood.",
-        "Nearly purged, yet one core still pulses. Feed on the dead hulls until the swarm returns."
+        "One shell among cold wrecks. Enough warm flesh to grow a new brood.",
+        "Nearly burned away. One core still beats. Feed until the swarm returns."
       ]
     },
     "ithar": {
@@ -567,40 +567,40 @@
     },
     "chorus": {
       "capture": [
-        "Spores have taken their control bridge. Turn that warm metal shell against its own flock.",
-        "Hostile vessel hollowed and claimed. Its guns now fire for the swarm."
+        "Our spores took the bridge. Turn that warm shell against its flock.",
+        "Their hull is ours. The guns feed our hunt now."
       ],
       "ram_kill": [
-        "Forward bone-plate sheared straight through their reactor. Splintered alloy scatters for the brood.",
-        "Crushed their shell on impact. Taste the venting heat and push into the gap!"
+        "Our bone-plate split their hot reactor. The brood gets the splinters.",
+        "Their shell cracked on impact. Taste the heat. Push into the gap!"
       ],
       "enemy_risen": [
-        "Dead violet-black metal is knitting itself back together! Swarm it again and choke its repair dust!",
-        "That Eclipse husk stands again. Crack its core deeper this time so it stays cold."
+        "Dead violet-black metal knits again. Swarm it. Choke its cold repair dust!",
+        "That Eclipse shell rises again. Bite deeper into the core. Keep it cold."
       ],
       "enemy_cmd_warn": [
-        "Heavy energy gathering in their lead vessel. Spread the brood before the pulse lands.",
-        "Their command core surges toward release. Brace outer chitin for the coming wave."
+        "Heat builds in their lead hull. Spread the brood before it bursts.",
+        "Their command core runs hot. Brace our chitin for the wave."
       ],
       "enemy_flee": [
-        "One wounded prey slips into the dark. Close tighter on the shells left behind.",
-        "Fear breaks their line. Let the runner drift and finish the closer hulls."
+        "One wounded hull slips into the cold. Close on the heat that's left.",
+        "Fear split their line. Leave the cold runner. Finish the nearer hulls."
       ],
       "reinf_enemy": [
-        "More warm metal drops out of jump. Fresh reactors arrive right inside our feeding ground.",
-        "Another hostile hull enters the lane. Shift a flanking cluster to meet the new heat."
+        "More warm metal drops out of jump. Fresh cores in our feeding ground.",
+        "Another enemy hull. Shift a flank brood toward the fresh heat."
       ],
       "reinf_ally": [
-        "Another friendly bio-hull breaks cover to join the hunt. Close the ring around their flank.",
-        "Reinforcing vessel senses the kill and slides into the lane. Feed together."
+        "A friendly hull breaks cover. Close the ring on that warm flank.",
+        "Our kin taste the kill. One more hull joins the lane. Feed together."
       ],
       "flare": [
-        "The star flares and peels every energy screen away. Our hides never needed shields; strike their bare hulls!",
-        "Stellar burst blinds their deflectors! Rush straight in while their thin steel sits exposed!"
+        "The flare strips every shield. We never needed them. Bite the bare hulls!",
+        "The star burns out their deflectors. Rush their bare steel!"
       ],
       "deadstar": [
-        "The dead star pulls at our fins. Ride its outer curve for speed and stay clear of its tearing rim.",
-        "Gravity eddies swirl off Ardent's corpse. Use the slingshot drift without feeding our hulls to the well."
+        "The dead star tugs our fins. Ride its curve for speed. Keep clear of the tearing rim.",
+        "Ardent's corpse stirs the drift. Take the slingshot. Don't feed the well."
       ]
     },
     "ithar": {
@@ -703,11 +703,11 @@
       "scarce": "Slim pickings at the depots here. Means we'll have to take what we need straight off live ships!"
     },
     "chorus": {
-      "ion": "Ion static clouds their delicate scopes while our thermal nerves stay clear. Hunt close through the haze.",
-      "dark": "Cold relays leave these lanes blind and quiet. Drift silent until hot engines light the dark.",
-      "wreck": "Broken hulls litter every transit path here. Hide our spores inside the metal until prey draws close.",
-      "war": "Many fleets bleed across this sector. Extra vessels will jump into the noise; more metal for the brood.",
-      "scarce": "Few depots survive in these dry lanes. Every battle must feed our regrowth directly."
+      "ion": "Ion haze blinds their scopes. We still taste heat. Hunt close.",
+      "dark": "Cold relays. Blind lanes. Drift quiet until hot drives light them.",
+      "wreck": "Dead hulls choke the lanes. Hide spores in the cold metal. Wait for prey.",
+      "war": "Fleets bleed here. More hulls will jump toward the heat. More food.",
+      "scarce": "Few depots in these dry lanes. Feed our regrowth with every fight."
     },
     "ithar": {
       "ion": "Heavy ion drift across the sector. Calibrate every prism for atmospheric static before we engage.",

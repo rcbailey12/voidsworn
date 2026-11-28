@@ -2238,7 +2238,9 @@ func ACT_equip(arg: String) -> void:   # R1 (MOD-3, Codex PR #1): only a well-fo
 	if RUN == null: return
 	var p = arg.split(":")
 	if p.size() != 2 or p[0].length() > 15 or not p[0].is_valid_int() or p[0].begins_with("-") or p[0].begins_with("+") or (p[0].length() > 1 and p[0].begins_with("0")): return
-	if _fit_from_hold(int(p[0]), _ship(p[1])): _fleet_back()
+	if _fit_from_hold(int(p[0]), _ship(p[1])):
+		if page.get("kind") == "shipyard": shipyardScreen(yard_node)
+		else: _fleet_back()
 func _pop_mod(sh, i, got: Array) -> void:
 	if i < sh["mods"].size(): got.append(sh["mods"].pop_at(i))
 func ACT_unequip(arg: String) -> void:
@@ -2494,6 +2496,7 @@ func _apply_preview_op(action: String, key := "", slot := -1) -> Dictionary:
 		for entry in p["entries"]:
 			var live: Dictionary = entry["before"]; var after: Dictionary = entry["after"]
 			live["hp"] = after["hp"]
+			if live.has("yard_sections") and not after.has("yard_sections"): live.erase("yard_sections")
 			if action == "refit" or action == "upgradeMk":
 				live["mk"] = after["mk"]; live["mods"] = after["mods"]
 				if after.has("hpOwed"): live["hpOwed"] = after["hpOwed"]
@@ -3037,7 +3040,10 @@ func _beat_fill(tpl, bw) -> String:   # JS replace: the first occurrence only
 func nemOpenLine(N) -> Variant:
 	var P = nemPersonaVoice(N)
 	if P == null: return null
-	if jt(N.get("gloat")) and jt(NEM_LINES["gloat"].get(N["gloat"])): return NEM_LINES["gloat"][N["gloat"]]
+	if jt(N.get("gloat")):
+		var gloat_key = N["gloat"]
+		var gloat_copy = NEM_VOICE[N["fac"]].get("gloat", {}).get(gloat_key, NEM_LINES["gloat"].get(gloat_key))
+		if jt(gloat_copy): return gloat_copy
 	var bw = (NEM_BEAT_WORD[N["last_beat"]] if jt(NEM_BEAT_WORD.get(N["last_beat"])) else N["last_beat"]) if jt(N.get("last_beat")) else null
 	if float(z0(N.get("beaten"))) + float(z0(N.get("scars"))) > 0 and jt(bw):
 		var cnt = NEM_BEAT_COUNTER.get(N["last_beat"])
@@ -4185,7 +4191,7 @@ func battleScreen(cfg: Dictionary) -> void:
 			rng.rnd_seed((int(sd) ^ 0x5bd1e995) & 0xFFFFFFFF)
 	if RUN["fleet"].size() <= 1 and float(z0(RUN.get("reinf"))) < float(RUN["sector"]):
 		RUN["reinf"] = RUN["sector"]; var sh = newShip(cheapHull(RUN["fac"])); RUN["fleet"].append(sh)
-		var r_line: String = str({"chorus": "Your surviving spores coalesce into a fresh " + ship_bare(str(sh["name"])) + ".", "deathless": "An automated reserve berth dispatches " + ship_with_article(str(sh["name"])) + " to reinforce you.", "corsair": "A straggling raider from the outer belt joins your pack: " + ship_with_article(str(sh["name"])) + ".", "ithar": "A distant picket answers your distress pulse: " + ship_with_article(str(sh["name"])) + "."}.get(str(RUN["fac"]), "An allied sector patrol sends " + ship_with_article(str(sh["name"])) + " to reinforce you."))
+		var r_line: String = str({"chorus": "The spores stayed warm. They grew a fresh " + ship_bare(str(sh["name"])) + ".", "deathless": "An automated reserve berth dispatches " + ship_with_article(str(sh["name"])) + " to reinforce you.", "corsair": "A straggling raider from the outer belt joins your pack: " + ship_with_article(str(sh["name"])) + ".", "ithar": "A distant picket answers your distress pulse: " + ship_with_article(str(sh["name"])) + "."}.get(str(RUN["fac"]), "An allied sector patrol sends " + ship_with_article(str(sh["name"])) + " to reinforce you."))
 		toast(r_line); tel("reinforced", {})
 	var nd = findNode(cfg["node"]) if jt(cfg.get("node")) else null
 	if nd != null and not jt(nd.get("enc")) and cfg["kind"] != "boss":
@@ -4344,6 +4350,10 @@ func finishBattle(result: String) -> void:
 			else: RUN["fallen"].append({"cap": ship["cap"].duplicate(true), "ship": ship["name"], "sector": RUN["sector"]})
 			continue
 		ship["hp"] = clampv(jsround(float(u["hp"])), 1, derive(ship)["maxHp"])
+		# Cosmetic last-battle damage for the yard, never an input to battle setup or derived stats.
+		ship.erase("yard_sections")
+		if u.get("sec") is Dictionary and u["sec"].values().any(func(sec): return jt(sec.get("broken"))):
+			ship["yard_sections"] = u["sec"].duplicate(true)
 		if result == "retreat":
 			ship["hp"] = max(1.0, float(ship["hp"]) - jsround(float(u["maxHp"]) * 0.1)); continue
 		if result == "win":
@@ -4385,7 +4395,7 @@ func finishBattle(result: String) -> void:
 			wr.append(w)
 		summary["wrecks"] = wr
 	if summary.get("escaped") != null:
-		var esc_tail: String = {"chorus": " survived in a detached spore-node and bonds to your next hull.", "deathless": " streamed its backup clear before hull loss and awaits a fresh frame."}.get(str(RUN["fac"]), " escaped in a life pod and will take command of your next hull.")
+		var esc_tail: String = {"chorus": " survived in a warm, detached spore-node. It bonds to your next hull.", "deathless": " streamed its backup clear before hull loss and awaits a fresh frame."}.get(str(RUN["fac"]), " escaped in a life pod and will take command of your next hull.")
 		toast(" and ".join(PackedStringArray(summary["escaped"])) + esc_tail)
 	if B.has("combat_events") or battle_mode == "external":
 		summary["ship_rollups"] = CombatRecords.rollups(B)
@@ -4408,7 +4418,7 @@ func finishBattle(result: String) -> void:
 	fleet_results.emit(not summary["lost"].is_empty(), summary["xp"].any(func(entry): return entry["up"]))
 	if result == "win" and RUN["fleet"].size() == 0:
 		var sh2 = newShip(cheapHull(RUN["fac"])); RUN["fleet"].append(sh2); ensureFlagship()
-		var p_line: String = str({"chorus": "Your surviving spores coalesce into a fresh " + ship_bare(str(sh2["name"])) + " to carry the brood.", "deathless": "An automated reserve berth dispatches " + ship_with_article(str(sh2["name"])) + " to hold the uplink.", "corsair": "A straggling raider from the outer belt joins your pack to carry the flag: " + ship_with_article(str(sh2["name"])) + ".", "ithar": "A distant picket answers your distress pulse to carry the standard: " + ship_with_article(str(sh2["name"])) + "."}.get(str(RUN["fac"]), "An allied sector patrol sends " + ship_with_article(str(sh2["name"])) + " to carry the flag."))
+		var p_line: String = str({"chorus": "Warm spores grew a fresh " + ship_bare(str(sh2["name"])) + ". It carries the brood.", "deathless": "An automated reserve berth dispatches " + ship_with_article(str(sh2["name"])) + " to hold the uplink.", "corsair": "A straggling raider from the outer belt joins your pack to carry the flag: " + ship_with_article(str(sh2["name"])) + ".", "ithar": "A distant picket answers your distress pulse to carry the standard: " + ship_with_article(str(sh2["name"])) + "."}.get(str(RUN["fac"]), "An allied sector patrol sends " + ship_with_article(str(sh2["name"])) + " to carry the flag."))
 		toast("The last ships traded themselves for the win. " + p_line); tel("reinforced", {"why": "pyrrhic"})
 	if result == "loss" or RUN["fleet"].size() == 0:
 		endRun(false); return

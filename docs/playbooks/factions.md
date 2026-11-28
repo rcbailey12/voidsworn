@@ -254,6 +254,10 @@ execution is off" and "Start over with a new idea". So: the idea of grown, livin
 - **Who they are (lore 5.1):** not a people: a weapon the Fleshwrights grew to destroy Eclipse, engineered flesh that lives on
   starlight, eats anything, endures the cold and breeds without end. It consumed its makers and became one swarm with one
   appetite. The Fleshwrights were kin to the Glasswrights, so a Chorus ship may echo a Glasswright shape in flesh.
+- **Speech and story copy (Ryan, Nov 26 2026, issue 2250):** Keep Chorus sentences to 12 words or fewer. Build the
+  voice on heat and taste: the swarm tastes a drive trail, a wreck goes cold, a core is rich food. Use short beats
+  and speak as the brood, with Memory keeping the makers and Hunger reading the prey. The point is to make the swarm
+  sound like a single appetite that senses heat and taste, even when it remembers or mourns.
 - **Shape language:** grown, not built. Scale and menace first: slow, heavy, deep-sea. Hide, membrane, chitin ridges, light
   inside the body. Symmetric where a body would be, ragged where it has been scarred and regrown.
 - **Colours:** muddy olive-brown hide with dark red veins, pores and wrinkles (never maroon, never "red clay"), chitin a bone to

@@ -327,107 +327,107 @@
   },
   "chorus": {
     "hail": [
-      "We tracked your bright drive-burn across three cold lanes. Now your hulls are close enough to crack open.",
-      "Warm reactors wrapped in thin alloy, moving in neat little rows. Memory knows how you build them; Hunger only wants what's inside.",
-      "Your shields hum against our outer sensors. Push closer so our acid can dissolve the seam.",
-      "Hot metal crossing cold space leaves a clear trail. The brood woke early just to meet your engines.",
-      "Your hulls carry fuel, alloy, and heat through a starving void. Open them for us, or we will peel them ourselves."
+      "We tasted your drives across three cold lanes. Now we can crack your shells.",
+      "Hot cores. Thin alloy. Tight rows. Memory knows how you build them. Hunger wants what's inside.",
+      "We taste your humming shields. Come closer. Our acid will eat the seam.",
+      "Hot metal writes a trail in cold space. We woke early for your drives.",
+      "Fuel. Alloy. Heat. Open your hulls to us. Or we'll peel them ourselves."
     ],
     "vs_faction": {
-      "voidsworn": "Loud iron hulls burning rich frontier fuel. Your thick steel only slows your flight from our spores.",
-      "hegemony": "Polished columns marching on rigid clocks. Once one vessel cracks, the rest taste just as warm.",
-      "corsair": "Noisy scrap-builders welded from stolen metal. Rush close with your iron claws and feed our acid.",
-      "chorus": "Rival tissue trespassing in our thermal lane! Only one brood feeds here; we will absorb your spores!",
-      "ithar": "Cousins of our dead Fleshwright makers, hidden behind thin crystal. Memory recalls your old lights; Hunger cracks glass easily.",
-      "deathless": "Violet-black Eclipse shells! Our oldest breeding code wakes at your cold frequency; tear their frames down to dust!"
+      "voidsworn": "Loud iron hulls. Rich frontier fuel. Your thick steel slows your flight from our spores.",
+      "hegemony": "Polished rows. Rigid clocks. Crack one hull. The rest taste just as warm.",
+      "corsair": "Noisy shells of stolen plate. Bring your iron claws close. Feed our acid.",
+      "chorus": "Foreign flesh on our heat trail. One brood feeds here. We'll swallow your spores.",
+      "ithar": "Our dead makers' kin hide behind thin glass. Memory knows your lights. Hunger cracks glass.",
+      "deathless": "Violet-black Eclipse shells. Your cold signal wakes our oldest code. Grind those frames to dust!"
     },
     "again": [
-      "We know the chemical signature of your hull metal now, and our newest brood grew shells to match your guns.",
-      "You cut pieces out of us last time, and the tissue that grew back came up thicker and meaner.",
-      "Every surviving spore remembered your thruster burn. We waited along your jump lane until the heat spiked again.",
-      "Your weapons taught our vats what to harden next. Come test the new chitin, {you}.",
-      "You thought burning one cluster would clear this corridor. Everything you spared grew back hungry."
+      "We know the taste of your alloy now. We grew shells for those guns.",
+      "You cut pieces out of us. The warm flesh grew back thicker. Meaner.",
+      "Every spore kept the taste of your drives. We waited for your heat to return.",
+      "Your guns taught our vats what to harden. Test the new hide, {you}.",
+      "You burned one cluster. What you left grew back hungry."
     ],
     "final": [
-      "Heat behind your ships. Hunger in front of them. We will eat through the wall you make.",
-      "Memory recognizes Ardent's broken circle behind you, and Hunger has crossed twenty light-years just to drink its cores dry.",
-      "Those cores fed our makers' vats before we ate our makers. You cannot hold them against the swarm.",
-      "So much heat gathered around one dead star. We will crack your hulls and drink the cores dry together!"
+      "Heat behind you. Hunger ahead. We'll eat through your wall.",
+      "Memory knows Ardent's broken ring. Hunger crossed twenty light-years to drink those cores dry.",
+      "Those cores fed our makers' vats. Then we ate our makers. You can't keep their food.",
+      "So much heat around one dead star. We'll crack your hulls. Drink the cores dry together."
     ],
     "beaten": [
-      "Torn open, not ended. Pull the surviving tissue into the dust and grow back around what cut us.",
-      "Too much heat at once. Scatter the brood-sacs and return heavier.",
-      "Outer shells cracked; slip into the dark lane and feed on stray metal until we harden.",
-      "We remember every weapon frequency you used today. The next clutch hatches ready for it."
+      "Torn open. Not finished. Hide the warm flesh in dust. Grow around what cut us.",
+      "Too much heat at once. Scatter the brood-sacs. Come back heavier.",
+      "Outer shells cracked. Slip into the cold lane. Feed on stray metal until we harden.",
+      "We remember the taste of every weapon you fired. The next clutch hatches ready."
     ],
     "death": [
-      "Primary neural cluster rupturing... Memory fading under the cold...",
-      "The brood goes silent... other spores will find the cores...",
-      "Chitin shattering... heat slipping away into the dark..."
+      "The main nerve cluster splits. Memory goes cold.",
+      "The brood goes quiet. Other spores will taste the cores.",
+      "Our chitin breaks. Heat slips into the dark."
     ],
     "gloat": [
-      "Armor split, reactors cooling, raw alloy pulled into the sacs. The next clutch hatches stronger.",
-      "Nothing moving on the scopes now. Strip the metal down to bare wire and move on.",
-      "Warm hulls broken, fuel absorbed, silence restored. Hunger rests briefly before the next lane.",
-      "Every plate you carried feeds our vats now. A rich harvest."
+      "Armor cracked. Heat fading. Alloy in our sacs. The next clutch hatches stronger.",
+      "Nothing moves. Strip the cooling metal to bare wire. Move on.",
+      "Warm hulls broke. We drank their fuel. Hunger rests until the next lane.",
+      "Every plate you brought feeds our vats. Rich food."
     ],
     "kill": [
-      "One shell cracked open and absorbed.",
-      "Another reactor cooled into the brood.",
-      "Thin alloy split cleanly. Pull the debris into our wake.",
-      "One warm vessel silenced. Press onto the next hull.",
+      "One shell cracked. We ate it.",
+      "Another reactor cools inside the brood.",
+      "Thin alloy split clean. Pull the warm scraps into our wake.",
+      "One warm hull went quiet. Close on the next.",
       "Acid found the core. Feed and advance."
     ],
     "signature": [
-      "Every hull you lost across these sectors fed our spores. Feel how heavy we have grown on your dead.",
-      "Your wreckage made our outer shells thicker. Give us two more hulls and watch us swallow your flagship.",
-      "Our sacs swelled on the alloy you left behind earlier. Come feel what your own metal grew into!",
-      "Your fallen escorts hardened our brood. Nothing you lost was wasted."
+      "Every hull you lost here fed our spores. Feel the weight of your dead.",
+      "Your wrecks thickened our shells. Feed us two more. We'll swallow your flagship.",
+      "Your discarded alloy filled our sacs. Now taste what grew from it!",
+      "Your fallen escorts fed our shells. We wasted nothing."
     ],
     "scar": [
-      "You carved deep burns across our hide {scars}, and every scar calcified into thicker bone-plate.",
-      "Your fire burned us {scars}. Our cells remember its frequency. Try cutting through the new growth.",
-      "Wounded by your fleet {scars}, yet every healed ridge grew denser than the tissue you burned.",
-      "Your weapons cut us deep {scars}, and each wound taught the swarm how to answer."
+      "You burned our hide {scars}. Each scar set into thicker bone.",
+      "Your fire burned us {scars}. Our cells know its taste. Cut this new hide.",
+      "You cut us {scars}. Each ridge grew denser than the flesh you burned.",
+      "Your guns cut us deep {scars}. Every hot wound taught us an answer."
     ],
     "memory": {
-      "lance": "Your focused beams seared our outer sacs before. We grew layered reflective chitin in the dark between jumps.",
-      "torp": "Your heavy warheads tore deep craters in our hulls. Our spore clouds are thicker now to detonate them early.",
-      "sq": "Your small interceptors stung our brood-chambers. We bred denser drifting spore-curtains just to choke their intakes.",
-      "ram": "You drove metal bows straight through our tissue. Our forward ribs grew thicker bone-plates to snap your prows.",
-      "board": "Your breach crews cut inside our chambers. We dissolved their suits and kept their tactical memories.",
-      "battery": "Your heavy flank volleys shredded our lighter hulls. We shifted our fins to turn faster between salvos.",
-      "evasive": "Your ships kept slipping past our tendrils. We grew larger thruster sacs to close the gap."
+      "lance": "Your beams seared our sacs. Between jumps, we grew chitin that throws back heat.",
+      "torp": "Your heavy warheads dug deep. Thicker spores will burst them early.",
+      "sq": "Your interceptors stung our brood-sacs. We bred thicker spores to choke their intakes.",
+      "ram": "Your prows tore our flesh. Our ribs grew thicker. Now taste the bone.",
+      "board": "Your boarders cut into our sacs. We dissolved their suits. We kept what they knew.",
+      "battery": "Your flank guns shredded our lighter shells. We shifted our fins. Now we turn between burns.",
+      "evasive": "You kept slipping past our tendrils. Our thruster sacs grew. Now we burn closer."
     },
     "personality": {
       "ravenous": {
-        "hail": "Close, bright, heavy with reactor fuel! Break formation and rush the nearest hull!",
-        "beaten": "Too much fire on the lead brood! Pull back, feed on the debris, and come again!"
+        "hail": "Close heat. Rich fuel. Break formation. Rush the nearest hull!",
+        "beaten": "Too much fire on the lead brood. Pull back. Eat the debris. Return!"
       },
       "cruel": {
-        "hail": "We will crack your crippled escorts first while your flagship watches them vent into vacuum.",
-        "beaten": "Retreat into the dark lanes. Your unguarded mining moons will feed our regrowth nicely."
+        "hail": "We'll crack the wounded escorts first. Your flagship can watch their heat spill.",
+        "beaten": "Back to the cold lanes. Your bare mining moons will feed our wounds."
       },
       "cunning": {
-        "hail": "We waited dormant inside the cold dust until your drives lit the lane. Now the trap closes.",
-        "beaten": "Lost an outer cluster, learned your entire firing cadence. A worthwhile trade."
+        "hail": "We slept in cold dust. Your drives warmed the lane. Now it closes.",
+        "beaten": "We lost an outer cluster. We tasted your firing rhythm. Fair trade."
       },
       "patient": {
-        "hail": "We drifted cold for weeks while your fleet grew heavy with salvage. Now we feed.",
-        "beaten": "Slip back into dormancy. Cold space preserves us longer than fuel preserves you."
+        "hail": "We drifted cold for weeks as you grew heavy with salvage. Now we feed.",
+        "beaten": "Sleep again. The cold keeps us longer than your fuel keeps you."
       }
     },
     "deed": {
-      "ravenous": "{He} dissolved every bulkhead, conduit, and pressure door inside the station, leaving only a hollow shell of scorched outer ribs.",
-      "cruel": "{He} chewed through the station's life-support ring slowly while keeping the internal comms open so the outer docks could hear.",
-      "cunning": "{He} left the station's docking lights green and its cargo bays unlocked, seeding dormant spore-sacs behind every bulkhead.",
-      "patient": "{He} waited silently in the orbital shadow until the supply convoy finished unloading, then consumed only the loaded hulls."
+      "ravenous": "{He} dissolved every bulkhead, conduit, and pressure door. Only scorched outer ribs remained.",
+      "cruel": "{He} chewed slowly through the life-support ring. The comms stayed open. The outer docks heard.",
+      "cunning": "{He} left the docking lights green and cargo bays unlocked. Cold spore-sacs waited behind each bulkhead.",
+      "patient": "{He} waited in cold orbital shadow while the convoy unloaded. Only the loaded hulls were eaten."
     },
     "final_by": {
-      "sun": "The other five Lattice cores pulse behind your ships, pouring heat into the dark. Move aside or be digested with them.",
-      "remembers": "Our newest tissue was grown from the burns you gave us before. Let us see whether your guns still cut.",
-      "mercy": "You left wounded hulls drifting instead of consuming them. Waste like that does not survive the deep void.",
-      "ruthless": "You stripped and burned everything along your path just to reach the cores. Hunger recognizes a fellow predator."
+      "sun": "Five other cores pour heat behind your ships. Move aside. Or we'll digest you with them.",
+      "remembers": "We grew new flesh from your burns. Let's taste those guns again.",
+      "mercy": "You left wounded hulls uneaten. That waste won't live in the cold.",
+      "ruthless": "You stripped and burned your way to the cores. Hunger knows the taste of its own."
     }
   },
   "ithar": {

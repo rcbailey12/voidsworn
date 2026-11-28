@@ -24,6 +24,7 @@ headless|world/test/rock_scan_check.gd|-|-|issue 1361 (R419, R420 section 6.2): 
 headless|render/test/battle_post_fx_check.gd|-|-|issue 1779: regional Texture3D imports, selective SSR, compositor idle state, terrain surface placement, headless guards and tactical DoF reset
 headless|render/test/big_moments_check.gd|-|-|issue 2032: cut-in framing, eased return, overlay fade, and counted screen-size death effects
 headless|campaign/test/aaa_ui_data_test.gd|-|-|issue 2078: CaptainData migration, indexed faces, applied hits, killmail by value and shipyard preview equals commit
+headless|ui/campaign/test/shipyard_gantry_test.gd|-|-|issue 2080: live yard selection, single shield pool, read-only PreviewOp rows, refit and repair commits, disabled reasons and responsive bay
 headless|fx/test/terrain_polish_2048_check.gd|-|-|issue 2048: terrain polish for Dead Star INFALL_SHADER stretched tidal embers, terrain_scorch.gd 256px crater albedo/normal/ORM/light-blue plasma decals, and layered glinting DUST_SHADERs
 headless|render/test/mm_trial_check.gd|-|-|issue 2001: the game loaders select stock ship maps and no trial planet tiles by default, and load all six trial ship pairs and both planet tiles when opted in
 headless|campaign/test/arc_hook_test.gd|-|-|story arc hook: arcs off or empty change nothing, test cards pay, flag and end; whole seeded runs, no window
