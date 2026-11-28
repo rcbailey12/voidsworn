@@ -9,7 +9,7 @@ set "LABEL=2035"
 set "TOOLS=godot pil"
 set "PIN_NEW=%~1"
 if not defined PIN_NEW set "PIN_NEW=52973ee1bf8a6c6ef10af142b301eedb9856ac1d"
-set "PIN_OLD=e23fe088f9b659037efc860db1eed072ed8417f4"
+set "PIN_OLD=4a6c1c18b2b1a84991ac48bf9cceb97220179faa"
 set "OJ_SLOTS=1"
 set "OJ_SLOT_KIND=gpu"
 
@@ -104,6 +104,6 @@ set "SH=%OJ_OUT%\out_sheets"
 if not exist "%SH%" mkdir "%SH%"
 set "JW_STEP=compose comparison sheets" & set "JW_EXPECT=%SH%\N2035_NEB_C170.jpg;%SH%\N2035_NEB_C26.jpg;%SH%\N2035_STORM_C170.jpg;%SH%\N2035_STORM_C26.jpg;%SH%\summary_2035.json" & call "%JW%" run 300 "%JW_PIL%" "%T2035%\make_sheets_2035.py" --before "%OJ_OUT%\out_old" --after "%OJ_OUT%\out_new" --out "%SH%" --before-sha "%PIN_OLD%" --after-sha "%PIN_NEW%" --repo "%OJ_REPO%" > "%SH%\sheets_log.txt" 2>&1
 if errorlevel 1 exit /b 1
-rem Report 1080p and 4K gate verdict separately after retaining all sheets (Artoo GAS4 finding).
-"%JW_PIL%" -c "import json,sys; d=json.load(open(sys.argv[1])); bad=[k for k in ('nebula','storm') if not (d[k]['after']['complete'] and d[k]['after']['f1080_pass'] and d[k]['after']['g4k_pass'])]; print('GAS5_GATE_VERDICT:', 'PASS' if not bad else 'FAIL:' + ','.join(bad)); sys.exit(1 if bad else 0)" "%SH%\summary_2035.json" >> "%SH%\sheets_log.txt" 2>&1
+rem Report 1080p and 4K gate verdict through JW so gate or script failures never log false done PASS.
+set "JW_STEP=gas5 gate verdict" & set "JW_EXPECT=" & call "%JW%" run 60 "%JW_PIL%" "%T2035%\make_sheets_2035.py" --check-gate "%SH%\summary_2035.json" >> "%SH%\sheets_log.txt" 2>&1
 exit /b %ERRORLEVEL%

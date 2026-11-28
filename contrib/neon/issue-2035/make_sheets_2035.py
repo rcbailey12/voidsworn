@@ -259,6 +259,32 @@ def build_sheets(
     return summary
 
 
+def check_gate(summary_path: pathlib.Path) -> int:
+    data = json.loads(summary_path.read_text(encoding="utf-8"))
+    timing = data.get("timing")
+    if not isinstance(timing, dict):
+        print("GAS5_GATE_VERDICT: FAIL:missing_timing")
+        return 1
+    bad: list[str] = []
+    for case in ("nebula", "storm"):
+        entry = timing.get(case)
+        after = entry.get("after") if isinstance(entry, dict) else None
+        ok = bool(
+            isinstance(after, dict)
+            and after.get("complete")
+            and after.get("f1080_pass")
+            and after.get("g4k_pass")
+        )
+        status = "PASS" if ok else "FAIL"
+        f1080 = after.get("f1080") if isinstance(after, dict) else None
+        g4k = after.get("g4k") if isinstance(after, dict) else None
+        print(f"GAS5_CASE {case}: {status} f1080={f1080} g4k={g4k}")
+        if not ok:
+            bad.append(case)
+    print("GAS5_GATE_VERDICT:", "PASS" if not bad else "FAIL:" + ",".join(bad))
+    return 0 if not bad else 1
+
+
 def _selftest() -> int:
     import tempfile
 
@@ -328,6 +354,25 @@ def _selftest() -> int:
         assert m_ok is not None and m_ok["complete"] and m_ok["f1080_pass"] and m_ok["g4k_pass"]
         txt_ok = _fmt_gate("After", m_ok)
         assert "1080p 11.40ms (PASS)" in txt_ok and "4K GPU 8.00ms (PASS)" in txt_ok, txt_ok
+
+        # 4. Gate verdict check against summary_2035.json["timing"] schema (PASS and FAIL cases).
+        sum_pass = tmp / "summary_pass.json"
+        sum_pass.write_text(
+            json.dumps({"timing": {"nebula": {"after": m_ok}, "storm": {"after": m_ok}}}),
+            encoding="utf-8",
+        )
+        assert check_gate(sum_pass) == 0, "expected PASS on valid timing summary"
+
+        sum_fail = tmp / "summary_fail.json"
+        sum_fail.write_text(
+            json.dumps({"timing": {"nebula": {"after": m_over}, "storm": {"after": m_ok}}}),
+            encoding="utf-8",
+        )
+        assert check_gate(sum_fail) == 1, "expected FAIL when nebula exceeds 12.5 ms"
+
+        sum_missing = tmp / "summary_missing.json"
+        sum_missing.write_text(json.dumps({"sheets": []}), encoding="utf-8")
+        assert check_gate(sum_missing) == 1, "expected FAIL when timing block is missing"
     print("make_sheets_2035 selftest: PASS")
     return 0
 
@@ -335,6 +380,7 @@ def _selftest() -> int:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--selftest", action="store_true")
+    ap.add_argument("--check-gate", default="", help="Validate summary_2035.json timing gate and exit 0/1")
     ap.add_argument("--before")
     ap.add_argument("--after")
     ap.add_argument("--out")
@@ -344,6 +390,8 @@ def main() -> int:
     args = ap.parse_args()
     if args.selftest:
         return _selftest()
+    if args.check_gate:
+        return check_gate(pathlib.Path(args.check_gate))
     if not args.before or not args.after or not args.out:
         ap.error("--before, --after, and --out are required unless --selftest is given")
     repo = pathlib.Path(args.repo) if args.repo else None
