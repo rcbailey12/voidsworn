@@ -18,6 +18,7 @@ headless|world/test/nebula_wake_check.gd|-|-|issue 1079: the nebula wake reaches
 headless|world/test/audit_leftovers_check.gd|-|-|issue 1130: missing wreck kit pieces, Max storm fog, one nebula bench build, and gallery MSAA parity
 headless|world/test/backdrop_clip_check.gd|-|-|issue 1264: ringed giant planets, rings and moons stay inside the camera far plane at r 900 with the widest pan, and rock fades read the live near plane
 headless|world/test/cloud_edge_check.gd|-|-|issue 1263: storm and nebula cloud footprints reach zero smoothly inside their texture on all four sides, so no cloud ends in a straight line
+headless|world/test/gas_depth_light_check.gd|-|-|issue 2035 (AAA item 9): nebula and ion storm hexes build multi-height drifting strata with organic non-hex edges, faction-neutral colours, and bounded combat-flash scatter on cards and fog
 headless|world/test/max_4k_cost_check.gd|-|-|issue 1262: Max skips SSIL, the zero underlay is not drawn, Max storm cards are bounded; VS_1262_OLD brings each back
 headless|world/test/bake_cache_cap_check.gd|-|-|issue 1265: the planet bake cache on disk keeps under its cap, least recently used first, never the running battle's maps or the map just saved; stale .tmp files go
 headless|world/test/rock_scan_check.gd|-|-|issue 1361 (R419, R420 section 6.2): every shipped rock scan keeps a usable COLOR_0.b facet range, a closed surface, its triangle and shape minimums and its scans.json hash; each kind draws on its own scans; no crystal cluster ships (Ryan scrapped them Nov 22; the kind is ice comets)

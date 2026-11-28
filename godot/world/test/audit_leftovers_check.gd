@@ -165,6 +165,42 @@ func _nebula_build(map_case: String, tier: String) -> void:
 	bench.free()
 
 
+func _nebula_warm_mode(map_case: String, tier: String) -> void:
+	# Issue 2035: exercise the exact warm/timing _mode path (base and res_2160) after super._mode frees b.
+	var bench := NebulaBench.new()
+	bench.map_case = map_case
+	bench.route = "fog"
+	bench.args["terrain-tier"] = tier
+	bench.args["warmup"] = "2"
+	bench.args["frames"] = "4"
+	bench.args["settle_ms"] = "0"
+	bench.out = "user://nebula_warm_%s_%d" % [map_case, OS.get_process_id()]
+	DirAccess.make_dir_recursive_absolute(bench.out)
+	bench.report = {"modes": {}, "order": []}
+	root.add_child(bench)
+	node_added.connect(_added)
+	var gas := "neb" if map_case == "nebula" else "storm"
+	for mode in ["base", "res_2160"]:
+		var row: Dictionary = await bench._mode(mode, 0)
+		_check(bench.b == null, "%s/%s %s frees battle before returning" % [map_case, tier, mode])
+		_check(not row.is_empty(), "%s/%s %s returns a timing row" % [map_case, tier, mode])
+		_check(str(row.get("terrain_case", "")) == map_case and str(row.get("terrain_tier", "")) == tier,
+			"%s/%s %s records terrain_case=%s and terrain_tier=%s" % [map_case, tier, mode, str(row.get("terrain_case", "")), str(row.get("terrain_tier", ""))])
+		_check(int(row.get("seed", 0)) == 4207 and str(row.get("route", "")) == "fog" and row.has("gate_pass"),
+			"%s/%s %s records seed, route and gate_pass" % [map_case, tier, mode])
+		_check(int(row.get("patches", {}).get(gas, {}).get("hexes", 0)) > 0 and not row.get("camera", {}).is_empty(),
+			"%s/%s %s records patch and camera metadata" % [map_case, tier, mode])
+		bench.report["modes"][mode] = [row]
+		bench.report["order"].append("1:%s" % mode)
+		bench._save()
+	node_added.disconnect(_added)
+	var saved_path := bench.out.path_join("scene_gate.json")
+	var saved = JSON.parse_string(FileAccess.get_file_as_string(saved_path)) if FileAccess.file_exists(saved_path) else null
+	_check(saved is Dictionary and saved.get("modes", {}).has("base") and saved.get("modes", {}).has("res_2160"),
+		"%s/%s saves scene_gate.json with base and res_2160 rows" % [map_case, tier])
+	bench.free()
+
+
 func _run() -> void:
 	OS.set_environment("VS_NEBULA_ROUTE", "fog")
 	OS.set_environment("VS_SHIELD_SHAPE", "egg")
@@ -175,6 +211,8 @@ func _run() -> void:
 	_fixture_hulls()
 	await _nebula_build("storm", "max")
 	await _nebula_build("nebula", "high")
+	await _nebula_warm_mode("nebula", "max")
+	await _nebula_warm_mode("storm", "max")
 	SV.clear_static()
 	print("World and bench audit failures=%d" % failures)
 	quit(0 if failures == 0 else 1)

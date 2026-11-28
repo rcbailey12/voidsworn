@@ -6,6 +6,8 @@ var map_case := "storm"
 var route := "today"
 var patch_rows := {}
 var measured_camera := {}
+var measured_tier := ""
+var measured_seed := 0
 
 func _run() -> void:
 	map_case = str(args.get("map-case", "storm"))
@@ -170,6 +172,8 @@ func _build(mode: String, seed: int) -> bool:
 	if route == "fog": b.env.volumetric_fog_length = maxf(250.0, b.cam.r + 200.0)
 	patch_rows = _patch_metadata(b.api)
 	measured_camera = {"r": b.cam.r, "near": b.cam.near, "t": [b.cam.t.x, b.cam.t.y, b.cam.t.z]}
+	measured_tier = str(b.world.quality) if b.world != null else str(args.get("terrain-tier", "max"))
+	measured_seed = int(b.battle_cfg.get("seed", seed))
 	return true
 
 
@@ -177,10 +181,10 @@ func _mode(mode: String, session: int) -> Dictionary:
 	var row: Dictionary = await super._mode(mode, session)
 	if row.is_empty(): return row
 	row["terrain_case"] = map_case
-	row["terrain_tier"] = b.world.quality
-	row["seed"] = b.battle_cfg.seed
+	row["terrain_tier"] = measured_tier
+	row["seed"] = measured_seed
 	row["route"] = route
-	row["patches"] = patch_rows
+	row["patches"] = patch_rows.duplicate(true)
 	row["gate_ms"] = 12.5
 	row["camera"] = measured_camera.duplicate(true)
 	if mode == "base": row["gate_pass"] = float(row.get("frame_median", INF)) <= 12.5

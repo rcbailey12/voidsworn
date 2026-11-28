@@ -70,6 +70,7 @@ var _rock_kind := "stone"
 var _fac := "voidsworn"
 var _debris_ships: Array = []
 var _living = null              # world_living.gd: B's gas, storm, debris and well (built the first time a look needs it)
+var _fx = null                  # battle FX node when passed in opts["fx"] (world_living combat light scatter)
 var _pano: Texture2D = null     # the battle's painted panorama (battle.gd passes it; the dead-star board shows it, R2)
 # the run 5 finale (R78 Q18): real sunlight sweeps the board, and the sky and the Hollow Sun
 # disc brighten. Built only when opts["finale"] is true; finale_stage() moves it through FINALE_STAGES.
@@ -250,11 +251,12 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 		await get_tree().process_frame
 		if _parked():
 			return   # issue 1519: a battle left mid-build waits out of the tree for its free; the build stops
+	_fx = opts.get("fx", null)
 	if deadstar:
 		var ds: Dictionary = map["deadstar"]
 		dead_star(hw.call(int(ds["q"]), int(ds["r"])) + Vector3(0, -10, 0), 1.0)
-		if opts.has("fx") and opts["fx"] != null:
-			opts["fx"].well = _well
+		if _fx != null:
+			_fx.well = _well
 	_look = {"board_c": _center, "haze": setting["haze"], "haze_r": Vector2(420.0, 2800.0), "haze_max": 0.62, "quality": quality,
 		"glow": Vector3(0.3, 0.75, 1.0)}
 	if _well != Vector3.INF:
