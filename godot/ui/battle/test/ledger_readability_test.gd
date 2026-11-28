@@ -75,6 +75,7 @@ func orders(all := false) -> Array:
 func ship(name := "Unyielding Oath", cls := "Vigil-class cruiser", ws: Array = [], ords: Array = [], flags := "[color=#ff8a72]The enemy fleet is focusing its fire on this ship.[/color]") -> Dictionary:
 	return {"name": name, "cls": cls, "side": "player", "flag": true, "hp": 135, "maxHp": 135, "sh": [12, 15, 20, 11], "shMax": 80, "shp": 73, "code": "V15_37",
 		"stats": "Hull 135/135   Armor 20%   Evasion 10\nMovement 0 of 4   Turns 1", "captain": "Captain Ilsa Marr", "move": [0, 4], "arm": 20, "turns": 1,
+		"captain_data": {"full_name": "Ilsa Marr", "callsign": "Cinder", "trait_line": "Concentrated fire improves weapon damage this turn."},
 		"tag": "UP", "danger": 2, "flags": flags, "weapons": ws if not ws.is_empty() else weapons(), "orders": ords if not ords.is_empty() else orders()}
 
 
@@ -188,7 +189,7 @@ func measure(h, label: String, need_strengths := false) -> Dictionary:
 	check(under == 0, "%s: every word at 4.5 to 1 or better over white and black boards (lowest %.2f, %s)" % [label, worst, worst_t])
 	check(overl == 0, "%s: no words overlap (%d)" % [label, overl])
 	check(out == 0, "%s: no word leaves the screen (%d)" % [label, out])
-	var art: Array = L.marks.filter(func(m): return m.k in ["ship", "glyph"])
+	var art: Array = L.marks.filter(func(m): return m.k in ["ship", "glyph", "portrait"])
 	var art_errors := []
 	for a in art:
 		var ar: Rect2 = a.r
@@ -197,7 +198,7 @@ func measure(h, label: String, need_strengths := false) -> Dictionary:
 		for it in items:
 			if ar.grow(-1).intersects(L.item_rect(it).grow(-1)):
 				art_errors.append("%s overlaps %s" % [a.id, it.t])
-	check(art_errors.is_empty(), "%s: silhouettes and glyphs fit; glyphs are at least 20 design px (%s)" % [label, ", ".join(art_errors)])
+	check(art_errors.is_empty(), "%s: silhouettes, glyphs and portraits fit; glyphs are at least 20 design px (%s)" % [label, ", ".join(art_errors)])
 	if need_strengths:
 		check(used.has("TEXT") and used.has("TEXT2") and used.has("TEXT3"), "%s: three text strengths in use" % label)
 	report.append(res)

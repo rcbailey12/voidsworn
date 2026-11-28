@@ -9,6 +9,7 @@ const GS := preload("res://ui/theme/glass_shell.gd")
 const Brand := preload("res://ui/battle/brand.gd")
 const Campaign := preload("res://campaign/campaign.gd")
 const Icons := preload("res://ui/battle/icons/keel_icons.gd")
+const CaptainFace := preload("res://ui/captain_face.gd")
 const EMBER := GS.MAP_EMBER
 const TEXT := GS.TEXT
 const TEXT2 := GS.TEXT2
@@ -46,6 +47,7 @@ var marks: Array[Dictionary] = []
 var hits: Array[Dictionary] = []
 var sheet_r := Rect2()
 var log_r := Rect2()
+var comms_slot := Rect2()
 var blockers: Array[Rect2] = []
 var fleet_fit := {}
 var fleet_page := 0
@@ -244,6 +246,7 @@ func layout() -> void:
 	marks.clear()
 	hits.clear()
 	blockers.clear()
+	comms_slot = Rect2()
 	# A startup or headless control can be too small even for the compact shelf.
 	var vs := size
 	var min_width := 2 * px(COMPACT_MARGIN) + px(FLEET_SLOT_W) + px(FLEET_PAGING_W)
@@ -306,6 +309,7 @@ func layout() -> void:
 		_orders(action_x, orders_y, action_w, foot, primary, compact)
 	_fleet(pad, foot, usable)
 	_log(vs.x - pad, shelf_y - px(12), minf(px(540), usable * 0.58))
+	_captain_card(pad, shelf_y, ship_w)
 	_hover = hit_at(get_local_mouse_position()) if is_inside_tree() else -1
 	_dirty = false
 
@@ -364,6 +368,10 @@ func _turn_block(r: Rect2) -> void:
 		bounds = _fit_corner(bounds, first_word)
 	marks[patch].r = Rect2(bounds.position - Vector2(px(16), px(12)), bounds.size + Vector2(px(39), px(32)))
 	blockers.append(bounds)
+	# Allow the full two-line objective and enemy progress strip so comms do not move when either changes.
+	var comms_y := r.position.y + px(26 + 34 + 7 + 15) + 2 * (ceilf(_text_h(f_body, 17)) + px(2))
+	if comms_y + px(80) <= sheet_r.position.y:
+		comms_slot = Rect2(x, comms_y, minf(px(420), w), px(80))
 	if not ask.is_empty():
 		_prompt(x, y + px(22), w)
 
@@ -450,6 +458,45 @@ func _nem_tip() -> String:
 	for w in weak:
 		s += "\nWeakness: %s (%s)." % [str(w[1]).trim_suffix("."), str(w[0]).to_lower()]
 	return s
+
+
+func _captain_card(x: float, shelf_y: float, ship_w: float) -> void:
+	var cap = ship.get("captain_data")
+	if not cap is Dictionary or cap.is_empty():
+		return
+	var width := minf(px(420), ship_w)
+	var face := px(48)
+	var copy_w := width - face - px(30)
+	if copy_w < px(60):
+		return
+	var call := str(cap.get("callsign", ""))
+	var full_name := str(cap.get("full_name", "Captain"))
+	var trait_line := str(cap.get("trait_line", ""))
+	var card_r := Rect2(x, shelf_y - px(98), width, px(86))
+	# Attach to the existing selected-ship shelf. If its ST-A loss strip is present, stack above that strip.
+	for i in blockers.size():
+		var old_y := card_r.position.y
+		for blocker in blockers:
+			if card_r.intersects(blocker):
+				card_r.position.y = minf(card_r.position.y, blocker.position.y - card_r.size.y - px(5))
+		if is_equal_approx(old_y, card_r.position.y):
+			break
+	if card_r.position.y < comms_slot.end.y + px(8):
+		return
+	_veil(card_r, Brand.KEEL_VEIL, Vector4(0, px(5), px(12), px(5)))
+	marks.append({"k": "portrait", "id": "captain", "r": Rect2(card_r.position + Vector2(0, px(19)), Vector2.ONE * face),
+		"tex": CaptainFace.captain(cap)})
+	var tx := x + face + px(10)
+	var ty := card_r.position.y + px(7)
+	_text(tx, ty, _trim(call if not call.is_empty() else full_name, f_med, 19, copy_w), f_med, 19, TEXT)
+	var trait_y := ty + ceilf(_text_h(f_med, 19)) + px(2)
+	if trait_line.is_empty():
+		_text(tx, trait_y, _trim("No captain perk yet", f_body, 17, copy_w), f_body, 17, TEXT2)
+	else:
+		_paragraph(tx, trait_y, trait_line, copy_w, 2)
+	var tip := full_name + (" / " + call if not call.is_empty() else "")
+	_hit(card_r, "", null, tip + ("\n" + trait_line if not trait_line.is_empty() else ""))
+	blockers.append(card_r)
 
 
 func _ship_block(r: Rect2, compact: bool) -> void:
@@ -956,6 +1003,7 @@ func _draw() -> void:
 					tint = GS.ON_EMBER
 				draw_texture_rect(Icons.glyph(m.id), m.r, false, tint)
 			"ship": _paint_silhouette(m)
+			"portrait": draw_texture_rect(m.tex, m.r, false)
 			"action":
 				if primary and hr == m.r:
 					draw_rect(m.r, fill)

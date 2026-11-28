@@ -4327,6 +4327,9 @@ func finishBattle(result: String) -> void:
 		if u["side"] == "enemy" and jt(u.get("dead")) and not jt(u.get("fled")) and not jt(u.get("isSq")) and u.get("ship") == null: kills += 1
 	summary["kills"] = kills
 	RUN["stats"]["kills"] = float(RUN["stats"]["kills"]) + kills
+	var killmail_by_unit := {}
+	for record in B.get("lost_ship_records", []):
+		killmail_by_unit[record["battle_unit_id"]] = record
 	for u in B["units"]:
 		if u.get("ship") == null: continue
 		var ship = u["ship"]
@@ -4341,7 +4344,11 @@ func finishBattle(result: String) -> void:
 				loss["escaped"] = true
 				RUN["reserve"] = or_(RUN.get("reserve"), []); RUN["reserve"].append({"cap": ship["cap"], "from": ship["name"]})
 				summary["escaped"] = or_(summary.get("escaped"), []); summary["escaped"].append(ship["cap"]["full_name"])
-			else: RUN["fallen"].append({"cap": ship["cap"].duplicate(true), "ship": ship["name"], "sector": RUN["sector"]})
+			else:
+				var fallen := {"cap": ship["cap"].duplicate(true), "ship": ship["name"], "sector": RUN["sector"]}
+				if killmail_by_unit.has(u["id"]):
+					fallen["loss"] = killmail_by_unit[u["id"]].duplicate(true)
+				RUN["fallen"].append(fallen)
 			continue
 		ship["hp"] = clampv(jsround(float(u["hp"])), 1, derive(ship)["maxHp"])
 		if result == "retreat":

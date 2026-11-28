@@ -95,6 +95,9 @@ var legend_open := false
 var _legend := {}                   # {title, desc, rows: [[name, colour, effect]]}
 
 var ledger                          # the orders sheet (ledger.gd): what the player sees
+const CommsBanner := preload("res://ui/battle/comms_banner.gd")
+var comms: CommsBanner
+var comms_still := false
 var _log_lines: Array = []          # the log as plain lines, for the sheet's last three
 var ask_panel: Control              # issue 529: the sheet while a tree prompt is open in it, else null
 var ask_key := ""
@@ -144,6 +147,13 @@ func _build_all() -> void:
 	_build_chip()
 	_build_legend()
 	_build_tip()
+	if comms == null:
+		comms = CommsBanner.new()
+		comms.name = "TurnCorner"
+	else:
+		# Keep the active line and backlog when a scale change replaces the HUD root.
+		comms.get_parent().remove_child(comms)
+	root.add_child(comms)
 	# the full log (L) sits over the sheet's corner; the banner, toasts, tips and dialogs over everything
 	root.move_child(log_panel, ledger.get_index() + 1)
 
@@ -891,6 +901,9 @@ func hud_blockers() -> Array:
 	for p in [log_panel, tipcard, legend] + bars:
 		if p != null and is_instance_valid(p) and (p as Control).is_visible_in_tree():
 			out.append((p as Control).get_global_rect())
+	# Ship labels can move out of the way, but the banner is never included in over_ui().
+	if is_instance_valid(comms) and comms.is_visible_in_tree() and comms.modulate.a > 0.5:
+		out.append(comms.get_global_rect())
 	return out
 
 
@@ -1268,6 +1281,11 @@ func _layout() -> void:
 	var vs := root.get_viewport_rect().size
 	var col := _column()
 	_layout_log()
+	if not comms.current.is_empty() or not comms.pending.is_empty():
+		ledger.ensure_layout()
+		comms.place(ledger.comms_slot, k, comms_still, ledger.visible and not log_open
+			and not is_instance_valid(menu) and not is_instance_valid(endcard)
+			and not bool(_last.get("loading", false)) and ledger.ask.is_empty())
 	# top right, under the Nemesis line: the terrain key, right aligned at the sheet's right margin
 	var right := vs.x - s(52)
 	var below := float(s(150))

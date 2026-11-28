@@ -17,6 +17,7 @@ const SCRIPTS := [
 	"res://fx/fx_hull.gd",
 	"res://fx/terrain_scorch.gd",
 	"res://portraits/portraits.gd",
+	"res://ui/captain_face.gd",
 	"res://world/world.gd",
 	"res://world/world_bake.gd",
 	"res://world/world_planet.gd",
