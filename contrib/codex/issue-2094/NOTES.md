@@ -1,5 +1,13 @@
 # Vanguard cruiser redraw, issue 2094
 
+## Run 6
+
+Renamed the two module seams to `H9E_bandseam_*` and their four trim rings to `H9E_band_*` so the Directorate paint stack finds them. The approved geometry, silhouette and cannon are unchanged.
+
+CPU Blender reproduced the old missing-band error and confirmed two bands at the sheet's seam stations, each widened on both sides by its trim rings. Stage 5 setup and material routing passed with baking disabled. Concept import, the recipe part audit (115 parts, zero guns aimed into the hull), its self-test, the sheet contract and the recipe standing self-test passed. No GPU bake or publish.
+
+The full standing run recorded 125 passes, two known baseline results and one Windows fixture failure. `lane_tools_refresh_selftest` hit `kill EPERM` during cleanup and passed on its own rerun. No runner files changed.
+
 ## Run 5
 
 The H9E now leads with a heavy octagonal collar and a stepped bore around the recessed Directorate emitter. The octagonal jacket has raised machined plate courses and longitudinal rails that run into the saddle. All four raised steel-blue hoops have recessed blue contacts. The second hoop moved aft to preserve both lances' full sweeps. The original saddle, blue flank line, drive row, interior layout and paint stack are unchanged.

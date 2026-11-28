@@ -239,8 +239,8 @@ def finish_shell(K, HP):
     for i, x in enumerate(JOINTS, 1):
         loop = [(y, z) for _, y, z in ring(x)]
         for j, (lo, hi) in enumerate(((x - 0.13, x - 0.036), (x + 0.036, x + 0.13))):
-            tube(K, f'H9E_joint_{i}_{j}', lo, hi, offset_loop(loop, 0.066), offset_loop(loop, -0.09), 'htrim')
-        tube(K, f'H9E_joint_recess_{i}', x - 0.038, x + 0.038,
+            tube(K, f'H9E_band_{i}_{j}', lo, hi, offset_loop(loop, 0.066), offset_loop(loop, -0.09), 'htrim')
+        tube(K, f'H9E_bandseam_{i}', x - 0.038, x + 0.038,
              offset_loop(loop, 0.026), offset_loop(loop, -0.044), 'hgrey2')
     edges = (KEYS[0][0], *JOINTS, TRANSOM)
     for i, (hi, lo) in enumerate(zip(edges, edges[1:]), 1):
