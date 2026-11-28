@@ -80,7 +80,7 @@ func _scoring() -> void:
 
 func _battle(faction: String, admiral: String) -> API:
 	c.META = c.defaultMeta()
-	API.JSM.rnd_seed(2082)
+	c.seed_rng(2082)
 	c.newRun(admiral, faction)
 	var api := API.new()
 	check(api.load_rules() == "", "rules loaded")
@@ -104,7 +104,7 @@ func _hit(api: API, from: Dictionary, target: Dictionary, amount: float) -> void
 	gun.merge({"pierce": 0.0, "ion": false, "crit": -1000, "acid": false, "ignite": false}, true)
 	api.R.landVolley(from, gun, target, {"shots": [true], "quad": 0, "called": null,
 		"res": {"hull": 0, "shield": 0, "hits": 0, "misses": 0, "crits": 0, "sys": null},
-		"shBefore": target["shp"], "per": func(_rear): return amount, "torp": false})
+		"shBefore": target["shp"], "per": func(_rear, _skill_bonus): return amount, "torp": false})
 	api.R.flush_deferred()
 
 
