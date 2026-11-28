@@ -639,9 +639,23 @@ func _target_block(x: float, y: float, w: float, compact: bool) -> float:
 		return y
 	var nm := str(target.get("name", ""))
 	var col := NEM if bool(target.get("nem", false)) or _is_nem(nm) else TEXT
-	_text(x, y, "Target", f_body, 17, TEXT3, "join")
+	var called: Dictionary = target.get("called", {})
+	var opts := _called_opts(called) if not called.is_empty() else []
+	var called_w := _called_w(opts)
+	var two_rows := not opts.is_empty() and called_w > w
+	if opts.is_empty() or _width("Target", f_body, 17) + px(14) + called_w <= w:
+		_text(x, y, "Target", f_body, 17, TEXT3, "join")
+		if not opts.is_empty():
+			_called_row(x + w - called_w, y, called, opts)
+	elif two_rows:
+		_called_row(x, y, called, opts.slice(0, 2))
+		y += px(22)
+		_called_row(x, y, called, opts.slice(2))
+	else:
+		_called_row(x, y, called, opts)
 	_name(Rect2(x, y + px(22), w, px(33)), nm, 30, col)
-	_hit(Rect2(x, y, w, px(54)), "", null, _target_tip())
+	var name_y := y if opts.is_empty() else y + px(21)
+	_hit(Rect2(x, name_y, w, y + px(54) - name_y), "", null, _target_tip())
 	var bearing := int(target.get("bearing", 0))
 	if bearing <= 0:
 		return _paragraph(x, y + px(61), plain(str(target.get("line", ""))), w, 3)
@@ -655,10 +669,20 @@ func _target_block(x: float, y: float, w: float, compact: bool) -> float:
 	var wrap_hull := shield == 0 and _width(summary, f_num, 17) > w
 	if wrap_hull:
 		summary = summary.trim_suffix(", all to hull")
-	var inline := not compact and ow + px(12) + _width(summary, f_num, 17) <= w
-	_text(x + (ow + px(12) if inline else 0.0), yy + px(12 if inline else 41), _trim(summary, f_num, 17, w), f_num, 17, TEXT)
+	var cost := "-%d to hit, +%d crit" % [int(called.get("aim", 0)), int(called.get("crit", 0))]
+	var cost_inline := not opts.is_empty() and (compact or two_rows)
+	var inline := not compact and not cost_inline and ow + px(12) + _width(summary, f_num, 17) <= w
+	if cost_inline:
+		var cost_x := ow + px(8)
+		if _width(cost, f_body, 17) > w - cost_x:
+			cost = "-%d aim, +%d crit" % [int(called.get("aim", 0)), int(called.get("crit", 0))]
+		_text(x + cost_x, yy + px(12), _trim(cost, f_body, 17, w - cost_x), f_body, 17, TEXT if called.get("sec", "") != "" else TEXT2)
+	if not (two_rows and shield > 0):
+		_text(x + (ow + px(12) if inline else 0.0), yy + px(12 if inline else 41), _trim(summary, f_num, 17, w), f_num, 17, TEXT)
 	var by := yy + px(41 if inline else 67)
 	if shield > 0:
+		if two_rows:
+			by = yy + px(41)
 		_glyph("shield", Vector2(x, by), 20, GLACIER)
 		var sw := _text(x + px(24), by, "%d to shields" % shield, f_num, 17, GLACIER, "shield")
 		var hx := x + sw + px(35)
@@ -679,8 +703,61 @@ func _target_block(x: float, y: float, w: float, compact: bool) -> float:
 	var tip := "%d%% to hit%s." % [int(target.get("hit", 0)), " with " + gun if gun != "" else ""]
 	if bearing > 1:
 		tip += " Damage is for all %d bearing guns." % bearing
-	_hit(Rect2(x, yy, w, by - yy), "", null, tip + "\n" + _target_tip())
+	_hit(Rect2(x, yy, w, by - yy), "", null, tip + "\n" + _target_tip() + ("\n" + _called_tip(called) if cost_inline else ""))
+	if not opts.is_empty() and not cost_inline:
+		var picked := str(called.get("sec", ""))
+		var say := ("Priority section" if picked == "" else _called_name(opts, picked)) + ": " + cost
+		_text(x, by, _trim(say, f_body, 17, w), f_body, 17, TEXT if picked != "" else TEXT2)
+		_hit(Rect2(x, by, w, px(23)), "", null, _called_tip(called))
+		by += px(23)
 	return by
+
+
+# Issue 2033 (AAA item 7): the priority pick. "Any" fires as before; Weapons, Midship or Engines send every hit of the
+# pick to that section, at the aim cost the rules' table sets (shown in the odds). A destroyed section cannot be called.
+const CALLED_GAP := 12.0
+
+
+func _called_opts(c: Dictionary) -> Array:
+	return [{"id": "", "name": "Any", "ok": true}] + (c.get("secs", []) as Array)
+
+
+func _called_name(opts: Array, id: String) -> String:
+	for o in opts:
+		if str(o.id) == id:
+			return str(o.name)
+	return id
+
+
+func _called_w(opts: Array) -> float:
+	var w := 0.0
+	for o in opts:
+		w += _width(str(o.name), f_med, 17) + px(CALLED_GAP)
+	return maxf(0.0, w - px(CALLED_GAP))
+
+
+func _called_tip(c: Dictionary) -> String:
+	return ("Priority section: hull hits damage the section you call, and critical hull hits damage its system. "
+		+ "It costs %d to hit and adds %d to the critical chance. Destroying the section costs the ship its forward guns (Weapons), "
+		+ "its flank guns and shield generator (Midship) or its speed (Engines). Any fires as usual.") % [int(c.get("aim", 0)), int(c.get("crit", 0))]
+
+
+func _called_row(x: float, y: float, c: Dictionary, opts: Array) -> void:
+	var picked := str(c.get("sec", ""))
+	var mine := mine_turn() and ask.is_empty()
+	var h := ceilf(_text_h(f_med, 17))
+	for o in opts:
+		var id := str(o.id)
+		var ok := bool(o.get("ok", true))
+		var on := id == picked
+		var lab := str(o.name)
+		var lw := _width(lab, f_med, 17)
+		_text(x, y, lab, f_med, 17, EMBER if on else (TEXT if ok else TEXT3), "" if ok or on else "join")
+		if on:
+			_rect(Rect2(x, y + h, lw, px(2)), EMBER)
+		var tip := _called_tip(c) if id == "" else ("%s: hull hits damage this section (-%d to hit, +%d crit)." % [lab, int(c.get("aim", 0)), int(c.get("crit", 0))] if ok else "%s: already destroyed." % lab)
+		_hit(Rect2(x - px(4), y - px(2), lw + px(8), h + px(6)), "called" if mine and ok else "", id, tip)
+		x += lw + px(CALLED_GAP)
 
 
 func _target_tip() -> String:
