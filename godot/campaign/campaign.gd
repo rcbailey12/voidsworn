@@ -4411,7 +4411,12 @@ func finishBattle(result: String) -> void:
 		var p_line: String = str({"chorus": "Your surviving spores coalesce into a fresh " + ship_bare(str(sh2["name"])) + " to carry the brood.", "deathless": "An automated reserve berth dispatches " + ship_with_article(str(sh2["name"])) + " to hold the uplink.", "corsair": "A straggling raider from the outer belt joins your pack to carry the flag: " + ship_with_article(str(sh2["name"])) + ".", "ithar": "A distant picket answers your distress pulse to carry the standard: " + ship_with_article(str(sh2["name"])) + "."}.get(str(RUN["fac"]), "An allied sector patrol sends " + ship_with_article(str(sh2["name"])) + " to carry the flag."))
 		toast("The last ships traded themselves for the win. " + p_line); tel("reinforced", {"why": "pyrrhic"})
 	if result == "loss" or RUN["fleet"].size() == 0:
-		endRun(false); return
+		endRun(false)
+		if result == "loss" and summary.has("ship_rollups"):
+			var acts := []
+			A(acts, "closeModal")
+			show_modal("defeat_report", {"summary": summary, "weaknessConfirmed": msg.filter(func(line): return line.begins_with("Weakness confirmed: "))}, acts)
+		return
 	if result == "retreat":
 		retreatBack(); mapScreen(); toast("The fleet jumps clear, back to the last stop. The fight is still on the map."); return   # issue 1480 (R381)
 	rewardFlow(summary)
