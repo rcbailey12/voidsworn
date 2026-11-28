@@ -1,4 +1,4 @@
-# R336 PC cleanup. PowerShell 5.1. The Board reads --dry-run before the first live run.
+# R336 PC cleanup. PowerShell 5.1. With no trigger, preview cleanup only.
 . (Join-Path $PSScriptRoot 'runner_common.ps1') cleanup-library
 . (Join-Path $PSScriptRoot 'janitor_salvage.ps1')
 . (Join-Path $PSScriptRoot 'janitor_neon.ps1')
@@ -780,12 +780,12 @@ if ($trigger -eq '--install-task') {
   catch { Write-Host "janitor task setup failed: $($_.Exception.Message)"; exit 1 }
   exit 0
 }
-if ($args.Count -gt 1 -or $trigger -notin @($null,'--dry-run','--nightly','--low-space','--after-job')) {
-  Write-Host 'usage: janitor.bat [--dry-run | --nightly | --low-space | --after-job]'
+$automatic = $trigger -in @('--nightly','--low-space','--after-job')
+if ($args.Count -gt 1 -or (-not $automatic -and $trigger -notin @($null,'--dry-run','--live'))) {
+  Write-Host 'usage: janitor.bat [--dry-run | --live | --nightly | --low-space | --after-job]'
   exit 2
 }
-$dryRun = $trigger -eq '--dry-run'
-$automatic = $trigger -in @('--nightly','--low-space','--after-job')
+$dryRun = -not ($automatic -or $trigger -eq '--live')
 $env:GIT_TERMINAL_PROMPT = '0'
 $env:GCM_INTERACTIVE = 'never'
 $root = Join-Path $env:USERPROFILE 'Downloads/voidsworn_test'

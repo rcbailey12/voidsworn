@@ -666,12 +666,16 @@ try {
   const beforeScan = oldCopies.map(checkoutSnapshot);
   const dry = runJanitor('--dry-run');
   assert.deepEqual(oldCopies.map(checkoutSnapshot), beforeScan);
-  const secondDry = runJanitor('--dry-run');
+  const secondDry = runJanitor();
+  assert.match(secondDry, /^janitor dry run at /m, 'no trigger must default to a preview');
   assert.deepEqual(oldCopies.map(checkoutSnapshot), beforeScan);
   for (const dir of oldCopies) {
     assert.equal(decision(secondDry, dir, 'would remove'), decision(dry, dir, 'would remove'));
   }
-  for (const dir of remove) decision(dry, dir, 'would remove');
+  for (const dir of remove) {
+    decision(dry, dir, 'would remove');
+    assert(fs.existsSync(dir), `no-arg preview removed ${dir}`);
+  }
   for (const dir of newLaneKeeps) assert(dry.includes(`kept checkout retained (newest): ${dir} (`), `janitor skipped ${dir}`);
   for (const dir of preserve) decision(dry, dir, dir.startsWith(temp + path.sep) || /[\\/](?:opus\d+|pt\d{4})[^\\/]*$/.test(dir) ? 'would keep' : (jobCheckoutsKept.includes(dir) ? 'retained' : 'kept'));
   for (const dir of lookalikes) {
@@ -862,13 +866,13 @@ try {
     const outside = path.join(root, 'resume-target.txt');
     write(outside, 'not the janitor\'s file\n');
     fs.symlinkSync(outside, resumeFile);
-    const linked = runJanitor('', lockPath, { PC_JANITOR_CAP_SECONDS: '0' });
+    const linked = runJanitor('--live', lockPath, { PC_JANITOR_CAP_SECONDS: '0' });
     assert.match(linked, /resume file (?:ignored|not written): .* is not a plain file/, linked);
     assert.equal(read(outside), 'not the janitor\'s file\n', 'the link target is untouched');
     assert(fs.lstatSync(resumeFile).isSymbolicLink(), 'the link stays a link');
     fs.rmSync(resumeFile);
   }
-  const capLive = runJanitor('', lockPath, { PC_JANITOR_CAP_SECONDS: '0' });
+  const capLive = runJanitor('--live', lockPath, { PC_JANITOR_CAP_SECONDS: '0' });
   const stopped = [...capLive.matchAll(/time cap: stopped the (lane|temp|root) folders at (\S+) after/g)].map(m => m[1] + ' ' + m[2]);
   assert.equal(stopped.length, 3, 'the lanes, TEMP and job folders each stop at a zero cap: ' + capLive);
   assert(!fs.existsSync(resumeFile + '.new'), 'no half-written resume file is left');
@@ -969,13 +973,13 @@ try {
     const inUse = scratch(temp, 'issue-309-in-use', 4);
     markOwned(inUse, 4);
     const heldFile = path.join(inUse, 'nested', 'proof.txt');
-    decision(runJanitor('', heldFile), inUse, 'kept');
+    decision(runJanitor('--live', heldFile), inUse, 'kept');
     assert.equal(read(heldFile), 'issue-309-in-use');
   }
   const pausedTemp = scratch(temp, 'issue-310-pause', 4);
   markOwned(pausedTemp, 4);
   write(flag, 'GPU not cleared: paused by the Board at 12:30');
-  assert.match(runJanitor(), /janitor skipped during the PC pause/);
+  assert.match(runJanitor('--live'), /janitor skipped during the PC pause/);
   assert(fs.existsSync(pausedTemp));
   console.log('PASS janitor: dry and live decisions, retained edits and history, issue locks, age, safe paths, and the automatic rate limit');
 } catch (error) {
