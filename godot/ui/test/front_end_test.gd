@@ -17,6 +17,7 @@ const Choice := preload("res://ui/campaign/choice_button.gd")
 const MapChart := preload("res://ui/campaign/map3d.gd")
 const RowHover := preload("res://ui/campaign/row_hover.gd")
 const Podium := preload("res://ui/campaign/flagship_podium.gd")
+const FrontEndShots := preload("res://ui/test/front_end_shots.gd")
 const ShipView := preload("res://render/ship_view.gd")
 const WorldShaders := preload("res://world/world_shaders.gd")
 var fails := 0
@@ -89,11 +90,25 @@ func run() -> void:
 	await title_checks(snd)
 	await campaign_checks(snd)
 	await flagship_checks()
+	c37_caption_checks()
 	music_checks()
 	showcase_checks()
 	Kit.sound = null; UiScale.set_player(1.0)
 	print("Front end: " + ("PASS" if fails == 0 else "FAIL (%d)" % fails))
 	quit(0 if fails == 0 else 1)
+
+
+func c37_caption_checks() -> void:
+	var source_commit := "a1b2c3d4e5f67890123456789abcdef0123456789"
+	var expected := "C37, run 2, a1b2c3d4e5f6"
+	check(FrontEndShots.c37_caption("a1b2c3d", source_commit) == expected
+		and FrontEndShots.c37_caption(source_commit, source_commit) == expected,
+		"C37 short and full tags produce the provenance commit caption")
+	check(FrontEndShots.c37_caption("a1b2c3d4e5f7", source_commit).is_empty(),
+		"C37 rejects a valid-looking tag from a different commit")
+	check(FrontEndShots.c37_caption("", source_commit).is_empty()
+		and FrontEndShots.c37_caption("a1b2c3d", "").is_empty(),
+		"C37 rejects missing reviewed commit or provenance")
 
 
 class PodiumCampaign extends RefCounted:

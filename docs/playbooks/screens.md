@@ -262,6 +262,8 @@ Ryan picked these from the Council triage sheet on Nov 23 2026 (board/review_112
   projected bounds with the old camera and checks the full turn at two stage widths. After green checks and review,
   capture the installed Sunward flagship through `tmo.bat` using `front_end_shots.gd` with
   `<shots folder> <reviewed commit> --no-showcase --only=C37 --expect=1920x1080` on Forward+.
+  The reviewed commit must match the provenance commit or its prefix. The caption uses the same 12-character commit
+  prefix as the picture footer.
 - **Reward card (C12).** Rebuilt in the orders style (square near-black, Big Shoulders title, key after the words, a hull
   picture per wreck). A mock-up goes to Ryan first (9.10).
 - **Game icon (C26).** A Hollow Sun mark. Ryan picks one of the themed variations (C26b sheet) before the exe icon and boot

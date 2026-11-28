@@ -4,9 +4,10 @@ extends SceneTree
 # godot --path godot --resolution 1920x1080 --script res://ui/test/front_end_shots.gd -- <out dir> [tag] [--no-showcase]
 #   [--only=F5] [--expect=1920x1080]   (--expect: every frame must be that size before the shrink, or the run fails)
 # In the cloud run it under xvfb-run with --rendering-driver opengl3. Each picture is 1280x720 with its code name on it.
-# C37: pass the captured commit as [tag], --no-showcase --only=C37 --expect=1920x1080. Needs an installed hull and Forward+.
+# C37: pass the reviewed commit as [tag], --no-showcase --only=C37 --expect=1920x1080. Needs an installed hull and Forward+.
 
 const UiScale := preload("res://ui/ui_scale.gd")
+const PictureProvenance := preload("res://tools/picture_provenance.gd")
 var out := ""
 var tag := ""
 var main: Node
@@ -48,7 +49,7 @@ func _shot(name: String, caption: String) -> void:
 	var cap := CanvasLayer.new()
 	cap.layer = 120
 	var l := Label.new()
-	l.text = "C37, run 2, " + tag if name == "C37" else name + "   " + caption + ("   " + tag if tag != "" else "")
+	l.text = caption if name == "C37" else name + "   " + caption + ("   " + tag if tag != "" else "")
 	l.add_theme_font_size_override("font_size", 22)
 	l.add_theme_color_override("font_color", Color(1, 1, 1))
 	l.add_theme_color_override("font_outline_color", Color(0, 0, 0))
@@ -66,7 +67,7 @@ func _shot(name: String, caption: String) -> void:
 	if img.get_height() > 720:
 		img.resize(int(round(img.get_width() * 720.0 / img.get_height())), 720, Image.INTERPOLATE_LANCZOS)
 	var p := out.path_join(name + ".png")
-	var err: Error = preload("res://tools/picture_provenance.gd").save_png(img, p, preload("res://tools/picture_provenance.gd").capture_stage())
+	var err: Error = preload("res://tools/picture_provenance.gd").save_png(img, p, PictureProvenance.capture_stage())
 	if err != OK: _failed += 1; printerr("[front-end-shots] FAIL could not save ", p, " (", error_string(err), ")")
 	else: print("[front-end-shots] saved ", p)
 	cap.queue_free()
@@ -90,10 +91,23 @@ func _hold_window() -> void:
 var _expect := Vector2i.ZERO
 
 
+static func c37_caption(reviewed_commit: String, source_commit: String) -> String:
+	var commit := RegEx.create_from_string("\\A[0-9a-f]{7,64}\\z")
+	if commit.search(reviewed_commit) == null or not source_commit.begins_with(reviewed_commit):
+		return ""
+	return "C37, run 2, " + source_commit.left(12)
+
+
 func _capture_flagship_c37() -> void:
-	var commit := RegEx.create_from_string("^[0-9a-f]{7,64}$")
-	if commit.search(tag) == null or RenderingServer.get_current_rendering_method() != "forward_plus":
-		printerr("[front-end-shots] FAIL C37 needs a commit tag and Forward+")
+	if RenderingServer.get_current_rendering_method() != "forward_plus":
+		printerr("[front-end-shots] FAIL C37 needs Forward+")
+		main.quit_clean(1)
+		return
+	# Read the same cached source the PNG footer and sidecar use.
+	var source_commit: String = PictureProvenance._context().get("source_commit", "")
+	var caption := c37_caption(tag, source_commit)
+	if caption.is_empty():
+		printerr("[front-end-shots] FAIL C37 needs a reviewed commit tag that matches the picture provenance commit")
 		main.quit_clean(1)
 		return
 	main.new_run({})
@@ -105,7 +119,7 @@ func _capture_flagship_c37() -> void:
 		await _wait(0.8)
 		var podium = host.ui.podium
 		if podium != null and podium.installed:
-			await _shot("C37", "")
+			await _shot("C37", caption)
 		else:
 			_failed += 1
 			printerr("[front-end-shots] FAIL C37 needs the installed Sunward flagship")
