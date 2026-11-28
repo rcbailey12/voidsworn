@@ -10,7 +10,7 @@ extends Node
 
 # issue 1518 (LOAD29 warm: a close 5 s after launch was seen only after 7.7 s, before the game's first frame): the
 # battle scene and the campaign host are not preloaded with this script, since compiling them held the window unanswered
-# at the start; the battle scene is read on a worker after launch (_battle_packed) and the host is loaded when needed
+# at the start. A windowed launch starts their worker reads after the first draw.
 const BATTLE_SCENE := "res://scenes/battle/battle.tscn"
 const BATTLE_SCRIPT := "res://scenes/battle/battle.gd"
 const HOST_SCRIPT := "res://main/campaign_host.gd"
@@ -129,8 +129,9 @@ func quit_clean(code := 0, route := "menu") -> void:
 		_retired = null
 	if music != null and is_instance_valid(music) and music.has_method("release"):
 		music.release()
-	if ResourceLoader.has_cached(BATTLE_SCRIPT):
-		load(BATTLE_SCRIPT).drop_sky_pending()   # a battle script never read has no sky read to drop
+	# The sky read starts only after the battle scene is collected. Do not fetch its script during a scene read.
+	if not _scene_reading and ResourceLoader.has_cached(BATTLE_SCRIPT):
+		load(BATTLE_SCRIPT).drop_sky_pending()
 	if _scene_reading and ResourceLoader.load_threaded_get_status(BATTLE_SCENE) != ResourceLoader.THREAD_LOAD_IN_PROGRESS:
 		ResourceLoader.load_threaded_get(BATTLE_SCENE)
 		_scene_reading = false
@@ -201,18 +202,42 @@ func _ready() -> void:
 	RenderingServer.frame_pre_draw.connect(_on_frame_pre_draw)   # issue 1434: the close's frame log splits the draw
 	RenderingServer.frame_post_draw.connect(_on_frame_post_draw)
 	_args()
-	if DisplayServer.get_name() != "headless":
+	if args.has("quit-after"):
+		# a hard stop for test jobs, even on the first paint (real time, whatever the clock speed)
+		var lim := float(args["quit-after"])
+		get_tree().create_timer(lim, true, false, true).timeout.connect(func() -> void:
+			print("[main] quit-after %d s reached, quitting" % int(lim))
+			quit_clean(3))
+	if _wait_for_first_draw():
 		print("[main] ready at %d ms after the engine started" % Time.get_ticks_msec())   # issue 1518 (LOAD29): the launch's own share
-		# issue 1518: the sound clips and the battle scene start loading on worker threads now, so the frame that builds the
-		# first battle only collects them
-		# the campaign host first: the title waits on it alone (Fable on 98926849)
-		if not ResourceLoader.has_cached(HOST_SCRIPT) and ResourceLoader.load_threaded_request(HOST_SCRIPT) == OK:
-			_host_reading = true   # read on a worker; a load() of it meanwhile waits only for what is not read yet
-		Sfx.prefetch()
-		if ResourceLoader.load_threaded_request(BATTLE_SCENE) == OK:
-			_scene_reading = true   # the sky read starts once the battle script is read (battle_parts_ready)
-		if ResourceLoader.load_threaded_request(FX_SCRIPT) == OK:
-			_fx_reading = true
+		_launch_battle_pending = _starts_quick_battle()
+		_launch_after_first_frame()
+	else:
+		_finish_launch()
+
+
+func _wait_for_first_draw() -> bool:
+	return DisplayServer.get_name() != "headless"
+
+
+func _starts_quick_battle() -> bool:
+	return (not args.has("player-path") and not args.has("check-export") and not args.has("bot-runs")
+			and (args.has("battle") or args.has("scenario") or args.has("shots") or args.has("bot") or args.has("seed")))
+
+
+# CLOSE5 saw no process frames between ready and the delayed WM_CLOSE. Draw the window before changing its mode
+# or starting resource reads. Give Windows another message turn before doing launch work, not inside the draw callback.
+func _launch_after_first_frame() -> void:
+	await RenderingServer.frame_post_draw
+	if quitting:
+		return
+	print("[main] first window frame at %d ms after the engine started" % Time.get_ticks_msec())
+	await get_tree().process_frame
+	if not quitting:
+		_finish_launch(true)
+
+
+func _finish_launch(prefetch := false) -> void:
 	if args.has("player-path"):
 		var recorder = load("res://main/player_path.gd")
 		var profile_error: String = recorder.prepare_profile()
@@ -238,33 +263,46 @@ func _ready() -> void:
 		add_child(music)
 		music.set_volume(float(settings.get("music_volume", 0.7)))
 		music.set_on(bool(settings.get("music", true)))
-	if not args.has("bot-runs") and ResourceLoader.exists("res://audio/sfx.gd"):
-		ui_sound = load("res://audio/sfx.gd").new()
+	if not args.has("bot-runs"):
+		ui_sound = Sfx.new()
 		ui_sound.only = "ui_"
 		ui_sound.name = "UiSound"
 		add_child(ui_sound)
 		OrdersKit.sound = ui_sound
 		_settings_to_ui_sound()
-	if args.has("quit-after"):
-		# a hard stop for test jobs, on every screen (real time, whatever the clock speed)
-		var lim := float(args["quit-after"])
-		get_tree().create_timer(lim, true, false, true).timeout.connect(func() -> void:
-			print("[main] quit-after %d s reached, quitting" % int(lim))
-			quit_clean(3))
+	if prefetch:
+		# Let the display change run through a frame before the workers compete for the loader.
+		await get_tree().process_frame
+		if quitting:
+			return
+		_prefetch_launch()
 	if player_path != null:
 		player_path.start.call_deferred(self)
 	elif args.has("check-export"):
 		_check_export.call_deferred()
 	elif bot_mode:
 		_bot_runs.call_deferred()
-	elif args.has("battle") or args.has("scenario") or args.has("shots") or args.has("bot") or args.has("seed"):
+	elif _starts_quick_battle():
 		# straight into a battle (test jobs, screenshot jobs): the battle reads the same arguments
-		if DisplayServer.get_name() != "headless":
-			_quick_battle_after_first_frame()
-		else:
-			quick_battle()
+		if prefetch:
+			var ready := await battle_parts_ready()
+			_launch_battle_pending = false
+			if not ready:
+				return
+		quick_battle()
 	else:
 		show_title()
+
+
+func _prefetch_launch() -> void:
+	# The title only waits on the campaign host. The scene, effects and sound warm up in the background.
+	if not ResourceLoader.has_cached(HOST_SCRIPT) and ResourceLoader.load_threaded_request(HOST_SCRIPT) == OK:
+		_host_reading = true
+	Sfx.prefetch()
+	if ResourceLoader.load_threaded_request(BATTLE_SCENE) == OK:
+		_scene_reading = true   # battle_parts_ready starts the sky read once the scene is read
+	if ResourceLoader.load_threaded_request(FX_SCRIPT) == OK:
+		_fx_reading = true
 
 
 # --check-export (run on the exported build): no test trees in the package, and the real parts of the game are in it
@@ -666,17 +704,6 @@ func new_run(opts := {}) -> void:
 
 static func campaign_has_save() -> bool:
 	return load(HOST_SCRIPT).has_save()
-
-
-# issue 1518 (LOAD22 warm: a close during the start hid after 2.7 s, before the game's first frame): the window draws
-# and answers its messages once before the battle is built, so a close that comes during that build is seen at once
-func _quick_battle_after_first_frame() -> void:
-	_launch_battle_pending = true
-	await RenderingServer.frame_post_draw
-	var ready := await battle_parts_ready()
-	_launch_battle_pending = false
-	if ready:
-		quick_battle()
 
 
 # issue 1518 (cloud trace: a battle's first setup spent 0.4 s compiling the effects script, inside one frame): the game
