@@ -9,15 +9,15 @@ const absolute = p => p && (win ? /^(?:[a-z]:[\\/]|[\\/]{2})/i.test(p) : path.is
 
 function shardScratch() {
   // Use native path APIs. Git Bash mkdir can be denied on sandbox paths with doubled backslashes.
-  // An explicit CI root must work. Only look for a fallback when none was set.
-  const bases = env.RUNNER_TEMP ? [env.RUNNER_TEMP] : [env.TMPDIR, env.TEMP, env.TMP,
+  const bases = [env.RUNNER_TEMP, env.TMPDIR, env.TEMP, env.TMP,
     win ? (env.USERPROFILE && path.join(env.USERPROFILE, 'AppData', 'Local', 'Temp')) : '/tmp'];
-  for (const base of bases) {
+  for (const base of new Set(bases)) {
     if (!absolute(base)) continue;
     let dir;
     try {
       dir = fs.mkdtempSync(path.join(path.resolve(base), 'godot_checks-'));
-    } catch {
+    } catch (err) {
+      console.error(`  scratch fallback: could not use ${base} (${err.code})`);
       continue;
     }
     // Existing save and settings tests require the literal /godot_checks/xdg/ marker.
@@ -26,7 +26,7 @@ function shardScratch() {
       fs.mkdirSync(work);
       for (const child of ['logs', 'fixtures', 'xdg']) fs.mkdirSync(path.join(work, child));
     } catch (err) {
-      fs.rmSync(dir, { recursive: true, force: true });
+      removeShard(work);
       throw err;
     }
     return work;
@@ -39,7 +39,8 @@ function removeShard(work) {
   if (!absolute(work) || path.basename(work) !== 'godot_checks' || !/^godot_checks-[a-z0-9]{6}$/i.test(path.basename(dir))) {
     throw new Error('refusing to remove a directory outside this shard scratch');
   }
-  fs.rmSync(dir, { recursive: true, force: true });
+  if (!fs.lstatSync(dir).isDirectory()) throw new Error('shard scratch is not a directory');
+  fs.rmSync(dir, { recursive: true, maxRetries: 3 });
 }
 
 function onboardingAlias() {

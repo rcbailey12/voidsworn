@@ -4,7 +4,7 @@
 # First it proves the list is whole: every .gd file under godot/**/test/ is listed once, and every listed file exists.
 # Then two headless checks run at a time, each with its own user dir, log and time limit. A check fails on a non-zero
 # exit, on the time limit, or on any SCRIPT ERROR line in its log. Prints results in list order and exits 1 on any failure.
-# The caller's log keeps the bounded failure excerpts. Each shard removes only its own temporary files after reporting.
+# Passing and plan-only shards remove their own scratch. Failed shards keep full logs and profiles alongside the excerpts.
 # The list (or the shard's part of it) also has a time budget (GODOT_CHECKS_BUDGET, 1080 s; GitHub sets 600 s per
 # shard. One job took 921 s for 155 checks on Nov 22 2026, up from about 200 s; the budget went from 780 s to 1080 s when
 # PR 1329 tipped it over): a check gets 300 s or what is left of the budget, whichever is less, and a check the budget
@@ -87,7 +87,8 @@ run_check() {
         echo "  $name: FAIL (could not create its onboarding profile alias)"
         return 1
       fi
-      trap 'CHECK_PROFILE_ALIAS="$profile" scratch unlink-onboarding' EXIT
+      # Only remove the alias. The underlying profile stays with this shard when it fails.
+      trap 'CHECK_PROFILE_ALIAS="$profile" scratch unlink-onboarding || exit 1' EXIT
       xdg="$profile"
       set -- "$profile" ;;
     -) ;;
@@ -133,8 +134,10 @@ run_check() {
 # Private entry point for xargs workers. Each writes a separate report so excerpts do not interleave.
 if [ "${1:-}" = --worker ]; then
   shift
-  run_check "$@" > "$T/logs/$1.report" 2>&1
-  echo "$?" > "$T/logs/$1.status"
+  name=$1
+  # Finish worker cleanup before recording its result. xargs fails only if dispatch or recording fails.
+  (run_check "$@") > "$T/logs/$name.report" 2>&1
+  echo "$?" > "$T/logs/$name.status"
   exit $?
 fi
 
@@ -157,15 +160,19 @@ if [ "$si" -lt 1 ] || [ "$si" -gt "$sn" ]; then echo "FAIL: SHARD $SHARD is outs
 if command -v cygpath > /dev/null 2>&1; then
   case "${RUNNER_TEMP:-}" in
     //*) ;;
-    /*) RUNNER_TEMP=$(cygpath -m "$RUNNER_TEMP") || { echo "FAIL: could not resolve RUNNER_TEMP."; exit 1; }
+    /*) RUNNER_TEMP=$(cygpath -m "$RUNNER_TEMP") || RUNNER_TEMP=
         export RUNNER_TEMP ;;
   esac
 fi
 if ! T=$(scratch shard); then
   echo "FAIL: could not prepare Godot check scratch space."; exit 1
 fi
-trap 'code=$?; if ! CHECK_SHARD_SCRATCH="$T" scratch remove-shard; then
-  echo "FAIL: could not remove this shard scratch at $T."; exit 1
+SCRATCH=${T%/godot_checks}
+echo "  scratch: $SCRATCH"
+trap 'code=$?; if [ "$code" -ne 0 ]; then
+  echo "  scratch kept: $SCRATCH"
+elif ! CHECK_SHARD_SCRATCH="$T" scratch remove-shard; then
+  echo "WARN: could not clean all passing Godot check scratch space at $SCRATCH."
 fi; exit "$code"' EXIT
 
 # 0. the shard plan: same on every shard. Lines: shard|class|script|setup|args|reason, in list order.
@@ -204,7 +211,7 @@ if [ "$need" -gt "$BUDGET" ]; then
 elif [ $(( ${est:-0} * 100 )) -gt $(( BUDGET * 80 )) ]; then
   echo "  shard: WARN, $est s planned is over 80 percent of the $BUDGET s budget."
 fi
-if [ "${GODOT_CHECKS_PLAN:-0}" = 1 ]; then cat "$T/plan.txt"; exit 0; fi
+if [ "${GODOT_CHECKS_PLAN:-0}" = 1 ]; then cat "$T/plan.txt"; exit $?; fi
 
 # 1. the list is whole (shard 1 only: the list and the plan are the same on every shard)
 if [ "$si" -eq 1 ]; then
