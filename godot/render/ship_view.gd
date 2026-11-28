@@ -13,6 +13,9 @@ const WING := preload("res://render/squadron_wing.gd")
 const PG := preload("res://render/placeholder_guard.gd")
 const THRUST := preload("res://fx/thrust_profile.gd")   # issue 1582: the six faction movement personalities
 const LINE_STYLE := preload("res://render/line_style.gd")   # issue 1582: the drop-line takes the one line style (R362)
+const STAGE_IN := preload("res://render/stage_in.gd")
+const SH := preload("res://fx/fx_shaders.gd")
+const SHADER_CACHE := preload("res://render/shader_cache.gd")
 var squad_kind := ""
 
 var u: Dictionary
@@ -32,7 +35,11 @@ var ring: MeshInstance3D
 var engines: Array = []
 var speed_k := 1.0          # the battle's SPEED (Enter or Space hurries a burn already under way)
 var cur_yaw := 0.0
-var dead := false
+var dead := false:
+	set(value):
+		dead = value
+		if dead:
+			clear_rcs_puffs()
 var bob_seed := 0.0
 var meshes: Array = []
 var fade := 1.0
@@ -72,6 +79,8 @@ static func clear_static() -> void:
 	_gt = null
 	_rt = null
 	_rm = null
+	_rcs_mesh = null
+	_rcs_mats.clear()
 
 
 # Issue 1434 (Artoo on PR 1445): a battle that leaves mid-build (the title backdrop when the player clicks) must not wait
@@ -102,7 +111,7 @@ static func retire_build(paths: Array, insts: Array) -> void:
 
 
 static func _free_inst(e: Dictionary) -> void:
-	var n = e["out"][0]
+	var n = e["out"][0] if e.has("out") else null   # a retired debris cut holds data, not a node
 	if n != null and is_instance_valid(n) and (n as Node).get_parent() == null:
 		(n as Node).free()
 
@@ -126,13 +135,20 @@ static func reap_build() -> void:
 
 # everything retired, now (quit)
 static func drain_build() -> void:
+	var t0 := Time.get_ticks_usec()
+	var loads := _retired_loads.size()
+	var jobs := _retired_insts.size()
 	for p in _retired_loads:
 		ResourceLoader.load_threaded_get(p)
 	_retired_loads.clear()
+	var t1 := Time.get_ticks_usec()
 	for e in _retired_insts:
 		WorkerThreadPool.wait_for_task_completion(int(e["tid"]))
 		_free_inst(e)
 	_retired_insts.clear()
+	if loads + jobs > 0:
+		print("[load] quit joined %d reads in %.1f ms and %d build tasks in %.1f ms" % [
+			loads, (t1 - t0) / 1000.0, jobs, (Time.get_ticks_usec() - t1) / 1000.0])
 	if _reaping:
 		_reaping = false
 		var tree := Engine.get_main_loop() as SceneTree
@@ -165,21 +181,7 @@ const SHADER_KEEP_MAX := 96
 # colours and numbers are uniforms. Godot gives no shader RID for a BaseMaterial3D (LOAD12: get_shader_rid() is a
 # script error), so two materials with the same signature share one shader, and one stand-in keeps it.
 static func shader_sig(bm: BaseMaterial3D) -> String:
-	var p := PackedStringArray([bm.get_class(), str(bm.transparency), str(bm.blend_mode), str(bm.cull_mode),
-		str(bm.depth_draw_mode), str(bm.shading_mode), str(bm.diffuse_mode), str(bm.specular_mode), str(bm.texture_filter),
-		str(bm.billboard_mode), str(bm.detail_blend_mode), str(bm.detail_uv_layer), str(bm.distance_fade_mode),
-		str(bm.alpha_antialiasing_mode), str(bm.vertex_color_use_as_albedo)])
-	var bits := ""
-	for f in BaseMaterial3D.FEATURE_MAX:
-		bits += "1" if bm.get_feature(f) else "0"
-	bits += "|"
-	for f in BaseMaterial3D.FLAG_MAX:
-		bits += "1" if bm.get_flag(f) else "0"
-	bits += "|"
-	for t in BaseMaterial3D.TEXTURE_MAX:
-		bits += "1" if bm.get_texture(t) != null else "0"
-	p.append(bits)
-	return ",".join(p)
+	return STAGE_IN.shader_sig(bm)
 
 
 static func _keep_shaders() -> void:
@@ -638,7 +640,7 @@ func _drop_col(a: float) -> Color:
 	# your ships' line is the footprint's mint, the enemy's the footprint's violet, so the line reads as the marker's;
 	# the colours are line style roles (render/line_style.gd)
 	var base: Color = LINE_STYLE.col("drop_ally" if marker_friend == 1 else "drop_enemy" if marker_friend == 0 else "drop_neutral")
-	return Color(base, base.a * a)
+	return Color(base, base.a * a * _cut_overlay_alpha)
 
 
 # Keep the line on the hull as it moves: the hull's centre now (band, bob, a boarding trim, a climb over a rock) down or
@@ -646,8 +648,14 @@ func _drop_col(a: float) -> Color:
 func _drop_step(dt: float) -> void:
 	if drop == null:
 		return
-	var on := not dead and visible and not wreck
 	drop_hot = move_toward(drop_hot, drop_hot_target, dt * 5.0) if dt > 0.0 else drop_hot_target
+	_draw_drop()
+
+
+func _draw_drop() -> void:
+	if drop == null:
+		return
+	var on := not dead and visible and not wreck and _cut_overlay_alpha > 0.001
 	var top := hull_pivot.transform * hull.position if hull_pivot != null and hull != null else Vector3(0, band_y, 0)
 	top.x = 0.0
 	top.z = 0.0
@@ -730,11 +738,19 @@ static func _glow_tex() -> Texture2D:
 	return _gt
 
 
+func _highlight_inner_radius() -> float:
+	return maxf(8.6, L * 0.56)
+
+
+func _footprint_radius() -> float:
+	return maxf(7.4, L * 0.5)
+
+
 func _ring() -> void:
 	ring = MeshInstance3D.new()
 	ring.name = "fx_ring"  # fx_* names keep G4's mesh walk (fx_ship._find_meshes, A4 ships) off the footprint and marker
 	var tm := TorusMesh.new()
-	var rr := maxf(8.6, L * 0.56)
+	var rr := _highlight_inner_radius()
 	tm.inner_radius = rr
 	tm.outer_radius = rr + 0.6
 	tm.rings = 64
@@ -742,6 +758,7 @@ func _ring() -> void:
 	ring.mesh = tm
 	var m := StandardMaterial3D.new()
 	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	m.albedo_color = EMBER
 	m.emission_enabled = true
 	ring.material_override = m
@@ -754,6 +771,8 @@ func _ring() -> void:
 # the footprint under every ship (B1 markers): a mint ring under yours, a broken violet hex under the enemy's
 var marker: MeshInstance3D
 var marker_friend := -1
+var _cut_overlay_alpha := 1.0
+var _ring_col := EMBER
 
 
 func set_marker(friend: bool) -> void:
@@ -766,7 +785,7 @@ func set_marker(friend: bool) -> void:
 	marker.name = "fx_marker"
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var r0 := maxf(7.4, L * 0.5)
+	var r0 := _footprint_radius()
 	var w := 0.5
 	if friend:
 		for i in 48:
@@ -792,11 +811,34 @@ func set_marker(friend: bool) -> void:
 	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	m.cull_mode = BaseMaterial3D.CULL_DISABLED
 	# your ring is the HUD's FRIEND mint (glass_shell.gd, R149: moved off green so it never reads as the lime accent)
-	m.albedo_color = Color(0.32, 0.94, 0.77, 0.85) if friend else Color(0.62, 0.22, 1.0, 0.9)
+	_color_marker(m)
 	marker.material_override = m
 	marker.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	marker.position.y = hull_lift - 0.25
 	add_child(marker)
+
+
+func _color_marker(mat: StandardMaterial3D) -> void:
+	var col := Color(0.32, 0.94, 0.77, 0.85) if marker_friend == 1 else Color(0.62, 0.22, 1.0, 0.9)
+	col.a *= _cut_overlay_alpha
+	mat.albedo_color = col
+
+
+func _color_ring(mat: StandardMaterial3D) -> void:
+	var col := _ring_col
+	col.a *= _cut_overlay_alpha
+	mat.albedo_color = col
+
+
+func set_cut_overlay_alpha(alpha: float) -> void:
+	if _cut_overlay_alpha == alpha:
+		return
+	_cut_overlay_alpha = alpha
+	if ring != null:
+		_color_ring(ring.material_override)
+	if marker != null:
+		_color_marker(marker.material_override)
+	_draw_drop()
 
 
 var wreck := false
@@ -892,8 +934,27 @@ func set_selected(on: bool, col := EMBER) -> void:   # the ship that is up: embe
 	_drop_sel = on
 	drop_hot_target = 1.0 if (_drop_hover or _drop_sel) else 0.0
 	ring.visible = on
-	(ring.material_override as StandardMaterial3D).albedo_color = col
+	_ring_col = col
+	_color_ring(ring.material_override)
 	ring.rotation.y = -rotation.y
+
+
+func has_highlight() -> bool:
+	return _drop_sel
+
+
+# Battle owns arbitration between neighbours. Keep the requested highlight so
+# a suppressed mark comes back as soon as the ships move clear of one another.
+func set_mark_visibility(footprint: bool, highlight: bool) -> void:
+	marker.visible = footprint
+	ring.visible = highlight
+
+
+func mark_radius(highlight: bool) -> float:
+	var mark := ring if highlight else marker
+	var radius := (ring.mesh as TorusMesh).outer_radius if highlight else _footprint_radius()
+	var basis := mark.global_basis
+	return radius * maxf(basis.x.length(), basis.z.length())
 
 
 # One continuous burn along a path (fx3d.js animPath): position keys on a Hermite curve over the path length, facing keys
@@ -1005,6 +1066,7 @@ var _puff_cd := {}
 var _idle_time := 0.0
 var _bob_time := 0.0
 var puffs: Array = []
+var _thrust_spark_sink := Callable()
 
 
 # segments: [{"kind": "turn", "a0", "a1", "w"} | {"kind": "run", "pts": [Vector3 incl. height], "yaw", "w"}]; dur is the
@@ -1986,8 +2048,8 @@ func snap_to(p: Vector3, yaw: float) -> void:
 	rotation.y = yaw
 
 
-# ---------------------------------------------------------------- RCS jets: short cold-gas bursts on the hull
-# (puffs are left in space where they were fired; they do not ride along with the hull)
+# ---------------------------------------------------------------- RCS jets: short directional cone jets on the hull
+# (cone jets stay anchored to their hull nozzle as the ship moves and turns; thrown grit sparks drift in space)
 # Issue 370 (R150, RULEBOOK 6.7): each jet starts on the ship. The spot each one is named by below (a station along the
 # length, a side, from the fitted box) only aims: the attach point service (fx/fx_hull.gd jet) gives the authored hp_rcs
 # nearest it, else the plating a ray finds on that side at that station, else no puff (logged and counted). Before
@@ -2065,6 +2127,76 @@ func jet_point(aim: Vector3, out: Vector3) -> Vector3:
 	return hull_pivot.transform * p if hull_pivot != null else p
 
 
+static var _rcs_mesh: ArrayMesh = null
+static var _rcs_mats: Dictionary = {}   # int jet_kind -> shared ShaderMaterial
+
+
+# Shared axial ribbon strip (VERTEX.x in 0..1 along jet axis, VERTEX.y in -0.5..0.5 across width) for SH.RCS_JET.
+static func _rcs_quad_mesh() -> ArrayMesh:
+	if _rcs_mesh != null:
+		return _rcs_mesh
+	var segs := 4
+	var verts := PackedVector3Array()
+	var idx := PackedInt32Array()
+	for i in segs + 1:
+		var s := float(i) / float(segs)
+		verts.append(Vector3(s, -0.5, 0.0))
+		verts.append(Vector3(s, 0.5, 0.0))
+	for i in segs:
+		var q := i * 2
+		idx.append_array(PackedInt32Array([q, q + 1, q + 3, q, q + 3, q + 2]))
+	var arr := []
+	arr.resize(Mesh.ARRAY_MAX)
+	arr[Mesh.ARRAY_VERTEX] = verts
+	arr[Mesh.ARRAY_INDEX] = idx
+	_rcs_mesh = ArrayMesh.new()
+	_rcs_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr)
+	_rcs_mesh.custom_aabb = AABB(Vector3(-32, -32, -32), Vector3(64, 64, 64))
+	return _rcs_mesh
+
+
+# Shared ShaderMaterial per RCS jet_kind; per-puff parameters go through instance uniforms.
+static func _rcs_jet_mat(kind: int) -> ShaderMaterial:
+	var mat := _rcs_mats.get(kind) as ShaderMaterial
+	if mat != null:
+		return mat
+	mat = ShaderMaterial.new()
+	mat.shader = SHADER_CACHE.for_code(SH.RCS_JET)
+	mat.render_priority = 1
+	mat.set_shader_parameter("jet_kind", float(kind))
+	_rcs_mats[kind] = mat
+	return mat
+
+
+# Issue 2042: shared directional RCS cone-jet builder (hot core, soft wash, quick fade) tinted from faction_looks.json.
+static func build_rcs_jet(fac_id: String, dir: Vector3, length: float, w_root: float, w_tip: float, alpha: float, seed_val: float) -> MeshInstance3D:
+	SH.ensure_globals()
+	var pal: Dictionary = THRUST.palette(fac_id)
+	var core: Color = pal["core"]
+	var wash: Color = pal["wash"]
+	var kind := int(pal["kind"])
+	var nd := dir.normalized() if dir.length() > 1e-5 else Vector3(-1, 0, 0)
+	var mi := MeshInstance3D.new()
+	mi.mesh = _rcs_quad_mesh()
+	mi.material_override = _rcs_jet_mat(kind)
+	mi.set_instance_shader_parameter("jet_dir", nd)
+	mi.set_instance_shader_parameter("jet_len", maxf(length, 0.1))
+	mi.set_instance_shader_parameter("w_root", maxf(w_root, 0.05))
+	mi.set_instance_shader_parameter("w_tip", maxf(w_tip, 0.08))
+	mi.set_instance_shader_parameter("age_u", 0.0)
+	mi.set_instance_shader_parameter("alpha_k", clampf(alpha, 0.0, 2.5))
+	mi.set_instance_shader_parameter("jet_seed", seed_val)
+	mi.set_instance_shader_parameter("core_col", Vector3(core.r, core.g, core.b))
+	mi.set_instance_shader_parameter("wash_col", Vector3(wash.r, wash.g, wash.b))
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	mi.extra_cull_margin = 16.0
+	return mi
+
+
+func set_thrust_spark_sink(sink: Callable) -> void:
+	_thrust_spark_sink = sink
+
+
 func _puff(aim: Vector3, dir: Vector3, k := 1.0, out := Vector3.ZERO) -> void:
 	var style := str(tp.get("style", "gas"))
 	if fac == "chorus" and style == "gas":
@@ -2075,76 +2207,57 @@ func _puff(aim: Vector3, dir: Vector3, k := 1.0, out := Vector3.ZERO) -> void:
 	var at := jet_point(aim, out if out != Vector3.ZERO else dir)
 	if at == Vector3.INF:
 		return
-	var sp := Sprite3D.new()
-	sp.texture = _ripple_tex() if style == "ripple" else _glow_tex()
-	sp.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	sp.shaded = false
-	sp.transparent = true
-	sp.material_override = _ripple_mat() if style == "ripple" else _puff_mat()
 	# issue 1581: an escort's movement jets read at r 170: a floor on their strength, brighter and bigger at the nozzle
 	var esc := (1.0 - clampf(mass, 0.0, 1.0)) if glide else 0.0
 	k = maxf(k, lerpf(k, 0.6, esc))
 	# issue 1582: the faction's jet (fx/thrust_profile.gd): its gas or light, size, life, spread and roughness
 	var jit := float(tp.get("jitter", 0.0))
 	var rough := 1.0 + jit * (_jet_rng.randf() * 2.0 - 1.0)
-	var tint: Color = tp.get("tint", Color(0.85, 0.88, 0.95))
-	sp.modulate = Color(tint, minf(0.75 * k + esc * 0.15, 1.0))
-	# a jet reads at battle zoom: about 5% of the hull's length as it leaves the nozzle, three times that as it spreads
-	# (in a flown move a capital's jets are bigger and last longer: a heavy burn, not a puff)
 	var mk := clampf(mass / MASS_MAX, 0.0, 1.0) if glide else 0.0
-	# issue 521 (carried item 2): in a flown move no jet starts smaller than PUFF_MIN world units, about 18 px at the
-	# battle camera (r 170), so a frigate's small jets read; the bigger hulls were already past it
-	# the faction's size goes in before the floor, so a small or rough jet never drops under it (Fable, PR 1874 item 8)
 	var fk := float(tp.get("size", 1.0)) * rough
-	sp.pixel_size = clampf(L * lerpf(0.07, 0.1, mk) * fk, lerpf(PUFF_MIN, PUFF_MIN_ESCORT, esc) if glide else 1.4, maxf(lerpf(2.8, 4.6, mk), PUFF_MIN_ESCORT) * maxf(fk, 1.0)) / 64.0 * (0.6 + 0.4 * k)
-	if path_dur <= 0.0:  # station-keeping puffs are half the size of a movement jet
-		sp.pixel_size *= 0.5
-	sp.top_level = true
-	add_child(sp)
+	var jet_len := clampf(L * lerpf(0.16, 0.24, mk) * fk, lerpf(PUFF_MIN, PUFF_MIN_ESCORT, esc) if glide else 1.4,
+		maxf(lerpf(4.8, 7.6, mk), PUFF_MIN_ESCORT * 1.4) * maxf(fk, 1.0)) * (0.65 + 0.35 * k)
+	if path_dur <= 0.0:  # station-keeping puffs are smaller than a movement jet
+		jet_len *= 0.55
+	var w_root := jet_len * (0.20 if style == "gas" else 0.28)
+	var w_tip := jet_len * (0.58 if style == "gas" else (0.34 if style == "glint" else 0.52))
+	var alpha := minf(0.88 * k + esc * 0.16, 1.15)
+	if style == "pulse":
+		alpha = minf(0.68 * k + 0.22, 0.95)
+	elif style == "ripple":
+		alpha = minf(0.45 * k + 0.16, 0.65)
 	var jet_dir := dir.normalized()
 	if hull_pivot != null:
 		jet_dir = hull_pivot.basis * jet_dir
-	sp.global_position = to_global(at + jet_dir * maxf(L, 6.0) * 0.03)
 	var vw: Vector3 = global_transform.basis.orthonormalized() * jet_dir
-	var base_life := lerpf(lerpf(0.4, 0.55, mk), 0.55, esc) if glide else 0.4
+	var seed_val := _jet_rng.randf()
+	var mi := build_rcs_jet(fac, vw, jet_len, w_root, w_tip, alpha, seed_val)
+	mi.top_level = true
+	add_child(mi)
+	mi.global_position = to_global(at)
+	# Issue 2042: short, crisp directional fade anchored to the live nozzle (no floating string of dots).
+	var base_life := lerpf(lerpf(0.22, 0.32, mk), 0.28, esc) if glide else 0.22
 	var life := base_life * float(tp.get("life", 1.0)) * rough
-	var spd := float(tp.get("speed", 1.0))
-	var velocity := vw * maxf(L, 6.0) * 0.8 * (0.6 + 0.4 * k) * spd + _vel * 0.6
-	var entry := {"n": sp, "t": 0.0, "v": velocity, "s": sp.pixel_size, "a": sp.modulate.a, "life": life,
-		"spread": float(tp.get("spread", 5.0)), "style": style}
-	match style:
-		"glint":
-			# a Glasswright trims on light: a short flash that rides the hull and walks the spectrum (prismatic shimmer)
-			entry["v"] = _vel
-			entry["hue"] = _jet_rng.randf()
-			life = 0.18 * float(tp.get("life", 1.0))
-			entry["life"] = life
-		"pulse":
-			# a Chorus vent swells and breathes out: it rises, then fades, with almost no throw
-			entry["a"] = minf(0.55 * k + 0.25, 0.9)
-			sp.modulate.a = 0.0
-		"ripple":
-			# an Eclipse null ripple opens flat about the drive ring and fades; nothing is thrown
-			entry["v"] = _vel
-			entry["a"] = minf(0.3 * k + 0.12, 0.45)
+	if style == "glint":
+		life = 0.16 * float(tp.get("life", 1.0))
+	var entry := {"n": mi, "rcs": true, "t": 0.0, "life": life, "style": style,
+		"local_at": at, "local_dir": jet_dir}
 	puffs.append(entry)
-	# the Hullbreakers' overburn throws a little bright grit with each rough blast
+	# the Hullbreakers' overburn throws a little bright grit with each rough blast (sparks owned by issue 2018)
 	var n_sp := 0 if calm else int(tp.get("sparks", 0))   # Reduce motion: no thrown grit
+	if n_sp > 0:
+		var spark_px := clampf(L * lerpf(0.07, 0.1, mk) * fk, lerpf(PUFF_MIN, PUFF_MIN_ESCORT, esc) if glide else 1.4,
+			maxf(lerpf(2.8, 4.6, mk), PUFF_MIN_ESCORT) * maxf(fk, 1.0)) / 64.0 * (0.6 + 0.4 * k) * (0.5 if path_dur <= 0.0 else 1.0)
+		_emit_thrust_grit(mi.global_position, vw, spark_px, n_sp)
+
+
+# Isolated nozzle-grit seam for issue 2018 / PR #2049 shared sparks integration (no new sparks added here).
+func _emit_thrust_grit(origin: Vector3, vw: Vector3, spark_px: float, n_sp: int) -> void:
 	for i in n_sp:
-		var g := Sprite3D.new()
-		g.texture = _glow_tex()
-		g.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-		g.shaded = false
-		g.transparent = true
-		g.material_override = _puff_mat()
-		g.modulate = Color(1.0, 0.72, 0.35, 0.95)
-		g.pixel_size = sp.pixel_size * 0.16
-		g.top_level = true
-		add_child(g)
-		g.global_position = sp.global_position
 		var gv := (vw + Vector3(_jet_rng.randf() - 0.5, _jet_rng.randf() - 0.5, _jet_rng.randf() - 0.5) * 0.9).normalized() * maxf(L, 6.0) * (1.6 + _jet_rng.randf())
-		puffs.append({"n": g, "t": 0.0, "v": gv + _vel * 0.6, "s": g.pixel_size, "a": 0.95, "life": 0.3 + _jet_rng.randf() * 0.2,
-			"spread": 0.0, "style": "spark"})
+		var spark_life := 0.3 + _jet_rng.randf() * 0.2
+		if _thrust_spark_sink.is_valid():
+			_thrust_spark_sink.call(origin, spark_life, fac, spark_px * 64.0 * 0.16, gv + _vel * 0.6)
 
 
 static var _rt: Texture2D = null
@@ -2193,27 +2306,39 @@ static func _puff_mat() -> StandardMaterial3D:
 	return _pm
 
 
+func clear_rcs_puffs() -> void:
+	for puff in puffs:
+		var node := puff.n as Node3D
+		if is_instance_valid(node):
+			# These jets are top-level. Hide them now rather than waiting for the queued free.
+			node.hide()
+			node.queue_free()
+	puffs.clear()
+
+
 func _puffs_step(dt: float) -> void:
 	for i in range(puffs.size() - 1, -1, -1):
 		var pf: Dictionary = puffs[i]
 		pf.t += dt
+		var life: float = maxf(float(pf.get("life", 0.3)), 1e-4)
+		var u := clampf(float(pf.t) / life, 0.0, 1.0)
+		if pf.get("rcs", false) or pf.has("mat"):
+			var mi := pf.n as GeometryInstance3D
+			if is_instance_valid(mi):
+				mi.set_instance_shader_parameter("age_u", u)
+				if is_inside_tree():
+					mi.global_position = to_global(pf["local_at"] as Vector3)
+					mi.set_instance_shader_parameter("jet_dir", global_transform.basis.orthonormalized() * (pf["local_dir"] as Vector3))
+			if float(pf.t) >= life:
+				if is_instance_valid(mi):
+					mi.queue_free()
+				puffs.remove_at(i)
+			continue
 		var sp: Sprite3D = pf.n
-		var life: float = pf.get("life", 0.4)
-		sp.global_position += (pf.v as Vector3) * dt * (1.0 - pf.t / life)
-		sp.pixel_size = float(pf.s) * (1.0 + pf.t * float(pf.spread))
-		var u := clampf(pf.t / life, 0.0, 1.0)
-		match str(pf.get("style", "gas")):
-			"pulse":   # issue 1582: the Chorus vent swells in, then breathes out
-				sp.modulate.a = float(pf.a) * sin(PI * u) * (1.0 if calm else 0.85 + 0.15 * sin(pf.t * 9.0))
-			"glint":   # issue 1582: the Glasswright shimmer walks the spectrum as it fades
-				var c := Color.from_hsv(fposmod(float(pf.hue) + u * 0.6, 1.0), 0.45, 1.0)
-				sp.modulate = Color(c, maxf(0.0, float(pf.a) * (1.0 - u)))
-			"ripple":  # issue 1582: the Eclipse ring opens fast, then lingers as it fades
-				sp.pixel_size = float(pf.s) * (1.0 + float(pf.spread) * (1.0 - pow(1.0 - u, 3.0)))
-				sp.modulate.a = float(pf.a) * (1.0 - u) * (1.0 - u)
-			_:
-				sp.modulate.a = maxf(0.0, float(pf.a) * (1.0 - u))
-		if pf.t >= life:
+		sp.global_position += (pf.v as Vector3) * dt * (1.0 - float(pf.t) / life)
+		sp.pixel_size = float(pf.s) * (1.0 + float(pf.t) * float(pf.spread))
+		sp.modulate.a = maxf(0.0, float(pf.a) * (1.0 - u))
+		if float(pf.t) >= life:
 			sp.queue_free()
 			puffs.remove_at(i)
 

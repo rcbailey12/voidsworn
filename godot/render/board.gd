@@ -1,6 +1,7 @@
 extends Node3D
 const SV := preload("res://render/ship_view.gd")   # issue 1434: retire_build collects a terrain load left running
 const SKEEP := preload("res://render/shader_keep.gd")
+const STAGE_IN := preload("res://render/stage_in.gd")
 # The hex board at the game's scale: pointy-top hexes of corner radius 10 (HEX_S), laid out as scene3d.js hexWorld does,
 # with the world's z mirrored for Godot. One MultiMesh for the hex fills and one for the outlines (two draws for the
 # whole board); overlays (move range, targets, hover, zones) only change instance colours.
@@ -43,6 +44,7 @@ var cells: Array = []        # [{q, r}]
 var index := {}              # "q,r" -> instance index
 var fills: MultiMeshInstance3D
 var rings: MultiMeshInstance3D
+var cut_overlay_alpha := 1.0
 var base_fill := {}          # "q,r" -> Color (terrain zone tints)
 var overlay := {}            # "q,r" -> Color
 var ring_over := {}          # "q,r" -> Color
@@ -52,6 +54,8 @@ var hover_key := ""
 var blocker_visuals: Node3D
 var blocker_highlights: Node3D
 var props: Node3D
+var _station_pending: Array[Node3D] = []
+var _station_warm := STAGE_IN.new()
 var rock_meshes: Array = []
 var wrecks := {}             # issue 1236: unit id -> "q,r" of each wreck the rules laid down during this battle
 var wreck_hulls := {}        # issue 1236: unit id -> true where the board laid the burnt hulk (the death left no pieces)
@@ -84,6 +88,7 @@ varying vec2 wpos;
 // Ryan (Nov 20, issue 1359 thread, picked "Only with Z"): the reach hatching covered the whole board and read as random
 // far-off grid lines. hatch_hidden 1 (the normal view) draws none; Z and the other looks keep it board-wide.
 uniform float hatch_hidden = 0.0;
+uniform float cut_overlay_alpha = 1.0;
 void vertex() { vcol = COLOR; vp = VERTEX.xz; style = INSTANCE_CUSTOM.r; band = INSTANCE_CUSTOM.g; wpos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xz; }
 void fragment() {
 	under_hulls(SCREEN_UV, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX);
@@ -132,7 +137,7 @@ void fragment() {
 		a = A;
 	}
 	ALBEDO = c;
-	ALPHA = clamp(a, 0.0, 1.0);
+	ALPHA = clamp(a, 0.0, 1.0) * cut_overlay_alpha;
 }
 """
 const RING_SHADER := """
@@ -144,6 +149,7 @@ render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabl
 uniform int mode = 0;
 uniform vec3 focus = vec3(0.0);
 uniform vec3 cursor = vec3(100000.0);
+uniform float cut_overlay_alpha = 1.0;
 uniform float near_r = 70.0;
 uniform float far_r = 190.0;
 // the gravity well: xyz its centre, w how deep the holo grid dips toward it (0: flat)
@@ -200,7 +206,7 @@ void fragment() {
 		if (k <= 0.0) { discard; }
 	}
 	under_hulls(SCREEN_UV, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX);
-	ALBEDO = vcol.rgb * vcol.a * k * thin;
+	ALBEDO = vcol.rgb * vcol.a * k * thin * cut_overlay_alpha;
 	ALPHA = 1.0; // Draw after opaque hulls, with depth testing, just like the fill.
 }
 """
@@ -315,7 +321,7 @@ func build(rules, slice := false) -> void:
 		var w0 := Time.get_ticks_msec()
 		while Time.get_ticks_msec() - w0 < TERRAIN_WAIT_MS:
 			await get_tree().process_frame
-			if not is_inside_tree():
+			if _parked():
 				return   # _exit_tree handed the loads on
 			var busy := false
 			for p in _terrain_loads:
@@ -341,11 +347,20 @@ func build(rules, slice := false) -> void:
 			SV.retire_build(running, [])
 		build_us["terrain_wait"] = (Time.get_ticks_msec() - w0) * 1000
 		t = Time.get_ticks_usec()
-	_terrain()
+	_terrain(slice and title_backdrop)
+	while not _station_pending.is_empty():
+		var station := _station_pending.front() as Node3D
+		var pieces := station.find_children("*", "MeshInstance3D", true, false)
+		if station is MeshInstance3D:
+			pieces.push_front(station)
+		if not await _station_warm.warm_meshes(self, pieces, "title station") or _parked():
+			return
+		_station_pending.pop_front()
+		_put_station(station)
 	t = _step("terrain", t)
 	if slice:
 		await get_tree().process_frame
-		if not is_inside_tree():
+		if _parked():
 			return   # issue 1519: a battle left mid-build is out of the tree until its free; its build stops
 		t = Time.get_ticks_usec()
 	blocker_visuals = BV.new()
@@ -353,20 +368,21 @@ func build(rules, slice := false) -> void:
 	blocker_visuals.build(VW, hex_world)
 	_depth_fragments()
 	blocker_highlights = Node3D.new()
+	blocker_highlights.visible = cut_overlay_alpha >= 1.0
 	add_child(blocker_highlights)
 	_zones()
 	_well_info()
 	t = _step("blockers", t)
 	if slice:
 		await get_tree().process_frame
-		if not is_inside_tree():
+		if _parked():
 			return   # issue 1519: a battle left mid-build is out of the tree until its free; its build stops
 		t = Time.get_ticks_usec()
 	_terrain_edges()
 	t = _step("edges", t)
 	if slice:
 		await get_tree().process_frame
-		if not is_inside_tree():
+		if _parked():
 			return   # issue 1519: a battle left mid-build is out of the tree until its free; its build stops
 		t = Time.get_ticks_usec()
 	apply_look(false)
@@ -399,6 +415,9 @@ func _drop_terrain_loads(wait := true) -> void:
 
 
 func _exit_tree() -> void:
+	for station in _station_pending:
+		station.free()
+	_station_pending.clear()
 	_drop_terrain_loads(false)
 
 
@@ -603,6 +622,17 @@ func set_focus(p: Vector3) -> void:
 		(rings.material_override as ShaderMaterial).set_shader_parameter("focus", p)
 
 
+func set_cut_overlay_alpha(alpha: float) -> void:
+	if alpha == cut_overlay_alpha:
+		return
+	cut_overlay_alpha = alpha
+	for mesh in [fills, rings, edges, gas_edges, hazard_edges, solid_edges, cover_edges, _hover_shown, arrival_edge, reach_edge]:
+		if is_instance_valid(mesh):
+			(mesh.material_override as ShaderMaterial).set_shader_parameter("cut_overlay_alpha", alpha)
+	if is_instance_valid(blocker_highlights):
+		blocker_highlights.visible = alpha >= 1.0
+
+
 # F1: one bright line around the whole area a ship can reach (keys: "q,r" -> anything), drawn on the board just inside
 # the outer hex edges, with a soft glow band; an empty dictionary clears it
 var outline: MeshInstance3D
@@ -801,6 +831,7 @@ func _show_hover_edge(raw: String) -> void:
 	_hover_shown = mi
 	if mi != null:
 		(mi.material_override as ShaderMaterial).set_shader_parameter("gain", float(_hover_gain.get(str(mi.get_meta("edge_kind")), 0.0)))
+		(mi.material_override as ShaderMaterial).set_shader_parameter("cut_overlay_alpha", cut_overlay_alpha)
 		mi.visible = fills == null or fills.visible
 
 
@@ -809,6 +840,7 @@ func _edge_mesh(parent: Node, nm: String, em: ShaderMaterial, keys: Dictionary, 
 	mi.name = nm
 	mi.set_meta("edge_kind", nm)
 	mi.material_override = em.duplicate()
+	(mi.material_override as ShaderMaterial).set_shader_parameter("cut_overlay_alpha", cut_overlay_alpha)
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	parent.add_child(mi)
 	var st := SurfaceTool.new()
@@ -990,7 +1022,7 @@ func _rock_lib() -> Array:
 	return out
 
 
-func _terrain() -> void:
+func _terrain(warm_station := false) -> void:
 	base_fill.clear()
 	rock_meshes = _rock_lib()
 	var rng := RandomNumberGenerator.new()
@@ -1051,7 +1083,7 @@ func _terrain() -> void:
 		var rel: Array = []
 		for p in centres:
 			rel.append(Vector2(p.x - cen.x, p.z - cen.z))
-		_station(cen, rng, size, teaching, clearance, rel)
+		_station(cen, rng, size, teaching, clearance, rel, warm_station)
 
 
 # Issue 1582 item 4: a few small loose fragments hang below the plane round each rock and debris hex, so a field has
@@ -1170,7 +1202,7 @@ func station_kind() -> String:
 	return str(biome.get("station", "")) if biome is Dictionary else ""
 
 
-func _station(c: Vector3, rng: RandomNumberGenerator, size := STATION_BIG_LEN, teaching := false, clearance := 0.0, cells: Array = []) -> void:
+func _station(c: Vector3, rng: RandomNumberGenerator, size := STATION_BIG_LEN, teaching := false, clearance := 0.0, cells: Array = [], warm := false) -> void:
 	# The painted station for this cluster size, with the original hull below as a fallback. issue 1767: station_T2 on
 	# every cluster, fitted inside the cluster's own hexes at its bearing (A4P.fit_scale), level and lifted in proportion.
 	# The bearing is drawn first (A4P draws nothing, so the board's random stream is as before).
@@ -1189,9 +1221,7 @@ func _station(c: Vector3, rng: RandomNumberGenerator, size := STATION_BIG_LEN, t
 			attitude = Vector3(deg_to_rad(-63.0), deg_to_rad(65.0), 0.0)
 			offset = Vector3(2.0, 13.0, 1.5)
 		a4.transform = Transform3D(Basis.from_euler(attitude).scaled(Vector3.ONE * k), c + offset)
-		props.add_child(a4)
-		if a4.has_meta("station_T2") and BattleLook.post_fx_enabled("DECALS"):
-			TerrainScorch.station(a4)
+		_stage_station(a4, warm)
 		return
 	var p := "res://gen/hulls/O1_37.res"
 	if not ResourceLoader.exists(p):
@@ -1212,7 +1242,21 @@ func _station(c: Vector3, rng: RandomNumberGenerator, size := STATION_BIG_LEN, t
 		m.ao_texture_channel = (src as StandardMaterial3D).ao_texture_channel
 	mi.material_override = m
 	mi.transform = Transform3D(Basis.from_euler(Vector3(0.06, bearing, 0.04)).scaled(Vector3(size, size, -size)), c + Vector3(0, 3, 0))
-	props.add_child(mi)
+	_stage_station(mi, warm)
+
+
+
+func _stage_station(station: Node3D, warm: bool) -> void:
+	if warm:
+		_station_pending.append(station)
+	else:
+		_put_station(station)
+
+
+func _put_station(station: Node3D) -> void:
+	props.add_child(station)
+	if station.has_meta("station_T2") and BattleLook.post_fx_enabled("DECALS"):
+		TerrainScorch.station(station)
 
 
 # Issue 1536 (Ryan, Nov 22 2026, "Yes"): in a Hold battle the Navy relay beacon O3_11 stands under the hold hex, so the gold hex
@@ -1354,6 +1398,12 @@ func _planet() -> void:
 		planet_ready_ms = Time.get_ticks_msec() - planet_t0   # Neon item 7: when the planet itself finished
 
 
+# issue 1519: a left battle stays in the tree switched off (PROCESS_MODE_DISABLED) while main.gd frees it in slices
+# behind the title; its awaits still wake there, so a build or wait under way stops as it would out of the tree
+func _parked() -> bool:
+	return not is_inside_tree() or not can_process()
+
+
 # Issue 1765: the battle's loading cover waits for the board planet's maps. The maps start loading when the board is
 # built, alongside the world's bakes, so the 20 s cap counts from then, not after the world is ready (Artoo, PR 1776).
 # Maps that miss the cover are never swapped in mid-battle (a late 4K or 8K upload would hitch the first turns): the
@@ -1361,7 +1411,7 @@ func _planet() -> void:
 func wait_planet() -> void:
 	while planet_pending and Time.get_ticks_msec() - planet_t0 < 20000:
 		await get_tree().process_frame
-		if not is_inside_tree(): return   # issue 1434: a left battle waits two draws out of the tree before its free
+		if _parked(): return   # issue 1434: a left battle waits two draws out of the tree before its free
 	if planet_pending and is_instance_valid(planet_node):
 		planet_node.set_meta("planet_frozen", true)
 		push_warning("[planet] board planet maps missed the loading cover; the stand-in stays for this battle")

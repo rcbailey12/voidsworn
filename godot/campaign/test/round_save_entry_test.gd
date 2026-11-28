@@ -34,9 +34,10 @@ func _fresh(path: String, persist := true) -> Variant:
 	C.battle_mode = "external"; C.battle_setup = _setup; C.battle_restore = _restore
 	return C
 
-func _cold(path: String) -> Variant:   # a new launch: everything from the file, then the title's Continue
+func _cold(path: String, launch_seed := 11) -> Variant:   # a new launch: everything from the file, then the title's Continue
 	api = null
-	var D = _fresh(path); D.persist_load(); D.titleScreen(); D.act("continueRun")
+	var D = _fresh(path); D.seed_rng(launch_seed)
+	D.persist_load(); D.titleScreen(); D.act("continueRun")
 	return D
 
 func _play_to(C, rnd: int) -> void:
@@ -77,7 +78,7 @@ func _acts(C, kind: String) -> Array:
 # A run saved on the map with `want` reachable; returns the target node id or "".
 func _map_save(path: String, seed: int, fac: String, want: String, ambush: bool) -> String:
 	var C = _fresh(path)
-	API.JSM.rnd_seed(seed); C.META = C.defaultMeta()
+	C.rng.rnd_seed(seed); C.META = C.defaultMeta()
 	var adm = null
 	for id in C.ADMIRALS.keys():
 		if C.ADMIRALS[id].get("fac") == fac and adm == null: adm = id
@@ -104,7 +105,7 @@ func _case(label: String, seed: int, fac: String, want: String, ambush := false)
 	var target := _map_save(path, seed, fac, want, ambush)
 	if target == "":
 		_check(false, "%s: no %s stop one lane ahead" % [label, want]); return
-	var C = _cold(path)
+	var C = _cold(path, seed)
 	_check(C.page.get("kind") == "map" and C.SAVED_RUN.get("curNode") == null, "%s: Continue opens the map from a map checkpoint" % label)
 	C.act("enterNode", target)
 	if want == "event":   # pick the event choice that becomes a fight (each tried from the same saved state)
@@ -120,7 +121,7 @@ func _case(label: String, seed: int, fac: String, want: String, ambush := false)
 	var units := str(api.view()["units"].map(func(u): return [u["id"], u["hp"], u["q"], u["r"]]))
 	_check(C.save_battle_round(api.take_round_snapshot()), "%s: round 2's save is on disk" % label)
 	C.leave_battle_saved()
-	var D = _cold(path)
+	var D = _cold(path, seed)
 	_check(D.pending_battle != null and api != null and int(api.R.B["round"]) == 2, "%s: a cold Continue resumes round 2 (page %s)" % [label, str(D.page.get("kind"))])
 	if api != null:
 		_check(str(D.B["cfg"].get("kind")) == kind and str(D.RUN.get("curNode")) == node and str(api.view()["units"].map(func(u): return [u["id"], u["hp"], u["q"], u["r"]])) == units,
@@ -136,7 +137,7 @@ func _init() -> void:
 		var path := DIR.path_join("probe.json")
 		var target := _map_save(path, s, "chorus", "event", false)
 		if target == "": continue
-		var C = _cold(path); C.act("enterNode", target)
+		var C = _cold(path, s); C.act("enterNode", target)
 		ev = _fight_choice(C) != null
 		if ev:
 			_case("event", s, "chorus", "event"); break

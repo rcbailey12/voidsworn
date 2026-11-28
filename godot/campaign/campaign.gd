@@ -16,9 +16,10 @@ const CaptainData = preload("res://rules/captain_data.gd")
 
 signal changed            # the page or the modal changed
 signal battle_requested   # a battle page is up (external mode): the battle side reads pending_battle and calls finish_battle()
+signal fleet_results(lost: bool, ranked_up: bool)  # one report per settled battle, never on a reopened reward panel
 
 const BattleAPI = preload("res://rules/battle_api.gd")   # the rules are reached only through the battle API (rules/API.md)
-const JSM = BattleAPI.JSM   # the shared JS maths and the one PRNG the rules and the campaign both draw from
+const JSM = BattleAPI.JSM   # shared JS maths and PRNG algorithm, with a separate stream per campaign
 const TABLES_PATH := "res://campaign/data/campaign_tables.json"
 
 # ---------------- tables ----------------
@@ -37,6 +38,8 @@ var NEM_WEAK; var NEM_ADAPT; var NEM_CLOCK; var FAC_VERBS; var WING_PERKS; var W
 var META: Dictionary = {}
 var RUN = null          # the run (Dictionary) or null
 var SAVED_RUN = null    # the last saved copy of the run
+var _broken_run := false
+var _aspect_setup: Dictionary = {}   # the offer and launch RNG while the flagship choice is pending
 # Issue 1451 (R378): the battle in progress, saved at the start of its newest round: {"node", "round", "fp", "size", "data"} (data:
 # the rules snapshot, base64), or null. It belongs with SAVED_RUN (the last checkpoint, usually the map before the stop; kept as the fallback) and clears
 # when the battle is settled. Continue resumes that round when the snapshot fits the game's rules (battle_restore).
@@ -130,7 +133,9 @@ static func jt(x) -> bool: # JS truthiness
 	return true
 func z0(x) -> Variant: return x if jt(x) else 0
 func or_(a, b) -> Variant: return a if jt(a) else b
-func rnd() -> float: return JSM.rnd()
+var rng := JSM.RandomStream.new()
+func seed_rng(seed: int) -> void: rng.rnd_seed(seed)
+func rnd() -> float: return rng.rnd()
 func ri(a, b) -> float: return float(a) + floor(rnd() * (float(b) - float(a) + 1.0))
 func pick(a: Array) -> Variant:
 	var i = int(floor(rnd() * a.size()))
@@ -360,6 +365,9 @@ func repairRunIds(r) -> Variant:
 	for b in r["boons"]:
 		if b is Dictionary: bs.append(b)
 	r["boons"] = _keep(bs, BOONS, "boon", rep, func(b): return b.get("id"))
+	var reward = r.get("reward")
+	if reward is Dictionary and reward.get("boonOffer") is Array:
+		reward["boonOffer"] = reward["boonOffer"].filter(func(o): return o is Dictionary and BOONS.has(o.get("id")))
 	r["patrons"] = _keep(r["patrons"], PATRONS, "patron", rep)
 	if r.get("aspect") != null and not ASPECTS.has(r["aspect"]): rep.append("aspect " + str(r["aspect"])); r["aspect"] = null
 	if r.get("giftBoon") != null and not BOONS.has(r["giftBoon"]): r["giftBoon"] = null
@@ -469,10 +477,15 @@ func _enc(v):
 	return v
 func save_text() -> String:
 	# storyGuard (issue 1338): saves from this build on never need the old story-buff repair (_restore_legacy_story_modifier)
-	return JSON.stringify(_enc({"format": "voidsworn-godot-campaign", "v": 1, "uid": UID, "meta": META, "run": SAVED_RUN if SAVED_RUN != null else {"none": true}, "yard": saved_in_yard, "tel": tel_log,
-		"battle": saved_battle if SAVED_RUN != null else null, "storyGuard": true}))
+	var data = {"format": "voidsworn-godot-campaign", "v": 1, "uid": UID, "meta": META, "run": SAVED_RUN if SAVED_RUN != null else {"none": true}, "yard": saved_in_yard, "tel": tel_log,
+		"battle": saved_battle if SAVED_RUN != null else null, "storyGuard": true}
+	if _broken_run: data["brokenRun"] = true
+	if not _aspect_setup.is_empty() and _aspect_pending(SAVED_RUN): data["aspectSetup"] = _aspect_setup
+	return JSON.stringify(_enc(data))
 var last_save_ok := true   # issue 1451: did the newest persist_save reach the disk (true while saves are off)
 func persist_save(meta_only: bool = false) -> void:
+	_persist_save(meta_only, false)
+func _persist_save(meta_only: bool, cleared_run: bool) -> void:
 	var now = now_ms()
 	META["updated"] = now
 	if not meta_only: META["runAt"] = now
@@ -481,6 +494,18 @@ func persist_save(meta_only: bool = false) -> void:
 	var data = save_text()
 	# Atomic: the new save is written whole to a temp file, flushed and checked, then renamed over the old one, so a crash or a
 	# power cut mid-write leaves either the old save or the new one, never half a file. The save before it becomes the .bak.
+	if cleared_run:
+		# Prepare a profile-only backup first so a successful abandon cannot be undone by a damaged primary later.
+		# Until the primary write succeeds it still takes precedence over the staged backup.
+		var backup := save_path + ".bak"
+		var prior := FileAccess.get_file_as_string(backup)
+		if _write_atomic(backup, data):
+			if _write_atomic(save_path, data): return
+			if prior.is_empty(): prior = FileAccess.get_file_as_string(save_path)
+			if not prior.is_empty() and not _write_atomic(backup, prior):
+				push_warning("campaign: could not restore the prior backup after the failed write")
+		last_save_ok = false; toast("This computer could not save the game (is the disk full?).")
+		return
 	if FileAccess.file_exists(save_path):
 		var prev = FileAccess.get_file_as_string(save_path)
 		if prev != data and saneSave(_dec(_json_quiet(prev))):
@@ -500,22 +525,36 @@ func _write_atomic(path: String, text: String) -> bool:
 static func _json_quiet(t: String) -> Variant:   # a damaged save is expected now and then: parse without an engine error
 	var j = JSON.new()
 	return j.data if j.parse(t) == OK else null
-# A valid primary wins even if it is profile-only. If neither copy is sound, keep the sound half of the primary.
+# A valid primary wins even if it is profile-only. If neither copy is sound, recover the profile from either copy.
 static func _resolve_save(primary, backup) -> Dictionary:
 	if saneSave(primary): return primary
 	if saneSave(backup): return backup
-	if not (primary is Dictionary): return {}
-	if not saneRun(primary.get("run")): primary.erase("run")
-	if not saneMeta(primary.get("meta")): primary.erase("meta")
-	return primary
+	var resolved: Dictionary = primary if primary is Dictionary else {}
+	if not saneMeta(resolved.get("meta")):
+		resolved.erase("meta")
+		if backup is Dictionary and saneMeta(backup.get("meta")):
+			# Keep a usable primary run. Otherwise take the backup profile and its telemetry together.
+			var run = resolved.get("run")
+			if run == null or not saneRun(run):
+				resolved = backup
+			else:
+				resolved["meta"] = backup["meta"]
+	if not saneRun(resolved.get("run")):
+		resolved.erase("run")
+		resolved["brokenRun"] = true
+	return resolved
 
 static func _read_save(path: String) -> Dictionary:
 	var primary = _dec(_json_quiet(FileAccess.get_file_as_string(path)))
 	if saneSave(primary): return primary
-	return _resolve_save(primary, _dec(_json_quiet(FileAccess.get_file_as_string(path + ".bak"))))
+	var resolved := _resolve_save(primary, _dec(_json_quiet(FileAccess.get_file_as_string(path + ".bak"))))
+	if resolved.is_empty() and (FileAccess.file_exists(path) or FileAccess.file_exists(path + ".bak")):
+		resolved["brokenRun"] = true
+	return resolved
 
 static func has_saved_run(path: String = SAVE_PATH) -> bool:
-	return _has_run(_read_save(path).get("run"))
+	var data := _read_save(path)
+	return _has_run(data.get("run")) or jt(data.get("brokenRun"))
 
 func _apply_save(o: Dictionary) -> void:
 	tel_log = o["tel"] if o.get("tel") is Array else []
@@ -525,12 +564,15 @@ func _apply_save(o: Dictionary) -> void:
 		META = migrateMeta(m, tel_log)
 	var r = o.get("run")
 	SAVED_RUN = migrateRun(r) if _has_run(r) else null
+	_broken_run = jt(o.get("brokenRun")) or _unplayable_run(SAVED_RUN)
+	_aspect_setup = o["aspectSetup"] if _aspect_pending(SAVED_RUN) and o.get("aspectSetup") is Dictionary else {}
+	_launch_rng = int(z0(_aspect_setup.get("launchRng"))) if _aspect_setup.has("launchRng") else -1
 	var sb = o.get("battle")
 	saved_battle = sb if (SAVED_RUN != null and sb is Dictionary and sb.get("data") is String and sb.get("node") is String and sb.get("fp") is String) else null
 	# Issue 1338: only a save written before storyGuard may be missing a story buff the old mid-battle checkpoint erased
 	if SAVED_RUN != null and o.get("storyGuard") != true: SAVED_RUN["storyLegacy"] = true
 	# Older builds showed the line on every Sector III win. Use the saved log when it can prove it already appeared.
-	if SAVED_RUN != null and not SAVED_RUN.has("beat3DebriefSeen") and _beat3_line(SAVED_RUN, "debrief") != "":
+	if SAVED_RUN != null and not _broken_run and not SAVED_RUN.has("beat3DebriefSeen") and _beat3_line(SAVED_RUN, "debrief") != "":
 		var started: float = float(z0(SAVED_RUN.get("t0")))
 		if started > 0 and tel_log.any(func(e): return e is Dictionary and e.get("ev") == "battle_end" and e.get("result") == "win" and e.get("sector") == 3 and float(z0(e.get("t"))) >= started):
 			SAVED_RUN["beat3DebriefSeen"] = true
@@ -579,11 +621,14 @@ func shipName(fac) -> String:
 	for n in (base if base.size() > 0 else SHIP_NAMES):
 		if not used.has(n): pool.append(n)
 	return pick(pool if pool.size() > 0 else SHIP_NAMES)
-func newCaptain(vet, fac, uid: String) -> Dictionary:
+func newCaptain(vet, fac, uid: String, ship: Dictionary = {}) -> Dictionary:
 	var faction := str(fac) if jt(fac) else "voidsworn"
 	var name := capName(fac)
-	var perks: Array = [pick(PERKS.keys())] if jt(vet) else []
+	var perks: Array = []
 	var c := CaptainData.make("captain:" + uid, faction, name, RANK_XP[1] if jt(vet) else 0, 1 if jt(vet) else 0, perks)
+	if jt(vet) and not ship.is_empty():
+		ship["cap"] = c
+		_roll_captain_perk(ship)
 	CaptainData.update_trait(c, PERKS)
 	CaptainData.assign_portrait(c, CaptainData.used_portraits(RUN))
 	return c
@@ -591,7 +636,8 @@ func newCaptain(vet, fac, uid: String) -> Dictionary:
 func _newShip(tpl, vet) -> Dictionary:
 	var fac = factionOfTpl(tpl)
 	var uid := new_id()
-	var s = {"uid": uid, "tpl": tpl, "name": shipName(fac), "mk": 1, "hp": 0, "mods": [], "cap": newCaptain(vet, fac, uid)}
+	var s = {"uid": uid, "tpl": tpl, "name": shipName(fac), "mk": 1, "hp": 0, "mods": []}
+	s["cap"] = newCaptain(vet, fac, uid, s)
 	s["hp"] = derive(s)["maxHp"]
 	return s
 # campaign3d.js: wounded captains take the next hull (not during a battle, not a veteran hire)
@@ -651,7 +697,7 @@ func rollRarity(minR, s, p = null) -> int:
 	return max(int(z0(minR)), r)
 func fleetKit() -> Dictionary:
 	var k = {}
-	for sh in (RUN["fleet"] if RUN != null else []):
+	for sh in (RUN.get("fleet", []) if RUN != null else []):
 		k.merge(_ship_kit(HULLS[sh["tpl"]], derive(sh)))
 	return k
 func _ship_kit(hull: Dictionary, d: Dictionary) -> Dictionary:
@@ -659,11 +705,13 @@ func _ship_kit(hull: Dictionary, d: Dictionary) -> Dictionary:
 	for w in d["weapons"]:
 		if w["k"] == "torp": k["torp"] = 1
 		if w["k"] == "lance": k["lance"] = 1
+		if jt(w.get("ion")): k["ion"] = 1
 		if w["k"] == "battery": k["batt"] = 1
 		if w["k"] == "flak": k["flak"] = 1
 		if w["arc"] == "P" or w["arc"] == "S": k["broad"] = 1
 		if w["arc"] == "P" or w["arc"] == "S" or w["k"] == "battery": k["still"] = 1
-	if float(z0(hull.get("sh"))) > 0: k["shields"] = 1
+	if d["shMax"] > 0: k["shields"] = 1
+	if _hull_can_brace(hull): k["brace"] = 1
 	if jt(hull.get("hangar")): k["carrier"] = 1
 	if jt(d["hangar"]): k["sq"] = 1
 	return k
@@ -672,7 +720,7 @@ func _ship_kit(hull: Dictionary, d: Dictionary) -> Dictionary:
 # caps and possible future fits here never add, remove or reweight an offer.
 func boonFleetRelevance(id: String, rarity: int) -> Dictionary:
 	if RUN == null: return {}
-	# These three protocols only act when a hull braces. This read does not feed the offer pool.
+	# These three protocols only act when a hull braces.
 	var brace := id in ["d_bastion", "i_brace", "i_wall"]
 	var need: String = "brace" if brace else BOON_NEED.get(id, "")
 	if need == "": return {}
@@ -713,7 +761,10 @@ func _boon_fits_ship(ship: Dictionary, need: String, fx: Dictionary) -> bool:
 	return (need == "brace" or _ship_kit(HULLS[ship["tpl"]], d).has(need)) and _boon_has_room(d, fx)
 
 func _boon_can_brace(tpl) -> bool:
-	return not jt(HULLS[tpl].get("sq")) and not jt(FAC_GATES.get(factionOfTpl(tpl), {}).get("noBrace"))
+	return _hull_can_brace(HULLS[tpl])
+
+func _hull_can_brace(hull: Dictionary) -> bool:
+	return not jt(hull.get("sq")) and not jt(FAC_GATES.get(hull.get("fac"), {}).get("noBrace"))
 
 func _boon_has_room(derived: Dictionary, fx: Dictionary) -> bool:
 	var current: Dictionary = derived["fx"]
@@ -727,6 +778,7 @@ func _boon_has_room(derived: Dictionary, fx: Dictionary) -> bool:
 	return false
 
 func boonUseful(id, kit: Dictionary) -> bool:
+	if id in ["i_brace", "i_wall", "d_bastion"] and not kit.has("brace"): return false
 	var n = BOON_NEED.get(id)
 	return not jt(n) or jt(kit.get(n))
 # R1 (Nov 1, Codex PR #1 boon fix, Ryan's ruling R64; port of core.js): one pool of useful ordinary protocols from the offering core and the run's
@@ -999,6 +1051,24 @@ func canFitModule(sh, m) -> bool:
 			if W_.has(pair[0]) and W_[pair[0]].get("k") == kind: return true
 		return false
 	return not jt(need)
+# Issue 2029 item 8: why a refit cannot go on a ship, in words ("" when it fits). The item that fills the slot is named, or
+# the class is said to have no slot of the kind the refit needs. Never changes what canFitModule answers.
+func fitBlock(sh, m) -> String:
+	if canFitModule(sh, m): return ""
+	var t = HULLS.get(sh.get("tpl")) if sh is Dictionary else null
+	if t == null or not (m is String) or not MODULES.has(m): return "That refit cannot go there."
+	var cls = str(t.get("n", "ship")); cls = cls if cls.begins_with("The ") else "The " + cls
+	if int(z0(t.get("slots"))) <= 0: return cls + " has no refit slot."
+	var probe = sh.duplicate(); probe["mods"] = []   # the same ship with every slot free: what is left in the way is the class itself
+	if not canFitModule(probe, m):
+		var md = MODULES[m]; var need = MOD_NEED.get(m)
+		if jt(md.get("only")) and t.get("ab") != md["only"]: return cls + " has no " + {"launch": "launch bay"}.get(md["only"], "slot of that kind") + " for this refit."
+		if need == "brace": return cls + " cannot brace, so this refit has nothing to do."
+		var what = {"shields": "shield", "carrier": "hangar", "chaser": "fore or flank gun to swivel", "batt": "battery", "lance": "lance", "torp": "torpedo tube", "flak": "flak gun"}.get(need, "slot of that kind")
+		return cls + " has no " + what + " for this refit."
+	var held = []
+	for x in sh["mods"]: held.append(modName(x) if MODULES.has(x) else str(x))
+	return ("Slot taken by " if held.size() == 1 else "Slots taken by ") + " and ".join(held) + "."
 func randomRelic() -> Variant:
 	var pool = []
 	for r in RELICS.keys():
@@ -1084,14 +1154,7 @@ func rollEncounter(kind, col) -> Dictionary:
 	var enc = "rout" if float(col) == 0 else pick(ENC_POOL)
 	return {"enc": enc, "shape": pick(ENCOUNTERS[enc]["shapes"])}
 func effArch(arch, fac) -> Variant:
-	if arch == "carrier":
-		var F = FACTIONS.get(fac)
-		var has_car = false
-		if F != null:
-			for id in F["roster"]:
-				if HULLS.has(id) and HULLS[id].get("ab") == "launch": has_car = true
-		if not has_car: return "heavy"
-	return arch if jt(arch) else null
+	return BattleAPI.RulesScript.enemy_archetype(arch, fac, FACTIONS, HULLS)
 
 # ---------------- sector map generation ----------------
 func _is(n, types: Array) -> bool: return types.has(n["type"])
@@ -1404,12 +1467,13 @@ func altCommand(admiralId) -> Variant:
 		var c = ADMIRALS[ids[(i + k) % ids.size()]].get("cmd")
 		if jt(c) and jt(a.get("cmd")) and c["id"] != a["cmd"]["id"]: return c
 	return null
-func newRun(admiralId, fac, opt = {}) -> void:
+func newRun(admiralId, fac, opt = {}, checkpoint := true) -> void:
 	if not ADMIRALS.has(admiralId): return
 	# R1 (PROG-6): an admiral you do not own cannot launch. The screen checks this too; the rules function is the gate now.
 	# Harnesses that start a run with an admiral they have not bought grant that ownership in their own setup first.
 	if not admiralOwned(admiralId): RUN = null; return
 	var adm = ADMIRALS[admiralId]
+	_aspect_setup.clear()
 	fac = fac if RUN_FACTIONS.has(fac) else "voidsworn"
 	var foes = shuffle(RUN_FACTIONS.filter(func(f): return f != fac))
 	RUN = {"fac": fac, "foes": foes, "admiral": admiralId, "credits": 120, "cpCap": 10, "sector": 1, "relics": [], "inventory": [], "fleet": [], "pos": null,
@@ -1450,7 +1514,7 @@ func newRun(admiralId, fac, opt = {}) -> void:
 		var f = flagshipOf()
 		if f != null:
 			f["mk"] = max(float(or_(f.get("mk"), 1)), 2); f["cap"]["rank"] = max(float(f["cap"]["rank"]), 2); f["cap"]["xp"] = max(float(f["cap"]["xp"]), float(RANK_XP[2]))
-			if f["cap"]["perks"].size() < 2: f["cap"]["perks"].append(pick(PERKS.keys().filter(func(p): return not f["cap"]["perks"].has(p))))
+			if f["cap"]["perks"].size() < 2: _roll_captain_perk(f)
 			f["hp"] = derive(f)["maxHp"]
 		CaptainData.update_trait(f["cap"], PERKS)
 	var lb = lineageBuild(admiralId)   # issue #305: a run snapshots the flown admiral's tree, because picks can only change between runs
@@ -1467,7 +1531,7 @@ func newRun(admiralId, fac, opt = {}) -> void:
 	RUN["map"] = genSector(1)
 	RUN["flags"] = {}; RUN["nems"] = {}; RUN["nemAssign"] = drawNemAssign(); RUN["nemClock"] = 0; RUN["nemStrike"] = false; RUN["nemEscapes"] = 0; RUN["nem"] = newNemesis(RUN["nemAssign"][0])   # B4: the first hunter is ready, the rest are created lazily
 	META["stats"]["runs"] = float(META["stats"]["runs"]) + 1
-	saveRun()
+	if checkpoint: saveRun()
 func saveRun() -> void:
 	SAVED_RUN = clone(RUN) if (RUN != null and not jt(RUN.get("over"))) else null
 	if B == null: saved_battle = null   # a new checkpoint outside a battle replaces any battle save
@@ -1508,7 +1572,10 @@ func act(name: String, arg = "") -> void:
 		"continueRun": ACT_continueRun()
 		"newRunScreen": ACT_newRunScreen()
 		"abandonRun":
-			RUN = clone(SAVED_RUN); endRun(false, true)
+			if _needs_run_recovery(): _show_run_recovery()
+			elif SAVED_RUN != null:
+				RUN = clone(SAVED_RUN); endRun(false, true)
+		"discardBrokenRun": ACT_discardBrokenRun()
 		"legacy": legacyScreen()
 		"help": helpScreen()
 		"progTab":
@@ -1613,12 +1680,49 @@ func titleScreen() -> void:
 	RUN = null; B = null
 	map_trial_choice = false
 	var acts = []
-	if SAVED_RUN != null: A(acts, "continueRun")
+	var saved = SAVED_RUN != null or _broken_run
+	if saved: A(acts, "continueRun")
 	A(acts, "newRunScreen"); A(acts, "legacy"); A(acts, "help")
-	show_page("title", {"saved": SAVED_RUN != null, "renown_dot": float(z0(META.get("renown"))) >= 15, "best": META["stats"].get("best"), "wins": META["stats"].get("wins")}, acts)
+	show_page("title", {"saved": saved, "renown_dot": float(z0(META.get("renown"))) >= 15, "best": META["stats"].get("best"), "wins": META["stats"].get("wins")}, acts)
+func _unplayable_run(run) -> bool:
+	return run != null and (not saneRun(run) or run["fleet"].is_empty()
+		or not FACTIONS.has(run["map"].get("fac")) or not (run["sector"] is int or run["sector"] is float)
+		or not run["fleet"].all(func(s): return s is Dictionary and s.has("uid")))
+func _needs_run_recovery() -> bool:
+	return _broken_run or _unplayable_run(SAVED_RUN)
+func _show_run_recovery() -> void:
+	var acts = []; A(acts, "discardBrokenRun"); A(acts, "closeModal")
+	show_modal("brokenRun", {}, acts)
+func ACT_discardBrokenRun() -> void:
+	if not _needs_run_recovery(): return
+	var old = [SAVED_RUN, saved_battle, saved_in_yard, _broken_run, META.duplicate(true)]
+	SAVED_RUN = null; saved_battle = null; saved_in_yard = false; _broken_run = false
+	_persist_save(false, true)
+	if not last_save_ok:
+		SAVED_RUN = old[0]; saved_battle = old[1]; saved_in_yard = old[2]; _broken_run = old[3]; META = old[4]
+		changed.emit()
+		return
+	RUN = null; B = null
+	admiralScreen()
+func _aspect_pending(run) -> bool:
+	if not (run is Dictionary) or jt(run.get("aspect")) or run.get("sector") != 1 or run.get("pos") != null \
+			or run.get("curNode") != null or run.get("reward") != null or not (run.get("stats") is Dictionary) \
+			or z0(run["stats"].get("battles")) != 0 or not saneRun(run):
+		return false
+	# Old pre-pick checkpoints have no setup record. Opening the map seeds its stops, even before the first jump.
+	for col in run["map"]["cols"]:
+		if col.any(func(n): return n.get("seed") != null): return false
+	return true
 func ACT_continueRun() -> void:
+	if _needs_run_recovery(): _show_run_recovery(); return
 	if SAVED_RUN == null: return
 	if saved_battle != null and _resume_saved_battle(): return
+	if _aspect_pending(SAVED_RUN):
+		RUN = clone(SAVED_RUN)
+		picked_admiral = RUN["admiral"]; picked_faction = RUN["fac"]
+		run_opt = {"alt": jt(RUN.get("altFleet")), "cmdAlt": jt(RUN.get("cmdOverride")), "heat": RUN.get("heat", []).duplicate()}
+		aspectScreen()
+		return
 	RUN = clone(SAVED_RUN)
 	ensureFlagship()
 	if RUN.get("reward") != null:
@@ -1635,6 +1739,7 @@ func ACT_continueRun() -> void:
 		RUN.erase("_repairs"); RUN.erase("_shipsDropped")
 		if page.get("kind") != "battle": saveRun()
 func ACT_newRunScreen() -> void:
+	if _needs_run_recovery(): _show_run_recovery(); return
 	if SAVED_RUN != null:
 		var acts = []; A(acts, "abandonRun"); A(acts, "closeModal")
 		show_modal("abandon", {}, acts); return
@@ -1695,16 +1800,23 @@ func ACT_startRun() -> void:
 	# Issue 1217 phase 4: a Launch after Back reuses the random state the dropped run started from, so Back then Launch
 	# cannot reroll patrons, founder relic, map or the aspect offer. Twin: ACT.startRun in campaign_meta.js.
 	if META.has("parkedRng"):
-		JSM.rnd_seed(int(META["parkedRng"])); META.erase("parkedRng")
-	_launch_rng = JSM.to_u32(JSM.rng_s)
+		rng.rnd_seed(int(META["parkedRng"])); META.erase("parkedRng")
+	_launch_rng = JSM.to_u32(rng.rng_s)
 	newRun(picked_admiral, picked_faction, {"alt": run_opt["alt"] and ml >= 1, "cmdAlt": run_opt["cmdAlt"] and ml >= 3,
-		"heat": run_opt["heat"].duplicate() if heatUnlocked() else [], "mapTrial": map_trial_choice})
+		"heat": run_opt["heat"].duplicate() if heatUnlocked() else [], "mapTrial": map_trial_choice}, false)
 	map_trial_choice = false
 	tel("run_start", {"fac": RUN["fac"], "admiral": picked_admiral})
+	_aspect_setup = {"offer": _roll_aspect_offer(), "launchRng": _launch_rng}
+	saveRun()
 	aspectScreen()
+func _roll_aspect_offer() -> Array:
+	return shuffle(ASPECTS.keys()).slice(0, 4 if float(z0(RUN.get("mastery"))) >= 2 else 3)
 func aspectScreen() -> void:
 	var f = ensureFlagship()
-	var opts = shuffle(ASPECTS.keys()).slice(0, 4 if float(z0(RUN.get("mastery"))) >= 2 else 3)
+	var opts = _aspect_setup.get("offer")
+	if not (opts is Array) or opts.is_empty() or not opts.all(func(k): return ASPECTS.has(k)):
+		opts = _roll_aspect_offer()
+		_aspect_setup = {"offer": opts, "launchRng": _launch_rng}
 	W["aspOffer"] = opts
 	var acts = []
 	for k in opts: A(acts, "pickAspect", k)
@@ -1877,6 +1989,11 @@ func ACT_nameHeir(id) -> void:
 	show_page("end", d, endActions(run, d["next"]))
 func endRun(victory: bool, abandoned: bool = false) -> void:
 	if RUN == null or jt(RUN.get("over")): return
+	# Clear the old checkpoint before staging its earnings. Commit both changes together or leave the run as it was.
+	var old = []
+	if abandoned:
+		old = [SAVED_RUN, saved_battle, saved_in_yard, META.duplicate(true), tel_log.duplicate()]
+		SAVED_RUN = null; saved_battle = null; saved_in_yard = false
 	var s = RUN["stats"]
 	if META["stats"].has("finishedRuns") and not jt(RUN.get("over")): META["stats"]["finishedRuns"] += 1
 	var prevBest = float(z0(META["stats"].get("best"))); META["stats"]["best"] = max(prevBest, float(RUN["sector"]))
@@ -1904,7 +2021,14 @@ func endRun(victory: bool, abandoned: bool = false) -> void:
 	RUN["carry"].merge(earnings)
 	if arcs_on and not abandoned and arc_end_cb is Callable and (arc_end_cb as Callable).is_valid() and _arc_played(3): arc_end_cb.call(victory)
 	RUN["carry"]["inheritance"] = inheritanceSummary(RUN)
-	RUN["over"] = true; SAVED_RUN = null; saved_battle = null; persist_save()
+	RUN["over"] = true; SAVED_RUN = null; saved_battle = null
+	if abandoned: _persist_save(false, true)
+	else: persist_save()
+	if abandoned and not last_save_ok:
+		SAVED_RUN = old[0]; saved_battle = old[1]; saved_in_yard = old[2]; META = old[3]; tel_log = old[4]
+		RUN = null
+		changed.emit()
+		return
 	var nf = nextFacPick() if victory else null
 	var acts = endActions(RUN, nf)
 	var mins = null
@@ -2013,6 +2137,8 @@ func _resume_saved_battle() -> bool:
 		if why == "the snapshot is from other rules": toast("The game was updated since this save, so the run goes back to its last checkpoint before this fight.")
 		return false
 	RUN = res["run"]; B = res["B"]
+	if sb.get("campaignRng") is int or sb.get("campaignRng") is float:
+		rng.rng_s = int(sb["campaignRng"])
 	var c = B["cfg"]
 	tel("battle_resume", {"round": B["round"], "kind": c.get("kind"), "fac": c.get("fac")})
 	var acts = []
@@ -2026,7 +2152,7 @@ func _resume_saved_battle() -> bool:
 func save_battle_round(snap: Dictionary) -> bool:
 	if snap.is_empty() or RUN == null or B == null or SAVED_RUN == null or jt(B.get("over")) or jt(B.get("finished")) or not jt(RUN.get("curNode")): return false
 	var prev = saved_battle
-	saved_battle = {"node": RUN["curNode"], "t0": str(RUN.get("t0")), "round": snap["round"], "fp": snap["fp"], "size": snap["size"], "data": Marshalls.raw_to_base64(snap["bytes"])}
+	saved_battle = {"campaignRng": rng.rng_s, "node": RUN["curNode"], "t0": str(RUN.get("t0")), "round": snap["round"], "fp": snap["fp"], "size": snap["size"], "data": Marshalls.raw_to_base64(snap["bytes"])}
 	persist_save()
 	if not last_save_ok: saved_battle = prev   # keep memory equal to the disk: a later write never jumps to a round the player was not told about
 	return last_save_ok
@@ -2133,9 +2259,24 @@ func promoteModal(uid: String, after: Callable) -> void:
 	var acts = []
 	for p in s["cap"]["offer"]: A(acts, "takePerk", uid + ":" + p)
 	show_modal("promote", {"ship": s}, acts)
+func _captain_perk_pool(ship: Dictionary) -> Array:
+	var hull: Dictionary = HULLS[ship["tpl"]]
+	var d: Dictionary = derive(ship)
+	var ab = hull.get("ab")
+	var cooldown: float = TB.ABILITIES.get(ab, {}).get("cd", 0) - z0(d["fx"].get("cdMod"))
+	if ab != "launch" and z0(runFx().get("coolant")) > 0: cooldown -= 1
+	var known: Array = PERKS.keys()
+	known.sort()
+	return CaptainData.perk_pool(known, ship.cap.perks, d, _hull_can_brace(hull), cooldown, ab == "launch" and d.hangar > 0)
+
+func _roll_captain_perk(ship: Dictionary) -> void:
+	var pool := _captain_perk_pool(ship)
+	if not pool.is_empty(): ship["cap"]["perks"].append(pick(pool))
+
 func _offer_perks(s: Dictionary) -> void:
-	if not jt(s["cap"].get("offer")):
-		var pool = PERKS.keys().filter(func(p): return not s["cap"]["perks"].has(p) and (p != "wing" or HULLS[s["tpl"]].get("ab") == "launch"))
+	var pool := _captain_perk_pool(s)
+	var offer: Array = or_(s["cap"].get("offer"), [])
+	if offer.is_empty() or offer.any(func(perk): return not pool.has(perk)):
 		s["cap"]["offer"] = shuffle(pool).slice(0, 2)
 func _take_perk(sh, perk) -> void:
 	sh["cap"]["perks"].append(perk); sh["cap"]["pending"] = float(sh["cap"]["pending"]) - 1; sh["cap"]["offer"] = null
@@ -2305,6 +2446,17 @@ func ACT_finishBoughtRefit(uid := "") -> void:
 		toast(modName(offer["module"]) + " stowed in the hold.")
 	RUN.erase("boughtRefit")
 	shipyardScreen(yard_node)
+# Issue 2029 item 7: a yard repair buys as many hull points as the purse allows, at the price of a full repair per point
+# (priceMult / 2 each, the whole bill rounded up as ever). repairPoints is how many of the `miss` missing points `funds` pays
+# for; repairBill is what those points cost. A purse that covers everything pays exactly the old bill; one that cannot buy a
+# single point gets 0 (the button stays off). repairAll stays all or nothing.
+func repairBill(points: float, pm: float) -> float: return ceil(points / 2.0 * pm)
+func repairPoints(miss: float, pm: float, funds: float) -> float:
+	if miss <= 0.0: return 0.0
+	if repairBill(miss, pm) <= funds: return miss
+	var pts = floor(funds * 2.0 / maxf(pm, 0.0001) + 0.000001)
+	while pts > 0.0 and repairBill(pts, pm) > funds: pts -= 1.0
+	return clampf(pts, 0.0, miss)
 func preview_op(action: String, key := "", slot := -1) -> Array:
 	return PreviewOp.plan(self, action, key, slot)["rows"]
 
@@ -2546,6 +2698,20 @@ func nemName(fac) -> String:
 				clash = true; break
 		if not clash: return n
 	var p1 = str(pick(F["pre"])); return p1 + " " + str(pick(F["post"]))
+# Capabilities come from the actual refitted fleet and the rival's hull roster.
+func _nem_kit_fit(key: String, fac: String, kit: Dictionary) -> bool:
+	# Legacy summaries can describe an opponent without a player fleet to inspect.
+	if not RUN.has("fleet"): return true
+	match key:
+		"ion", "shields":
+			return (kit.has("lance") or kit.has("ion")) and HULLS.values().any(func(h): return h.get("fac") == fac and z0(h.get("sh")) > 0)
+		"torp": return kit.has("torp")
+		"pd": return (kit.has("torp") or kit.has("sq")) and HULLS.values().any(func(h):
+			return h.get("fac") == fac and not h.get("w", []).any(func(w): return W_[w[0]]["k"] == "flak"))
+		"board", "armor": return not RUN.get("fleet", []).is_empty()
+		"evasion", "aim", "flank", "brawl", "slow": return not RUN.get("fleet", []).is_empty()
+	return true
+
 func newNemesis(fac0 = null) -> Dictionary:
 	var fac = fac0 if jt(fac0) else RUN["foes"][3] if (RUN.get("foes") is Array and RUN["foes"].size() > 3 and jt(RUN["foes"][3])) else pick(RUN_FACTIONS.filter(func(f): return f != RUN["fac"]))
 	var F = NEM_FAC[fac]; var beh = F["beh"]
@@ -2553,9 +2719,10 @@ func newNemesis(fac0 = null) -> Dictionary:
 	var title = pick(F["titles"]); var persona = pick(F["personas"]); var traits = shuffle(F["traits"].duplicate()).slice(0, 2)
 	var portrait = "nem_" + str(fac) + "_" + numstr(1 + floor(rnd() * 6))
 	var clash = {"slow": "swift", "board": "boarders", "ion": "shielded"}   # no strength and weakness that cancel out
+	var kit := fleetKit()
 	var weakPool = NEM_WEAK.keys().filter(func(k): return not (k == "anchor" and (jt(beh.get("noFlee")) or jt(beh.get("revive")))) and not (clash.has(k) and traits.has(clash[k])))   # zealots and the Deathless never break
 	var g = nemGender(fac, name)
-	var weak = shuffle(weakPool).slice(0, 2)
+	var weak = shuffle(weakPool).filter(func(k): return _nem_kit_fit(k, fac, kit)).slice(0, 2)
 	return {"fac": fac, "name": name, "g": g, "title": title, "persona": persona, "traits": traits, "portrait": portrait, "weak": weak, "revealed": [], "adapt": [], "adaptSector": 0, "met": 0,
 		"beaten": 0, "scars": 0, "scarKinds": [], "epithets": [], "epithet": null, "last_beat": null, "fed": 0, "riches": 0, "loot": 0, "held": null, "gloat": null, "honed": 0,
 		"revived": false, "dead": false, "seen": {}, "signatures": [], "lessons": []}   # #121: no clock or strike here (they are the run's)
@@ -2823,11 +2990,13 @@ func nemAdapt(force: bool = false, N0 = null) -> Variant:
 	var blocked = []   # R1 (NEM-2, R63 clash check, Codex PR #1): never a direct counter to a known weakness
 	if or_(N.get("revealed"), []).has("ion"): blocked.append("shields")
 	if or_(N.get("revealed"), []).has("torp"): blocked.append("pd")
-	var ks = ssort(score.keys().filter(func(k): return not blocked.has(k) and not N["adapt"].has(k) and score[k] > 0), func(a, b): return score[b] - score[a])
+	var kit := fleetKit()
+	var eligible := score.keys().filter(func(k): return not blocked.has(k) and not N["adapt"].has(k) and _nem_kit_fit(k, N["fac"], kit))
+	var ks = ssort(eligible.filter(func(k): return score[k] > 0), func(a, b): return score[b] - score[a])
 	var pickA = ks[0] if ks.size() > 0 else null
 	if pickA == null and jt(sp) and not N["adapt"].has(sp["id"]): pickA = sp["id"]
 	if pickA == null:
-		var rest = score.keys().filter(func(k): return not blocked.has(k) and not N["adapt"].has(k))
+		var rest = eligible
 		if rest.size() > 0: pickA = rest[0]
 	if pickA == null: return null
 	N["adapt"].append(pickA); N["adaptSector"] = RUN["sector"]; N["seen"] = {}; return pickA
@@ -3593,15 +3762,13 @@ func _heavy_wreck_cause(unit: Dictionary, log: Array) -> String:
 	var ram_recoil := target + " rams " + str(unit.get("killedBy", "")) + " at full speed:"
 	var torp_hit := " reach " + target
 	var direct_hit := " at " + target + ":"
-	# Spread Pattern: the burst line names the ship that was aimed at, never the neighbours it kills,
-	# so a splash kill is credited to the torpedo that killedBy names, not to an earlier gun hit.
-	var splash_from := " from " + str(unit.get("killedBy", "")) + " burst against "
-	var splash_miss := " burst against " + target + ","
+	# Spread Pattern marks the hull it actually kills at the moment of death (rules.gd torpImpact).
+	# The burst summary names only the ship that was aimed at, so it cannot identify the victims;
+	# the mark does, and a hull killed by the same attacker elsewhere in the fight has no mark.
+	if jt(unit.get("splashKill")): return "Torpedo strike"
 	for i in range(log.size() - 1, -1, -1):
 		var line: String = log[i].get("m", "")
 		if line.contains(ram_hit) or line.begins_with(ram_recoil): return "Rammed"
-		if unit.get("killedBy", "") != "" and line.contains(splash_from) and line.contains(", catching ") and not line.contains(splash_miss):
-			return "Torpedo strike"
 		if line.begins_with("Torpedoes from ") and (line.contains(torp_hit + ":") or line.contains(torp_hit + " (a stray hit in the lane):")):
 			return "Torpedo strike"
 		var gun := line.find(" fires ")
@@ -3962,7 +4129,7 @@ func nodeSeeds(nodes: Array) -> int:
 func initFinishedRuns() -> void:
 	# Only the real host opts in to tracking. Old profiles counted launches, including one saved active run.
 	if not META["stats"].has("finishedRuns"):
-		var active = (RUN != null and not jt(RUN.get("over"))) or (SAVED_RUN != null and not jt(SAVED_RUN.get("over")))
+		var active = (RUN != null and not jt(RUN.get("over"))) or (SAVED_RUN != null and not jt(SAVED_RUN.get("over"))) or _broken_run
 		META["stats"]["finishedRuns"] = max(0, float(z0(META["stats"].get("runs"))) - (1 if active else 0))
 func set_teaching_tips(on: bool) -> void:
 	teaching_tips = on
@@ -4015,7 +4182,7 @@ func battleScreen(cfg: Dictionary) -> void:
 		if sn.get("seed") != null and cfg.get("seed") == null:
 			var sd = float((int(sn["seed"]) ^ 0x27d4eb2f) & 0xFFFFFFFF) if jt(cfg.get("eventRelic")) else float(sn["seed"])
 			cfg = cfg.duplicate(); cfg["seed"] = sd
-			JSM.rnd_seed((int(sd) ^ 0x5bd1e995) & 0xFFFFFFFF)
+			rng.rnd_seed((int(sd) ^ 0x5bd1e995) & 0xFFFFFFFF)
 	if RUN["fleet"].size() <= 1 and float(z0(RUN.get("reinf"))) < float(RUN["sector"]):
 		RUN["reinf"] = RUN["sector"]; var sh = newShip(cheapHull(RUN["fac"])); RUN["fleet"].append(sh)
 		var r_line: String = str({"chorus": "Your surviving spores coalesce into a fresh " + ship_bare(str(sh["name"])) + ".", "deathless": "An automated reserve berth dispatches " + ship_with_article(str(sh["name"])) + " to reinforce you.", "corsair": "A straggling raider from the outer belt joins your pack: " + ship_with_article(str(sh["name"])) + ".", "ithar": "A distant picket answers your distress pulse: " + ship_with_article(str(sh["name"])) + "."}.get(str(RUN["fac"]), "An allied sector patrol sends " + ship_with_article(str(sh["name"])) + " to reinforce you."))
@@ -4065,13 +4232,14 @@ func _nem_reinforce(c) -> bool:
 	var nm = c.get("nemesis")
 	return jt(nm) and NEM_FAC.has(nm.get("fac")) and NEM_FAC[nm["fac"]]["beh"].get("strike") == "reinforce"
 # The one place a battle starts. External mode: battle_setup(run, cfg) builds the real battle (the rules' startBattle, which reseeds
-# the shared PRNG from cfg.seed) and returns its B; the battle scene then plays it and calls finish_battle(result).
+# its PRNG from cfg.seed) and returns its B; the battle scene then plays it and calls finish_battle(result).
 var battle_setup: Callable = Callable()
 func start_battle(c: Dictionary) -> void:
 	if battle_mode == "external" and battle_setup.is_valid():
 		var c2 = c.duplicate(); c2["campaign"] = true   # the rules roll the mid-battle event right after setup, as campaign3d.js does
 		var sc = sectorCond()
 		if sc != null and jt(sc.get("war")) and c["kind"] != "boss": c2["event_war"] = true   # sectors at war force reinforcements (G1: draw it after setup)
+		if c2.get("seed") == null: c2["seed"] = int(floor(rnd() * 4294967296.0))
 		B = battle_setup.call(RUN, c2)
 	else: stub_start(c)
 # External mode: the battle scene reports the end. result is "win", "loss" or "retreat"; battle is the rules' B (units with the JS field names).
@@ -4182,11 +4350,8 @@ func finishBattle(result: String) -> void:
 			var xp = min(60.0, jsround(8.0 + float(z0(u.get("dealt"))) / 4.0 + float(z0(u.get("kills"))) * 12.0)); var rk = ship["cap"]["rank"]
 			var xp_before: float = ship["cap"]["xp"]
 			addXp(ship, xp)
-			var promoted: bool = float(ship["cap"]["rank"]) > float(rk)
-			var rollup := CombatRecords.ship_rollup(B, u["id"])
-			rollup["captain_xp"] = float(ship["cap"]["xp"]) - xp_before
-			rollup["promoted"] = promoted
-			summary["xp"].append({"ship": ship["name"], "cap": ship["cap"].duplicate(true), "xp": xp, "up": promoted})
+			CombatRecords.ship_rollup(B, u["id"])["captain_xp"] = float(ship["cap"]["xp"]) - xp_before
+			summary["xp"].append({"ship": ship["name"], "cap": ship["cap"].duplicate(true), "xp": xp, "up": float(ship["cap"]["rank"]) > float(rk)})
 	if result == "win":
 		for sh in RUN["fleet"]:
 			var mx = float(derive(sh)["maxHp"]); sh["hp"] = min(mx, float(sh["hp"]) + jsround(mx * 0.15))
@@ -4240,6 +4405,7 @@ func finishBattle(result: String) -> void:
 	if msg.size() > 0: toast(" ".join(PackedStringArray(msg)))
 	tel("battle_end", {"result": result, "kind": cfg.get("kind"), "fac": cfg.get("fac"), "rounds": B["round"], "kills": kills, "lost": summary["lost"].size()})
 	B = null
+	fleet_results.emit(not summary["lost"].is_empty(), summary["xp"].any(func(entry): return entry["up"]))
 	if result == "win" and RUN["fleet"].size() == 0:
 		var sh2 = newShip(cheapHull(RUN["fac"])); RUN["fleet"].append(sh2); ensureFlagship()
 		var p_line: String = str({"chorus": "Your surviving spores coalesce into a fresh " + ship_bare(str(sh2["name"])) + " to carry the brood.", "deathless": "An automated reserve berth dispatches " + ship_with_article(str(sh2["name"])) + " to hold the uplink.", "corsair": "A straggling raider from the outer belt joins your pack to carry the flag: " + ship_with_article(str(sh2["name"])) + ".", "ithar": "A distant picket answers your distress pulse to carry the standard: " + ship_with_article(str(sh2["name"])) + "."}.get(str(RUN["fac"]), "An allied sector patrol sends " + ship_with_article(str(sh2["name"])) + " to carry the flag."))
@@ -4263,7 +4429,7 @@ func finishBattle(result: String) -> void:
 # ---------------- the stub battle (test/node/golden_campaign.js has the same, line for line) ----------------
 func stub_start(cfg: Dictionary) -> void:
 	var seed = float(int(cfg["seed"]) & 0xFFFFFFFF) if cfg.get("seed") != null else floor(rnd() * 4294967296.0)
-	JSM.rnd_seed(int(seed))
+	rng.rnd_seed(int(seed))
 	var enc = cfg["obj"] if ENCOUNTERS.has(cfg.get("obj")) else "rout"
 	B = {"seed": seed, "cfg": cfg, "units": [], "round": 1, "obj": {"type": enc}, "shape": or_(cfg.get("shape"), "open"), "map": {"map": or_(cfg.get("map"), "random")}, "deployMode": or_(cfg.get("dep"), "line"),
 		"alt": true, "boonStats": {}, "usage": {}, "partial": false, "over": false, "busy": false, "sector": RUN["sector"], "log": []}

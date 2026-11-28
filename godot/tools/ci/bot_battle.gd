@@ -121,7 +121,7 @@ func _run() -> void:
 	C.battle_mode = "external"
 	C.battle_setup = _setup
 	C.battle_requested.connect(func(): requested = true)
-	JSM.rnd_seed(seed & 0xFFFFFFFF)   # as campaign_host.gd _seed_campaign for bot runs
+	C.rng.rnd_seed(seed & 0xFFFFFFFF)   # as campaign_host.gd _seed_campaign for bot runs
 	# a real campaign start, through the campaign's own buttons
 	C.titleScreen()
 	C.act("newRunScreen")

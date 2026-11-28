@@ -288,8 +288,10 @@ func arc_context(run = null) -> Dictionary:
 		var cur: Array = run.get("fallen", []) if run.get("fallen") is Array else []
 		for i in range(C.META["fallen"].size() - 1, -1, -1):
 			var f = C.META["fallen"][i]
-			if f is Dictionary and str(f.get("fac", "")) == fac and not cur.has(f):
-				fallen = str(f.get("cap", {}).get("full_name", ""))
+			if not (f is Dictionary) or cur.has(f): continue
+			var cap: Dictionary = f["cap"] if f.get("cap") is Dictionary else {}
+			if str(cap.get("fac", f.get("fac", ""))) == fac:
+				fallen = str(cap.get("full_name", f.get("name", "")))
 				break
 	var last: Dictionary = career.last_run_of(fac)
 	return {"nem": C.nemRead(run) if C != null else run.get("nem"), "flags": run.get("flags", {}) if run.get("flags") is Dictionary else {}, "seed": int(float(run.get("t0", 0))) % 100000,

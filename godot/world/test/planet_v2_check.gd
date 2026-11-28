@@ -8,7 +8,7 @@ extends SceneTree
 #    are in, and a planet that misses its 20 s deadline is frozen on its stand-in; battle.gd waits for it behind the
 #    loading cover (silent-regression trap 1 of the World V2 plan: an asset only a shot script ever loads).
 # 1b. The stand-in is the look's own procedural surface, never a plain ball, and every material shares one shader.
-# 3b. The relief is one exact 32-bit float channel.
+# 3b. Relief height is one exact 32-bit float channel. R01 keeps roughness and cloud coverage in a separate RG8 map.
 # 2. Every board look gets a lit surface at once: rocky (0) and barren (5) then switch to the authored 8K R01 relief,
 #    rocky with its cloud layer and air, barren with neither; terran (1), ice (3) and volcanic (4) keep the baked board
 #    surface (headless has no GPU bake, so it stays the lit stand-in here; the PC shots show the baked maps).
@@ -136,6 +136,17 @@ func _run() -> void:
 		await process_frame
 	# once a battle has drawn R01 this run, the title may show a rocky world again (its maps are already uploaded)
 	_check(PL.r01_uploaded(), "R01 drawn on a battle board but not remembered as uploaded")
+	var relief_key := BAKER.authored_key(PL.R01_DIR + "relief.json", PL.R01_SIZE, true)
+	var relief := BAKER._cache.get(relief_key) as BAKER.RockyRelief
+	_check(relief != null, "authored R01 relief was not cached as a pair")
+	var relief_ids: Array[int] = []
+	if relief != null:
+		_check(relief.height.get_format() == Image.FORMAT_RF and relief.height.get_size() == PL.R01_SIZE and relief.height.has_mipmaps(),
+			"the cached R01 height is not a full-size mipmapped RF image")
+		_check(relief.masks.get_format() == Image.FORMAT_RG8 and relief.masks.get_size() == PL.R01_SIZE and relief.masks.has_mipmaps(),
+			"the cached R01 masks are not a full-size mipmapped RG8 image")
+		relief_ids.assign([relief.height.get_instance_id(), relief.masks.get_instance_id()])
+		relief = null
 	var again := StubRules.new()
 	again.v = {"hexes": hexes, "terrain": {}, "map": {"planet": {"q": 0, "r": 0, "R": 2}}}
 	again.w = {"seed": 20}
@@ -151,6 +162,8 @@ func _run() -> void:
 	# the baked look again
 	BAKER._trim(0)
 	_check(not PL.r01_uploaded(), "R01 still counted as uploaded after the bake cache evicted it")
+	for id in relief_ids:
+		_check(not BAKER._textures.has(id), "a split R01 texture stayed cached after eviction")
 	var ev := BOARD.new()
 	ev.title_backdrop = true
 	root.add_child(ev)
@@ -451,10 +464,24 @@ func _run() -> void:
 	OS.unset_environment("VS_WORLD_CACHE")
 	# relief: one exact 32-bit float channel (Fable, PR 1776 M4)
 	var packed := Image.create(4, 2, false, Image.FORMAT_RGBA8)
-	packed.set_pixel(1, 0, Color8(0x9c, 0x41, 0, 255))
-	var hf := BAKER.height_float(packed)
+	packed.set_pixel(1, 0, Color8(0x9c, 0x41, 40, 200))
+	var hf := BAKER.height_float(packed.duplicate())
 	_check(hf.get_format() == Image.FORMAT_RF, "the relief is not one 32-bit float channel (format %d)" % hf.get_format())
 	_check(absf(hf.get_pixel(1, 0).r - float(0x9c41) / 65535.0) < 1e-6, "the relief float is not the exact 16-bit height")
+	# The first mip spans a low-byte carry. It must average the decoded heights, not rounded high and low bytes.
+	for y in 2:
+		packed.set_pixel(0, y, Color8(0x7f, 0xff, 40, 200))
+		packed.set_pixel(1, y, Color8(0x80, 0x00, 80, 120))
+	var split := BAKER.split_rocky_relief(packed)
+	var base_mask := split.masks.get_pixel(0, 0)
+	_check(absf(base_mask.r - 40.0 / 255.0) < 1e-6 and absf(base_mask.g - 200.0 / 255.0) < 1e-6,
+		"R01 roughness and cloud coverage did not survive the split")
+	var hs := split.height.get_data()
+	var ms := split.masks.get_data()
+	var m1 := split.masks.get_mipmap_offset(1)
+	_check(absf(hs.decode_float(split.height.get_mipmap_offset(1)) - 0.5) < 1e-6, "R01 height mip rounded a packed byte")
+	_check(ms[m1] == 60 and ms[m1 + 1] == 160, "R01 mask mip did not average roughness and cloud coverage separately")
+	_check(PL.ROCKY_SURFACE.count("r01_sample(relief_height,") == 1, "ROCKY_SURFACE must sample relief height once")
 	_check(BAKER.MOON_SIZE.x >= 2048, "moons bake below 2K (%s)" % str(BAKER.MOON_SIZE))
 	# GLSL leaves smoothstep undefined when edge0 >= edge1 (Artoo, PR 1776): no literal pair in the planet shaders runs
 	# high edge first; a falling edge is written 1.0 - smoothstep(lo, hi, x)

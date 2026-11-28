@@ -1,0 +1,151 @@
+{
+  "source_commit": "4f6ccc1585cf15e2a4f8f3dc7090aded89b66671",
+  "source_dirty": true,
+  "source_diff_sha256": "8518f4be7104f92eae00bbd1cf0bf8d3d92e1746c96294bde11efaf80dd82274",
+  "source_dirty_files": {
+    "godot/main/README.md": "3bc58f9cc3db1898a6569a3bee3c3c57bad46b0f",
+    "godot/main/load_screen.gd": "135af2d3399259966e56df4eb7238afe0409230c",
+    "godot/main/main.gd": "2754a3afdbf99769bb17fc49dd825884c0caf055",
+    "godot/main/test/retire_scene_check.gd": "e3781263b8c8e2b91e7f7c526b4b41b205f8ff29",
+    "godot/main/test/showcase_quiet_check.gd": "3c604d8c12eea94e7f82a3fbc67bb33823fd96d8",
+    "godot/scenes/battle/battle.gd": "967945f75a5e5c3754baa10196a32e4564e1e912",
+    "godot/tools/ci/godot_checks.txt": "90a401b4176bc9894e39df80fd22ad180537f21c",
+    "godot/ui/battle/hud.gd": "ecee89720fb562fc25e1728a1dd739503658bc05",
+    "godot/ui/campaign/campaign_ui.gd": "2ad31234462752f5273ca4979c54f590f6a14717",
+    "godot/ui/campaign/map3d.gd": "9a09abcb4498b5aee62a8f7ba9ab0aa9e58befb7",
+    "godot/ui/test/front_end_test.gd": "76278e6a05a577dd8f65bb5b912baa487d8ea6eb"
+  },
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "C4B_wide_orbit.jpg",
+  "date": "2026-11-26T23:35:54Z",
+  "sources": [
+    {
+      "source_commit": "4f6ccc1585cf15e2a4f8f3dc7090aded89b66671",
+      "source_dirty": true,
+      "source_diff_sha256": "8518f4be7104f92eae00bbd1cf0bf8d3d92e1746c96294bde11efaf80dd82274",
+      "source_dirty_files": {
+        "godot/main/README.md": "3bc58f9cc3db1898a6569a3bee3c3c57bad46b0f",
+        "godot/main/load_screen.gd": "135af2d3399259966e56df4eb7238afe0409230c",
+        "godot/main/main.gd": "2754a3afdbf99769bb17fc49dd825884c0caf055",
+        "godot/main/test/retire_scene_check.gd": "e3781263b8c8e2b91e7f7c526b4b41b205f8ff29",
+        "godot/main/test/showcase_quiet_check.gd": "3c604d8c12eea94e7f82a3fbc67bb33823fd96d8",
+        "godot/scenes/battle/battle.gd": "967945f75a5e5c3754baa10196a32e4564e1e912",
+        "godot/tools/ci/godot_checks.txt": "90a401b4176bc9894e39df80fd22ad180537f21c",
+        "godot/ui/battle/hud.gd": "ecee89720fb562fc25e1728a1dd739503658bc05",
+        "godot/ui/campaign/campaign_ui.gd": "2ad31234462752f5273ca4979c54f590f6a14717",
+        "godot/ui/campaign/map3d.gd": "9a09abcb4498b5aee62a8f7ba9ab0aa9e58befb7",
+        "godot/ui/test/front_end_test.gd": "76278e6a05a577dd8f65bb5b912baa487d8ea6eb"
+      },
+      "stage": "sheet built"
+    },
+    {
+      "source_commit": "b557adc85895311f8796c25ce958de0ccc0dd49c",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game"
+    },
+    {
+      "source_commit": "7d4db9de71111eedfe72635c88516f5228bad9af",
+      "source_diff_sha256": "",
+      "source_dirty": false,
+      "stage": "installed in game"
+    },
+    {
+      "source_commit": "7d4db9de71111eedfe72635c88516f5228bad9af",
+      "source_diff_sha256": "2c11badba22d8d56989480feb3d12650aea3a0b82ef4b9d2cfc9d95b5e430c0c",
+      "source_dirty": true,
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "C4 CPU framing study",
+      "source_commit": "4f6ccc1585cf15e2a4f8f3dc7090aded89b66671",
+      "source_dirty": true,
+      "source_diff_sha256": "8518f4be7104f92eae00bbd1cf0bf8d3d92e1746c96294bde11efaf80dd82274",
+      "stage": "sheet built",
+      "date": "2026-11-20T18:54:33Z",
+      "image_sha256": "84a8e2bbfd6359c153ff1dfc0af96acb855cdffec25b0019631bfcd4e209f0c7",
+      "sources": [
+        {
+          "source_commit": "4f6ccc1585cf15e2a4f8f3dc7090aded89b66671",
+          "source_dirty": true,
+          "source_diff_sha256": "8518f4be7104f92eae00bbd1cf0bf8d3d92e1746c96294bde11efaf80dd82274",
+          "source_dirty_files": {
+            "godot/main/README.md": "3bc58f9cc3db1898a6569a3bee3c3c57bad46b0f",
+            "godot/main/load_screen.gd": "135af2d3399259966e56df4eb7238afe0409230c",
+            "godot/main/main.gd": "2754a3afdbf99769bb17fc49dd825884c0caf055",
+            "godot/main/test/retire_scene_check.gd": "e3781263b8c8e2b91e7f7c526b4b41b205f8ff29",
+            "godot/main/test/showcase_quiet_check.gd": "3c604d8c12eea94e7f82a3fbc67bb33823fd96d8",
+            "godot/scenes/battle/battle.gd": "967945f75a5e5c3754baa10196a32e4564e1e912",
+            "godot/tools/ci/godot_checks.txt": "90a401b4176bc9894e39df80fd22ad180537f21c",
+            "godot/ui/battle/hud.gd": "ecee89720fb562fc25e1728a1dd739503658bc05",
+            "godot/ui/campaign/campaign_ui.gd": "2ad31234462752f5273ca4979c54f590f6a14717",
+            "godot/ui/campaign/map3d.gd": "9a09abcb4498b5aee62a8f7ba9ab0aa9e58befb7",
+            "godot/ui/test/front_end_test.gd": "76278e6a05a577dd8f65bb5b912baa487d8ea6eb"
+          },
+          "stage": "sheet built"
+        }
+      ]
+    },
+    {
+      "picture_name": "FE_b557adc85_F2_title_normal.jpg",
+      "source_commit": "b557adc85895311f8796c25ce958de0ccc0dd49c",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-20T18:54:33Z",
+      "image_sha256": "103ad3a52970f48ada790bbc38066f39306d2d5939ed7baffa30f3fc485a24d8",
+      "sources": [
+        {
+          "source_commit": "b557adc85895311f8796c25ce958de0ccc0dd49c",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "deadstar.jpg",
+      "source_commit": "7d4db9de71111eedfe72635c88516f5228bad9af",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-17T14:10:24Z",
+      "image_sha256": "c2720bdcbb61b2385b0afa933dfcc7a10c2060f0148fc3a9cc89009525cefe83",
+      "sources": [
+        {
+          "source_commit": "7d4db9de71111eedfe72635c88516f5228bad9af",
+          "source_diff_sha256": "",
+          "source_dirty": false,
+          "stage": "installed in game"
+        },
+        {
+          "source_commit": "7d4db9de71111eedfe72635c88516f5228bad9af",
+          "source_diff_sha256": "2c11badba22d8d56989480feb3d12650aea3a0b82ef4b9d2cfc9d95b5e430c0c",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    544,
+    636,
+    720
+  ],
+  "strip_size": [
+    636,
+    176
+  ],
+  "strip_sha256": [
+    "3e316a0c89fc3cf73f25ee94614db3fac2b75306eca2a4160c680e5a7bbf89cc"
+  ],
+  "stamp_template_sha256": "bab17cb162e8b3893dd0420923899f2e78e99e0318ca792e759c2d8ad58cafc8",
+  "covered_pixels": [
+    "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"
+  ],
+  "image_sha256": "65326b4e648a749bb7ac890e9c2a578382ed19a5a04c6e4e5476f4d29423fc54"
+}

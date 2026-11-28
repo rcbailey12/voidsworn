@@ -196,7 +196,13 @@ func _victory() -> void:
 	check(table != null and c.modal_d["kind"] == "victory", "settled victory draws the report before salvage")
 	if table == null: return
 	var row: Dictionary = sm["ship_rollups"][hero["id"]]
-	check(row["promoted"] and row["captain_xp"] > 0 and row["flagship"], "settled award and flagship recorded on the row")
+	check(row["captain_xp"] > 0 and not row.has("promoted") and not row.has("flagship") and not row.has("hull_max"), "settled XP on 2078's rollup, which the report does not extend")
+	check(sm["lost_ship_records"].size() == 1 and sm["lost_ship_records"][0] == record, "the killmail record is the LostShipRecord in RUN.last_battle_report")
+	check(c.modal_d["data"]["summary"]["xp"].any(func(x): return x["cap"]["captain_id"] == row["captain"]["captain_id"] and x["up"]), "promotion comes from the settled XP line")
+	var facts: Array = Report.with_fleet_facts(Report.fleet_rows(sm["ship_rollups"]), c)
+	var hero_facts: Array = facts.filter(func(f): return f["ship_uid"] == hero["ship"]["uid"])
+	check(hero_facts.size() == 1 and hero_facts[0]["flagship"] and hero_facts[0]["hull_max"] == float(c.derive(hero["ship"])["maxHp"]), "flagship and maximum hull read from the run")
+	check(facts.filter(func(f): return f["flagship"]).size() == 1 and not sm["ship_rollups"][hero["id"]].has("flagship"), "one flagship, and the saved report is not written")
 	check(table.find_child("Promotion", true, false) != null, "promotion shown in the table")
 	check(_label(table, "MvpReason") == "MVP: 3 kills, %s damage dealt" % Report.figure(row["damage_dealt"]), "spotlight uses settled applied damage")
 	check(ui.modal_box.find_children("*", "Label", true, false).any(func(l): return l.text.begins_with("Field repairs:")), "field repairs kept")

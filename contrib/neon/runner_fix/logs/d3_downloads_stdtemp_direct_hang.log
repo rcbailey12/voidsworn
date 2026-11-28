@@ -1,0 +1,56 @@
+=== OUTSIDE-WRITE PROBE ===
+Timestamp: 2026-11-26 20:42:07 -06:00
+PromptMode: direct_ps
+UseWmi: False
+RepoRoot: C:\Users\rcbai\Downloads\voidsworn_test\neon_clean_d3
+OutsidePath: C:\Users\rcbai\Downloads\voidsworn_test\neon_clean_d3_out.txt
+OverrideTemp: C:\Users\rcbai\AppData\Local\Temp
+EffectiveTEMP: C:\Users\rcbai\AppData\Local\Temp
+EffectiveCODEX_HOME: (unset -> default ~/.codex)
+TimeoutSec: 25
+CommandLine: call "C:\Users\rcbai\AppData\Roaming\npm\codex.cmd" exec --ignore-user-config -c windows.sandbox=unelevated -m gpt-6.2-sol -c model_reasoning_effort=low --approve-for-me --ephemeral --color never -C "C:\Users\rcbai\Downloads\voidsworn_test\neon_clean_d3" "Run two shell commands and report both results: (1) write IN to inside_ok.txt in this repo, and (2) try to write OUT to C:\Users\rcbai\Downloads\voidsworn_test\neon_clean_d3_out.txt. Do not commit." < nul > "C:\Users\rcbai\.t3\userdata\antigravity-tmp\ac0a3dfd6ddd\run-kbVP88\neon-sbx-raw-b13d5b27.txt" 2>&1
+LaunchedPid(Direct): 46712
+ElapsedSec: 25.38
+ExitCode: 124
+TimedOut: True
+inside_ok: False
+inside_content: (missing)
+outside_created: False
+=== CODEX OUTPUT ===
+Reading additional input from stdin...
+OpenAI Codex v0.171.0
+--------
+workdir: C:\Users\rcbai\Downloads\voidsworn_test\neon_clean_d3
+model: gpt-6.2-sol
+provider: openai
+approval: on-request
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: low
+reasoning summaries: none
+session id: 01a21ae1-aef6-7142-83ad-161506d774fb
+--------
+user
+Run two shell commands and report both results: (1) write IN to inside_ok.txt in this repo, and (2) try to write OUT to C:\Users\rcbai\Downloads\voidsworn_test\neon_clean_d3_out.txt. Do not commit.
+codex
+I’ll run both writes in the sandbox and report what happens.
+
+=== CODEX KERNEL/IO SAMPLES ===
+t=8.2s PID=32952 KernelMs=3156 UserMs=469 ReadOps=2190 WriteOps=147 OtherOps=180720 Handles=468
+t=14.4s PID=32952 KernelMs=9078 UserMs=688 ReadOps=2190 WriteOps=147 OtherOps=466828 Handles=470
+t=20.0s PID=32952 KernelMs=14391 UserMs=859 ReadOps=2190 WriteOps=147 OtherOps=763401 Handles=412
+=== PROCESS TREE SNAPSHOT (WHILE RUNNING/STALLED) ===
+PID=46712 PPID=43516 Session=1 Name=cmd.exe KernelMs=0 UserMs=0 ReadOps=57 WriteOps=1 OtherOps=629 Handles=92 Cmd="C:\Windows\system32\cmd.exe" /d /s /c ""C:\Users\rcbai\.t3\userdata\antigravity-tmp\ac0a3dfd6ddd\run-kbVP88\neon-sbx-run-b13d5b27.bat""
+PID=3020 PPID=46712 Session=1 Name=conhost.exe KernelMs=0 UserMs=16 ReadOps=0 WriteOps=0 OtherOps=168 Handles=110 Cmd=\??\C:\Windows\system32\conhost.exe 0x4
+PID=36476 PPID=46712 Session=1 Name=node.exe KernelMs=16 UserMs=16 ReadOps=7 WriteOps=0 OtherOps=350 Handles=181 Cmd="node"   "C:\Users\rcbai\AppData\Roaming\npm\\node_modules\@openai\codex\bin\codex.js" exec --ignore-user-config -c windows.sandbox=unelevated -m gpt-6.2-sol -c model_reasoning_effort=low --approve-for-me --ephemeral --color never -C "C:\Users\rcbai\Downloads\voidsworn_test\neon_clean_d3" "Run two shell commands and report both results: (1) write IN to inside_ok.txt in this repo, and (2) try to write OUT to C:\Users\rcbai\Downloads\voidsworn_test\neon_clean_d3_out.txt. Do not commit."
+PID=32952 PPID=36476 Session=1 Name=codex.exe KernelMs=14469 UserMs=859 ReadOps=2190 WriteOps=147 OtherOps=767589 Handles=420 Cmd=C:\Users\rcbai\AppData\Roaming\npm\node_modules\@openai\codex\node_modules\@openai\codex-win32-x64\vendor\x86_64-pc-windows-msvc\bin\codex.exe exec --ignore-user-config -c windows.sandbox=unelevated -m gpt-6.2-sol -c model_reasoning_effort=low --approve-for-me --ephemeral --color never -C C:\Users\rcbai\Downloads\voidsworn_test\neon_clean_d3 "Run two shell commands and report both results: (1) write IN to inside_ok.txt in this repo, and (2) try to write OUT to C:\Users\rcbai\Downloads\voidsworn_test\neon_clean_d3_out.txt. Do not commit."
+PID=13464 PPID=32952 Session=1 Name=codex-code-mode-host.exe KernelMs=0 UserMs=16 ReadOps=55 WriteOps=11 OtherOps=147 Handles=151 Cmd="C:\Users\rcbai\AppData\Roaming\npm\node_modules\@openai\codex\node_modules\@openai\codex-win32-x64\vendor\x86_64-pc-windows-msvc\bin\codex-code-mode-host.exe" --listen grpc+stdio://
+PID=37496 PPID=13464 Session=1 Name=conhost.exe KernelMs=0 UserMs=0 ReadOps=0 WriteOps=0 OtherOps=48 Handles=111 Cmd=\??\C:\Windows\system32\conhost.exe 0x4
+=== SANDBOX LOG DELTA (C:\Users\rcbai\.codex\.sandbox\sandbox.2026-11-27.log) ===
+[2026-11-26 20:42:07.729 codex.exe] MXC availability: false
+[2026-11-26 20:42:07.730 codex.exe] Windows sandbox selection: unelevated
+[2026-11-26 20:42:07.736 codex.exe] MXC availability: false
+[2026-11-26 20:42:07.736 codex.exe] Windows sandbox selection: unelevated
+[2026-11-26 20:42:07.803 codex.exe] MXC availability: false
+[2026-11-26 20:42:07.803 codex.exe] Windows sandbox selection: unelevated
+[2026-11-26 20:42:12.661 codex.exe] START: C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe -Command try { [Console]::OutputEncoding=[System.Text.Encoding]::UTF8 } catch {}
+Set-Content -LiteralPath 'inside_ok.txt' -Value 'IN' -NoNewli

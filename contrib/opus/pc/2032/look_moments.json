@@ -1,0 +1,50 @@
+{
+  "about": "2032: can you tell which ship died and how in one small camera 170 cell? Board crops keep source pixels. Cut-in cells show the whole frame.",
+  "cameras": [170],
+  "cell": [480, 270],
+  "crop": {"170": [480, 270]},
+  "rows": [
+    {
+      "id": "lance_board", "group": "2032_Lance_hit",
+      "label": "CAMERA 170 | V16_37 lance hits D21_23",
+      "att": ["voidsworn", "Cruiser"], "tgt": ["deathless", "Cruiser"], "expect_code": "D21_23",
+      "tgt_at": [12, -4], "focus": "pair", "kind": "lance", "weapon": "lance", "shots": 1, "shield_left": 0,
+      "windows": [["impact", -0.10, 1], ["impact", 0.033, 1], ["impact", 0.20, 1]], "key": 1
+    },
+    {
+      "id": "lance_cut", "group": "2032_Lance_hit",
+      "label": "CUT-IN | V16_37 lance hits D21_23",
+      "att": ["voidsworn", "Cruiser"], "tgt": ["deathless", "Cruiser"], "expect_code": "D21_23",
+      "tgt_at": [12, -4], "focus": "pair", "kind": "lance", "weapon": "lance", "shots": 1, "shield_left": 0, "cutin": "lance",
+      "windows": [["impact", -0.10, 1], ["impact", 0.033, 1], ["impact", 0.20, 1]], "key": 1
+    },
+    {
+      "id": "torpedo_board", "group": "2032_Torpedo_kill",
+      "label": "CAMERA 170 | V16_37 torpedo kills C15s_23",
+      "att": ["voidsworn", "Cruiser"], "tgt": ["corsair", "Cruiser"], "expect_code": "C15s_23",
+      "tgt_at": [12, -4], "focus": "pair", "kind": "torp", "weapon": "torp", "fatal": "big", "shots": 1, "shield_left": 0,
+      "windows": [["impact", -0.10, 1], ["impact", 0.033, 1], ["core", 0.066, 1], ["core", 0.22, 1], ["core", 0.42, 1]], "key": 2
+    },
+    {
+      "id": "torpedo_cut", "group": "2032_Torpedo_kill",
+      "label": "CUT-IN | V16_37 torpedo kills C15s_23",
+      "att": ["voidsworn", "Cruiser"], "tgt": ["corsair", "Cruiser"], "expect_code": "C15s_23",
+      "tgt_at": [12, -4], "focus": "pair", "kind": "torp", "weapon": "torp", "fatal": "big", "shots": 1, "shield_left": 0, "cutin": "torp",
+      "windows": [["impact", -0.10, 1], ["impact", 0.033, 1], ["core", 0.066, 1], ["core", 0.22, 1], ["core", 0.42, 1]], "key": 2
+    },
+    {
+      "id": "capital_board", "group": "2032_Capital_death",
+      "label": "CAMERA 170 | H4_11 capital cut by a lance",
+      "att": ["voidsworn", "Cruiser"], "tgt": ["hegemony", "Super-dreadnought"], "expect_code": "H4_11",
+      "do": "death", "cause": "cut",
+      "windows": [["event", 0, 1], ["core", 0.066, 1], ["core", 0.22, 1], ["core", 0.42, 1]], "key": 1
+    },
+    {
+      "id": "capital_cut", "group": "2032_Capital_death",
+      "label": "CUT-IN | H4_11 capital cut by a lance",
+      "att": ["voidsworn", "Cruiser"], "tgt": ["hegemony", "Super-dreadnought"], "expect_code": "H4_11",
+      "do": "death", "cause": "cut", "cutin": "kill",
+      "windows": [["event", 0, 1], ["core", 0.066, 1], ["core", 0.22, 1], ["core", 0.42, 1]], "key": 1
+    }
+  ]
+}

@@ -28,8 +28,7 @@ static func rollups(battle: Dictionary) -> Dictionary:
 		var ship = unit.get("ship")
 		row.merge({"ship_uid": ship["uid"] if ship is Dictionary else "", "ship_name": unit["name"],
 			"ship_class": unit.get("cls"), "ship_template": unit["tpl"], "side": unit["side"],
-			"hull_remaining": maxf(0.0, float(unit["hp"])), "hull_max": unit["maxHp"],
-			"flagship": bool(unit.get("pflag", false)), "lost": bool(unit.get("dead")) and not (unit.get("fled") or unit.get("exited")),
+			"hull_remaining": maxf(0.0, float(unit["hp"])), "lost": unit.get("dead") and not unit.get("fled"),
 			"captain": ship["cap"].duplicate(true) if ship is Dictionary else null})
 		rows[unit["id"]] = row
 	return rows
@@ -88,13 +87,21 @@ static func kill(battle: Dictionary, run, target: Dictionary, fatal: Dictionary)
 	battle["lost_ship_records"].append(record.duplicate(true))
 
 
-static func ship_returned(battle: Dictionary, run: Dictionary, id: String) -> void:
-	if not battle.has("lost_ship_records"): return
-	var losses: Array = battle["lost_ship_records"]
+static func ship_returned(battle: Dictionary, run, id: String) -> void:
+	# A reassembly keeps the damage, but the hit was a knockdown, not a kill.
+	# Enemy hulls have combat events too, even though they never write a fleet loss.
+	var events: Array = battle.get("combat_events", [])
+	for i in range(events.size() - 1, -1, -1):
+		var event: Dictionary = events[i]
+		if event["target_ship_id"] != id or not event["is_killing_blow"]: continue
+		event["is_killing_blow"] = false
+		var killer: String = event["attacker_ship_id"]
+		if not killer.is_empty(): ship_rollup(battle, killer)["kills"] -= 1
+		break
+	var losses: Array = battle.get("lost_ship_records", [])
 	for i in range(losses.size() - 1, -1, -1):
 		var record: Dictionary = losses[i]
 		if record["battle_unit_id"] != id: continue
-		# A successful Eclipse reassembly removes the pending fleet loss, not the hit or kill.
-		run["timeline"].erase(record)
+		if run is Dictionary and run.get("timeline") is Array: run["timeline"].erase(record)
 		losses.remove_at(i)
 		return

@@ -12,6 +12,34 @@ const WIDTHS := [188, 48, 116, 116, 72, 128]
 const TABLE_WIDTH := 760.0
 
 
+static func source(summary: Dictionary, run) -> Dictionary:
+	# The settled battle report on the run (issue 2078) owns the rollups and LostShipRecords.
+	# Only trust it when this summary came from the same settlement; older saves keep their summary.
+	var report := summary.duplicate()
+	var saved = run.get("last_battle_report") if run is Dictionary else null
+	if summary.has("ship_rollups") and saved is Dictionary and saved.has("ship_rollups"):
+		report["ship_rollups"] = saved["ship_rollups"]
+		report["lost_ship_records"] = saved.get("lost_ship_records", [])
+	return report
+
+
+static func with_fleet_facts(rows: Array, C) -> Array:
+	# Flagship and maximum hull are not on 2078's rollup. Read them from the run without
+	# writing to the saved report. A lost ship has no hull left, so it needs no maximum.
+	var out := []
+	var flag_uid: String = str(C.RUN.get("flagUid", "")) if C != null and C.RUN is Dictionary else ""
+	var fleet: Array = C.RUN.get("fleet", []) if C != null and C.RUN is Dictionary else []
+	for row in rows:
+		var copy: Dictionary = row.duplicate()
+		copy["flagship"] = not flag_uid.is_empty() and str(row["ship_uid"]) == flag_uid
+		for ship in fleet:
+			if ship.get("uid") == row["ship_uid"]:
+				copy["hull_max"] = float(C.derive(ship)["maxHp"])
+				break
+		out.append(copy)
+	return out
+
+
 static func fleet_rows(rollups: Dictionary) -> Array:
 	var ids := rollups.keys()
 	# Unit ids follow deployment order. Keep that order after save JSON sorts the keys as text.
@@ -51,6 +79,7 @@ static func append(ui, parent: VBoxContainer, report: Dictionary, width: float, 
 	var rows := fleet_rows(report.get("ship_rollups", {}))
 	if rows.is_empty():
 		return false
+	rows = with_fleet_facts(rows, ui.C)
 	var table := ui.vbox(5) as VBoxContainer
 	table.name = "SpotlightReport"
 	parent.add_child(table)
@@ -163,16 +192,17 @@ static func _value(ui, text: String, col: Color, share := -1.0, tint := GS.TEXT2
 
 static func _hull(ui, row: Dictionary) -> String:
 	var hp := float(row["hull_remaining"])
+	if hp <= 0:
+		return "0%"
 	var mx := float(row.get("hull_max", 0))
 	if mx > 0:
-		return "%d%%" % (clampi(roundi(hp / mx * 100), 1, 100) if hp > 0 else 0)
-	# Step 0 reports saved before AR-A have hull points but not the maximum.
+		return "%d%%" % clampi(roundi(hp / mx * 100), 1, 100)
+	# A survivor no longer in the fleet has hull points but no maximum to compare.
 	return "%s HP" % ui.C.hull_text(hp)
 
 
 static func _promoted(row: Dictionary, xp: Array) -> bool:
-	if row.has("promoted"):
-		return row["promoted"]
+	# The settled XP lines own promotion; match them by the captain's stable id.
 	for entry in xp:
 		if entry["cap"].get("captain_id") == row["captain"]["captain_id"]:
 			return entry["up"]

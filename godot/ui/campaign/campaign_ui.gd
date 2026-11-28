@@ -449,6 +449,8 @@ func render() -> void:
 			modal_focus_key = ModalFocus.focus_key(focus)
 			modal_focus_point = _scroll_focus_point(_modal_scroll, focus)
 	_page_key = page_key
+	if modal_kind == "event" and _modal_kind != "event" and _modal_kind != "relic_pick":
+		Kit.play("ui_event_comm")
 	_modal_kind = modal_kind
 	_shown_modal = C.modal_d
 	_page_scroll = null
@@ -918,11 +920,13 @@ func _run_opts_summary() -> String:
 	if C.run_opt.get("cmdAlt", false): bits.append("alternate Command")
 	var hl = C.heatLevel(C.run_opt.get("heat", []))
 	if float(hl) > 0: bits.append("Threat " + C.numstr(hl))
-	if C.map_trial_choice: bits.append("test maps")
+	if C.map_trial_choice: bits.append("experimental")
 	return (": " + ", ".join(PackedStringArray(bits))) if not bits.is_empty() else ""
+const DRAWER_DIM := 0.75   # alpha of the HALO ink over the page behind the Run options drawer
 func _desk_drawer(host: Control) -> void:
 	var vs = get_viewport().get_visible_rect().size
-	var dim = ColorRect.new(); dim.set_anchors_preset(Control.PRESET_FULL_RECT); dim.color = Color(GS.HALO, 0.45); dim.mouse_filter = Control.MOUSE_FILTER_STOP
+	var dim = ColorRect.new(); dim.set_anchors_preset(Control.PRESET_FULL_RECT); dim.color = Color(GS.HALO, DRAWER_DIM); dim.mouse_filter = Control.MOUSE_FILTER_STOP   # issue 2029 item 2: the page behind the drawer is dimmed hard
+	dim.name = "RunOptionsDim"
 	dim.gui_input.connect(func(e):
 		if e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT: close_run_options())
 	host.add_child(dim)
@@ -952,7 +956,16 @@ func _story_text() -> String:
 	return str(st.campaign_line()) if st != null else ""
 func _story_line(v: Control) -> void:
 	var t = _story_text()
-	if t != "": v.add_child(lbl(t, 17, VERD))   # the admiral's voice: calm information, not an action
+	if t != "": v.add_child(lbl(t, 17, _story_col()))   # the admiral's voice, in the admiral's faction accent (issue 2029 item 5)
+func _story_fac() -> String:   # the faction of the admiral whose line is on screen
+	var id := ""
+	if C.modal_d is Dictionary and C.modal_d.get("kind", "") in ["intro", "sector"] and C.RUN is Dictionary: id = str(C.RUN.get("admiral", ""))
+	elif str(C.page.get("kind", "")) == "admiral": id = str(C.picked_admiral)
+	elif str(C.page.get("kind", "")) == "end" and C.page.get("data") is Dictionary and C.page["data"].get("run") is Dictionary: id = str(C.page["data"]["run"].get("admiral", ""))
+	if C.ADMIRALS.has(id): return str(C.ADMIRALS[id].get("fac", C.picked_faction))
+	return str(C.RUN.get("fac", C.picked_faction)) if C.RUN is Dictionary else str(C.picked_faction)
+func _story_col() -> Color:   # faction_looks.json through the front end's one accent source; the shared ember when a faction has none
+	return Kit.faction_accent(_story_fac())
 func _admiral_title(id) -> String:   # the admiral's name with the latest earned title
 	var st = _story()
 	if st != null:
@@ -996,10 +1009,11 @@ func _mastery_bar(id, short := false) -> Control:
 func _run_options() -> Control:
 	var v = vbox(10)
 	v.add_child(Kit.heading("Run options", 34, k))
+	v.add_child(lbl("Experimental mode: a test setting, not the tuned game. Ships, ranges and maps play differently.", 17, BONE3))   # issue 2029 item 3: say what this switch is, in plain words
 	var trial = CheckBox.new()
 	trial.name = "MapTrialToggle"
-	trial.text = "Test new battle maps, faster ships and longer gun ranges"
-	trial.tooltip_text = "Also changes where ships start in Hunt, Ambush and boss fights. Applies to this whole run."
+	trial.text = "Experimental mode: test new battle maps, faster ships and longer gun ranges"
+	trial.tooltip_text = "Experimental mode. Also changes where ships start in Hunt, Ambush and boss fights. Applies to this whole run."
 	trial.add_theme_font_size_override("font_size", px(18))
 	trial.button_pressed = C.map_trial_choice
 	trial.toggled.connect(func(on): C.act("optMapTrial", "1" if on else "0"))
@@ -1791,7 +1805,7 @@ func _fac_crest(Pt, fac: String) -> Texture2D:   # the crest of the first admira
 	return null
 
 # ---------------- ship cards, fleet, shipyard ----------------
-func _ship_card(s: Dictionary, refit: bool, extra: Array = []) -> Control:
+func _ship_card(s: Dictionary, refit: bool, extra: Array = [], apart: Array = []) -> Control:   # apart: buttons set on their own row below the rest (issue 2029 item 4)
 	var t = C.HULLS[s["tpl"]]; var d = C.derive(s); var cap = s["cap"]
 	var cv = card(false, 330); var v = cv[1]
 	var r0 = hbox(); var name_label = lbl(s["name"], 20, BONE, font_semi); name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1833,6 +1847,11 @@ func _ship_card(s: Dictionary, refit: bool, extra: Array = []) -> Control:
 		var ex = flow(6)
 		for b in extra: add(ex, b)
 		v.add_child(HSeparator.new()); v.add_child(ex)
+	if apart.size() > 0:   # issue 2029 item 4: Decommission cannot be taken back, so it sits on its own row, away from Repair and Mk
+		var ap = flow(6); ap.name = "ApartRow"
+		for b in apart: add(ap, b)
+		var gap = Control.new(); gap.custom_minimum_size.y = px(14); gap.name = "ApartGap"
+		v.add_child(gap); v.add_child(HSeparator.new()); v.add_child(ap)
 	return cv[0]
 const FleetManifest = preload("res://ui/campaign/fleet_manifest.gd")
 var fleet_manifest: Control
@@ -1875,6 +1894,21 @@ func _spec_drawer(parent: VBoxContainer, ship: Dictionary, key: String) -> void:
 			"ability_d": box.add_child(lbl(line["t"], 17, BONE2))
 			"weapon": box.add_child(lbl(line["t"], 17, BONE, font_semi))
 			_: box.add_child(lbl(line["t"], 17, BONE2))
+func _preview_row(rows: Array, stat_key: String) -> Dictionary:
+	for row in rows:
+		if row["stat_key"] == stat_key: return row
+	return {}
+
+func _yard_repair_label(rows: Array, currency_suffix: String) -> String:
+	var hull := _preview_row(rows, "hull")
+	var max_hull := _preview_row(rows, "max_hull")
+	if hull.is_empty() or max_hull.is_empty(): return "Repair"
+	var missing: float = max_hull["old"] - hull["old"]
+	if missing <= 0.0: return "Fully repaired"
+	var points: float = hull["delta"]
+	var partial: String = C.numstr(points) + " of " if points > 0.0 and points < missing else ""
+	return "Repair " + partial + C.numstr(missing) + " for " + C.numstr(hull["cost"]) + currency_suffix
+
 func _shipyard() -> Control:
 	var v = vbox(10); var R = C.RUN; var n = C.page["data"]["node"]; var st = n["stock"]; var pm = C.priceMult(); var cp = C.fleetCP()
 	var head = hbox(); head.add_child(gothic("Shipyard")); head.add_child(spacer())
@@ -1925,13 +1959,16 @@ func _shipyard() -> Control:
 		v.add_child(lm)
 	var cards = flow()
 	for s in R["fleet"]:
-		var repair: Dictionary = C.preview_op("repair", s["uid"])[0]
-		var mark: Dictionary = C.preview_op("upgradeMk", s["uid"])[1]
-		var miss: float = repair["delta"]; var rc: float = repair["cost"]; var mc: float = mark["cost"]; var sell = C.sellValue(s)   # R1 (TXT-8): what the button pays; hulls without a shop price too
-		var ex = [abtn(("Repair " + C.numstr(miss) + " for " + C.numstr(rc) + hw) if miss > 0 else "Fully repaired", "repair", s["uid"], false, true),
-			abtn(("Mk " + C.roman(mark["new"]) + " for " + C.numstr(mc) + hw) if float(s["mk"]) < 3 else "Max Mark", "upgradeMk", s["uid"], false, true),
-			abtn("Decommission (+" + C.numstr(sell) + hw + ")", "sellShip", s["uid"], false, true)]
-		cards.add_child(_ship_card(s, false, ex))
+		var repair_label := _yard_repair_label(C.preview_op("repair", s["uid"]), hw)
+		var mark := _preview_row(C.preview_op("upgradeMk", s["uid"]), "mark")
+		var mark_label := "Upgrade Mark"
+		if not mark.is_empty():
+			mark_label = ("Mk " + C.roman(mark["new"]) + " for " + C.numstr(mark["cost"]) + hw) if mark["old"] < 3 else "Max Mark"
+		var sell = C.sellValue(s)   # R1 (TXT-8): what the button pays; hulls without a shop price too
+		var ex = [abtn(repair_label, "repair", s["uid"], false, true),
+			abtn(mark_label, "upgradeMk", s["uid"], false, true)]
+		var apart = [abtn("Decommission (+" + C.numstr(sell) + hw + ")", "sellShip", s["uid"], false, true)]   # asks first: the sell modal names the ship and the credits
+		cards.add_child(_ship_card(s, false, ex, apart))
 	v.add_child(cards)
 	v.add_child(sec_head("Hulls for sale"))
 	var hs = flow()
@@ -2097,7 +2134,7 @@ func _legacy() -> Control:
 const HELP := [
 	["", "Embers of the Hollow Sun is a hex fleet-tactics roguelite. Lead your ships across three contested sectors toward the Hollow Sun, fighting a sector flagship at the end of each map. Any hull or captain lost in battle stays lost for the rest of the run."],
 	["", "Between runs, check Progression on the title screen: spend renown to unlock hull variants and permanent legacy upgrades, level up admirals to open branch skills and Command evolutions, and raise sync with Lattice cores so they offer rarer protocols (and eventually a starting gift). Finishing your first run unlocks Threat modifiers for extra difficulty and renown."],
-	["Your turn", "Each ship moves, turns, and then fires its ready weapons once per round. Most hulls cannot move after firing (Glasswright ships and the Slip the Net protocol are the exceptions). Forward hexes cost 1 movement; turning 60° costs 1 movement and uses a turn charge (capital ships only turn once per round, so plan headings early). Press Q or E to turn the ghost in place; the turn happens when you commit."],
+	["Your turn", "Each ship moves, turns, and then fires its ready weapons once per round. Only Glasswright ships can move after firing. Forward hexes cost 1 movement; turning 60° costs 1 movement and uses a turn charge (capital ships only turn once per round, so plan headings early). Press Q or E to turn the ghost in place; the turn happens when you commit."],
 	["", "Attitude thrusters keep your formation flexible: ships can sideslip diagonally or reverse one hex without rotating (2 movement each, or a slow hull's entire move). Ships can also pass above or below asteroids, wrecks, and enemy hulls for +1 movement, though they cannot end their move on an occupied hex. Each faction bends one thruster rule (check the Helm readout)."],
 	["", "Click an enemy outside current weapon range to plot the cleanest burn into firing range (the ghost shows the stop); click it again or press Enter to burn and fire on arrival."],
 	["", "Keep moving. Stationary ships take +10 enemy aim, while moving 3+ hexes grants -5 to be hit. Port and starboard flank batteries hit 10% harder after moving 2+ hexes (45% harder for Sunward Crusade)."],
@@ -2377,7 +2414,7 @@ func _end_detail_body(d: Dictionary, section: String) -> Control:
 	if section == "record":
 		for teaching_card in CampaignTips.CARDS:
 			if teaching_card[0] == "c_loss": v.add_child(lbl(str(teaching_card[2]), 18, GS.TEXT2))
-		v.add_child(lbl(_story_text(), 18, GS.TEXT2))
+		v.add_child(lbl(_story_text(), 18, _story_col()))
 		var payoff: String = C.beat3Payoff(R)
 		if payoff != "": v.add_child(lbl(payoff, 18, GS.TEXT))
 		if C.jt(R.get("eatenCore")) and C.PATRONS.has(R["eatenCore"]): v.add_child(lbl("The swarm ate " + str(C.PATRONS[R["eatenCore"]]["n"]) + ".", 18, GS.TEXT2))
@@ -2536,6 +2573,9 @@ func _modal(md: Dictionary) -> void:
 		"abandon":
 			h2.call("Abandon the current run?"); p.call("Starting over ends your saved run. Your best result so far is kept either way.", BONE2)
 			v.add_child(foot([abtn("Keep it", "closeModal", "", false, false, acts), fin("Abandon and start over", "abandonRun", "", acts)]))
+		"brokenRun":
+			h2.call("This run cannot continue"); p.call("The saved run could not be loaded. You can discard it and start again. Any recoverable profile progress stays.", BONE2)
+			v.add_child(foot([abtn("Keep the save", "closeModal", "", false, false, acts), fin("Discard the broken run", "discardBrokenRun", "", acts)]))
 		"sell":
 			var _s_fac := str(R.get("fac", "")); var _s_nm := str(d["ship"]["name"])
 			h2.call(("Reabsorb " if _s_fac == "chorus" else "Decommission ") + _s_nm + "?")
@@ -2597,7 +2637,7 @@ func _modal(md: Dictionary) -> void:
 			if econ.has("core"): p.call("Core recovered: the " + str(C.HULLS[econ["core"]]["n"]) + " can be regrown at a shipyard.", VERD)
 			if d.get("extra", "") != "": p.call(d["extra"], VERD)
 			for line in d.get("weaknessConfirmed", []): p.call(line, VERD)
-			var has_table := AfterAction.append(self, v, sm, width, _report_killmail)
+			var has_table := AfterAction.append(self, v, AfterAction.source(sm, R), width, _report_killmail)
 			if not lost.is_empty(): p.call("Lost: " + ", ".join(lost) + ".", BLOOD)
 			for line in fates: p.call(line, BONE2)
 			if victory and not d["wrecks"].is_empty(): _salvage_choices(v, d["wrecks"], acts, width)
@@ -2729,7 +2769,8 @@ func _refit_fit_choices(v: VBoxContainer, module_id, action: String, prefix: Str
 		ships.add_child(abtn("Fit onto " + str(ship["name"]), action, arg, false, true, acts))
 	if ships.get_child_count() == 0:
 		ships.free()
-		v.add_child(lbl("No free compatible slot.", 17, BONE3))
+		for ship in C.RUN["fleet"]:   # issue 2029 item 8: say what is in the way, ship by ship
+			v.add_child(lbl(str(ship["name"]) + ": " + C.fitBlock(ship, module_id), 17, BONE3))
 	else:
 		v.add_child(ships)
 
@@ -2780,12 +2821,15 @@ func _well_text(v: VBoxContainer) -> void:
 const BACK_ACTS := ["title", "backToSetup"]
 # Issue 1448: the confirms that take a reward, relic or promotion perk, or buy a hull, play the built reward chime
 # (cues.json ui_reward) in place of the plain confirm.
-const REWARD_ACTS := ["takeMod", "fitRewardRefit", "fitWreckRefit", "fitBoughtRefit", "takeBoon", "takeRelic", "takeSalvage", "prizeConfirm", "takePerk", "buyHull"]
+const REWARD_ACTS := ["takeMod", "takeBoon", "takeSalvage", "prizeConfirm", "takePerk"]
 # Names the action a button runs, so the player-path recorder presses the real button (and hears its cue) instead of
 # calling the action under it (issue 1448: SND1C's reward picks were silent because the recorder skipped the buttons).
 static func press_tag(b: Control, act: String, arg) -> void:
 	b.set_meta("press_act", act); b.set_meta("press_arg", str(arg))
 func cue_role(act: String, fallback: String) -> String:
+	if act in ["buyHull", "buyMod", "lateBuy"]: return "purchase"
+	if act in ["equip", "fitRewardRefit", "fitWreckRefit", "fitBoughtRefit"]: return "install"
+	if act == "takeRelic": return "relic"
 	if act in REWARD_ACTS: return "reward"
 	if act in BACK_ACTS: return "back"
 	return fallback
