@@ -275,7 +275,7 @@ Ryan pays for it again. Set: Ryan, Nov 5 and 11 (R216).
 
 2.17 **A fix lands in the shared kit, so it reaches everything of its kind at once.** Every fix or look change goes where all
 ships, screens or systems of that kind read it: a faction's skin in its kit stack (every ship of that faction rebakes from it),
-a parts option every hull of the family uses, pipeline fixes in shared helpers, AI rules in battle.js and rules.gd together,
+a parts option every hull of the family uses, pipeline fixes in shared helpers, AI rules in the Godot rule files and their tables,
 and every start screen's fonts, buttons, labels, rows, cards and sounds in godot/ui/theme/orders_kit.gd (9.15). Each pull
 request names who else picks the change up; the Board returns a one-off fix unless the pull request says why it is specific.
 Why: "let's make sure all the changes we're doing are cohesive and tied together. so like the fixes to the chorus skin should
