@@ -44,8 +44,9 @@ function toolingFacts(root) {
   return { model: pin ? pin[1] : null, family: pin ? pin[2].toLowerCase() : null, lanes, codeOnly };
 }
 
-// LOOP.md lines that are dated history (LATEST lines) are not claims about today.
-const isHistoryLine = (file, line) => file === 'contrib/opus/LOOP.md' && /^\s*- LATEST\b/.test(line);
+// LOOP.md lines that are dated history (LATEST lines) are not claims about today. Both bulleted
+// ("- LATEST", "* LATEST") and unbulleted ("LATEST ...") lines count; origin/main writes the newest ones unbulleted.
+const isHistoryLine = (file, line) => file === 'contrib/opus/LOOP.md' && /^\s*(?:[-*]\s+)?LATEST\b/i.test(line);
 
 function checkModelsAndLanes(root, facts) {
   const fails = [];
@@ -93,7 +94,7 @@ function checkLoop(root, today) {
   const fails = [];
   const loop = readIf(root, 'contrib/opus/LOOP.md');
   if (loop === null) return ['C contrib/opus/LOOP.md is missing'];
-  const latest = loop.split(/\r?\n/).filter(l => /^\s*- LATEST\b/.test(l)).length;
+  const latest = loop.split(/\r?\n/).filter(l => /^\s*(?:[-*]\s+)?LATEST\b/i.test(l)).length;
   if (latest > LATEST_CAP) fails.push('C contrib/opus/LOOP.md holds ' + latest + ' LATEST lines (cap ' + LATEST_CAP + '; RULEBOOK 0.10 rolls them up at about 15)');
   const { body, offset } = loopSection(unquote(loop), 'The seats');
   body.split('\n').forEach((line, i) => {
@@ -163,8 +164,12 @@ const BAT = 'if not defined CODEX_MODEL set "CODEX_MODEL=gpt-6.2-sol"\n'
   + ['b', 'c', 'd', 'e', 'f', 'g'].map((x, k) => 'if /i "%LANEDIR%"=="build_' + x + '" set "BOARD=board' + (k ? '_' + 'abcde'[k - 1] : '') + '"').join('\n')
   + '\n' + ['C', 'D', 'E', 'F'].map(x => 'if /i "%BOARD%"=="board_' + x.toLowerCase() + '" set "PC_GPU_LANE=' + x + '"').join('\n') + '\n';
 const AUTO = "on:\n  push:\n    branches:\n      - 'codex/issue-*'\n      - 'neon/issue-*'\n      - '!neon/issue-*-partial'\njobs: {}\n";
-function fixture(bad) {
-  const latest = Array.from({ length: bad ? 30 : 10 }, (_, k) => '- LATEST Nov 25 ' + k + ':00 UTC (Board): merged ' + k).join('\n');
+function fixture(bad, opts = {}) {
+  const count = opts.count != null ? opts.count : (bad ? 30 : 10);
+  const prefix = opts.unbulleted ? '' : '- ';
+  const latest = Array.from({ length: count }, (_, k) => prefix + 'LATEST Nov 25 ' + k + ':00 UTC (Board): merged ' + k);
+  // A history line that would fire A (wrong Codex model) and B (wrong lane count) if it were treated as a claim.
+  if (opts.historyClaim) latest.push(prefix + 'LATEST Nov 24 23:00 UTC (Board): Codex runs GPT 6.1 Sol in four lanes.');
   return plant({
     'tools/pc/codex_issue.bat': BAT,
     '.github/workflows/auto_pr.yml': AUTO,
@@ -174,7 +179,7 @@ function fixture(bad) {
       + (bad ? '2.7 Codex runs GPT 6.1 Sol today. One Codex job per lane (four lanes).\n' : '2.7 Codex runs GPT 6.2 Sol. Ryan: "we usually use Sol 6.1". Was four lanes.\n'),
     'GLOSSARY.md': bad ? '- **Lane**: a queue (lane C and D are code only).\n' : '- **Lane**: a queue (lanes C to F are code only).\n',
     'contrib/opus/LOOP.md': '## The seats\n' + (bad ? '- **API arms: OFF** until the monthly refresh, about Nov 21.\n' : '- **API arms: on** (R446).\n')
-      + '## Current state\n' + latest + '\n',
+      + '## Current state\n' + latest.join('\n') + '\n',
     'contrib/opus/FINDINGS.md': '| ID | Decision | Status |\n|---|---|---|\n'
       + '| R300 | old seat rule | ' + (bad ? 'STANDING' : 'SUPERSEDED by R449') + ' |\n'
       + '| R449 | new seat rule. Overrides R300. | Landed in docs/RULEBOOK.md |\n',
@@ -193,6 +198,17 @@ if (require.main === module) {
   }
   console.log((good.length ? 'FAIL' : 'PASS') + ' fixture good tree stays quiet' + (good.length ? ': ' + good.join(' / ') : ''));
   ok = ok && !good.length;
+  // The newest lines on origin/main are unbulleted "LATEST ..." lines. They must count toward the cap and read as
+  // dated history, not as today's claims, exactly like the older bulleted ones.
+  const unbulletedOver = lint(fixture(false, { unbulleted: true, count: 30 }), fixtureDay);
+  const unbulletedQuiet = lint(fixture(false, { unbulleted: true, count: 10, historyClaim: true }), fixtureDay);
+  const countedUnbulleted = unbulletedOver.some(f => f.startsWith('C '));
+  console.log((countedUnbulleted ? 'PASS' : 'FAIL') + ' fixture unbulleted LATEST lines count toward the cap');
+  ok = ok && countedUnbulleted;
+  const skippedUnbulleted = !unbulletedQuiet.some(f => /^[AB] /.test(f));
+  console.log((skippedUnbulleted ? 'PASS' : 'FAIL') + ' fixture unbulleted LATEST lines are skipped by checks A and B'
+    + (skippedUnbulleted ? '' : ': ' + unbulletedQuiet.join(' / ')));
+  ok = ok && skippedUnbulleted;
   const root = process.env.VS_ROOT || path.resolve(__dirname, '../../..');
   const fails = lint(root, today);
   for (const f of fails) console.log('FAIL ' + f);

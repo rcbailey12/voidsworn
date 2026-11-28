@@ -12,7 +12,9 @@ const argv = process.argv.slice(2);
 const keep = argv.includes('--keep') ? Number(argv[argv.indexOf('--keep') + 1]) : 15;
 const eol = fs.readFileSync(loopPath, 'utf8').includes('\r\n') ? '\r\n' : '\n';
 const lines = fs.readFileSync(loopPath, 'utf8').split(/\r?\n/);
-const isLatest = l => /^\s*[-*]\s*LATEST\b/i.test(l);
+// Match both bulleted ("- LATEST", "* LATEST") and unbulleted ("LATEST ...") lines: origin/main carries the
+// newest Nov 25-26 lines unbulleted, and the old bulleted-only pattern silently skipped them.
+const isLatest = l => /^\s*(?:[-*]\s+)?LATEST\b/i.test(l);
 let seen = 0; const moved = []; const kept = [];
 for (const l of lines) {
   if (isLatest(l) && ++seen > keep) moved.push(l); else kept.push(l);

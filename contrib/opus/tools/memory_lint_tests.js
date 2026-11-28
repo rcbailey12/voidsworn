@@ -204,7 +204,7 @@ function buildReports(root) {
   const loop = readIf(root, 'contrib/opus/LOOP.md');
   const latest = loop === null
     ? 0
-    : loop.split(/\r?\n/).filter(l => /^\s*[-*]\s*LATEST\b/i.test(l)).length;
+    : loop.split(/\r?\n/).filter(l => /^\s*(?:[-*]\s+)?LATEST\b/i.test(l)).length;
   reports.push({
     name: 'loop-latest',
     value: latest,
